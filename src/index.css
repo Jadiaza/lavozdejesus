@@ -1,0 +1,235 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap');
+
+@layer base {
+  :root {
+    /* La Voz de Jesús — dark sacred theme */
+    --background: 222 47% 5%;
+    --foreground: 40 30% 92%;
+
+    --card: 222 45% 8%;
+    --card-foreground: 40 30% 92%;
+
+    --popover: 222 45% 7%;
+    --popover-foreground: 40 30% 92%;
+
+    --primary: 42 65% 55%;
+    --primary-foreground: 222 50% 6%;
+
+    --secondary: 222 40% 12%;
+    --secondary-foreground: 40 30% 92%;
+
+    --muted: 222 30% 14%;
+    --muted-foreground: 40 12% 65%;
+
+    --accent: 42 75% 60%;
+    --accent-foreground: 222 50% 6%;
+
+    --destructive: 0 75% 50%;
+    --destructive-foreground: 40 30% 95%;
+
+    --border: 42 30% 25%;
+    --input: 222 30% 14%;
+    --ring: 42 65% 55%;
+
+    --radius: 1rem;
+
+    --gold: 42 70% 58%;
+    --gold-bright: 45 90% 65%;
+    --gold-deep: 38 60% 38%;
+    --navy: 222 60% 8%;
+    --navy-deep: 224 70% 4%;
+
+    --gradient-gold: linear-gradient(135deg, hsl(45 90% 65%), hsl(38 70% 45%));
+    --gradient-radial-gold: radial-gradient(circle at center, hsl(45 95% 70% / 0.35), transparent 70%);
+    --gradient-navy: linear-gradient(180deg, hsl(224 70% 4%), hsl(222 55% 7%));
+    --gradient-hero: linear-gradient(180deg, hsl(224 70% 4% / 0.6) 0%, hsl(222 60% 6% / 0.85) 60%, hsl(222 47% 5%) 100%);
+
+    --shadow-gold: 0 10px 40px -10px hsl(42 80% 50% / 0.35);
+    --shadow-deep: 0 30px 80px -20px hsl(0 0% 0% / 0.7);
+    --glass: hsl(222 50% 10% / 0.55);
+    --glass-border: hsl(42 60% 60% / 0.18);
+
+    --transition-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Montserrat', sans-serif;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+ h1, h2, h3, h4 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0;
+  }
+}
+
+@layer components {
+  .glass {
+    background: var(--glass);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid var(--glass-border);
+  }
+  .gold-text {
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .gold-border {
+  border: 1px solid hsl(var(--gold) / 0.35);
+}
+
+.section-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--gold));
+}
+
+.card-title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+}
+
+.card-text {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+}
+  .gold-divider {
+    background: linear-gradient(90deg, transparent, hsl(var(--gold) / 0.5), transparent);
+    height: 1px;
+  }
+  .live-pulse::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 0 0 hsl(0 80% 55% / 0.7);
+    animation: live-pulse 1.8s infinite;
+  }
+  .title-sacred {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.text-ui {
+  font-family: 'Montserrat', sans-serif;
+}
+}
+
+@keyframes live-pulse {
+  0% { box-shadow: 0 0 0 0 hsl(0 80% 55% / 0.6); }
+  70% { box-shadow: 0 0 0 14px hsl(0 80% 55% / 0); }
+  100% { box-shadow: 0 0 0 0 hsl(0 80% 55% / 0); }
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.02); }
+}
+.shimmer { animation: shimmer 6s ease-in-out infinite; }
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+.float-slow { animation: float-slow 8s ease-in-out infinite; }
+
+::selection {
+  background: hsl(var(--gold) / 0.3);
+  color: hsl(var(--foreground));
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: hsl(var(--background)); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(hsl(var(--gold) / 0.4), hsl(var(--gold-deep) / 0.6));
+  border-radius: 8px;
+}
+
+
+@keyframes marquee-smart {
+  0% {
+    transform: translateX(0);
+  }
+
+  40% {
+    transform: translateX(0);
+  }
+
+  80% {
+    transform: translateX(-50%);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-marquee-smart {
+  animation: marquee-smart 10s ease-in-out infinite;
+}
