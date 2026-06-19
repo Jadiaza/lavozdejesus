@@ -4,16 +4,32 @@ import { QuickAccess } from "./QuickAccess";
 import { GospelCard } from "./GospelCard";
 import { ProgramCard } from "./ProgramCard";
 import { BottomNav } from "./BottomNav";
-import { useEffect } from "react";
-import { testEvangelio } from "@/services/testEvangelio";
-
+import { useEffect, useState } from "react";
+import { Evangelio, getEvangelios } from "../../services/googleSheets";
 // Proportions per spec (mobile):
 // header 8% · custodia 33% · radio 9% · accesos 20% · evangelio 15% · próximo 8% · menú 7%
 export const MobileHome = () => {
+       const [evangelio, setEvangelio] = useState<Evangelio | null>(null)
 
-  useEffect(() => {
-    testEvangelio();
-  }, []);
+      useEffect(() => {
+  getEvangelios().then((data) => {
+
+    const hoy = new Date()
+      .toLocaleDateString("sv-SE");
+
+    console.log("FECHA SISTEMA:", hoy);
+
+    const evangelioHoy = data.find(
+      (item) => item.fecha === hoy
+    );
+
+    console.log("EVANGELIO ENCONTRADO:", evangelioHoy);
+
+    if (evangelioHoy) {
+      setEvangelio(evangelioHoy);
+    }
+  });
+}, []);
 
   return (
   <div className="relative min-h-screen bg-navy-deep text-foreground overflow-x-hidden">
@@ -45,9 +61,12 @@ export const MobileHome = () => {
       </section>
 
       {/* EVANGELIO DEL DÍA 15% */}
-      <section className="px-4 mt-4">
-        <GospelCard />
-      </section>
+  <section className="px-4 mt-4">
+  <GospelCard
+    cita={evangelio?.cita}
+    extracto={evangelio?.extracto}
+  />
+  </section>
 
       {/* PRÓXIMO PROGRAMA 8% */}
       <section className="px-4 mt-3 pb-28">
