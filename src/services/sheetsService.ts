@@ -64,6 +64,7 @@ export interface LectioDivina {
 }
 
 export interface SantoDelDia {
+  [key: string]: string;
   fecha: string;
   nombre: string;
   titulo: string;
@@ -120,6 +121,21 @@ const preserveText = (value: unknown) =>
 
 const normalizeHeader = (header: string) =>
   header.trim().toLowerCase().replace(/\s+/g, "_");
+
+const normalizeImageUrl = (value: unknown) => {
+  const raw = clean(value);
+  if (!raw) return "";
+
+  const driveFileMatch = raw.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
+  const driveOpenMatch = raw.match(/[?&]id=([^&]+)/i);
+  const driveId = driveFileMatch?.[1] ?? driveOpenMatch?.[1];
+
+  if (driveId) {
+    return `https://lh3.googleusercontent.com/d/${driveId}=s800`;
+  }
+
+  return raw;
+};
 
 export const getTodayISO = () => new Date().toLocaleDateString("sv-SE");
 
@@ -224,17 +240,39 @@ const normalizeLectio = (row: Partial<LectioDivina>): LectioDivina => ({
   estado: clean(row.estado).toLowerCase() as EstadoContenido,
 });
 
-const normalizeSanto = (row: Partial<SantoDelDia>): SantoDelDia => ({
-  fecha: normalizeDateISO(row.fecha),
-  nombre: clean(row.nombre),
-  titulo: clean(row.titulo),
-  resumen: preserveText(row.resumen),
-  historia: preserveText(row.historia),
-  lectura_espiritual: preserveText(row.lectura_espiritual),
-  imagen_url: clean(row.imagen_url),
-  frase_destacada: preserveText(row.frase_destacada),
-  estado: clean(row.estado).toLowerCase() as EstadoContenido,
-});
+const santoKnownKeys = new Set([
+  "fecha",
+  "nombre",
+  "titulo",
+  "resumen",
+  "historia",
+  "lectura_espiritual",
+  "imagen_url",
+  "frase_destacada",
+  "estado",
+]);
+
+const normalizeSanto = (row: Partial<SantoDelDia>): SantoDelDia => {
+  const santo: SantoDelDia = {
+    fecha: normalizeDateISO(row.fecha),
+    nombre: clean(row.nombre),
+    titulo: clean(row.titulo),
+    resumen: preserveText(row.resumen),
+    historia: preserveText(row.historia),
+    lectura_espiritual: preserveText(row.lectura_espiritual),
+    imagen_url: normalizeImageUrl(row.imagen_url),
+    frase_destacada: preserveText(row.frase_destacada),
+    estado: clean(row.estado).toLowerCase() as EstadoContenido,
+  };
+
+  Object.entries(row).forEach(([key, value]) => {
+    if (!santoKnownKeys.has(key)) {
+      santo[key] = preserveText(value);
+    }
+  });
+
+  return santo;
+};
 
 /* ==========================================================================
    API PUBLICA DE CONSULTA
