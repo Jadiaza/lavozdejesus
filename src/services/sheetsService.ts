@@ -32,12 +32,19 @@ export interface LectioDivina {
   estado: EstadoContenido;
 }
 
-const LITURGIA_DIA_CSV_URL = import.meta.env.VITE_LITURGIA_DIA_CSV_URL as
-  | string
-  | undefined;
-const LECTIO_DIVINA_CSV_URL = import.meta.env.VITE_LECTIO_DIVINA_CSV_URL as
-  | string
-  | undefined;
+const DEFAULT_LITURGIA_DIA_CSV_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7j7j9nNJ9DP7pFXM68yMrFUOan_pmUuGscDseMbkSWo4T1srKj2VsyUYE8XWnJlRpMAuR9QvQ2KVS/pub?gid=0&single=true&output=csv";
+
+const DEFAULT_LECTIO_DIVINA_CSV_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7j7j9nNJ9DP7pFXM68yMrFUOan_pmUuGscDseMbkSWo4T1srKj2VsyUYE8XWnJlRpMAuR9QvQ2KVS/pub?gid=1951794410&single=true&output=csv";
+
+const LITURGIA_DIA_CSV_URL =
+  (import.meta.env.VITE_LITURGIA_DIA_CSV_URL as string | undefined) ??
+  DEFAULT_LITURGIA_DIA_CSV_URL;
+
+const LECTIO_DIVINA_CSV_URL =
+  (import.meta.env.VITE_LECTIO_DIVINA_CSV_URL as string | undefined) ??
+  DEFAULT_LECTIO_DIVINA_CSV_URL;
 
 const clean = (value: unknown) =>
   typeof value === "string" || typeof value === "number"
