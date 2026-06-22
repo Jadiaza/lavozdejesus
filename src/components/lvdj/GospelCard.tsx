@@ -37,6 +37,7 @@ import { LiturgiaDia, getTodayLiturgia } from "@/services/sheetsService";
 
 interface GospelCardProps {
   evangelioCita?: string;
+  evangelioVersiculo?: string;
   palabraHoy?: string;
   onRead?: () => void;
   readHref?: string;
@@ -44,8 +45,65 @@ interface GospelCardProps {
   compact?: boolean;
 }
 
+const stripOuterQuotes = (value: string) =>
+  value.replace(/^[«"“]\s*/, "").replace(/\s*[»"”]$/, "");
+
+const normalizeText = (value: string) => value.replace(/\s+/g, " ").trim();
+
+const escapeRegExp = (value: string) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const stripCitationFromPhrase = (phrase: string, citation: string) => {
+  let cleanPhrase = normalizeText(stripOuterQuotes(phrase));
+  const cleanCitation = normalizeText(citation);
+
+  if (cleanCitation) {
+    cleanPhrase = cleanPhrase
+      .replace(new RegExp(`\\s*[-–—,;:]*\\s*${escapeRegExp(cleanCitation)}\\.?$`, "i"), "")
+      .trim();
+  }
+
+  return cleanPhrase.replace(
+    /\s*[-–—,;:]*\s*(?:[1-3]\s*)?[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+\.?\s+\d{1,3}\s*,\s*\d{1,3}(?:[-–]\d{1,3})?\.?$/i,
+    "",
+  ).trim();
+};
+
+const normalizeGospelCitation = (citation: string) => {
+  const text = normalizeText(citation);
+  const match = text.match(
+    /\b(?:san\s+)?(Mateo|Marcos|Lucas|Juan)\b\.?\s+(\d{1,3}\s*,\s*\d{1,3}(?:\s*[-–]\s*\d{1,3})?)/i,
+  );
+
+  if (!match) return text;
+
+  const evangelist =
+    match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase();
+  const passage = match[2].replace(/\s+/g, " ");
+
+  return `${evangelist} ${passage}`;
+};
+
+const formatPhraseAsExtract = (phrase: string) => {
+  const text = normalizeText(stripOuterQuotes(phrase))
+    .replace(/\.{3,}$/, "")
+    .replace(/[.!?¡¿]+$/, "")
+    .trim();
+
+  return text ? `${text}...` : "";
+};
+
+const quotePhrase = (phrase: string) => {
+  const cleanPhrase = normalizeText(phrase);
+  if (!cleanPhrase) return "";
+  if (/^[«"“].*[»"”]$/.test(cleanPhrase)) return cleanPhrase;
+
+  return `«${cleanPhrase}»`;
+};
+
 export const GospelCard = ({
   evangelioCita,
+  evangelioVersiculo,
   palabraHoy,
   onRead,
   readHref = "/lecturas-del-dia",
@@ -53,7 +111,9 @@ export const GospelCard = ({
   compact = false,
 }: GospelCardProps) => {
   const [liturgia, setLiturgia] = useState<LiturgiaDia | null>(null);
-  const [loading, setLoading] = useState(!evangelioCita && !palabraHoy);
+  const [loading, setLoading] = useState(
+    !evangelioCita && !evangelioVersiculo && !palabraHoy,
+  );
   const [error, setError] = useState(false);
 
   /* ==========================================================================
@@ -61,7 +121,7 @@ export const GospelCard = ({
      ========================================================================== */
 
   useEffect(() => {
-    if (evangelioCita || palabraHoy) {
+    if (evangelioCita || evangelioVersiculo || palabraHoy) {
       setLoading(false);
       return;
     }
@@ -92,13 +152,18 @@ export const GospelCard = ({
     return () => {
       mounted = false;
     };
-  }, [evangelioCita, palabraHoy]);
+  }, [evangelioCita, evangelioVersiculo, palabraHoy]);
 
   /* ==========================================================================
      DATOS NORMALIZADOS PARA LA VISTA
      ========================================================================== */
 
   const evangelioCitaActual = evangelioCita ?? liturgia?.evangelio_cita ?? "";
+  const evangelioVersiculoActual =
+    evangelioVersiculo ?? liturgia?.evangelio_versiculo ?? "";
+  const evangelioCitaVista = normalizeGospelCitation(
+    evangelioVersiculoActual || evangelioCitaActual,
+  );
   const palabraHoyActual =
     palabraHoy ??
     liturgia?.palabra_hoy ??
@@ -107,6 +172,18 @@ export const GospelCard = ({
       : error
         ? "La Palabra para hoy estara disponible pronto."
         : "La Palabra para hoy estara disponible pronto.");
+  const palabraHoyVista = stripCitationFromPhrase(
+    palabraHoyActual,
+    evangelioCitaActual,
+  );
+  const palabraHoyExtracto =
+    palabraHoy || liturgia?.palabra_hoy
+      ? formatPhraseAsExtract(palabraHoyVista)
+      : palabraHoyVista;
+  const palabraHoyTexto =
+    quotePhrase(palabraHoyExtracto) ||
+    quotePhrase(palabraHoyVista) ||
+    palabraHoyActual;
   const actionClassName =
     "shrink-0 inline-flex items-center gap-1 gold-border rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-gold hover:bg-gold/10 transition lg:px-4 lg:py-2";
 
@@ -148,7 +225,7 @@ export const GospelCard = ({
               : "max-w-[22rem] text-[15px] sm:text-base"
           }`}
         >
-          {palabraHoyActual}
+          {palabraHoyTexto}
         </p>
 
         <div
@@ -157,7 +234,7 @@ export const GospelCard = ({
           } flex items-center justify-between gap-3`}
         >
           <div className="min-w-0 text-xs font-medium text-gold/80 lg:text-sm">
-            {evangelioCitaActual}
+            {evangelioCitaVista}
           </div>
 
           {onRead ? (

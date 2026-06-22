@@ -46,6 +46,7 @@ export interface LiturgiaDia {
   segunda_lectura_cita: string;
   segunda_lectura_texto: string;
   evangelio_cita: string;
+  evangelio_versiculo: string;
   evangelio_texto: string;
   palabra_hoy: string;
   fuente: string;
@@ -76,6 +77,17 @@ export interface SantoDelDia {
   estado: EstadoContenido;
 }
 
+export interface ProgramacionRadio {
+  id: string;
+  dia_semana: string;
+  hora_inicio: string;
+  hora_fin: string;
+  programa: string;
+  descripcion: string;
+  imagen_url: string;
+  estado: EstadoContenido;
+}
+
 const DEFAULT_LITURGIA_DIA_CSV_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7j7j9nNJ9DP7pFXM68yMrFUOan_pmUuGscDseMbkSWo4T1srKj2VsyUYE8XWnJlRpMAuR9QvQ2KVS/pub?gid=0&single=true&output=csv";
 
@@ -84,6 +96,9 @@ const DEFAULT_LECTIO_DIVINA_CSV_URL =
 
 const DEFAULT_SANTO_DEL_DIA_CSV_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7j7j9nNJ9DP7pFXM68yMrFUOan_pmUuGscDseMbkSWo4T1srKj2VsyUYE8XWnJlRpMAuR9QvQ2KVS/pub?gid=2096480425&single=true&output=csv";
+
+const DEFAULT_PROGRAMACION_CSV_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7j7j9nNJ9DP7pFXM68yMrFUOan_pmUuGscDseMbkSWo4T1srKj2VsyUYE8XWnJlRpMAuR9QvQ2KVS/pub?gid=175716214&single=true&output=csv";
 
 /* ==========================================================================
    FUENTES CSV
@@ -105,6 +120,10 @@ const SANTO_DEL_DIA_CSV_URL =
   (import.meta.env.VITE_SANTO_DEL_DIA_CSV_URL as string | undefined) ??
   DEFAULT_SANTO_DEL_DIA_CSV_URL;
 
+const PROGRAMACION_CSV_URL =
+  (import.meta.env.VITE_PROGRAMACION_CSV_URL as string | undefined) ??
+  DEFAULT_PROGRAMACION_CSV_URL;
+
 const clean = (value: unknown) =>
   typeof value === "string" || typeof value === "number"
     ? String(value).trim()
@@ -122,16 +141,34 @@ const preserveText = (value: unknown) =>
 const normalizeHeader = (header: string) =>
   header.trim().toLowerCase().replace(/\s+/g, "_");
 
+const getGoogleDriveId = (value: string) => {
+  const driveFileMatch = value.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
+  const driveOpenMatch = value.match(/[?&]id=([^&]+)/i);
+
+  return driveFileMatch?.[1] ?? driveOpenMatch?.[1] ?? "";
+};
+
 const normalizeImageUrl = (value: unknown) => {
   const raw = clean(value);
   if (!raw) return "";
 
-  const driveFileMatch = raw.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
-  const driveOpenMatch = raw.match(/[?&]id=([^&]+)/i);
-  const driveId = driveFileMatch?.[1] ?? driveOpenMatch?.[1];
+  const driveId = getGoogleDriveId(raw);
 
   if (driveId) {
     return `https://lh3.googleusercontent.com/d/${driveId}=s800`;
+  }
+
+  return raw;
+};
+
+const normalizeAudioUrl = (value: unknown) => {
+  const raw = clean(value);
+  if (!raw) return "";
+
+  const driveId = getGoogleDriveId(raw);
+
+  if (driveId) {
+    return `https://drive.google.com/uc?export=download&id=${driveId}`;
   }
 
   return raw;
@@ -210,24 +247,29 @@ const isVisibleContent = (estado: unknown) => {
    MAPEO DE FILAS
    ========================================================================== */
 
-const normalizeLiturgia = (row: Partial<LiturgiaDia>): LiturgiaDia => ({
-  fecha: normalizeDateISO(row.fecha),
-  tiempo_liturgico: clean(row.tiempo_liturgico),
-  celebracion: clean(row.celebracion),
-  color_liturgico: clean(row.color_liturgico),
-  primera_lectura_cita: clean(row.primera_lectura_cita),
-  primera_lectura_texto: preserveText(row.primera_lectura_texto),
-  salmo_cita: clean(row.salmo_cita),
-  salmo_respuesta: preserveText(row.salmo_respuesta),
-  salmo_texto: preserveText(row.salmo_texto),
-  segunda_lectura_cita: clean(row.segunda_lectura_cita),
-  segunda_lectura_texto: preserveText(row.segunda_lectura_texto),
-  evangelio_cita: clean(row.evangelio_cita),
-  evangelio_texto: preserveText(row.evangelio_texto),
-  palabra_hoy: preserveText(row.palabra_hoy),
-  fuente: clean(row.fuente),
-  estado: clean(row.estado).toLowerCase() as EstadoContenido,
-});
+const normalizeLiturgia = (row: Partial<LiturgiaDia>): LiturgiaDia => {
+  const rawRow = row as Partial<LiturgiaDia> & { versiculo?: unknown };
+
+  return {
+    fecha: normalizeDateISO(row.fecha),
+    tiempo_liturgico: clean(row.tiempo_liturgico),
+    celebracion: clean(row.celebracion),
+    color_liturgico: clean(row.color_liturgico),
+    primera_lectura_cita: clean(row.primera_lectura_cita),
+    primera_lectura_texto: preserveText(row.primera_lectura_texto),
+    salmo_cita: clean(row.salmo_cita),
+    salmo_respuesta: preserveText(row.salmo_respuesta),
+    salmo_texto: preserveText(row.salmo_texto),
+    segunda_lectura_cita: clean(row.segunda_lectura_cita),
+    segunda_lectura_texto: preserveText(row.segunda_lectura_texto),
+    evangelio_cita: clean(row.evangelio_cita),
+    evangelio_versiculo: clean(row.evangelio_versiculo || rawRow.versiculo),
+    evangelio_texto: preserveText(row.evangelio_texto),
+    palabra_hoy: preserveText(row.palabra_hoy),
+    fuente: clean(row.fuente),
+    estado: clean(row.estado).toLowerCase() as EstadoContenido,
+  };
+};
 
 const normalizeLectio = (row: Partial<LectioDivina>): LectioDivina => ({
   fecha: normalizeDateISO(row.fecha),
@@ -236,7 +278,7 @@ const normalizeLectio = (row: Partial<LectioDivina>): LectioDivina => ({
   oracion: preserveText(row.oracion),
   compromiso: preserveText(row.compromiso),
   mensaje_final: preserveText(row.mensaje_final),
-  audio_url: clean(row.audio_url),
+  audio_url: normalizeAudioUrl(row.audio_url),
   estado: clean(row.estado).toLowerCase() as EstadoContenido,
 });
 
@@ -273,6 +315,19 @@ const normalizeSanto = (row: Partial<SantoDelDia>): SantoDelDia => {
 
   return santo;
 };
+
+const normalizeProgramacion = (
+  row: Partial<ProgramacionRadio>,
+): ProgramacionRadio => ({
+  id: clean(row.id),
+  dia_semana: clean(row.dia_semana),
+  hora_inicio: clean(row.hora_inicio),
+  hora_fin: clean(row.hora_fin),
+  programa: clean(row.programa),
+  descripcion: preserveText(row.descripcion),
+  imagen_url: normalizeImageUrl(row.imagen_url),
+  estado: clean(row.estado).toLowerCase() as EstadoContenido,
+});
 
 /* ==========================================================================
    API PUBLICA DE CONSULTA
@@ -367,6 +422,18 @@ export async function getPublishedSantosDelDia(): Promise<SantoDelDia[]> {
 
 export async function getSantoDelDia() {
   return getPublishedSantosDelDia();
+}
+
+export async function getPublishedProgramacion(): Promise<ProgramacionRadio[]> {
+  if (!PROGRAMACION_CSV_URL) return [];
+
+  const rows = await getCsvRows<Partial<ProgramacionRadio>>(
+    PROGRAMACION_CSV_URL,
+  );
+
+  return rows
+    .map(normalizeProgramacion)
+    .filter((row) => row.programa && isVisibleContent(row.estado));
 }
 
 export async function getRosarios() {

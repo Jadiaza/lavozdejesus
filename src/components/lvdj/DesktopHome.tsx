@@ -40,6 +40,8 @@ import {
   Radio as RadioIcon,
   User2,
 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { Logo } from "./Logo";
 import { RadioCard } from "./RadioCard";
 import { QuickAccess } from "./QuickAccess";
@@ -47,6 +49,15 @@ import { GospelCard } from "./GospelCard";
 import { ProgramCard } from "./ProgramCard";
 import { Footer } from "./Footer";
 import monstranceHero from "@/assets/monstrance-hero.jpg";
+import {
+  ProgramacionRadio,
+  getPublishedProgramacion,
+} from "@/services/sheetsService";
+import {
+  formatTime,
+  getTodayPrograms,
+  isProgramLive,
+} from "@/utils/programacion";
 
 const links = [
   "Inicio",
@@ -58,12 +69,57 @@ const links = [
   "Contacto",
 ];
 
-const schedule = [
-  { time: "06:00 AM", title: "Santo Rosario", live: false },
-  { time: "07:00 AM", title: "Laudes", live: false },
-  { time: "10:00 AM", title: "Santa Misa", live: true },
-  { time: "03:00 PM", title: "Hora de la Misericordia", live: false },
-  { time: "07:00 PM", title: "Adoracion Eucaristica", live: false },
+const fallbackSchedule: ProgramacionRadio[] = [
+  {
+    id: "santo-rosario",
+    dia_semana: "diario",
+    hora_inicio: "06:00",
+    hora_fin: "07:00",
+    programa: "Santo Rosario",
+    descripcion: "",
+    imagen_url: "",
+    estado: "publicado",
+  },
+  {
+    id: "laudes",
+    dia_semana: "diario",
+    hora_inicio: "07:00",
+    hora_fin: "08:00",
+    programa: "Laudes",
+    descripcion: "",
+    imagen_url: "",
+    estado: "publicado",
+  },
+  {
+    id: "santa-misa",
+    dia_semana: "diario",
+    hora_inicio: "10:00",
+    hora_fin: "11:00",
+    programa: "Santa Misa",
+    descripcion: "",
+    imagen_url: "",
+    estado: "publicado",
+  },
+  {
+    id: "misericordia",
+    dia_semana: "diario",
+    hora_inicio: "15:00",
+    hora_fin: "16:00",
+    programa: "Hora de la Misericordia",
+    descripcion: "",
+    imagen_url: "",
+    estado: "publicado",
+  },
+  {
+    id: "adoracion",
+    dia_semana: "diario",
+    hora_inicio: "19:00",
+    hora_fin: "20:00",
+    programa: "Adoracion Eucaristica",
+    descripcion: "",
+    imagen_url: "",
+    estado: "publicado",
+  },
 ];
 
 /* ==========================================================================
@@ -74,7 +130,35 @@ const schedule = [
    - 4 columnas para Proximo Programa, alineadas con Programacion de Hoy.
 */
 
-export const DesktopHome = () => (
+export const DesktopHome = () => {
+  const [programacion, setProgramacion] = useState<ProgramacionRadio[]>([]);
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    let mounted = true;
+
+    getPublishedProgramacion()
+      .then((data) => {
+        if (mounted) setProgramacion(data);
+      })
+      .catch(() => {
+        if (mounted) setProgramacion([]);
+      });
+
+    const timer = window.setInterval(() => setNow(new Date()), 60_000);
+
+    return () => {
+      mounted = false;
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  const todaySchedule = useMemo(() => {
+    const source = programacion.length ? programacion : fallbackSchedule;
+    return getTodayPrograms(source, now);
+  }, [now, programacion]);
+
+  return (
   <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
     <header className="relative z-30 border-b border-[hsl(var(--gold)/0.18)] bg-navy-deep/95">
       <div className="mx-auto flex h-24 max-w-[1760px] items-center justify-between px-8 2xl:px-12">
@@ -189,33 +273,40 @@ export const DesktopHome = () => (
           </div>
 
           <div className="space-y-3">
-            {schedule.map((item) => (
+            {todaySchedule.slice(0, 6).map((item) => {
+              const live = isProgramLive(item, now);
+
+              return (
               <div
-                key={`${item.time}-${item.title}`}
+                key={`${item.id || item.hora_inicio}-${item.programa}`}
                 className="grid grid-cols-[82px_1fr] gap-3 text-sm"
               >
-                <div className="text-foreground/72">{item.time}</div>
+                <div className="text-foreground/72">{formatTime(item.hora_inicio)}</div>
                 <div
                   className={
-                    item.live
+                    live
                       ? "font-bold text-gold"
                       : "font-medium text-foreground/88"
                   }
                 >
-                  {item.title}
+                  {item.programa}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
 
-          <button className="mt-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gold hover:text-gold-bright">
+          <Link
+            to="/programacion"
+            className="mt-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gold hover:text-gold-bright"
+          >
             Ver toda la programacion
             <ChevronRight className="h-3.5 w-3.5" />
-          </button>
+          </Link>
         </aside>
       </section>
 
-      <section className="mx-auto max-w-[1760px] px-8 py-14 2xl:px-12">
+      <section id="programacion" className="mx-auto max-w-[1760px] px-8 py-14 2xl:px-12">
         <div className="mb-5 flex items-end justify-between">
           <div>
             <div className="mb-2 text-xs font-semibold uppercase tracking-[0.3em] text-gold">
@@ -230,34 +321,39 @@ export const DesktopHome = () => (
         </div>
 
         <div className="grid gap-4 lg:grid-cols-5">
-          {schedule.map((item) => (
+          {todaySchedule.slice(0, 5).map((item) => {
+            const live = isProgramLive(item, now);
+
+            return (
             <article
-              key={`card-${item.time}-${item.title}`}
+              key={`card-${item.id || item.hora_inicio}-${item.programa}`}
               className={`rounded-2xl gold-border p-4 ${
-                item.live ? "bg-gold/10" : "bg-navy-deep/35"
+                live ? "bg-gold/10" : "bg-navy-deep/35"
               }`}
             >
               <div className="mb-3 flex items-center justify-between gap-3">
                 <span className="text-sm font-semibold text-gold">
-                  {item.time}
+                  {formatTime(item.hora_inicio)}
                 </span>
                 <button className="flex h-8 w-8 items-center justify-center rounded-full gold-border text-gold">
                   <Play className="h-3.5 w-3.5 fill-current" />
                 </button>
               </div>
-              <div className="font-semibold leading-snug">{item.title}</div>
-              {item.live && (
+              <div className="font-semibold leading-snug">{item.programa}</div>
+              {live && (
                 <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-red-500/15 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-red-300">
                   <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
                   En vivo
                 </div>
               )}
             </article>
-          ))}
+            );
+          })}
         </div>
       </section>
     </main>
 
     <Footer />
   </div>
-);
+  );
+};

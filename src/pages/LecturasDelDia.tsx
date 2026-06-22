@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Cross,
   Heart,
+  Headphones,
   Home,
   MessageCircleQuestion,
   Music2,
@@ -349,6 +350,44 @@ const ExpandableContentCard = ({
     </article>
   );
 };
+
+const ReflectionAudioCard = ({ audioUrl }: { audioUrl?: string }) => (
+  <article className="rounded-2xl border border-[#e6d8bf] bg-white p-5 text-left shadow-[0_12px_32px_-28px_rgba(8,35,71,0.45)]">
+    <div className="flex items-start gap-4">
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#082347] text-[#d4af37] shadow-inner">
+        <Headphones className="h-5 w-5" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <h2 className="text-[15px] font-extrabold uppercase tracking-[0.14em] text-[#082347]">
+          Audio
+        </h2>
+        <p className="mt-1 text-[15px] font-semibold text-[#c69222]">
+          Escuchar reflexión
+        </p>
+      </div>
+    </div>
+
+    {audioUrl ? (
+      <div className="mt-5 space-y-3">
+        <audio controls preload="none" src={audioUrl} className="w-full">
+          Tu navegador no permite reproducir este audio.
+        </audio>
+        <a
+          href={audioUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex text-sm font-extrabold text-[#c69222]"
+        >
+          Abrir audio
+        </a>
+      </div>
+    ) : (
+      <p className="mt-5 text-[16px] leading-relaxed text-[#263349]">
+        El audio de la reflexión estará disponible pronto.
+      </p>
+    )}
+  </article>
+);
 
 const DesktopSidebar = ({
   activeTab,
@@ -899,6 +938,7 @@ const LecturasDelDia = () => {
                     expanded={expandedId === "mensaje-final"}
                     onToggle={toggleExpanded}
                   />
+                  <ReflectionAudioCard audioUrl={lectio?.audio_url} />
                 </div>
               )}
             </div>
