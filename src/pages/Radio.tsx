@@ -182,8 +182,8 @@ const Radio = () => {
   const coverImage = player.artworkUrl || player.playerImageUrl || monstranceImage;
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-navy-deep text-foreground">
-      <div className="fixed inset-0">
+    <div className="relative min-h-screen w-full max-w-full overflow-x-clip bg-navy-deep text-foreground">
+      <div className="fixed inset-0 overflow-hidden">
         <img
           src={coverImage}
           alt=""
@@ -201,8 +201,8 @@ const Radio = () => {
       </div>
 
       <aside
-        className={`fixed left-0 top-0 z-40 h-full w-[260px] border-r border-gold/15 bg-navy-deep/88 p-5 shadow-deep backdrop-blur transition-transform duration-300 xl:translate-x-0 ${
-          menuOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed left-0 top-0 z-40 h-full w-[260px] border-r border-gold/15 bg-navy-deep/88 p-5 shadow-deep backdrop-blur transition-transform duration-300 xl:block xl:translate-x-0 ${
+          menuOpen ? "block translate-x-0" : "hidden -translate-x-full"
         }`}
       >
         <Logo size="md" className="mb-8" />
@@ -226,7 +226,7 @@ const Radio = () => {
         </nav>
       </aside>
 
-      <main className="relative z-10 flex min-h-screen flex-col items-center px-3 pb-28 pt-5 sm:px-4 xl:ml-[260px] xl:items-stretch xl:pb-0">
+      <main className="relative z-10 flex min-h-screen w-full max-w-full flex-col items-center overflow-x-clip px-3 pb-28 pt-5 sm:px-4 xl:ml-[260px] xl:items-stretch xl:pb-0">
         <header className="mx-auto flex w-full max-w-[430px] items-center justify-end xl:max-w-[1280px]">
           <button
             type="button"
@@ -308,7 +308,7 @@ const Radio = () => {
                 onChange={(event) =>
                   player.setVolume(Number(event.target.value))
                 }
-                className="radio-volume-slider w-full"
+                className="radio-volume-slider min-w-0 w-full"
                 aria-label="Volumen"
               />
               <span className="w-10 text-right text-sm font-extrabold text-white drop-shadow sm:w-12 sm:text-lg">
