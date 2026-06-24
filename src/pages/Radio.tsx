@@ -226,8 +226,8 @@ const Radio = () => {
         </nav>
       </aside>
 
-      <main className="relative z-10 flex min-h-screen w-full max-w-full flex-col items-center overflow-x-clip px-3 pb-28 pt-5 sm:px-4 xl:ml-[260px] xl:items-stretch xl:pb-0">
-        <header className="mx-auto flex w-full max-w-[430px] items-center justify-end xl:max-w-[1280px]">
+      <main className="relative z-10 flex min-h-screen w-full max-w-full flex-col items-center overflow-x-clip px-0 pb-28 pt-5 xl:ml-[260px] xl:items-stretch xl:px-4 xl:pb-0">
+        <header className="mx-auto flex w-[min(calc(100vw-1.5rem),390px)] max-w-none items-center justify-end xl:w-full xl:max-w-[1280px]">
           <button
             type="button"
             onClick={() => setMenuOpen((current) => !current)}
@@ -238,7 +238,7 @@ const Radio = () => {
           </button>
         </header>
 
-        <section className="mx-auto grid w-full max-w-[430px] flex-1 items-center gap-6 py-3 xl:max-w-[1280px] xl:grid-cols-[minmax(0,1fr)_320px] xl:py-8">
+        <section className="mx-auto grid w-[min(calc(100vw-1.5rem),390px)] max-w-none flex-1 items-center gap-6 py-3 xl:w-full xl:max-w-[1280px] xl:grid-cols-[minmax(0,1fr)_320px] xl:py-8">
           <div className="relative isolate flex min-h-[calc(100svh-8.5rem)] w-full flex-col items-center justify-start overflow-hidden rounded-[2rem] pt-0 text-center xl:min-h-[620px] xl:justify-center xl:pt-0">
             {visualizerActive && (
               <div

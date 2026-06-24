@@ -104,6 +104,13 @@
 }
 
 @layer base {
+  html,
+  body,
+  #root {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
   * {
     @apply border-border;
   }
