@@ -104,11 +104,17 @@
 }
 
 @layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
   html,
   body,
   #root {
     max-width: 100%;
-    overflow-x: clip;
+    overflow-x: hidden;
   }
 
   * {

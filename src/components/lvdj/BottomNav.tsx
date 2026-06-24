@@ -31,8 +31,8 @@ export const BottomNav = ({
 }: {
   activeLabel?: string;
 }) => (
-  <nav className="fixed bottom-0 inset-x-0 z-50 xl:hidden">
-    <div className="mx-auto max-w-md">
+  <nav className="fixed inset-x-0 bottom-0 z-50 w-full max-w-full overflow-x-hidden xl:hidden">
+    <div className="mx-auto w-full max-w-[430px]">
       <div className="glass border-t border-[hsl(var(--gold)/0.2)] px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         <div className="flex items-end justify-around">
           {items.map((item) => {
@@ -63,7 +63,7 @@ export const BottomNav = ({
                   {item.label}
                 </span>
                 {active && (
-                  <span className="-mt-0.5 h-0.5 w-5 rounded-full bg-gradient-gold" />
+                  <span className="h-0.5 w-5 rounded-full bg-gradient-gold" />
                 )}
               </Link>
             );

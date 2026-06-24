@@ -182,7 +182,7 @@ const Radio = () => {
   const coverImage = player.artworkUrl || player.playerImageUrl || monstranceImage;
 
   return (
-    <div className="relative min-h-screen w-full max-w-full overflow-x-clip bg-navy-deep text-foreground">
+    <div className="relative min-h-[100dvh] w-full max-w-full overflow-x-hidden bg-navy-deep text-foreground">
       <div className="fixed inset-0 overflow-hidden">
         <img
           src={coverImage}
@@ -226,8 +226,8 @@ const Radio = () => {
         </nav>
       </aside>
 
-      <main className="relative z-10 flex min-h-screen w-full max-w-full flex-col items-center overflow-x-clip px-0 pb-28 pt-5 xl:ml-[260px] xl:items-stretch xl:px-4 xl:pb-0">
-        <header className="mx-auto flex w-[min(calc(100vw-1.5rem),390px)] max-w-none items-center justify-end xl:w-full xl:max-w-[1280px]">
+      <main className="relative z-10 flex min-h-[100dvh] w-full max-w-full flex-col items-center overflow-x-hidden px-4 pb-28 pt-5 xl:ml-[260px] xl:items-stretch xl:pb-0">
+        <header className="mx-auto flex w-full max-w-[430px] items-center justify-end xl:max-w-[1280px]">
           <button
             type="button"
             onClick={() => setMenuOpen((current) => !current)}
@@ -238,8 +238,8 @@ const Radio = () => {
           </button>
         </header>
 
-        <section className="mx-auto grid w-[min(calc(100vw-1.5rem),390px)] max-w-none flex-1 items-center gap-6 py-3 xl:w-full xl:max-w-[1280px] xl:grid-cols-[minmax(0,1fr)_320px] xl:py-8">
-          <div className="relative isolate flex min-h-[calc(100svh-8.5rem)] w-full flex-col items-center justify-start overflow-hidden rounded-[2rem] pt-0 text-center xl:min-h-[620px] xl:justify-center xl:pt-0">
+        <section className="mx-auto grid w-full max-w-[430px] flex-1 items-center gap-6 py-3 xl:max-w-[1280px] xl:grid-cols-[minmax(0,1fr)_320px] xl:py-8">
+          <div className="relative isolate flex min-h-[calc(100dvh-8.5rem)] w-full flex-col items-center justify-start overflow-hidden rounded-[2rem] pt-0 text-center xl:min-h-[620px] xl:justify-center xl:pt-0">
             {visualizerActive && (
               <div
                 className={`radio-visualizer-bg ${
@@ -250,7 +250,7 @@ const Radio = () => {
             )}
 
             <div
-              className={`relative mb-4 -mt-2 flex h-[19rem] w-[19rem] items-center justify-center rounded-full sm:h-80 sm:w-80 xl:h-[360px] xl:w-[360px] ${
+              className={`relative mb-4 flex h-[19rem] w-[19rem] items-center justify-center rounded-full sm:h-80 sm:w-80 xl:h-[360px] xl:w-[360px] ${
                 player.isPlaying ? "radio-cover-wave" : ""
               }`}
               style={
@@ -285,7 +285,7 @@ const Radio = () => {
               {artistName}
             </p>
 
-            <div className="relative mt-5 flex w-[min(100%,20rem)] items-center gap-2 px-1 sm:w-full sm:max-w-xl sm:gap-3">
+            <div className="relative mt-5 flex w-full max-w-[20rem] items-center gap-2 px-1 sm:max-w-xl sm:gap-3">
               <button
                 type="button"
                 onClick={() => player.setVolume(0)}
@@ -324,7 +324,7 @@ const Radio = () => {
               </button>
             </div>
 
-            <div className="relative mt-7 grid w-[min(100%,20rem)] grid-cols-[5rem_1fr_5rem] items-center justify-items-center gap-0 sm:w-full sm:max-w-md sm:grid-cols-[6rem_1fr_6rem]">
+            <div className="relative mt-7 grid w-full max-w-[20rem] grid-cols-[5rem_1fr_5rem] items-center justify-items-center gap-0 sm:max-w-md sm:grid-cols-[6rem_1fr_6rem]">
               <div className="flex w-full justify-center">
                 <button
                   type="button"
@@ -386,7 +386,7 @@ const Radio = () => {
             </div>
           </div>
 
-          <aside className="-mt-4 w-full scroll-mt-5 space-y-4 pb-28 sm:-mt-2 xl:mt-0 xl:pb-0">
+          <aside className="w-full scroll-mt-5 space-y-4 pb-28 xl:pb-0">
             <button
               type="button"
               onClick={() => navigate("/programacion")}
