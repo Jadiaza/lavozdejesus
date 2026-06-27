@@ -76,6 +76,8 @@ const sideLinks = [
   { label: "Contacto", to: "/contacto", icon: Mail },
 ];
 
+const custodyEqualizerBars = Array.from({ length: 60 }, (_, index) => index);
+
 const getDriveImageId = (url: string) => {
   const fileMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
   const idMatch = url.match(/[?&]id=([^&]+)/i);
@@ -269,13 +271,31 @@ const Radio = () => {
             >
               <div
                 className={`radio-cover-orbit ${
-                  player.isPlaying ? "radio-cover-orbit--playing" : ""
+                  player.isPlaying && player.volume > 0
+                    ? "radio-cover-orbit--playing"
+                    : ""
                 }`}
-              />
+              >
+                {custodyEqualizerBars.map((bar) => (
+                  <span
+                    key={bar}
+                    className="radio-cover-eq-bar"
+                    style={
+                      {
+                        "--bar-index": bar,
+                        "--bar-distance": bar % 2 === 0 ? "-8.92rem" : "-8.58rem",
+                        "--bar-height": bar % 2 === 0 ? "21px" : "14px",
+                        "--bar-gain":
+                          bar % 3 === 0 ? 0.95 : bar % 3 === 1 ? 0.58 : 0.76,
+                      } as CSSProperties
+                    }
+                  />
+                ))}
+              </div>
               <img
                 src={coverImage}
                 alt={player.artworkUrl ? `Caratula de ${songTitle}` : ""}
-                className="relative h-[15.9rem] w-[15.9rem] rounded-full border-[3px] border-slate-100/55 object-cover shadow-deep sm:h-[13.5rem] sm:w-[13.5rem] xl:h-[252px] xl:w-[252px]"
+                className="relative h-[15.9rem] w-[15.9rem] rounded-full object-cover shadow-deep sm:h-[13.5rem] sm:w-[13.5rem] xl:h-[252px] xl:w-[252px]"
               />
             </div>
 

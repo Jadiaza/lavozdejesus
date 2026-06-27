@@ -411,21 +411,88 @@
 
   .radio-cover-orbit {
     position: absolute;
-    inset: 0.55rem;
-    border-radius: 50%;
+    inset: 1.28rem;
+    z-index: 0;
+    aspect-ratio: 1;
+    border-radius: 9999px;
     pointer-events: none;
-    border: 11px solid rgb(235 239 244 / 0.34);
+    border: 0;
     background: transparent;
-    transform: scale(calc(1 + (var(--radio-wave-energy, 0) * 0.012)));
+    box-shadow:
+      0 0 8px hsl(var(--gold) / 0.2),
+      inset 0 0 6px rgb(255 255 255 / 0.1);
+    transform: scale(1);
     transition:
-      border-radius 220ms ease-out,
       transform 220ms ease-out,
-      opacity 220ms ease-out;
+      opacity 220ms ease-out,
+      box-shadow 220ms ease-out,
+      border-color 220ms ease-out;
+    will-change: transform, opacity, box-shadow;
+  }
+
+  .radio-cover-eq-bar {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 1;
+    width: 2.2px;
+    height: var(--bar-height, 16px);
+    margin-left: -1.1px;
+    margin-top: calc(var(--bar-height, 16px) * -0.5);
+    border-radius: 9999px;
+    background: linear-gradient(
+      180deg,
+      hsl(var(--gold-bright) / 0.96),
+      hsl(var(--gold) / 0.32)
+    );
+    box-shadow: 0 0 6px hsl(var(--gold) / 0.28);
+    opacity: 0;
+    transform:
+      rotate(calc(var(--bar-index) * 6deg))
+      translateY(var(--bar-distance, -8.78rem))
+      scaleY(0.42);
+    transform-origin: center bottom;
   }
 
   .radio-cover-orbit--playing {
-    animation: radio-cover-signal-pulse 1.35s ease-in-out infinite;
+    animation: none;
   }
+
+  .radio-cover-orbit::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: inherit;
+    border: 5px solid hsl(var(--gold) / 0.86);
+    box-shadow:
+      0 0 12px hsl(var(--gold) / 0.32),
+      0 0 28px hsl(var(--gold) / 0.18),
+      inset 0 0 8px rgb(255 255 255 / 0.16);
+  }
+
+  .radio-cover-orbit--playing::after {
+    animation: radio-cover-golden-ring 2.4s ease-in-out infinite;
+  }
+
+  .radio-cover-orbit--playing .radio-cover-eq-bar {
+    animation: radio-cover-eq 1.05s ease-in-out infinite alternate;
+    animation-delay: calc(var(--bar-index) * -0.042s);
+  }
+
+    @media (max-width: 640px) {
+    .radio-cover-eq-bar {
+      width: 2px;
+      margin-left: -1px;
+      height: calc(var(--bar-height, 16px) * 0.9);
+      margin-top: calc(var(--bar-height, 16px) * -0.45);
+      transform:
+        rotate(calc(var(--bar-index) * 6deg))
+        translateY(calc(var(--bar-distance, -8.78rem) + 0.22rem))
+        scaleY(0.42);
+    }
+  }
+
 
   .radio-visualizer-bg {
     position: absolute;
@@ -568,53 +635,65 @@
   100% { box-shadow: 0 0 0 0 hsl(0 80% 55% / 0); }
 }
 
-@keyframes radio-cover-orbit {
-  to {
-    transform: rotate(360deg);
+@keyframes radio-cover-golden-ring {
+  0%, 100% {
+    opacity: calc(0.88 + (var(--radio-wave-energy, 0) * 0.08));
+    border-color: hsl(var(--gold) / 0.82);
+    box-shadow:
+      0 0 12px hsl(var(--gold) / 0.26),
+      0 0 26px hsl(var(--gold) / 0.14),
+      inset 0 0 8px rgb(255 255 255 / 0.14);
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: calc(0.96 + (var(--radio-wave-energy, 0) * 0.04));
+    border-color: hsl(var(--gold-bright) / 0.92);
+    box-shadow:
+      0 0 calc(16px + (var(--radio-wave-energy, 0) * 8px)) hsl(var(--gold) / 0.34),
+      0 0 calc(34px + (var(--radio-wave-energy, 0) * 12px)) hsl(var(--gold) / 0.18),
+      inset 0 0 10px rgb(255 255 255 / 0.18);
+    transform: scale(calc(1.002 + (var(--radio-wave-energy, 0) * 0.004)));
   }
 }
 
-@keyframes radio-cover-signal-pulse {
+@keyframes radio-cover-eq {
   0%, 100% {
-    opacity: calc(0.52 + (var(--radio-wave-energy, 0) * 0.36));
-    border-radius: 50%;
-    transform: scale(calc(1 + (var(--radio-wave-energy, 0) * 0.012)));
+    opacity: calc(0.34 + (var(--radio-wave-energy, 0) * 0.2));
+    transform:
+      rotate(calc(var(--bar-index) * 6deg))
+      translateY(var(--bar-distance, -8.78rem))
+      scaleY(calc(0.46 + (var(--radio-wave-energy, 0) * var(--bar-gain, 0.7) * 0.42)));
   }
 
-  12% {
-    opacity: calc(0.62 + (var(--radio-wave-energy, 0) * 0.34));
-    border-radius: calc(50% - (var(--radio-wave-energy, 0) * 4%));
-    transform: scale(calc(1 + (var(--radio-wave-energy, 0) * 0.014)));
+  50% {
+    opacity: calc(0.64 + (var(--radio-wave-energy, 0) * 0.28));
+    transform:
+      rotate(calc(var(--bar-index) * 6deg))
+      translateY(var(--bar-distance, -8.78rem))
+      scaleY(calc(0.92 + (var(--radio-wave-energy, 0) * var(--bar-gain, 0.7) * 0.72)));
+    box-shadow: 0 0 9px hsl(var(--gold-bright) / 0.4);
   }
+}
 
-  24% {
-    opacity: calc(0.5 + (var(--radio-wave-energy, 0) * 0.28));
-    border-radius: calc(50% - (var(--radio-wave-energy, 0) * 2%));
-    transform: scale(calc(1 + (var(--radio-wave-energy, 0) * 0.006)));
-  }
+@media (max-width: 640px) {
+  @keyframes radio-cover-eq {
+    0%, 100% {
+      opacity: calc(0.34 + (var(--radio-wave-energy, 0) * 0.2));
+      transform:
+        rotate(calc(var(--bar-index) * 6deg))
+        translateY(calc(var(--bar-distance, -8.78rem) + 0.22rem))
+        scaleY(calc(0.46 + (var(--radio-wave-energy, 0) * var(--bar-gain, 0.7) * 0.42)));
+    }
 
-  39% {
-    opacity: calc(0.66 + (var(--radio-wave-energy, 0) * 0.34));
-    border-radius: calc(50% - (var(--radio-wave-energy, 0) * 7%));
-    transform: scale(calc(1 + (var(--radio-wave-energy, 0) * 0.02)));
-  }
-
-  58% {
-    opacity: calc(0.54 + (var(--radio-wave-energy, 0) * 0.28));
-    border-radius: calc(50% - (var(--radio-wave-energy, 0) * 3%));
-    transform: scale(calc(1 + (var(--radio-wave-energy, 0) * 0.008)));
-  }
-
-  73% {
-    opacity: calc(0.6 + (var(--radio-wave-energy, 0) * 0.34));
-    border-radius: calc(50% - (var(--radio-wave-energy, 0) * 5%));
-    transform: scale(calc(1 + (var(--radio-wave-energy, 0) * 0.016)));
-  }
-
-  88% {
-    opacity: calc(0.5 + (var(--radio-wave-energy, 0) * 0.24));
-    border-radius: calc(50% - (var(--radio-wave-energy, 0) * 1.5%));
-    transform: scale(calc(1 + (var(--radio-wave-energy, 0) * 0.004)));
+    50% {
+      opacity: calc(0.64 + (var(--radio-wave-energy, 0) * 0.28));
+      transform:
+        rotate(calc(var(--bar-index) * 6deg))
+        translateY(calc(var(--bar-distance, -8.78rem) + 0.22rem))
+        scaleY(calc(0.92 + (var(--radio-wave-energy, 0) * var(--bar-gain, 0.7) * 0.72)));
+      box-shadow: 0 0 9px hsl(var(--gold-bright) / 0.4);
+    }
   }
 }
 
