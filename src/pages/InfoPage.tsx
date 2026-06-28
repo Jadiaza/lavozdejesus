@@ -8,7 +8,7 @@ import {
   Heart,
   Mail,
   Mic,
-  Podcast,
+  Podcast as PodcastIcon,
   Quote,
   ShieldCheck,
   Sparkles,
@@ -199,6 +199,30 @@ export const Formacion = () => (
   />
 );
 
+export const Biblia = () => (
+  <InfoPage
+    title="Biblia"
+    eyebrow="Palabra de Dios"
+    description="Un espacio para acercarse a la Sagrada Escritura con lectura, meditacion y recursos de formacion biblica."
+    icon={<BookOpen className="h-8 w-8" />}
+    sections={[
+      {
+        title: "Lectura orante",
+        body: "Recursos para leer la Biblia con calma, escuchar a Dios y llevar su Palabra a la vida cotidiana.",
+      },
+      {
+        title: "Evangelio del dia",
+        body: "Acceso a las lecturas diarias y a la meditacion que acompana el camino espiritual de la comunidad.",
+      },
+      {
+        title: "Formacion biblica",
+        body: "Contenido progresivo para comprender mejor los libros, personajes y mensajes centrales de la Escritura.",
+      },
+    ]}
+    cta={{ label: "Leer evangelio", to: "/lecturas-del-dia" }}
+  />
+);
+
 export const Testimonios = () => (
   <InfoPage
     title="Testimonios"
@@ -228,7 +252,7 @@ export const Podcast = () => (
     title="Podcast"
     eyebrow="Escucha y medita"
     description="Contenido de audio para acompanarte en el camino: reflexiones, predicaciones, entrevistas y programas especiales."
-    icon={<Podcast className="h-8 w-8" />}
+    icon={<PodcastIcon className="h-8 w-8" />}
     sections={[
       {
         title: "Reflexiones",
@@ -366,4 +390,3 @@ export const TerminosCondiciones = () => (
     cta={{ label: "Volver al inicio", to: "/" }}
   />
 );
-

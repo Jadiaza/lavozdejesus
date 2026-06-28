@@ -19,12 +19,14 @@ interface QuickAccessItem {
 
 const items: QuickAccessItem[] = [
   {
-    image: "/icons/custodia.png",
-    label: "Capilla\nVirtual",
+    image: "/icons/evangelio.png",
+    label: "Evangelio",
+    to: "/lecturas-del-dia",
   },
   {
     image: "/icons/rosario.png",
     label: "Rosario",
+    to: "/devociones",
   },
   {
     image: "/icons/podcast.png",
@@ -34,14 +36,12 @@ const items: QuickAccessItem[] = [
   {
     image: "/icons/peticiones.png",
     label: "Peticiones",
-  },
-  {
-    image: "/icons/comunidad.png",
-    label: "Comunidad",
+    to: "/contacto",
   },
   {
     image: "/icons/biblia.png",
     label: "Biblia",
+    to: "/biblia",
   },
   {
     image: "/icons/programa.png",
@@ -51,12 +51,18 @@ const items: QuickAccessItem[] = [
   {
     image: "/icons/donar.png",
     label: "Donar",
+    to: "/donar",
+  },
+  {
+    image: "/icons/custodia.png",
+    label: "Capilla\nVirtual",
+    to: "/radio",
   },
 ];
 
 const getVisibleItems = (compact: boolean) =>
   compact
-    ? [items[0], items[1], items[2], items[3], items[4], items[6]]
+    ? [items[0], items[1], items[4], items[2], items[3], items[5]]
     : items;
 
 export const QuickAccess = ({ compact = false }: { compact?: boolean }) => (
@@ -72,19 +78,19 @@ export const QuickAccess = ({ compact = false }: { compact?: boolean }) => (
     >
       {getVisibleItems(compact).map((item) => {
         const className =
-          "group relative aspect-square rounded-2xl glass gold-border flex flex-col items-center justify-center gap-2.5 p-1.5 hover:bg-[hsl(var(--gold)/0.08)] active:scale-95 transition";
+          "group relative flex aspect-square cursor-pointer flex-col items-center justify-center gap-2.5 rounded-2xl glass gold-border p-1.5 transition hover:bg-[hsl(var(--gold)/0.08)] active:scale-95";
         const content = (
           <>
-            <span className="absolute inset-0 rounded-2xl bg-gradient-radial-gold opacity-0 transition group-hover:opacity-60" />
+            <span className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-radial-gold opacity-0 transition group-hover:opacity-60" />
 
             <img
               src={item.image}
               alt={item.label}
-              className="relative h-11 w-11 object-contain"
+              className="pointer-events-none relative h-11 w-11 object-contain"
             />
 
             <span
-              className={`relative whitespace-pre-line text-center text-[10px] font-medium leading-tight text-foreground/85 ${
+              className={`pointer-events-none relative whitespace-pre-line text-center text-[10px] font-medium leading-tight text-foreground/85 ${
                 item.label === "Programacion" ? "-mt-1 text-[9.5px]" : ""
               }`}
             >

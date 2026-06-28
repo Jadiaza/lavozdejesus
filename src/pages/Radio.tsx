@@ -283,7 +283,7 @@ const Radio = () => {
                     style={
                       {
                         "--bar-index": bar,
-                        "--bar-distance": bar % 2 === 0 ? "-8.92rem" : "-8.58rem",
+                        "--bar-distance": bar % 2 === 0 ? "-8.68rem" : "-8.42rem",
                         "--bar-height": bar % 2 === 0 ? "21px" : "14px",
                         "--bar-gain":
                           bar % 3 === 0 ? 0.95 : bar % 3 === 1 ? 0.58 : 0.76,
@@ -292,11 +292,13 @@ const Radio = () => {
                   />
                 ))}
               </div>
-              <img
-                src={coverImage}
-                alt={player.artworkUrl ? `Caratula de ${songTitle}` : ""}
-                className="relative h-[15.9rem] w-[15.9rem] rounded-full object-cover shadow-deep sm:h-[13.5rem] sm:w-[13.5rem] xl:h-[252px] xl:w-[252px]"
-              />
+              <div className="relative flex h-[15.2rem] w-[15.2rem] items-center justify-center overflow-hidden rounded-full bg-black/28 p-2 shadow-deep ring-1 ring-white/10 sm:h-[13rem] sm:w-[13rem] xl:h-[242px] xl:w-[242px]">
+                <img
+                  src={coverImage}
+                  alt={player.artworkUrl ? `Caratula de ${songTitle}` : ""}
+                  className="h-full w-full rounded-full object-contain"
+                />
+              </div>
             </div>
 
             <h1

@@ -60,15 +60,15 @@ export const MobileHome = () => {
             <Logo size="lg" />
           </div>
 
-          <div className="absolute inset-0 bg-gradient-radial-gold opacity-55 mix-blend-screen" />
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-background" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-radial-gold opacity-55 mix-blend-screen" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-background" />
         </section>
 
         <section className="relative -mt-6 px-4 z-10">
           <RadioCard />
         </section>
 
-        <section className="px-4 mt-5">
+        <section className="relative z-20 px-4 mt-5">
           <QuickAccess compact />
         </section>
 

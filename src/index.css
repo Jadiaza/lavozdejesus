@@ -411,7 +411,7 @@
 
   .radio-cover-orbit {
     position: absolute;
-    inset: 1.28rem;
+    inset: 1.42rem;
     z-index: 0;
     aspect-ratio: 1;
     border-radius: 9999px;
@@ -419,8 +419,8 @@
     border: 0;
     background: transparent;
     box-shadow:
-      0 0 8px hsl(var(--gold) / 0.2),
-      inset 0 0 6px rgb(255 255 255 / 0.1);
+      0 0 6px hsl(var(--gold) / 0.14),
+      inset 0 0 5px rgb(255 255 255 / 0.08);
     transform: scale(1);
     transition:
       transform 220ms ease-out,
@@ -442,10 +442,10 @@
     border-radius: 9999px;
     background: linear-gradient(
       180deg,
-      hsl(var(--gold-bright) / 0.96),
-      hsl(var(--gold) / 0.32)
+      hsl(var(--gold-bright) / 0.84),
+      hsl(var(--gold) / 0.18)
     );
-    box-shadow: 0 0 6px hsl(var(--gold) / 0.28);
+    box-shadow: none;
     opacity: 0;
     transform:
       rotate(calc(var(--bar-index) * 6deg))
@@ -464,10 +464,10 @@
     inset: 0;
     z-index: 2;
     border-radius: inherit;
-    border: 5px solid hsl(var(--gold) / 0.86);
+    border: 5px solid hsl(var(--gold) / 0.78);
     box-shadow:
-      0 0 12px hsl(var(--gold) / 0.32),
-      0 0 28px hsl(var(--gold) / 0.18),
+      0 0 10px hsl(var(--gold) / 0.22),
+      0 0 20px hsl(var(--gold) / 0.1),
       inset 0 0 8px rgb(255 255 255 / 0.16);
   }
 
@@ -659,7 +659,7 @@
 
 @keyframes radio-cover-eq {
   0%, 100% {
-    opacity: calc(0.28 + (var(--radio-wave-energy, 0) * 0.3));
+    opacity: calc(0.22 + (var(--radio-wave-energy, 0) * 0.22));
     transform:
       rotate(calc(var(--bar-index) * 6deg))
       translateY(var(--bar-distance, -8.78rem))
@@ -667,19 +667,19 @@
   }
 
   50% {
-    opacity: calc(0.52 + (var(--radio-wave-energy, 0) * 0.44));
+    opacity: calc(0.42 + (var(--radio-wave-energy, 0) * 0.28));
     transform:
       rotate(calc(var(--bar-index) * 6deg))
       translateY(var(--bar-distance, -8.78rem))
       scaleY(calc(0.66 + (var(--radio-wave-energy, 0) * var(--bar-gain, 0.7) * 1.05)));
-    box-shadow: 0 0 calc(5px + (var(--radio-wave-energy, 0) * 8px)) hsl(var(--gold-bright) / 0.42);
+    box-shadow: 0 0 3px hsl(var(--gold-bright) / 0.18);
   }
 }
 
 @media (max-width: 640px) {
   @keyframes radio-cover-eq {
     0%, 100% {
-      opacity: calc(0.28 + (var(--radio-wave-energy, 0) * 0.3));
+      opacity: calc(0.22 + (var(--radio-wave-energy, 0) * 0.22));
       transform:
         rotate(calc(var(--bar-index) * 6deg))
         translateY(calc(var(--bar-distance, -8.78rem) + 0.22rem))
@@ -687,12 +687,12 @@
     }
 
     50% {
-      opacity: calc(0.52 + (var(--radio-wave-energy, 0) * 0.44));
+      opacity: calc(0.42 + (var(--radio-wave-energy, 0) * 0.28));
       transform:
         rotate(calc(var(--bar-index) * 6deg))
         translateY(calc(var(--bar-distance, -8.78rem) + 0.22rem))
         scaleY(calc(0.66 + (var(--radio-wave-energy, 0) * var(--bar-gain, 0.7) * 1.05)));
-      box-shadow: 0 0 calc(5px + (var(--radio-wave-energy, 0) * 8px)) hsl(var(--gold-bright) / 0.42);
+      box-shadow: 0 0 3px hsl(var(--gold-bright) / 0.18);
     }
   }
 }

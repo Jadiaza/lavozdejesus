@@ -12,6 +12,7 @@ import Radio from "./pages/Radio.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import {
   AcercaDe,
+  Biblia,
   Devociones,
   Donar,
   Eventos,
@@ -37,7 +38,10 @@ const App = () => (
             <Route path="/radio" element={<Radio />} />
             <Route path="/contacto" element={<Contacto />} />
             <Route path="/lecturas-del-dia" element={<LecturasDelDia />} />
+            <Route path="/lectura-del-dia" element={<LecturasDelDia />} />
             <Route path="/programacion" element={<Programacion />} />
+            <Route path="/biblia" element={<Biblia />} />
+            <Route path="/Biblia" element={<Biblia />} />
             <Route path="/devociones" element={<Devociones />} />
             <Route path="/liturgia" element={<Liturgia />} />
             <Route path="/formacion" element={<Formacion />} />
