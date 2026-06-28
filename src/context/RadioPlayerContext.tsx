@@ -182,15 +182,21 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
 
       const averageBand = (from: number, to: number, divisor: number) => {
         let sum = 0;
+        let peak = 0;
         let count = 0;
         const end = Math.min(to, analysis.data.length);
 
         for (let index = from; index < end; index += 1) {
-          sum += analysis.data[index];
+          const value = analysis.data[index];
+          sum += value;
+          peak = Math.max(peak, value);
           count += 1;
         }
 
-        return Math.min(1, Math.max(0, sum / Math.max(1, count) / divisor));
+        const average = sum / Math.max(1, count);
+        const weighted = average * 0.68 + peak * 0.32;
+
+        return Math.min(1, Math.max(0, weighted / divisor));
       };
 
       const readLevel = () => {
@@ -215,19 +221,19 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
         }
 
         const rawBands = {
-          bass: averageBand(2, 10, 145),
-          mid: averageBand(10, 42, 132),
-          treble: averageBand(42, 112, 118),
+          bass: averageBand(2, 12, 116),
+          mid: averageBand(12, 52, 104),
+          treble: averageBand(52, 124, 92),
         };
         const nextBands = {
-          bass: bandsRef.current.bass * 0.64 + rawBands.bass * 0.36,
-          mid: bandsRef.current.mid * 0.68 + rawBands.mid * 0.32,
-          treble: bandsRef.current.treble * 0.72 + rawBands.treble * 0.28,
+          bass: bandsRef.current.bass * 0.48 + rawBands.bass * 0.52,
+          mid: bandsRef.current.mid * 0.56 + rawBands.mid * 0.44,
+          treble: bandsRef.current.treble * 0.62 + rawBands.treble * 0.38,
         };
         const shouldUpdateBands =
-          Math.abs(nextBands.bass - bandsRef.current.bass) > 0.012 ||
-          Math.abs(nextBands.mid - bandsRef.current.mid) > 0.012 ||
-          Math.abs(nextBands.treble - bandsRef.current.treble) > 0.012;
+          Math.abs(nextBands.bass - bandsRef.current.bass) > 0.005 ||
+          Math.abs(nextBands.mid - bandsRef.current.mid) > 0.005 ||
+          Math.abs(nextBands.treble - bandsRef.current.treble) > 0.005;
 
         if (shouldUpdateBands) {
           bandsRef.current = nextBands;

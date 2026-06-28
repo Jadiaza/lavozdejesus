@@ -81,16 +81,19 @@ const custodyEqualizerBars = Array.from({ length: 96 }, (_, index) => index);
 const getRayAudioLevel = (
   index: number,
   bands: { bass: number; mid: number; treble: number },
+  volume: number,
 ) => {
-  if (index % 12 === 0) return bands.bass;
-  if (index % 4 === 0) return bands.mid;
-  return bands.treble;
+  const volumeFactor = Math.min(1, Math.max(0, 0.38 + volume * 0.62));
+
+  if (index % 12 === 0) return (0.24 + bands.bass * 0.76) * volumeFactor;
+  if (index % 4 === 0) return (0.2 + bands.mid * 0.8) * volumeFactor * 0.95;
+  return (0.08 + bands.treble * 0.92) * volumeFactor * 0.55;
 };
 
 const getRayGain = (index: number) => {
   if (index % 12 === 0) return 1.18;
-  if (index % 4 === 0) return 0.86;
-  return 0.62;
+  if (index % 4 === 0) return 0.96;
+  return 0.46;
 };
 
 const getDriveImageId = (url: string) => {
@@ -313,7 +316,11 @@ const Radio = () => {
                               ? "22px"
                               : "15px",
                         "--bar-gain": getRayGain(bar),
-                        "--bar-level": getRayAudioLevel(bar, player.audioBands),
+                        "--bar-level": getRayAudioLevel(
+                          bar,
+                          player.audioBands,
+                          player.volume,
+                        ),
                       } as CSSProperties
                     }
                   />

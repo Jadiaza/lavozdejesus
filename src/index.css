@@ -490,8 +490,8 @@
   }
 
   .radio-cover-orbit--playing .radio-cover-eq-bar {
-    animation: radio-cover-eq 0.82s ease-in-out infinite alternate;
-    animation-delay: calc(var(--bar-index) * -0.036s);
+    animation: radio-cover-eq 0.46s linear infinite alternate;
+    animation-delay: calc(var(--bar-index) * -0.018s);
   }
 
     @media (max-width: 640px) {
@@ -673,40 +673,40 @@
 
 @keyframes radio-cover-eq {
   0%, 100% {
-    opacity: calc(0.2 + (var(--bar-level, 0) * 0.24));
+    opacity: calc(0.18 + (var(--bar-level, 0) * 0.44));
     transform:
       rotate(calc(var(--bar-index) * 3.75deg))
       translateY(var(--bar-distance, -8.78rem))
-      scaleY(calc(0.34 + (var(--bar-level, 0) * var(--bar-gain, 0.7) * 0.62)));
+      scaleY(calc(0.22 + (var(--bar-level, 0) * var(--bar-gain, 0.7) * 0.64)));
   }
 
   50% {
-    opacity: calc(0.38 + (var(--bar-level, 0) * 0.34));
+    opacity: calc(0.26 + (var(--bar-level, 0) * 0.54));
     transform:
       rotate(calc(var(--bar-index) * 3.75deg))
       translateY(var(--bar-distance, -8.78rem))
-      scaleY(calc(0.62 + (var(--bar-level, 0) * var(--bar-gain, 0.7) * 1.12)));
-    box-shadow: 0 0 3px hsl(var(--gold-bright) / 0.18);
+      scaleY(calc(0.32 + (var(--bar-level, 0) * var(--bar-gain, 0.7) * 1.02)));
+    box-shadow: 0 0 2px hsl(var(--gold-bright) / 0.14);
   }
 }
 
 @media (max-width: 640px) {
   @keyframes radio-cover-eq {
     0%, 100% {
-      opacity: calc(0.2 + (var(--bar-level, 0) * 0.24));
+      opacity: calc(0.18 + (var(--bar-level, 0) * 0.44));
       transform:
         rotate(calc(var(--bar-index) * 3.75deg))
         translateY(calc(var(--bar-distance, -8.78rem) + 0.22rem))
-        scaleY(calc(0.34 + (var(--bar-level, 0) * var(--bar-gain, 0.7) * 0.62)));
+        scaleY(calc(0.22 + (var(--bar-level, 0) * var(--bar-gain, 0.7) * 0.64)));
     }
 
     50% {
-      opacity: calc(0.38 + (var(--bar-level, 0) * 0.34));
+      opacity: calc(0.26 + (var(--bar-level, 0) * 0.54));
       transform:
         rotate(calc(var(--bar-index) * 3.75deg))
         translateY(calc(var(--bar-distance, -8.78rem) + 0.22rem))
-        scaleY(calc(0.62 + (var(--bar-level, 0) * var(--bar-gain, 0.7) * 1.12)));
-      box-shadow: 0 0 3px hsl(var(--gold-bright) / 0.18);
+        scaleY(calc(0.32 + (var(--bar-level, 0) * var(--bar-gain, 0.7) * 1.02)));
+      box-shadow: 0 0 2px hsl(var(--gold-bright) / 0.14);
     }
   }
 }
