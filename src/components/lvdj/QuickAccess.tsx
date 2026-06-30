@@ -30,26 +30,32 @@ const items: QuickAccessItem[] = [
   {
     image: "/icons/rosario.png",
     label: "Rosario",
+    compactSubtitle: "rezar ahora",
     to: "/devociones",
   },
   {
     image: "/icons/podcast.png",
     label: "Podcast",
+    compactSubtitle: "escuchar",
     to: "/podcast",
   },
   {
     image: "/icons/peticiones.png",
     label: "Peticiones",
+    compactSubtitle: "eleva tu intención",
     to: "/contacto",
   },
   {
     image: "/icons/biblia.png",
     label: "Biblia",
+    compactSubtitle: "leer y meditar",
     to: "/biblia",
   },
   {
     image: "/icons/programa.png",
     label: "Programacion",
+    compactLabel: "Programación",
+    compactSubtitle: "ver horarios",
     to: "/programacion",
   },
   {
