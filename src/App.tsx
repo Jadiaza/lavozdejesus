@@ -9,6 +9,7 @@ import Contacto from "./pages/Contacto.tsx";
 import LecturasDelDia from "./pages/LecturasDelDia.tsx";
 import Programacion from "./pages/Programacion.tsx";
 import Radio from "./pages/Radio.tsx";
+import Capilla from "./pages/Capilla.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import {
   AcercaDe,
@@ -36,6 +37,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/radio" element={<Radio />} />
+            <Route path="/capilla" element={<Capilla />} />
+            <Route path="/capilla-virtual" element={<Capilla />} />
             <Route path="/contacto" element={<Contacto />} />
             <Route path="/lecturas-del-dia" element={<LecturasDelDia />} />
             <Route path="/lectura-del-dia" element={<LecturasDelDia />} />

@@ -10,7 +10,9 @@ Menu inferior fijo para la navegacion principal en dispositivos moviles.
 */
 
 import {
+  BookOpen,
   CalendarRange,
+  Church,
   HandHeart,
   Home,
   MoreHorizontal,
@@ -24,6 +26,14 @@ const items = [
   { icon: HandHeart, label: "Oración", to: "/" },
   { icon: CalendarRange, label: "Programas", to: "/programacion" },
   { icon: MoreHorizontal, label: "Más", to: "/" },
+];
+
+const chapelItems = [
+  { icon: Home, label: "Inicio", to: "/" },
+  { icon: Radio, label: "Radio", to: "/radio" },
+  { icon: Church, label: "Capilla", to: "/capilla" },
+  { icon: BookOpen, label: "Biblia", to: "/biblia" },
+  { icon: MoreHorizontal, label: "MÃ¡s", to: "/" },
 ];
 
 export const BottomNav = ({

@@ -115,7 +115,7 @@ export const MobileHome = () => {
 
         <section className="relative z-10 -mt-7 px-4">
           <Link
-            to="/capilla-virtual"
+            to="/capilla"
             className="group flex min-h-[88px] items-center gap-3 rounded-2xl border border-gold/45 bg-gradient-to-br from-[#f6c54a] via-[#e2a925] to-[#b98012] px-3 py-4 text-[#070b14] shadow-[0_18px_42px_rgba(0,0,0,0.38)] transition active:scale-[0.985] min-[380px]:min-h-[92px] min-[380px]:gap-4 min-[380px]:p-4"
             aria-label="Entrar a la Capilla Virtual"
           >
