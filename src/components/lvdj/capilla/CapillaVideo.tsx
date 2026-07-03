@@ -1,5 +1,3 @@
-import { Users } from "lucide-react";
-
 export const CHAPEL_VIDEO_URL =
   "https://www.youtube.com/embed/zR-IhfYsyKQ?rel=0&modestbranding=1";
 
@@ -16,17 +14,9 @@ export const CapillaVideo = () => (
           allowFullScreen
         />
 
-        <div className="pointer-events-none absolute left-4 top-4 rounded-xl bg-black/68 px-3 py-2 shadow-deep backdrop-blur-md">
-          <div className="flex items-center gap-2 text-sm font-extrabold uppercase text-foreground">
-            <span className="h-2.5 w-2.5 rounded-full bg-red-600 shadow-[0_0_14px_rgba(220,38,38,0.9)]" />
-            En vivo
-          </div>
-          <div className="mt-1 text-xs text-foreground/80">Adoracion al Santisimo</div>
-        </div>
-
-        <div className="pointer-events-none absolute bottom-4 right-4 flex items-center gap-2 rounded-xl bg-black/60 px-3 py-2 text-sm font-semibold text-foreground backdrop-blur-md">
-          <Users className="h-4 w-4 text-gold" />
-          384 conectados
+        <div className="pointer-events-none absolute right-4 top-4 flex items-center gap-2 rounded-xl bg-red-700 px-3 py-2 text-sm font-extrabold uppercase text-white shadow-deep">
+          <span className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_14px_rgba(255,255,255,0.9)]" />
+          En vivo
         </div>
       </div>
     </div>
