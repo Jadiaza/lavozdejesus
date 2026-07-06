@@ -8,7 +8,7 @@ DESCRIPCION:
 Tarjeta informativa del proximo programa de la emisora.
 
 FUNCIONES:
-- Consulta la programacion publicada desde Google Sheets.
+- Consulta la programacion publicada desde la API MySQL.
 - Calcula el siguiente programa segun dia y hora local.
 - Actualiza el dato en tiempo real sin recargar la pagina.
 - Conserva el boton "Ver Programacion" en movil y lo oculta en escritorio.

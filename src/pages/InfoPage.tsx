@@ -356,7 +356,7 @@ export const PoliticaPrivacidad = () => (
       },
       {
         title: "Servicios externos",
-        body: "La app puede usar servicios de radio, Google Sheets, analitica tecnica y publicidad para operar correctamente.",
+        body: "La app puede usar servicios de radio, APIs seguras, analitica tecnica y publicidad para operar correctamente.",
       },
       {
         title: "Publicidad",

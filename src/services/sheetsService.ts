@@ -17,10 +17,10 @@ DERECHOS RESERVADOS
 Emisora La Voz de Jesus
 
 DESCRIPCION:
-Servicio de lectura publica para las hojas de Google Sheets usadas como CMS.
+Servicio de lectura publica para contenido servido desde APIs MySQL.
 
 FUNCIONES:
-- Lee archivos CSV publicados desde Google Sheets.
+- Lee endpoints backend conectados a MySQL.
 - Normaliza encabezados, fechas y campos de texto.
 - Filtra contenido por fecha actual y estado publicado.
 - Provee fallbacks para que Vercel funcione aunque falten variables de entorno.
@@ -28,8 +28,6 @@ FUNCIONES:
 
 ==============================================================================
 */
-
-import Papa from "papaparse";
 
 export type EstadoContenido = "borrador" | "pendiente" | "publicado" | "archivado" | "";
 
@@ -106,21 +104,6 @@ export interface AppConfig {
   adsense_radio_slot: string;
 }
 
-const DEFAULT_LITURGIA_DIA_CSV_URL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7j7j9nNJ9DP7pFXM68yMrFUOan_pmUuGscDseMbkSWo4T1srKj2VsyUYE8XWnJlRpMAuR9QvQ2KVS/pub?gid=0&single=true&output=csv";
-
-const DEFAULT_LECTIO_DIVINA_CSV_URL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7j7j9nNJ9DP7pFXM68yMrFUOan_pmUuGscDseMbkSWo4T1srKj2VsyUYE8XWnJlRpMAuR9QvQ2KVS/pub?gid=1951794410&single=true&output=csv";
-
-const DEFAULT_SANTO_DEL_DIA_CSV_URL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7j7j9nNJ9DP7pFXM68yMrFUOan_pmUuGscDseMbkSWo4T1srKj2VsyUYE8XWnJlRpMAuR9QvQ2KVS/pub?gid=2096480425&single=true&output=csv";
-
-const DEFAULT_PROGRAMACION_CSV_URL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7j7j9nNJ9DP7pFXM68yMrFUOan_pmUuGscDseMbkSWo4T1srKj2VsyUYE8XWnJlRpMAuR9QvQ2KVS/pub?gid=175716214&single=true&output=csv";
-
-const DEFAULT_CONFIGURACION_CSV_URL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7j7j9nNJ9DP7pFXM68yMrFUOan_pmUuGscDseMbkSWo4T1srKj2VsyUYE8XWnJlRpMAuR9QvQ2KVS/pub?gid=746027598&single=true&output=csv";
-
 export const DEFAULT_APP_CONFIG: AppConfig = {
   radio_stream_url: "https://stream.zeno.fm/phybdd3ph98uv",
   radio_metadata_url:
@@ -142,36 +125,27 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
 };
 
 /* ==========================================================================
-   FUENTES CSV
+   FUENTES API MYSQL
    ==========================================================================
-   En produccion se prefieren variables VITE_* configuradas en Vercel.
-   Los valores por defecto evitan que la app quede sin datos si esas variables
-   no fueron registradas durante un despliegue.
+   La app ya no lee contenido desde hojas externas. El frontend solo consume
+   endpoints backend; las credenciales MySQL permanecen fuera del navegador.
 */
-
-const LITURGIA_DIA_CSV_URL =
-  (import.meta.env.VITE_LITURGIA_DIA_CSV_URL as string | undefined) ??
-  DEFAULT_LITURGIA_DIA_CSV_URL;
-
-const LECTIO_DIVINA_CSV_URL =
-  (import.meta.env.VITE_LECTIO_DIVINA_CSV_URL as string | undefined) ??
-  DEFAULT_LECTIO_DIVINA_CSV_URL;
-
-const SANTO_DEL_DIA_CSV_URL =
-  (import.meta.env.VITE_SANTO_DEL_DIA_CSV_URL as string | undefined) ??
-  DEFAULT_SANTO_DEL_DIA_CSV_URL;
-
-const PROGRAMACION_CSV_URL =
-  (import.meta.env.VITE_PROGRAMACION_CSV_URL as string | undefined) ??
-  DEFAULT_PROGRAMACION_CSV_URL;
-
-const CONFIGURACION_CSV_URL =
-  (import.meta.env.VITE_CONFIGURACION_CSV_URL as string | undefined) ??
-  (import.meta.env.VITE_CONFIGURACION_GENERAL_CSV_URL as string | undefined) ??
-  DEFAULT_CONFIGURACION_CSV_URL;
 
 const CONFIG_API_URL =
   (import.meta.env.VITE_APP_CONFIG_API_URL as string | undefined) ?? "/api/config";
+
+const LITURGIA_API_URL =
+  (import.meta.env.VITE_LITURGIA_API_URL as string | undefined) ?? "/api/liturgia";
+
+const LECTIO_API_URL =
+  (import.meta.env.VITE_LECTIO_API_URL as string | undefined) ?? "/api/lectio";
+
+const SANTORAL_API_URL =
+  (import.meta.env.VITE_SANTORAL_API_URL as string | undefined) ?? "/api/santoral";
+
+const PROGRAMACION_API_URL =
+  (import.meta.env.VITE_PROGRAMACION_API_URL as string | undefined) ??
+  "/api/programacion";
 
 const clean = (value: unknown) =>
   typeof value === "string" || typeof value === "number"
@@ -186,9 +160,6 @@ const preserveText = (value: unknown) =>
         .replace(/\r\n/g, "\n")
         .replace(/\r/g, "\n")
     : "";
-
-const normalizeHeader = (header: string) =>
-  header.trim().toLowerCase().replace(/\s+/g, "_");
 
 const getGoogleDriveId = (value: string) => {
   const driveFileMatch = value.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
@@ -240,8 +211,8 @@ export const getTodayISO = () => new Date().toLocaleDateString("sv-SE");
 /* ==========================================================================
    NORMALIZACION DE FECHAS
    ==========================================================================
-   Google Sheets puede entregar fechas como texto, formato latino o numero
-   serial de Excel. La app trabaja internamente con YYYY-MM-DD.
+   La app puede recibir fechas como texto, formato latino o numero serial.
+   Internamente trabaja con YYYY-MM-DD.
 */
 
 const excelSerialToISO = (serial: number) => {
@@ -273,29 +244,32 @@ export const normalizeDateISO = (value: unknown) => {
   return Number.isNaN(parsed.getTime()) ? raw : parsed.toISOString().slice(0, 10);
 };
 
-/* ==========================================================================
-   LECTURA CSV
-   ========================================================================== */
+async function getApiRows<T>(url: string, params: Record<string, string> = {}): Promise<T[]> {
+  const requestUrl = new URL(url, window.location.origin);
 
-async function getCsvRows<T>(url: string): Promise<T[]> {
-  const requestUrl = new URL(url);
-  requestUrl.searchParams.set("_ts", String(Date.now()));
+  Object.entries(params).forEach(([key, value]) => {
+    if (value) requestUrl.searchParams.set(key, value);
+  });
+
   const response = await fetch(requestUrl.toString(), {
     cache: "no-store",
   });
 
   if (!response.ok) {
-    throw new Error(`No se pudo leer la hoja: ${response.status}`);
+    return [];
   }
 
-  const csv = await response.text();
-  const result = Papa.parse<T>(csv, {
-    header: true,
-    skipEmptyLines: true,
-    transformHeader: normalizeHeader,
-  });
+  const data = await response.json();
 
-  return result.data;
+  if (Array.isArray(data)) {
+    return data as T[];
+  }
+
+  if (Array.isArray(data?.data)) {
+    return data.data as T[];
+  }
+
+  return [];
 }
 
 const isPublished = (estado: unknown) => clean(estado).toLowerCase() === "publicado";
@@ -415,47 +389,45 @@ const normalizeProgramacion = (
    ========================================================================== */
 
 export async function getSheetData<T>(sheetName: string): Promise<T[]> {
-  const envKey = `VITE_${sheetName.toUpperCase()}_CSV_URL`;
-  const url = import.meta.env[envKey] as string | undefined;
-
-  if (!url) return [];
-
-  return getCsvRows<T>(url);
+  console.warn(
+    `getSheetData(${sheetName}) esta deshabilitado: la app ahora consume APIs MySQL.`,
+  );
+  return [];
 }
 
 export async function getTodayLiturgia(
   fecha = getTodayISO(),
 ): Promise<LiturgiaDia | null> {
-  if (!LITURGIA_DIA_CSV_URL) {
-    return null;
-  }
+  const rows = await getApiRows<Partial<LiturgiaDia>>(LITURGIA_API_URL, { fecha });
+  const todayRow = rows
+    .map(normalizeLiturgia)
+    .find((row) => row.fecha === fecha && isVisibleContent(row.estado));
 
-  const rows = await getCsvRows<Partial<LiturgiaDia>>(LITURGIA_DIA_CSV_URL);
+  if (todayRow) return todayRow;
+
+  const fallbackRows = await getApiRows<Partial<LiturgiaDia>>(LITURGIA_API_URL);
 
   return (
-    rows
+    fallbackRows
       .map(normalizeLiturgia)
-      .find((row) => row.fecha === fecha && isPublished(row.estado)) ?? null
+      .filter((row) => row.fecha && isVisibleContent(row.estado))
+      .sort((a, b) => b.fecha.localeCompare(a.fecha))[0] ?? null
   );
 }
 
 export async function getPublishedLiturgias(): Promise<LiturgiaDia[]> {
-  if (!LITURGIA_DIA_CSV_URL) return [];
-
-  const rows = await getCsvRows<Partial<LiturgiaDia>>(LITURGIA_DIA_CSV_URL);
+  const rows = await getApiRows<Partial<LiturgiaDia>>(LITURGIA_API_URL);
 
   return rows
     .map(normalizeLiturgia)
-    .filter((row) => row.fecha && isPublished(row.estado))
+    .filter((row) => row.fecha && isVisibleContent(row.estado))
     .sort((a, b) => a.fecha.localeCompare(b.fecha));
 }
 
 export async function getTodayLectio(
   fecha = getTodayISO(),
 ): Promise<LectioDivina | null> {
-  if (!LECTIO_DIVINA_CSV_URL) return null;
-
-  const rows = await getCsvRows<Partial<LectioDivina>>(LECTIO_DIVINA_CSV_URL);
+  const rows = await getApiRows<Partial<LectioDivina>>(LECTIO_API_URL, { fecha });
 
   return (
     rows
@@ -465,9 +437,7 @@ export async function getTodayLectio(
 }
 
 export async function getPublishedLectios(): Promise<LectioDivina[]> {
-  if (!LECTIO_DIVINA_CSV_URL) return [];
-
-  const rows = await getCsvRows<Partial<LectioDivina>>(LECTIO_DIVINA_CSV_URL);
+  const rows = await getApiRows<Partial<LectioDivina>>(LECTIO_API_URL);
 
   return rows
     .map(normalizeLectio)
@@ -478,9 +448,7 @@ export async function getPublishedLectios(): Promise<LectioDivina[]> {
 export async function getTodaySantoDelDia(
   fecha = getTodayISO(),
 ): Promise<SantoDelDia | null> {
-  if (!SANTO_DEL_DIA_CSV_URL) return null;
-
-  const rows = await getCsvRows<Partial<SantoDelDia>>(SANTO_DEL_DIA_CSV_URL);
+  const rows = await getApiRows<Partial<SantoDelDia>>(SANTORAL_API_URL, { fecha });
 
   return (
     rows
@@ -491,9 +459,7 @@ export async function getTodaySantoDelDia(
 }
 
 export async function getPublishedSantosDelDia(): Promise<SantoDelDia[]> {
-  if (!SANTO_DEL_DIA_CSV_URL) return [];
-
-  const rows = await getCsvRows<Partial<SantoDelDia>>(SANTO_DEL_DIA_CSV_URL);
+  const rows = await getApiRows<Partial<SantoDelDia>>(SANTORAL_API_URL);
 
   return rows
     .map(normalizeSanto)
@@ -506,11 +472,7 @@ export async function getSantoDelDia() {
 }
 
 export async function getPublishedProgramacion(): Promise<ProgramacionRadio[]> {
-  if (!PROGRAMACION_CSV_URL) return [];
-
-  const rows = await getCsvRows<Partial<ProgramacionRadio>>(
-    PROGRAMACION_CSV_URL,
-  );
+  const rows = await getApiRows<Partial<ProgramacionRadio>>(PROGRAMACION_API_URL);
 
   return rows
     .map(normalizeProgramacion)
@@ -552,26 +514,7 @@ export async function getConfiguracion(): Promise<Record<string, string>> {
     return apiConfig;
   }
 
-  if (!CONFIGURACION_CSV_URL) return {};
-
-  const rows = await getCsvRows<Record<string, string>>(CONFIGURACION_CSV_URL);
-  const firstRow = rows[0] ?? {};
-
-  if ("clave" in firstRow && "valor" in firstRow) {
-    return rows.reduce<Record<string, string>>((accumulator, row) => {
-      const key = clean(row.clave);
-      if (key) accumulator[key] = clean(row.valor);
-      return accumulator;
-    }, {});
-  }
-
-  return Object.entries(firstRow).reduce<Record<string, string>>(
-    (accumulator, [key, value]) => {
-      accumulator[key] = clean(value);
-      return accumulator;
-    },
-    {},
-  );
+  return {};
 }
 
 async function getConfiguracionFromApi(): Promise<Record<string, string>> {
@@ -659,8 +602,8 @@ export async function getAppConfig(): Promise<AppConfig> {
 /* ==========================================================================
    ESCRITURA SEGURA PENDIENTE
    ==========================================================================
-   No escribir directamente a Google Sheets desde el frontend. Estas acciones
-   deben pasar por una API backend con credenciales protegidas.
+   No escribir directamente desde el frontend. Estas acciones deben pasar por
+   una API backend con credenciales protegidas.
 */
 
 export async function createRow() {

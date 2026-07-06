@@ -170,6 +170,8 @@ function content_label(string $column): string
     'nombre' => 'Nombre',
     'descripcion' => 'Descripcion',
     'fecha' => 'Fecha',
+    'mes' => 'Mes',
+    'dia' => 'Dia',
     'hora_inicio' => 'Hora de inicio',
     'hora_fin' => 'Hora de cierre',
     'cita' => 'Cita biblica',
@@ -193,6 +195,15 @@ function content_label(string $column): string
     'imagen_home' => 'Imagen home',
     'imagen_lectura' => 'Imagen lectura',
     'logo_especial' => 'Logo especial',
+    'quien_fue' => 'Quien fue',
+    'lucha_que_enfrento' => 'La lucha que enfrento',
+    'secreto_de_santidad' => 'El secreto de su santidad',
+    'ensenanza_para_hoy' => 'Ensenanza para hoy',
+    'como_puedo_imitarlo' => 'Como puedo imitarlo',
+    'paso_concreto' => 'Paso concreto para hoy',
+    'oracion_intercesion' => 'Oracion de intercesion',
+    'destacado' => 'Destacado',
+    'orden' => 'Orden',
   ];
 
   if (isset($labels[$column])) {
@@ -222,6 +233,7 @@ function content_is_derived_column(string $table, string $field): bool
   $derivedByTable = [
     'lvj_lit_dia' => ['tiempo_liturgico', 'color_liturgico'],
     'lvj_lit_lectura_dia' => ['color_liturgico'],
+    'lvj_san_santo_dia' => ['fecha'],
   ];
 
   return in_array($field, $derivedByTable[$table] ?? [], true);
@@ -245,21 +257,114 @@ function content_list_columns(array $columns, string $table = ''): array
   }));
 }
 
-function content_form_sections(string $table): array
+function content_order_columns_for_form(array $columns, string $table): array
 {
-  if ($table !== 'lvj_lit_lectura_dia') {
-    return [];
+  $orders = [
+    'lvj_san_santo_dia' => [
+      'mes',
+      'dia',
+      'nombre',
+      'titulo',
+      'imagen_url',
+      'frase_destacada',
+      'quien_fue',
+      'destacado',
+      'orden',
+      'estado',
+      'lucha_que_enfrento',
+      'secreto_de_santidad',
+      'ensenanza_para_hoy',
+      'como_puedo_imitarlo',
+      'paso_concreto',
+      'oracion_intercesion',
+    ],
+  ];
+
+  if (!isset($orders[$table])) {
+    return $columns;
   }
 
-  return [
-    'general' => 'General',
-    'liturgia' => 'Liturgia',
-    'espiritual' => 'Reflexion y multimedia',
-  ];
+  $position = array_flip($orders[$table]);
+  usort($columns, function ($left, $right) use ($position) {
+    $leftField = (string) $left['Field'];
+    $rightField = (string) $right['Field'];
+    $leftOrder = $position[$leftField] ?? 999;
+    $rightOrder = $position[$rightField] ?? 999;
+
+    if ($leftOrder === $rightOrder) {
+      return 0;
+    }
+
+    return $leftOrder <=> $rightOrder;
+  });
+
+  return $columns;
+}
+
+function content_form_sections(string $table): array
+{
+  if ($table === 'lvj_lit_lectura_dia') {
+    return [
+      'general' => 'General',
+      'liturgia' => 'Liturgia',
+      'espiritual' => 'Reflexion y multimedia',
+    ];
+  }
+
+  if ($table === 'lvj_san_santo_dia') {
+    return [
+      'identidad' => 'Identidad',
+      'camino' => 'Camino de santidad',
+      'practica' => 'Para vivir hoy',
+    ];
+  }
+
+  return [];
 }
 
 function content_field_section(string $table, string $field): string
 {
+  if ($table === 'lvj_san_santo_dia') {
+    $identityFields = [
+      'mes',
+      'dia',
+      'nombre',
+      'titulo',
+      'quien_fue',
+      'imagen_url',
+      'frase_destacada',
+      'destacado',
+      'orden',
+      'estado',
+    ];
+
+    $holinessFields = [
+      'lucha_que_enfrento',
+      'secreto_de_santidad',
+      'ensenanza_para_hoy',
+    ];
+
+    $practiceFields = [
+      'como_puedo_imitarlo',
+      'paso_concreto',
+      'oracion_intercesion',
+    ];
+
+    if (in_array($field, $identityFields, true)) {
+      return 'identidad';
+    }
+
+    if (in_array($field, $holinessFields, true)) {
+      return 'camino';
+    }
+
+    if (in_array($field, $practiceFields, true)) {
+      return 'practica';
+    }
+
+    return 'identidad';
+  }
+
   if ($table !== 'lvj_lit_lectura_dia') {
     return '';
   }
@@ -477,6 +582,45 @@ function content_liturgical_time_summary(array $options, $value): string
     . '</div>';
 }
 
+function content_month_options(): array
+{
+  return [
+    ['value' => '1', 'label' => 'Enero'],
+    ['value' => '2', 'label' => 'Febrero'],
+    ['value' => '3', 'label' => 'Marzo'],
+    ['value' => '4', 'label' => 'Abril'],
+    ['value' => '5', 'label' => 'Mayo'],
+    ['value' => '6', 'label' => 'Junio'],
+    ['value' => '7', 'label' => 'Julio'],
+    ['value' => '8', 'label' => 'Agosto'],
+    ['value' => '9', 'label' => 'Septiembre'],
+    ['value' => '10', 'label' => 'Octubre'],
+    ['value' => '11', 'label' => 'Noviembre'],
+    ['value' => '12', 'label' => 'Diciembre'],
+  ];
+}
+
+function content_day_options(): array
+{
+  $options = [];
+  for ($day = 1; $day <= 31; $day++) {
+    $options[] = ['value' => (string) $day, 'label' => (string) $day];
+  }
+
+  return $options;
+}
+
+function content_has_column(array $columns, string $field): bool
+{
+  foreach ($columns as $column) {
+    if ((string) $column['Field'] === $field) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function content_display_value($value): string
 {
   $text = trim((string) $value);
@@ -485,6 +629,19 @@ function content_display_value($value): string
   }
 
   return $text;
+}
+
+function content_display_cell(string $table, string $field, $value): string
+{
+  if ($table === 'lvj_san_santo_dia' && $field === 'mes') {
+    foreach (content_month_options() as $option) {
+      if ((string) $value === (string) $option['value']) {
+        return (string) $option['label'];
+      }
+    }
+  }
+
+  return content_display_value($value);
 }
 
 function content_field_class(string $field, string $type): string
@@ -520,6 +677,14 @@ function content_field_html(PDO $pdo, string $table, array $column, array $row =
   $isRequired = strtoupper((string) ($column['Null'] ?? '')) === 'NO' && $column['Default'] === null;
   $required = $isRequired ? ' required' : '';
   $fieldClass = content_field_class($field, $type);
+
+  if ($table === 'lvj_san_santo_dia' && $field === 'mes') {
+    return content_select_html($field, $label, $value, content_month_options(), true, 'content-field relation-field');
+  }
+
+  if ($table === 'lvj_san_santo_dia' && $field === 'dia') {
+    return content_select_html($field, $label, $value, content_day_options(), true, 'content-field relation-field');
+  }
 
   if (content_is_status_field($field)) {
     if (strpos($type, 'tinyint') === 0 || strpos($type, 'int') !== false) {
@@ -633,9 +798,10 @@ if (!isset($module['tables'][$table]) || !content_table_allowed($modules, $table
 }
 
 $columns = content_columns($pdo, $table);
-$editableColumns = content_editable_columns($columns, $table);
+$editableColumns = content_order_columns_for_form(content_editable_columns($columns, $table), $table);
 $listColumns = content_list_columns($columns, $table);
 $formSections = content_form_sections($table);
+$firstFormSection = $formSections ? (string) array_key_first($formSections) : '';
 $primaryColumn = 'id';
 $message = '';
 $error = '';
@@ -658,6 +824,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($editableColumns as $column) {
       $field = (string) $column['Field'];
       $data[$field] = content_normalize_value($column, $_POST);
+    }
+
+    if ($table === 'lvj_san_santo_dia' && content_has_column($columns, 'fecha')) {
+      $month = max(1, min(12, (int) ($data['mes'] ?? 1)));
+      $day = max(1, min(31, (int) ($data['dia'] ?? 1)));
+      $data['fecha'] = sprintf('2000-%02d-%02d', $month, $day);
     }
 
     try {
@@ -708,6 +880,17 @@ if ($editId > 0 && $columns) {
     $stmt = $pdo->prepare("SELECT * FROM {$table} WHERE {$primaryColumn} = :id LIMIT 1");
     $stmt->execute(['id' => $editId]);
     $editRow = $stmt->fetch() ?: [];
+    if ($table === 'lvj_san_santo_dia' && $editRow && !empty($editRow['fecha'])) {
+      $timestamp = strtotime((string) $editRow['fecha']);
+      if ($timestamp) {
+        if (empty($editRow['mes'])) {
+          $editRow['mes'] = (string) (int) date('n', $timestamp);
+        }
+        if (empty($editRow['dia'])) {
+          $editRow['dia'] = (string) (int) date('j', $timestamp);
+        }
+      }
+    }
   } catch (Throwable $editError) {
     $editRow = [];
   }
@@ -766,7 +949,7 @@ require __DIR__ . '/includes/header.php';
       <?php if ($formSections): ?>
         <div class="content-step-tabs" data-content-section-tabs>
           <?php foreach ($formSections as $sectionKey => $sectionLabel): ?>
-            <button type="button" class="<?php echo $sectionKey === 'general' ? 'active' : ''; ?>" data-content-section-tab="<?php echo e($sectionKey); ?>">
+            <button type="button" class="<?php echo $sectionKey === $firstFormSection ? 'active' : ''; ?>" data-content-section-tab="<?php echo e($sectionKey); ?>">
               <?php echo e($sectionLabel); ?>
             </button>
           <?php endforeach; ?>
@@ -780,7 +963,7 @@ require __DIR__ . '/includes/header.php';
             $section = content_field_section($table, $field);
           ?>
           <?php if ($section): ?>
-            <div class="content-section-shell" data-content-section="<?php echo e($section); ?>" <?php echo $section !== 'general' ? 'hidden' : ''; ?>>
+            <div class="content-section-shell" data-content-section="<?php echo e($section); ?>" <?php echo $section !== $firstFormSection ? 'hidden' : ''; ?>>
               <?php echo content_field_html($pdo, $table, $column, $editRow); ?>
             </div>
           <?php else: ?>
@@ -826,7 +1009,7 @@ require __DIR__ . '/includes/header.php';
           <tr>
             <?php foreach (array_slice($listColumns, 0, 6) as $column): ?>
               <?php $field = (string) $column['Field']; ?>
-              <td><?php echo e(content_display_value($row[$field] ?? '')); ?></td>
+              <td><?php echo e(content_display_cell($table, $field, $row[$field] ?? '')); ?></td>
             <?php endforeach; ?>
             <td class="actions">
               <a href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&edit=<?php echo (int) $row['id']; ?>">Editar</a>

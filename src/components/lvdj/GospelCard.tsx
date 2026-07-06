@@ -98,7 +98,7 @@ export const GospelCard = ({
         </p>
 
         <div className="mt-4 flex items-center justify-between gap-3">
- espirito y loa ta          <div className="min-w-0 text-xs font-medium text-gold/80">
+          <div className="min-w-0 text-xs font-medium text-gold/80">
             {evangelioCitaActual}
           </div>
 
