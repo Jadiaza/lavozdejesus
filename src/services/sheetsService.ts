@@ -272,10 +272,12 @@ async function getApiRows<T>(url: string, params: Record<string, string> = {}): 
   return [];
 }
 
-const isPublished = (estado: unknown) => clean(estado).toLowerCase() === "publicado";
+const visibleStates = new Set(["1", "true", "si", "sí", "yes", "activo", "publicado"]);
+
+const isPublished = (estado: unknown) => visibleStates.has(clean(estado).toLowerCase());
 const isVisibleContent = (estado: unknown) => {
   const value = clean(estado).toLowerCase();
-  return !value || value === "publicado" || value === "activo";
+  return !value || visibleStates.has(value);
 };
 
 /* ==========================================================================

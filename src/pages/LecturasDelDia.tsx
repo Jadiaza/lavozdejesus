@@ -36,7 +36,7 @@ interface LecturasCache {
   santos: SantoDelDia[];
 }
 
-const CACHE_KEY = "lvj_lecturas_publicadas_v10";
+const CACHE_KEY = "lvj_lecturas_publicadas_v11";
 
 const liturgicalStoleMap: Record<
   string,
