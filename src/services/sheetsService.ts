@@ -143,21 +143,39 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
    endpoints backend; las credenciales MySQL permanecen fuera del navegador.
 */
 
+const normalizeApiBaseUrl = (value: string | undefined) =>
+  value?.trim().replace(/\/+$/, "") ?? "";
+
+const API_BASE_URL = normalizeApiBaseUrl(
+  import.meta.env.VITE_API_BASE_URL as string | undefined,
+);
+
+const buildApiUrl = (path: string) => {
+  if (!API_BASE_URL) return path;
+
+  const phpPath = path.endsWith(".php") ? path : `${path}.php`;
+  return `${API_BASE_URL}${phpPath.startsWith("/") ? "" : "/"}${phpPath}`;
+};
+
 const CONFIG_API_URL =
-  (import.meta.env.VITE_APP_CONFIG_API_URL as string | undefined) ?? "/api/config";
+  (import.meta.env.VITE_APP_CONFIG_API_URL as string | undefined) ??
+  buildApiUrl("/api/config");
 
 const LITURGIA_API_URL =
-  (import.meta.env.VITE_LITURGIA_API_URL as string | undefined) ?? "/api/liturgia";
+  (import.meta.env.VITE_LITURGIA_API_URL as string | undefined) ??
+  buildApiUrl("/api/liturgia");
 
 const LECTIO_API_URL =
-  (import.meta.env.VITE_LECTIO_API_URL as string | undefined) ?? "/api/lectio";
+  (import.meta.env.VITE_LECTIO_API_URL as string | undefined) ??
+  buildApiUrl("/api/lectio");
 
 const SANTORAL_API_URL =
-  (import.meta.env.VITE_SANTORAL_API_URL as string | undefined) ?? "/api/santoral";
+  (import.meta.env.VITE_SANTORAL_API_URL as string | undefined) ??
+  buildApiUrl("/api/santoral");
 
 const PROGRAMACION_API_URL =
   (import.meta.env.VITE_PROGRAMACION_API_URL as string | undefined) ??
-  "/api/programacion";
+  buildApiUrl("/api/programacion");
 
 const clean = (value: unknown) =>
   typeof value === "string" || typeof value === "number"

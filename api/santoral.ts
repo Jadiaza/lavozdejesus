@@ -1,4 +1,4 @@
-import { getMysqlPool, hasMysqlConfig } from "./_mysql";
+import { getMysqlPool, hasMysqlConfig } from "./_mysql.js";
 
 type ApiRequest = {
   url?: string;
