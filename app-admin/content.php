@@ -414,6 +414,20 @@ function content_normalize_value(array $column, array $source)
   $isNullable = strtoupper((string) ($column['Null'] ?? '')) === 'YES';
 
   if (strpos($type, 'tinyint') === 0) {
+    if (in_array($field, ['mes', 'dia'], true)) {
+      $value = trim((string) ($source[$field] ?? ''));
+      if ($value === '' && $isNullable) {
+        return null;
+      }
+
+      $number = (int) $value;
+      if ($field === 'mes') {
+        return max(1, min(12, $number));
+      }
+
+      return max(1, min(31, $number));
+    }
+
     if (content_is_status_field($field) && array_key_exists($field, $source)) {
       return (int) $source[$field];
     }
@@ -826,13 +840,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $data[$field] = content_normalize_value($column, $_POST);
     }
 
-    if ($table === 'lvj_san_santo_dia' && content_has_column($columns, 'fecha')) {
-      $month = max(1, min(12, (int) ($data['mes'] ?? 1)));
-      $day = max(1, min(31, (int) ($data['dia'] ?? 1)));
-      $data['fecha'] = sprintf('2000-%02d-%02d', $month, $day);
+    if ($table === 'lvj_san_santo_dia' && content_has_column($columns, 'nombre')) {
+      $saintName = trim((string) ($data['nombre'] ?? ''));
+      if ($saintName !== '') {
+        $duplicateSql = "SELECT {$primaryColumn} FROM {$table} WHERE LOWER(TRIM(nombre)) = LOWER(TRIM(:nombre))";
+        $duplicateParams = ['nombre' => $saintName];
+        if ($id > 0) {
+          $duplicateSql .= " AND {$primaryColumn} <> :id";
+          $duplicateParams['id'] = $id;
+        }
+        $duplicateSql .= ' LIMIT 1';
+        $duplicateStmt = $pdo->prepare($duplicateSql);
+        $duplicateStmt->execute($duplicateParams);
+        if ($duplicateStmt->fetchColumn()) {
+          $error = 'Ya existe un santo registrado con ese nombre.';
+        }
+      }
+    }
+
+    if (!$error && $table === 'lvj_san_santo_dia' && content_has_column($columns, 'fecha') && $id <= 0) {
+      $data['fecha'] = date('Y-m-d');
     }
 
     try {
+      if ($error) {
+        throw new RuntimeException($error);
+      }
+
       if ($id > 0) {
         $set = [];
         foreach ($data as $field => $value) {
@@ -842,7 +876,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare("UPDATE {$table} SET " . implode(', ', $set) . " WHERE {$primaryColumn} = :id LIMIT 1");
         $stmt->execute($data);
         log_activity('update', $table, $id, 'Registro actualizado');
-        $message = 'Registro actualizado.';
+        header('Location: content.php?module=' . urlencode($moduleKey) . '&table=' . urlencode($table) . '&saved=updated');
+        exit;
       } else {
         $fields = array_keys($data);
         $placeholders = array_map(function ($field) {
@@ -851,11 +886,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare("INSERT INTO {$table} (" . implode(', ', $fields) . ") VALUES (" . implode(', ', $placeholders) . ")");
         $stmt->execute($data);
         log_activity('create', $table, (int) $pdo->lastInsertId(), 'Registro creado');
-        $message = 'Registro creado.';
+        header('Location: content.php?module=' . urlencode($moduleKey) . '&table=' . urlencode($table) . '&saved=created');
+        exit;
       }
-      $editId = 0;
     } catch (Throwable $saveError) {
-      $error = 'No se pudo guardar: ' . $saveError->getMessage();
+      $error = $error ?: 'No se pudo guardar: ' . $saveError->getMessage();
     }
   } elseif ($action === 'delete') {
     $id = (int) ($_POST['id'] ?? 0);
@@ -874,13 +909,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if (isset($_GET['deleted'])) {
   $message = 'Registro eliminado o desactivado.';
 }
+if (isset($_GET['saved'])) {
+  $message = $_GET['saved'] === 'updated' ? 'Registro actualizado.' : 'Registro creado.';
+}
 
 if ($editId > 0 && $columns) {
   try {
     $stmt = $pdo->prepare("SELECT * FROM {$table} WHERE {$primaryColumn} = :id LIMIT 1");
     $stmt->execute(['id' => $editId]);
     $editRow = $stmt->fetch() ?: [];
-    if ($table === 'lvj_san_santo_dia' && $editRow && !empty($editRow['fecha'])) {
+    if ($table === 'lvj_san_santo_dia' && $editRow && !empty($editRow['fecha']) && preg_match('/^2000-\d{2}-\d{2}$/', (string) $editRow['fecha'])) {
       $timestamp = strtotime((string) $editRow['fecha']);
       if ($timestamp) {
         if (empty($editRow['mes'])) {

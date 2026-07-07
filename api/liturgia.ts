@@ -174,8 +174,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           evangelio_texto: text(row, "evangelio_texto"),
           palabra_hoy:
             text(row, "palabra_hoy", "frase_destacada") ||
-            text(word, "texto", "frase_destacada", "palabra_hoy") ||
-            text(row, "evangelio_cita"),
+            text(word, "frase_destacada", "palabra_hoy", "texto"),
           fuente: text(row, "fuente"),
           estado: text(row, "estado") || text(day, "estado") || text(word, "estado") || "publicado",
         };

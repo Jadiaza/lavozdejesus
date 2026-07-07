@@ -5,26 +5,26 @@ import { Link } from "react-router-dom";
 import { LiturgiaDia, getTodayLiturgia } from "@/services/sheetsService";
 
 interface GospelCardProps {
-  evangelioCita?: string;
   palabraHoy?: string;
   onRead?: () => void;
   readHref?: string;
   className?: string;
+  compact?: boolean;
 }
 
 export const GospelCard = ({
-  evangelioCita,
   palabraHoy,
   onRead,
   readHref = "/lecturas-del-dia",
   className = "",
+  compact: _compact,
 }: GospelCardProps) => {
   const [liturgia, setLiturgia] = useState<LiturgiaDia | null>(null);
-  const [loading, setLoading] = useState(!evangelioCita && !palabraHoy);
+  const [loading, setLoading] = useState(!palabraHoy);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (evangelioCita || palabraHoy) {
+    if (palabraHoy) {
       setLoading(false);
       return;
     }
@@ -55,9 +55,8 @@ export const GospelCard = ({
     return () => {
       mounted = false;
     };
-  }, [evangelioCita, palabraHoy]);
+  }, [palabraHoy]);
 
-  const evangelioCitaActual = evangelioCita ?? liturgia?.evangelio_cita ?? "";
   const palabraHoyActual =
     palabraHoy ??
     liturgia?.palabra_hoy ??
@@ -97,11 +96,7 @@ export const GospelCard = ({
           {palabraHoyActual}
         </p>
 
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <div className="min-w-0 text-xs font-medium text-gold/80">
-            {evangelioCitaActual}
-          </div>
-
+        <div className="mt-4 flex justify-end">
           {onRead ? (
             <button onClick={onRead} className={actionClassName}>
               Leer Reflexion
