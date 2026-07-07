@@ -175,6 +175,12 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           palabra_hoy:
             text(row, "palabra_hoy", "frase_destacada") ||
             text(word, "frase_destacada", "palabra_hoy", "texto"),
+          reflexion: text(row, "reflexion"),
+          pregunta_meditar: text(row, "pregunta_meditar"),
+          oracion: text(row, "oracion"),
+          compromiso: text(row, "compromiso"),
+          mensaje_final: text(row, "mensaje_final"),
+          audio_url: text(row, "audio_url"),
           fuente: text(row, "fuente"),
           estado: text(row, "estado") || text(day, "estado") || text(word, "estado") || "publicado",
         };

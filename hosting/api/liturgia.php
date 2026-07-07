@@ -182,6 +182,12 @@ try {
       'evangelio_versiculo' => lvj_text($row, 'evangelio_versiculo', 'versiculo'),
       'evangelio_texto' => lvj_text($row, 'evangelio_texto'),
       'palabra_hoy' => $palabraHoy,
+      'reflexion' => lvj_text($row, 'reflexion'),
+      'pregunta_meditar' => lvj_text($row, 'pregunta_meditar'),
+      'oracion' => lvj_text($row, 'oracion'),
+      'compromiso' => lvj_text($row, 'compromiso'),
+      'mensaje_final' => lvj_text($row, 'mensaje_final'),
+      'audio_url' => lvj_text($row, 'audio_url'),
       'fuente' => lvj_text($row, 'fuente'),
       'estado' => lvj_text($row, 'estado') ?: lvj_text($day, 'estado') ?: lvj_text($word, 'estado') ?: 'publicado',
     ];

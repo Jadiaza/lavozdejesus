@@ -47,6 +47,12 @@ export interface LiturgiaDia {
   evangelio_versiculo: string;
   evangelio_texto: string;
   palabra_hoy: string;
+  reflexion: string;
+  pregunta_meditar: string;
+  oracion: string;
+  compromiso: string;
+  mensaje_final: string;
+  audio_url: string;
   fuente: string;
   estado: EstadoContenido;
 }
@@ -65,11 +71,17 @@ export interface LectioDivina {
 export interface SantoDelDia {
   [key: string]: string;
   fecha: string;
+  mes: string;
+  dia: string;
   nombre: string;
   titulo: string;
   resumen: string;
-  historia: string;
-  lectura_espiritual: string;
+  lucha_que_enfrento: string;
+  secreto_de_santidad: string;
+  ensenanza_para_hoy: string;
+  como_puedo_imitarlo: string;
+  paso_concreto: string;
+  oracion_intercesion: string;
   imagen_url: string;
   frase_destacada: string;
   estado: EstadoContenido;
@@ -303,6 +315,12 @@ const normalizeLiturgia = (row: Partial<LiturgiaDia>): LiturgiaDia => {
     evangelio_versiculo: clean(row.evangelio_versiculo || rawRow.versiculo),
     evangelio_texto: preserveText(row.evangelio_texto),
     palabra_hoy: preserveText(row.palabra_hoy),
+    reflexion: preserveText(row.reflexion),
+    pregunta_meditar: preserveText(row.pregunta_meditar),
+    oracion: preserveText(row.oracion),
+    compromiso: preserveText(row.compromiso),
+    mensaje_final: preserveText(row.mensaje_final),
+    audio_url: normalizeAudioUrl(row.audio_url),
     fuente: clean(row.fuente),
     estado: clean(row.estado).toLowerCase() as EstadoContenido,
   };
@@ -321,11 +339,17 @@ const normalizeLectio = (row: Partial<LectioDivina>): LectioDivina => ({
 
 const santoKnownKeys = new Set([
   "fecha",
+  "mes",
+  "dia",
   "nombre",
   "titulo",
   "resumen",
-  "historia",
-  "lectura_espiritual",
+  "lucha_que_enfrento",
+  "secreto_de_santidad",
+  "ensenanza_para_hoy",
+  "como_puedo_imitarlo",
+  "paso_concreto",
+  "oracion_intercesion",
   "imagen_url",
   "frase_destacada",
   "estado",
@@ -334,11 +358,17 @@ const santoKnownKeys = new Set([
 const normalizeSanto = (row: Partial<SantoDelDia>): SantoDelDia => {
   const santo: SantoDelDia = {
     fecha: normalizeDateISO(row.fecha),
+    mes: clean(row.mes),
+    dia: clean(row.dia),
     nombre: clean(row.nombre),
     titulo: clean(row.titulo),
     resumen: preserveText(row.resumen),
-    historia: preserveText(row.historia),
-    lectura_espiritual: preserveText(row.lectura_espiritual),
+    lucha_que_enfrento: preserveText(row.lucha_que_enfrento),
+    secreto_de_santidad: preserveText(row.secreto_de_santidad),
+    ensenanza_para_hoy: preserveText(row.ensenanza_para_hoy),
+    como_puedo_imitarlo: preserveText(row.como_puedo_imitarlo),
+    paso_concreto: preserveText(row.paso_concreto),
+    oracion_intercesion: preserveText(row.oracion_intercesion),
     imagen_url: normalizeImageUrl(row.imagen_url),
     frase_destacada: preserveText(row.frase_destacada),
     estado: clean(row.estado).toLowerCase() as EstadoContenido,
@@ -351,6 +381,28 @@ const normalizeSanto = (row: Partial<SantoDelDia>): SantoDelDia => {
   });
 
   return santo;
+};
+
+const padDatePart = (value: string) => value.padStart(2, "0");
+
+const monthDayFromDate = (fecha?: string) =>
+  fecha && fecha.length >= 10 ? fecha.slice(5, 10) : "";
+
+const monthDayFromSanto = (row: SantoDelDia) => {
+  if (row.mes && row.dia) {
+    return `${padDatePart(row.mes)}-${padDatePart(row.dia)}`;
+  }
+
+  return monthDayFromDate(row.fecha);
+};
+
+export const santoMatchesDate = (row: SantoDelDia, fecha: string) => {
+  const selectedMonthDay = monthDayFromDate(fecha);
+
+  return (
+    row.fecha === fecha ||
+    (selectedMonthDay !== "" && monthDayFromSanto(row) === selectedMonthDay)
+  );
 };
 
 const normalizeProgramacion = (
@@ -455,7 +507,10 @@ export async function getTodaySantoDelDia(
   return (
     rows
       .map(normalizeSanto)
-      .find((row) => row.fecha === fecha && row.nombre && isVisibleContent(row.estado)) ??
+      .find(
+        (row) =>
+          santoMatchesDate(row, fecha) && row.nombre && isVisibleContent(row.estado),
+      ) ??
     null
   );
 }
@@ -465,8 +520,13 @@ export async function getPublishedSantosDelDia(): Promise<SantoDelDia[]> {
 
   return rows
     .map(normalizeSanto)
-    .filter((row) => row.fecha && row.nombre && isVisibleContent(row.estado))
-    .sort((a, b) => a.fecha.localeCompare(b.fecha));
+    .filter(
+      (row) =>
+        row.nombre &&
+        (row.fecha || (row.mes && row.dia)) &&
+        isVisibleContent(row.estado),
+    )
+    .sort((a, b) => monthDayFromSanto(a).localeCompare(monthDayFromSanto(b)));
 }
 
 export async function getSantoDelDia() {

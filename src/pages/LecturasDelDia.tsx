@@ -26,6 +26,10 @@ import {
   getPublishedLiturgias,
   getPublishedSantosDelDia,
   getTodayISO,
+  getTodayLectio,
+  getTodayLiturgia,
+  getTodaySantoDelDia,
+  santoMatchesDate,
 } from "@/services/sheetsService";
 
 type LecturasTab = "liturgia" | "santo" | "reflexion";
@@ -36,7 +40,7 @@ interface LecturasCache {
   santos: SantoDelDia[];
 }
 
-const CACHE_KEY = "lvj_lecturas_publicadas_v11";
+const CACHE_KEY = "lvj_lecturas_publicadas_v14";
 
 const liturgicalStoleMap: Record<
   string,
@@ -116,6 +120,9 @@ const formatPsalmResponse = (value?: string) => {
   const response = value.trim().replace(/^R\s*[/.]+\.?\s*/i, "");
   return response ? `R/. ${response}` : "";
 };
+
+const findSantoForDate = (items: SantoDelDia[], fecha: string) =>
+  items.find((item) => santoMatchesDate(item, fecha)) ?? null;
 
 const renderPsalmLine = (value: string) =>
   value.split(/(R\s*[/.]+\.?)/gi).map((part, index) => {
@@ -389,6 +396,108 @@ const ReflectionAudioCard = ({ audioUrl }: { audioUrl?: string }) => (
   </article>
 );
 
+type ReflectionContent = Pick<
+  LectioDivina,
+  | "reflexion"
+  | "pregunta_meditar"
+  | "oracion"
+  | "compromiso"
+  | "mensaje_final"
+  | "audio_url"
+>;
+
+const buildReflectionContent = (
+  lectio: LectioDivina | null,
+  liturgia: LiturgiaDia | null,
+): ReflectionContent => ({
+  reflexion: lectio?.reflexion?.trim() || liturgia?.reflexion?.trim() || "",
+  pregunta_meditar:
+    lectio?.pregunta_meditar?.trim() ||
+    liturgia?.pregunta_meditar?.trim() ||
+    "",
+  oracion: lectio?.oracion?.trim() || liturgia?.oracion?.trim() || "",
+  compromiso: lectio?.compromiso?.trim() || liturgia?.compromiso?.trim() || "",
+  mensaje_final:
+    lectio?.mensaje_final?.trim() || liturgia?.mensaje_final?.trim() || "",
+  audio_url: lectio?.audio_url?.trim() || liturgia?.audio_url?.trim() || "",
+});
+
+const hasReflectionContent = (content: ReflectionContent) =>
+  Boolean(
+    content.reflexion ||
+      content.pregunta_meditar ||
+      content.oracion ||
+      content.compromiso ||
+      content.mensaje_final,
+  );
+
+const ReflectionView = ({
+  lectio,
+  liturgia,
+  expandedId,
+  onToggle,
+}: {
+  lectio: LectioDivina | null;
+  liturgia: LiturgiaDia | null;
+  expandedId: string | null;
+  onToggle: (id: string) => void;
+}) => {
+  const content = buildReflectionContent(lectio, liturgia);
+
+  return (
+    <div className="space-y-4">
+      {!hasReflectionContent(content) && (
+        <article className="rounded-2xl border border-[#e6d8bf] bg-white p-5 text-[#263349] shadow-[0_12px_32px_-28px_rgba(8,35,71,0.45)]">
+          Todavía no hay reflexión publicada para esta fecha.
+        </article>
+      )}
+
+      <ExpandableContentCard
+        id="reflexion-lvj"
+        title="Reflexión LVJ"
+        subtitle="La Palabra de hoy para tu vida"
+        text={content.reflexion}
+        icon={<Sparkles className="h-5 w-5" />}
+        expanded={expandedId === "reflexion-lvj"}
+        onToggle={onToggle}
+      />
+      <ExpandableContentCard
+        id="pregunta-meditar"
+        title="Pregunta para Meditar"
+        text={content.pregunta_meditar}
+        icon={<MessageCircleQuestion className="h-5 w-5" />}
+        expanded={expandedId === "pregunta-meditar"}
+        onToggle={onToggle}
+      />
+      <ExpandableContentCard
+        id="oracion-final"
+        title="Oración"
+        text={content.oracion}
+        icon={<Heart className="h-5 w-5" />}
+        expanded={expandedId === "oracion-final"}
+        onToggle={onToggle}
+      />
+      <ExpandableContentCard
+        id="compromiso"
+        title="Compromiso"
+        text={content.compromiso}
+        icon={<CheckCircle2 className="h-5 w-5" />}
+        expanded={expandedId === "compromiso"}
+        onToggle={onToggle}
+      />
+      <ExpandableContentCard
+        id="mensaje-final"
+        title="Mensaje Final"
+        text={content.mensaje_final}
+        icon={<Star className="h-5 w-5" />}
+        expanded={expandedId === "mensaje-final"}
+        onToggle={onToggle}
+      />
+      <ReflectionAudioCard audioUrl={content.audio_url} />
+    </div>
+  );
+};
+
 const DesktopSidebar = ({
   activeTab,
   onSelectTab,
@@ -439,22 +548,25 @@ const DesktopSidebar = ({
   </aside>
 );
 
-const santoBaseFields = new Set([
-  "fecha",
-  "nombre",
-  "titulo",
-  "resumen",
-  "historia",
-  "lectura_espiritual",
-  "imagen_url",
-  "frase_destacada",
-  "estado",
-]);
-
-const formatFieldTitle = (key: string) =>
-  key
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+const santoContentSections: Array<{
+  key: keyof Pick<
+    SantoDelDia,
+    | "lucha_que_enfrento"
+    | "secreto_de_santidad"
+    | "ensenanza_para_hoy"
+    | "como_puedo_imitarlo"
+    | "paso_concreto"
+    | "oracion_intercesion"
+  >;
+  title: string;
+}> = [
+  { key: "lucha_que_enfrento", title: "La lucha que enfrentó" },
+  { key: "secreto_de_santidad", title: "El secreto de su santidad" },
+  { key: "ensenanza_para_hoy", title: "Enseñanza para hoy" },
+  { key: "como_puedo_imitarlo", title: "Cómo puedo imitarlo" },
+  { key: "paso_concreto", title: "Paso concreto para hoy" },
+  { key: "oracion_intercesion", title: "Oración de intercesión" },
+];
 
 const SantoView = ({
   santo,
@@ -473,10 +585,9 @@ const SantoView = ({
     );
   }
 
-  const extraFields = Object.entries(santo).filter(([key, value]) => {
-    const text = typeof value === "string" ? value.trim() : "";
-    return text && !santoBaseFields.has(key);
-  });
+  const contentSections = santoContentSections.filter(({ key }) =>
+    santo[key]?.trim(),
+  );
 
   return (
     <div className="space-y-4">
@@ -514,28 +625,12 @@ const SantoView = ({
         )}
       </article>
 
-      <ExpandableContentCard
-        id="historia-santo"
-        title="Historia"
-        text={santo.historia}
-        icon={<BookOpen className="h-5 w-5" />}
-        expanded={expandedId === "historia-santo"}
-        onToggle={onToggle}
-      />
-      <ExpandableContentCard
-        id="lectura-espiritual-santo"
-        title="Lectura espiritual"
-        text={santo.lectura_espiritual}
-        icon={<Sparkles className="h-5 w-5" />}
-        expanded={expandedId === "lectura-espiritual-santo"}
-        onToggle={onToggle}
-      />
-      {extraFields.map(([key, value]) => (
+      {contentSections.map(({ key, title }) => (
         <ExpandableContentCard
           key={key}
           id={`santo-${key}`}
-          title={formatFieldTitle(key)}
-          text={value}
+          title={title}
+          text={santo[key]}
           icon={<Sparkles className="h-5 w-5" />}
           expanded={expandedId === `santo-${key}`}
           onToggle={onToggle}
@@ -577,9 +672,7 @@ const LecturasDelDia = () => {
       setLectio(
         cached.lectios.find((item) => item.fecha === cachedToday.fecha) ?? null,
       );
-      setSanto(
-        cached.santos.find((item) => item.fecha === cachedToday.fecha) ?? null,
-      );
+      setSanto(findSantoForDate(cached.santos, cachedToday.fecha));
       setLoading(false);
       setError(false);
     }
@@ -588,34 +681,67 @@ const LecturasDelDia = () => {
       getPublishedLiturgias(),
       getPublishedLectios(),
       getPublishedSantosDelDia(),
+      getTodayLiturgia(),
+      getTodayLectio(),
+      getTodaySantoDelDia(),
     ])
-      .then(([liturgiasData, lectiosData, santosData]) => {
+      .then(
+        ([
+          liturgiasData,
+          lectiosData,
+          santosData,
+          todayLiturgia,
+          todayLectio,
+          todaySanto,
+        ]) => {
         if (!mounted) return;
 
         const today = getTodayISO();
+        const mergedLiturgias =
+          todayLiturgia &&
+          !liturgiasData.some((item) => item.fecha === todayLiturgia.fecha)
+            ? [...liturgiasData, todayLiturgia].sort((a, b) =>
+                a.fecha.localeCompare(b.fecha),
+              )
+            : liturgiasData;
+        const mergedLectios =
+          todayLectio &&
+          !lectiosData.some((item) => item.fecha === todayLectio.fecha)
+            ? [...lectiosData, todayLectio].sort((a, b) =>
+                a.fecha.localeCompare(b.fecha),
+              )
+            : lectiosData;
+        const mergedSantos =
+          todaySanto &&
+          !santosData.some((item) => santoMatchesDate(item, todaySanto.fecha))
+            ? [...santosData, todaySanto]
+            : santosData;
         const initialLiturgia =
-          liturgiasData.find((item) => item.fecha === today) ??
-          liturgiasData[liturgiasData.length - 1] ??
+          mergedLiturgias.find((item) => item.fecha === today) ??
+          todayLiturgia ??
+          mergedLiturgias[mergedLiturgias.length - 1] ??
           null;
         const initialDate = initialLiturgia?.fecha ?? today;
 
         setSelectedDate(initialDate);
         setLiturgia(initialLiturgia);
         setLectio(
-          lectiosData.find((item) => item.fecha === initialDate) ?? null,
+          mergedLectios.find((item) => item.fecha === initialDate) ??
+            (initialDate === today ? todayLectio : null),
         );
         setSanto(
-          santosData.find((item) => item.fecha === initialDate) ?? null,
+          findSantoForDate(mergedSantos, initialDate) ??
+            (initialDate === today ? todaySanto : null),
         );
-        setLiturgias(liturgiasData);
-        setLectios(lectiosData);
-        setSantos(santosData);
+        setLiturgias(mergedLiturgias);
+        setLectios(mergedLectios);
+        setSantos(mergedSantos);
         writeLecturasCache({
-          liturgias: liturgiasData,
-          lectios: lectiosData,
-          santos: santosData,
+          liturgias: mergedLiturgias,
+          lectios: mergedLectios,
+          santos: mergedSantos,
         });
-        setError(!initialLiturgia && liturgiasData.length === 0);
+        setError(!initialLiturgia && mergedLiturgias.length === 0);
       })
       .catch(() => {
         if (mounted) setError(true);
@@ -634,7 +760,7 @@ const LecturasDelDia = () => {
       liturgias.find((item) => item.fecha === selectedDate) ?? null;
     setLiturgia(selectedLiturgia);
     setLectio(lectios.find((item) => item.fecha === selectedDate) ?? null);
-    setSanto(santos.find((item) => item.fecha === selectedDate) ?? null);
+    setSanto(findSantoForDate(santos, selectedDate));
     setExpandedId(null);
   }, [lectios, liturgias, santos, selectedDate]);
 
@@ -896,6 +1022,15 @@ const LecturasDelDia = () => {
               )}
 
               {activeTab === "reflexion" && (
+                <ReflectionView
+                  lectio={lectio}
+                  liturgia={liturgia}
+                  expandedId={expandedId}
+                  onToggle={toggleExpanded}
+                />
+              )}
+
+              {false && activeTab === "reflexion" && (
                 <div className="space-y-4">
                   <ExpandableContentCard
                     id="reflexion-lvj"
