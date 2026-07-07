@@ -1,3 +1,4 @@
+import type { ExecuteValues } from "mysql2";
 import { getMysqlPool, hasMysqlConfig } from "./_mysql.js";
 
 type ApiResponse = {
@@ -8,6 +9,7 @@ type ApiResponse = {
 };
 
 type DbRow = Record<string, unknown>;
+type DbParams = ExecuteValues;
 
 const text = (row: DbRow | null | undefined, ...keys: string[]) => {
   if (!row) return "";
@@ -33,12 +35,12 @@ const boolValue = (value: unknown, fallback = false) => {
   );
 };
 
-const firstRow = async (sql: string, params: DbRow = {}) => {
+const firstRow = async (sql: string, params: DbParams = []) => {
   const [rows] = await getMysqlPool().execute(sql, params);
   return (rows as DbRow[])[0] ?? null;
 };
 
-const optionalFirstRow = async (sql: string, params: DbRow = {}) => {
+const optionalFirstRow = async (sql: string, params: DbParams = []) => {
   try {
     return await firstRow(sql, params);
   } catch {
@@ -46,7 +48,7 @@ const optionalFirstRow = async (sql: string, params: DbRow = {}) => {
   }
 };
 
-const optionalRows = async (sql: string, params: DbRow = {}) => {
+const optionalRows = async (sql: string, params: DbParams = []) => {
   try {
     const [rows] = await getMysqlPool().execute(sql, params);
     return rows as DbRow[];

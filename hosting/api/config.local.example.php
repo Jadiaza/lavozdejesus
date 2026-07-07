@@ -10,4 +10,3 @@ return [
   'db_user' => 'lavozdej_lvjapp',
   'db_pass' => 'CAMBIA_ESTA_CLAVE',
 ];
-||
