@@ -146,8 +146,11 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
 const normalizeApiBaseUrl = (value: string | undefined) =>
   value?.trim().replace(/\/+$/, "") ?? "";
 
+const DEFAULT_PRODUCTION_API_BASE_URL = "https://lavozdejesus.co";
+
 const API_BASE_URL = normalizeApiBaseUrl(
-  import.meta.env.VITE_API_BASE_URL as string | undefined,
+  (import.meta.env.VITE_API_BASE_URL as string | undefined) ??
+    (import.meta.env.PROD ? DEFAULT_PRODUCTION_API_BASE_URL : undefined),
 );
 
 const buildApiUrl = (path: string) => {
