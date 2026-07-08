@@ -12,6 +12,23 @@ interface GospelCardProps {
   compact?: boolean;
 }
 
+const splitPalabraForDisplay = (value: string) => {
+  const trimmed = value.trim();
+  const match = trimmed.match(/^(«[^»]+»|“[^”]+”|"[^"]+")\s+(.+)$/);
+
+  if (!match) {
+    return {
+      frase: trimmed,
+      referencia: "",
+    };
+  }
+
+  return {
+    frase: match[1],
+    referencia: match[2].trim(),
+  };
+};
+
 export const GospelCard = ({
   palabraHoy,
   onRead,
@@ -65,6 +82,7 @@ export const GospelCard = ({
       : error
         ? "La Palabra para hoy estara disponible pronto."
         : "La Palabra para hoy estara disponible pronto.");
+  const palabraDisplay = splitPalabraForDisplay(palabraHoyActual);
   const actionClassName =
     "shrink-0 inline-flex items-center gap-1 gold-border rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-gold hover:bg-gold/10 transition";
 
@@ -92,9 +110,17 @@ export const GospelCard = ({
           </span>
         </div>
 
-        <p className="mx-auto flex-1 max-w-[22rem] content-center text-center text-[15px] font-semibold leading-snug text-foreground/95 sm:text-base">
-          {palabraHoyActual}
-        </p>
+        <div className="mx-auto flex flex-1 max-w-[22rem] flex-col justify-center">
+          <p className="text-center text-[15px] font-semibold leading-snug text-foreground/95 sm:text-base">
+            {palabraDisplay.frase}
+          </p>
+
+          {palabraDisplay.referencia && (
+            <p className="mt-3 text-left text-sm font-semibold leading-tight text-gold">
+              {palabraDisplay.referencia}
+            </p>
+          )}
+        </div>
 
         <div className="mt-4 flex justify-end">
           {onRead ? (
