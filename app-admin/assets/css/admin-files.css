@@ -736,6 +736,7 @@ textarea::placeholder {
   min-width: min(100%, 280px);
 }
 
+.content-overview-panel,
 .content-editor-panel {
   max-width: 1180px;
   margin-right: auto;
@@ -748,6 +749,44 @@ textarea::placeholder {
   max-width: 1180px;
   margin-right: auto;
   margin-left: auto;
+}
+
+.content-overview,
+.content-actions-bar,
+.content-list-header,
+.content-list-tools {
+  display: flex;
+  gap: 16px;
+}
+
+.content-overview,
+.content-list-header {
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.content-actions-bar,
+.content-list-tools {
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.content-filter-form {
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.content-filter-form input {
+  min-height: 42px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  padding: 10px 12px;
 }
 
 .content-form {
@@ -872,6 +911,43 @@ textarea::placeholder {
   margin-top: 12px;
 }
 
+.actions form {
+  margin: 0;
+}
+
+.actions button.danger-action {
+  border-color: rgba(153, 27, 27, 0.18);
+  color: #991b1b;
+}
+
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.pagination a,
+.pagination span {
+  min-width: 38px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  background: #fff;
+  color: #344054;
+  font-size: 13px;
+  font-weight: 850;
+  padding: 8px 11px;
+  text-align: center;
+}
+
+.pagination .active {
+  border-color: rgba(212, 175, 55, 0.65);
+  background: linear-gradient(135deg, var(--gold-2), var(--gold));
+  color: #07182a;
+  box-shadow: 0 10px 22px rgba(212, 175, 55, 0.18);
+}
+
 .login-page {
   display: grid;
   align-content: center;
@@ -987,6 +1063,23 @@ textarea::placeholder {
   }
 
   .table-selector {
+    width: 100%;
+  }
+
+  .content-overview,
+  .content-actions-bar,
+  .content-list-tools {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .content-actions-bar,
+  .content-list-tools {
+    width: 100%;
+  }
+
+  .content-filter-form {
+    grid-template-columns: 1fr;
     width: 100%;
   }
 

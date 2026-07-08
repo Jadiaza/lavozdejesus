@@ -1,4 +1,43 @@
-<?php $currentAdminPage = basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')); ?>
+<?php
+$currentAdminPage = basename((string) ($_SERVER['SCRIPT_NAME'] ?? ''));
+$currentModule = (string) ($_GET['module'] ?? '');
+$currentTable = (string) ($_GET['table'] ?? '');
+
+function side_nav_active(string $page = '', string $module = '', string $table = ''): string
+{
+  global $currentAdminPage, $currentModule, $currentTable;
+
+  if ($page !== '' && $currentAdminPage === $page) {
+    return 'active';
+  }
+
+  if ($module !== '' && $currentModule === $module) {
+    if ($table === '') {
+      $moduleTableExceptions = [
+        'radio' => ['lvj_rad_programacion'],
+        'capilla' => ['lvj_com_peticiones_oracion'],
+      ];
+
+      if (isset($moduleTableExceptions[$module]) && in_array($currentTable, $moduleTableExceptions[$module], true)) {
+        return '';
+      }
+
+      return 'active';
+    }
+
+    return $currentTable === $table ? 'active' : '';
+  }
+
+  return '';
+}
+
+function side_files_active(): string
+{
+  global $currentAdminPage;
+
+  return in_array($currentAdminPage, ['files.php', 'upload.php', 'edit_file.php', 'folders.php', 'download.php'], true) ? 'active' : '';
+}
+?>
 <aside class="sidebar" data-sidebar>
   <div class="brand brand-large">
     <div class="brand-emblem">LVJ</div>
@@ -9,21 +48,21 @@
   </div>
 
   <nav class="side-nav">
-    <a class="<?php echo $currentAdminPage === 'dashboard.php' ? 'active' : ''; ?>" href="dashboard.php"><span class="nav-icon">D</span> Dashboard</a>
-    <a href="content.php?module=radio"><span class="nav-icon">R</span> Radio en Vivo</a>
-    <a href="content.php?module=radio&table=lvj_rad_programacion"><span class="nav-icon">P</span> Programacion</a>
-    <a href="content.php?module=capilla"><span class="nav-icon">C</span> Capilla Virtual</a>
-    <a href="content.php?module=capilla&table=lvj_com_peticiones_oracion"><span class="nav-icon">I</span> Intenciones de Oracion</a>
-    <a href="content.php?module=liturgia"><span class="nav-icon">L</span> Liturgia del Dia</a>
-    <a href="content.php?module=santoral"><span class="nav-icon">S</span> Santoral</a>
-    <a href="content.php?module=biblia"><span class="nav-icon">B</span> Biblia / Planes</a>
-    <a href="content.php?module=oracion"><span class="nav-icon">O</span> Rosario</a>
-    <a href="content.php?module=podcast"><span class="nav-icon">Pc</span> Podcast</a>
-    <a href="files.php"><span class="nav-icon">A</span> Biblioteca / Archivos</a>
-    <a href="content.php?module=economia"><span class="nav-icon">$</span> Donaciones</a>
-    <a href="content.php?module=publicidad"><span class="nav-icon">Ad</span> Publicidad</a>
-    <a href="content.php?module=usuarios"><span class="nav-icon">U</span> Usuarios y Roles</a>
-    <a href="content.php?module=configuracion"><span class="nav-icon">Cf</span> Configuracion</a>
+    <a class="<?php echo side_nav_active('dashboard.php'); ?>" href="dashboard.php"><span class="nav-icon">D</span> Dashboard</a>
+    <a class="<?php echo side_nav_active('', 'radio', ''); ?>" href="content.php?module=radio"><span class="nav-icon">R</span> Radio en Vivo</a>
+    <a class="<?php echo side_nav_active('', 'radio', 'lvj_rad_programacion'); ?>" href="content.php?module=radio&table=lvj_rad_programacion"><span class="nav-icon">P</span> Programacion</a>
+    <a class="<?php echo side_nav_active('', 'capilla', ''); ?>" href="content.php?module=capilla"><span class="nav-icon">C</span> Capilla Virtual</a>
+    <a class="<?php echo side_nav_active('', 'capilla', 'lvj_com_peticiones_oracion'); ?>" href="content.php?module=capilla&table=lvj_com_peticiones_oracion"><span class="nav-icon">I</span> Intenciones de Oracion</a>
+    <a class="<?php echo side_nav_active('', 'liturgia'); ?>" href="content.php?module=liturgia"><span class="nav-icon">L</span> Liturgia del Dia</a>
+    <a class="<?php echo side_nav_active('', 'santoral'); ?>" href="content.php?module=santoral"><span class="nav-icon">S</span> Santoral</a>
+    <a class="<?php echo side_nav_active('', 'biblia'); ?>" href="content.php?module=biblia"><span class="nav-icon">B</span> Biblia / Planes</a>
+    <a class="<?php echo side_nav_active('', 'oracion'); ?>" href="content.php?module=oracion"><span class="nav-icon">O</span> Rosario</a>
+    <a class="<?php echo side_nav_active('', 'podcast'); ?>" href="content.php?module=podcast"><span class="nav-icon">Pc</span> Podcast</a>
+    <a class="<?php echo side_files_active(); ?>" href="files.php"><span class="nav-icon">A</span> Biblioteca / Archivos</a>
+    <a class="<?php echo side_nav_active('', 'economia'); ?>" href="content.php?module=economia"><span class="nav-icon">$</span> Donaciones</a>
+    <a class="<?php echo side_nav_active('', 'publicidad'); ?>" href="content.php?module=publicidad"><span class="nav-icon">Ad</span> Publicidad</a>
+    <a class="<?php echo side_nav_active('', 'usuarios'); ?>" href="content.php?module=usuarios"><span class="nav-icon">U</span> Usuarios y Roles</a>
+    <a class="<?php echo side_nav_active('', 'configuracion'); ?>" href="content.php?module=configuracion"><span class="nav-icon">Cf</span> Configuracion</a>
   </nav>
 
   <div class="server-card">
