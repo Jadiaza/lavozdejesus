@@ -41,7 +41,8 @@ export const BottomNav = ({
 }: {
   activeLabel?: string;
 }) => {
-  const items = activeLabel === "Capilla" ? capillaItems : defaultItems;
+  const usesCapillaNav = activeLabel === "Capilla" || activeLabel === "Biblia";
+  const items = usesCapillaNav ? capillaItems : defaultItems;
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-[9998] w-full max-w-full overflow-x-hidden xl:hidden">

@@ -11,9 +11,12 @@ import Programacion from "./pages/Programacion.tsx";
 import Radio from "./pages/Radio.tsx";
 import Capilla from "./pages/Capilla.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import BibliaHome from "./pages/biblia/BibliaHome.tsx";
+import BibliaImportar from "./pages/biblia/BibliaImportar.tsx";
+import BibliaLeer from "./pages/biblia/BibliaLeer.tsx";
+import BibliaProximamente from "./pages/biblia/BibliaProximamente.tsx";
 import {
   AcercaDe,
-  Biblia,
   Devociones,
   Donar,
   Eventos,
@@ -43,8 +46,11 @@ const App = () => (
             <Route path="/lecturas-del-dia" element={<LecturasDelDia />} />
             <Route path="/lectura-del-dia" element={<LecturasDelDia />} />
             <Route path="/programacion" element={<Programacion />} />
-            <Route path="/biblia" element={<Biblia />} />
-            <Route path="/Biblia" element={<Biblia />} />
+            <Route path="/biblia" element={<BibliaHome />} />
+            <Route path="/Biblia" element={<BibliaHome />} />
+            <Route path="/biblia/leer" element={<BibliaLeer />} />
+            <Route path="/biblia/importar" element={<BibliaImportar />} />
+            <Route path="/biblia/:section" element={<BibliaProximamente />} />
             <Route path="/devociones" element={<Devociones />} />
             <Route path="/liturgia" element={<Liturgia />} />
             <Route path="/formacion" element={<Formacion />} />

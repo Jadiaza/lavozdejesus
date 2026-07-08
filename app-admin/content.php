@@ -658,6 +658,49 @@ function content_display_cell(string $table, string $field, $value): string
   return content_display_value($value);
 }
 
+function content_status_label($value): array
+{
+  $raw = trim((string) $value);
+  $normalized = strtolower($raw);
+
+  if ($raw === '1' || in_array($normalized, ['activo', 'publicado', 'active'], true)) {
+    return ['Activo', 'active'];
+  }
+
+  if ($raw === '0' || in_array($normalized, ['inactivo', 'desactivado', 'inactive'], true)) {
+    return ['Inactivo', 'inactive'];
+  }
+
+  if (in_array($normalized, ['borrador', 'draft'], true)) {
+    return ['Borrador', 'draft'];
+  }
+
+  if (in_array($normalized, ['eliminado', 'deleted'], true)) {
+    return ['Eliminado', 'inactive'];
+  }
+
+  return [$raw !== '' ? ucfirst($raw) : 'Sin estado', 'neutral'];
+}
+
+function content_cell_html(string $table, string $field, $value): string
+{
+  if (content_is_status_field($field)) {
+    [$label, $state] = content_status_label($value);
+    return '<span class="status-pill status-' . e($state) . '">' . e($label) . '</span>';
+  }
+
+  if (strpos($field, 'url') !== false || strpos($field, 'imagen') !== false || strpos($field, 'audio') !== false || strpos($field, 'video') !== false) {
+    $text = trim((string) $value);
+    if ($text === '') {
+      return '<span class="muted">Sin recurso</span>';
+    }
+
+    return '<a class="resource-link" href="' . e($text) . '" target="_blank" rel="noopener">Ver recurso</a>';
+  }
+
+  return e(content_display_cell($table, $field, $value));
+}
+
 function content_field_class(string $field, string $type): string
 {
   $wideHints = ['descripcion', 'contenido', 'reflexion', 'texto', 'frase', 'notas', 'beneficios'];
@@ -941,6 +984,7 @@ $page = max(1, (int) ($_GET['page'] ?? 1));
 $perPage = 20;
 $totalRows = 0;
 $totalPages = 1;
+$searchPlaceholder = $moduleKey === 'liturgia' ? 'Buscar por fecha, tema, santo...' : 'Buscar registros...';
 
 try {
   $whereParts = [];
@@ -989,6 +1033,9 @@ try {
   $error = $error ?: 'No se pudieron cargar registros: ' . $listError->getMessage();
 }
 
+$shownFrom = $totalRows > 0 ? (($page - 1) * $perPage) + 1 : 0;
+$shownTo = $totalRows > 0 ? min($totalRows, $page * $perPage) : 0;
+
 $pageTitle = $module['title'];
 $pageSubtitle = $module['subtitle'];
 require __DIR__ . '/includes/header.php';
@@ -1018,7 +1065,7 @@ require __DIR__ . '/includes/header.php';
         </select>
       </form>
       <?php if ($columns): ?>
-        <a class="btn btn-gold" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&action=new">Agregar registro</a>
+        <a class="btn btn-gold add-record-button" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&action=new"><span>+</span> Agregar registro</a>
       <?php endif; ?>
     </div>
   </div>
@@ -1086,28 +1133,28 @@ require __DIR__ . '/includes/header.php';
   </section>
 <?php endif; ?>
 
-<section class="panel content-records-panel">
+<section class="panel content-records-panel content-grid-card">
   <div class="panel-header content-list-header">
     <div>
       <h2>Registros</h2>
       <p class="muted">Consulta, filtra y administra los registros existentes antes de abrir un formulario.</p>
     </div>
     <div class="content-list-tools">
-      <span class="badge"><?php echo (int) $totalRows; ?> registros</span>
       <form method="get" class="content-filter-form">
         <input type="hidden" name="module" value="<?php echo e($moduleKey); ?>">
         <input type="hidden" name="table" value="<?php echo e($table); ?>">
-        <input type="search" name="q" value="<?php echo e($search); ?>" placeholder="Buscar registros...">
+        <input type="search" name="q" value="<?php echo e($search); ?>" placeholder="<?php echo e($searchPlaceholder); ?>">
         <button class="btn btn-soft" type="submit">Buscar</button>
         <?php if ($search !== ''): ?>
           <a class="btn btn-soft" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>">Limpiar</a>
         <?php endif; ?>
       </form>
+      <span class="badge records-badge"><?php echo (int) $totalRows; ?> registros</span>
     </div>
   </div>
 
   <div class="table-wrap">
-    <table>
+    <table class="admin-grid-table">
       <thead>
         <tr>
           <?php foreach (array_slice($listColumns, 0, 6) as $column): ?>
@@ -1121,16 +1168,16 @@ require __DIR__ . '/includes/header.php';
           <tr>
             <?php foreach (array_slice($listColumns, 0, 6) as $column): ?>
               <?php $field = (string) $column['Field']; ?>
-              <td><?php echo e(content_display_cell($table, $field, $row[$field] ?? '')); ?></td>
+              <td><?php echo content_cell_html($table, $field, $row[$field] ?? ''); ?></td>
             <?php endforeach; ?>
-            <td class="actions">
-              <a href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&edit=<?php echo (int) $row['id']; ?>">Editar</a>
+            <td class="actions grid-actions">
+              <a class="action-button action-edit" title="Editar registro" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&edit=<?php echo (int) $row['id']; ?>">Editar</a>
               <form method="post" onsubmit="return confirm('Eliminar o desactivar este registro?');">
                 <?php echo csrf_field(); ?>
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="table" value="<?php echo e($table); ?>">
                 <input type="hidden" name="id" value="<?php echo (int) $row['id']; ?>">
-                <button class="danger-action" type="submit">Eliminar</button>
+                <button class="action-button action-delete danger-action" type="submit" title="Eliminar registro">Eliminar</button>
               </form>
             </td>
           </tr>
@@ -1142,33 +1189,36 @@ require __DIR__ . '/includes/header.php';
     </table>
   </div>
 
-  <?php if ($totalPages > 1): ?>
-    <nav class="pagination" aria-label="Paginacion de registros">
-      <?php
-        $paginationBase = ['module' => $moduleKey, 'table' => $table];
-        if ($search !== '') {
-          $paginationBase['q'] = $search;
-        }
-      ?>
-      <?php if ($page > 1): ?>
-        <a href="content.php?<?php echo e(http_build_query($paginationBase + ['page' => $page - 1])); ?>">Anterior</a>
-      <?php endif; ?>
-      <?php
-        $startPage = max(1, $page - 2);
-        $endPage = min($totalPages, $page + 2);
-      ?>
-      <?php for ($pageItem = $startPage; $pageItem <= $endPage; $pageItem++): ?>
-        <?php if ($pageItem === $page): ?>
-          <span class="active"><?php echo (int) $pageItem; ?></span>
-        <?php else: ?>
-          <a href="content.php?<?php echo e(http_build_query($paginationBase + ['page' => $pageItem])); ?>"><?php echo (int) $pageItem; ?></a>
+  <div class="records-footer">
+    <p>Mostrando <?php echo (int) $shownFrom; ?> a <?php echo (int) $shownTo; ?> de <?php echo (int) $totalRows; ?> registros</p>
+    <?php if ($totalPages > 1): ?>
+      <nav class="pagination" aria-label="Paginacion de registros">
+        <?php
+          $paginationBase = ['module' => $moduleKey, 'table' => $table];
+          if ($search !== '') {
+            $paginationBase['q'] = $search;
+          }
+        ?>
+        <?php if ($page > 1): ?>
+          <a href="content.php?<?php echo e(http_build_query($paginationBase + ['page' => $page - 1])); ?>">Anterior</a>
         <?php endif; ?>
-      <?php endfor; ?>
-      <?php if ($page < $totalPages): ?>
-        <a href="content.php?<?php echo e(http_build_query($paginationBase + ['page' => $page + 1])); ?>">Siguiente</a>
-      <?php endif; ?>
-    </nav>
-  <?php endif; ?>
+        <?php
+          $startPage = max(1, $page - 2);
+          $endPage = min($totalPages, $page + 2);
+        ?>
+        <?php for ($pageItem = $startPage; $pageItem <= $endPage; $pageItem++): ?>
+          <?php if ($pageItem === $page): ?>
+            <span class="active"><?php echo (int) $pageItem; ?></span>
+          <?php else: ?>
+            <a href="content.php?<?php echo e(http_build_query($paginationBase + ['page' => $pageItem])); ?>"><?php echo (int) $pageItem; ?></a>
+          <?php endif; ?>
+        <?php endfor; ?>
+        <?php if ($page < $totalPages): ?>
+          <a href="content.php?<?php echo e(http_build_query($paginationBase + ['page' => $page + 1])); ?>">Siguiente</a>
+        <?php endif; ?>
+      </nav>
+    <?php endif; ?>
+  </div>
 </section>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>
