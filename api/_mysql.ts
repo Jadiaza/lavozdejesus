@@ -13,7 +13,7 @@ const getEnv = (...keys: string[]) => {
 
 export const hasMysqlConfig = () =>
   Boolean(
-    getEnv("MYSQL_HOST", "DB_HOST") &&
+      getEnv("MYSQL_HOST", "DB_HOST") &&
       getEnv("MYSQL_DATABASE", "MYSQL_DB", "DB_NAME") &&
       getEnv("MYSQL_USER", "DB_USER") &&
       getEnv("MYSQL_PASSWORD", "DB_PASSWORD"),
