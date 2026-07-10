@@ -98,6 +98,41 @@ export interface ProgramacionRadio {
   estado: EstadoContenido;
 }
 
+export interface CapillaPublica {
+  id: string;
+  nombre: string;
+  subtitulo: string;
+  descripcion: string;
+  pais: string;
+  ciudad: string;
+  sitio_web: string;
+  imagen_url: string;
+  logo_url: string;
+  es_principal: boolean;
+  es_respaldo: boolean;
+  prioridad: number;
+  estado: EstadoContenido | "activo" | "activa";
+  updated_at: string;
+  stream: CapillaStreamPublico | null;
+}
+
+export interface CapillaStreamPublico {
+  id: string;
+  capilla_id: string;
+  nombre: string;
+  tipo_stream: "hls" | "youtube" | "iframe" | "vimeo" | "audio" | "otro" | string;
+  calidad: string;
+  url_stream: string;
+  url_origen: string;
+  requiere_token: boolean;
+  requiere_referer: boolean;
+  referer_url: string;
+  es_principal: boolean;
+  estado: EstadoContenido | "activo" | "activa";
+  ultima_verificacion: string;
+  updated_at: string;
+}
+
 export interface AppConfig {
   radio_stream_url: string;
   radio_metadata_url: string;
@@ -179,6 +214,10 @@ const SANTORAL_API_URL =
 const PROGRAMACION_API_URL =
   (import.meta.env.VITE_PROGRAMACION_API_URL as string | undefined) ??
   buildApiUrl("/api/programacion");
+
+const CAPILLA_API_URL =
+  (import.meta.env.VITE_CAPILLA_API_URL as string | undefined) ??
+  buildApiUrl("/api/capilla");
 
 const clean = (value: unknown) =>
   typeof value === "string" || typeof value === "number"
@@ -560,6 +599,58 @@ export async function getPublishedProgramacion(): Promise<ProgramacionRadio[]> {
   return rows
     .map(normalizeProgramacion)
     .filter((row) => row.programa && isVisibleContent(row.estado));
+}
+
+export async function getCapillaPublica(): Promise<CapillaPublica | null> {
+  if (!CAPILLA_API_URL) return null;
+
+  try {
+    const response = await fetch(CAPILLA_API_URL, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) return null;
+
+    const data = (await response.json()) as Partial<CapillaPublica> | null;
+    if (!data || !clean(data.nombre)) return null;
+
+    return {
+      id: clean(data.id),
+      nombre: clean(data.nombre),
+      subtitulo: clean(data.subtitulo),
+      descripcion: clean(data.descripcion),
+      pais: clean(data.pais),
+      ciudad: clean(data.ciudad),
+      sitio_web: clean(data.sitio_web),
+      imagen_url: normalizeImageUrl(data.imagen_url),
+      logo_url: normalizeImageUrl(data.logo_url),
+      es_principal: Boolean(data.es_principal),
+      es_respaldo: Boolean(data.es_respaldo),
+      prioridad: Number(data.prioridad ?? 0),
+      estado: (clean(data.estado) || "activo") as CapillaPublica["estado"],
+      updated_at: clean(data.updated_at),
+      stream: data.stream
+        ? {
+            id: clean(data.stream.id),
+            capilla_id: clean(data.stream.capilla_id),
+            nombre: clean(data.stream.nombre),
+            tipo_stream: clean(data.stream.tipo_stream) || "hls",
+            calidad: clean(data.stream.calidad) || "auto",
+            url_stream: clean(data.stream.url_stream),
+            url_origen: clean(data.stream.url_origen),
+            requiere_token: Boolean(data.stream.requiere_token),
+            requiere_referer: Boolean(data.stream.requiere_referer),
+            referer_url: clean(data.stream.referer_url),
+            es_principal: Boolean(data.stream.es_principal),
+            estado: (clean(data.stream.estado) || "activo") as CapillaStreamPublico["estado"],
+            ultima_verificacion: clean(data.stream.ultima_verificacion),
+            updated_at: clean(data.stream.updated_at),
+          }
+        : null,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function getRosarios() {

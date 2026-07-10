@@ -15,7 +15,7 @@ function side_nav_active(string $page = '', string $module = '', string $table =
     if ($table === '') {
       $moduleTableExceptions = [
         'radio' => ['lvj_rad_programacion'],
-        'capilla' => ['lvj_com_peticiones_oracion'],
+        'capilla' => ['lvj_capillas', 'lvj_capilla_streams', 'lvj_com_peticiones_oracion', 'lvj_com_grupos_oracion', 'lvj_com_testimonios'],
       ];
 
       if (isset($moduleTableExceptions[$module]) && in_array($currentTable, $moduleTableExceptions[$module], true)) {
@@ -52,6 +52,8 @@ function side_files_active(): string
     <a class="<?php echo side_nav_active('', 'radio', ''); ?>" href="content.php?module=radio"><span class="nav-icon">R</span> Radio en Vivo</a>
     <a class="<?php echo side_nav_active('', 'radio', 'lvj_rad_programacion'); ?>" href="content.php?module=radio&table=lvj_rad_programacion"><span class="nav-icon">P</span> Programacion</a>
     <a class="<?php echo side_nav_active('', 'capilla', ''); ?>" href="content.php?module=capilla"><span class="nav-icon">C</span> Capilla Virtual</a>
+    <a class="<?php echo side_nav_active('', 'capilla', 'lvj_capillas'); ?>" href="content.php?module=capilla&table=lvj_capillas"><span class="nav-icon">Ca</span> Capillas</a>
+    <a class="<?php echo side_nav_active('', 'capilla', 'lvj_capilla_streams'); ?>" href="content.php?module=capilla&table=lvj_capilla_streams"><span class="nav-icon">St</span> Streams</a>
     <a class="<?php echo side_nav_active('', 'capilla', 'lvj_com_peticiones_oracion'); ?>" href="content.php?module=capilla&table=lvj_com_peticiones_oracion"><span class="nav-icon">I</span> Intenciones de Oracion</a>
     <a class="<?php echo side_nav_active('', 'liturgia'); ?>" href="content.php?module=liturgia"><span class="nav-icon">L</span> Liturgia del Dia</a>
     <a class="<?php echo side_nav_active('', 'santoral'); ?>" href="content.php?module=santoral"><span class="nav-icon">S</span> Santoral</a>

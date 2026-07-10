@@ -39,6 +39,8 @@ $modules = [
     'title' => 'Capilla Virtual',
     'subtitle' => 'Recursos e intenciones para la capilla',
     'tables' => [
+      'lvj_capillas' => 'Capillas',
+      'lvj_capilla_streams' => 'Streams',
       'lvj_com_peticiones_oracion' => 'Peticiones de oracion',
       'lvj_com_grupos_oracion' => 'Grupos de oracion',
       'lvj_com_testimonios' => 'Testimonios',
@@ -178,6 +180,15 @@ function content_label(string $column): string
     'texto' => 'Texto',
     'frase_destacada' => 'Frase destacada',
     'estado' => 'Estado',
+    'subtitulo' => 'Subtitulo',
+    'pais' => 'Pais',
+    'ciudad' => 'Ciudad',
+    'sitio_web' => 'Sitio web',
+    'logo_url' => 'Logo',
+    'es_principal' => 'Es principal',
+    'es_respaldo' => 'Es respaldo',
+    'prioridad' => 'Prioridad',
+    'updated_at' => 'Actualizado',
     'activo' => 'Activo',
     'status' => 'Estado',
     'locutor_id' => 'Locutor',
@@ -250,6 +261,19 @@ function content_editable_columns(array $columns, string $table = ''): array
 
 function content_list_columns(array $columns, string $table = ''): array
 {
+  if ($table === 'lvj_capillas') {
+    $map = content_column_map($columns);
+    $preferred = ['id', 'nombre', 'ciudad', 'pais', 'estado', 'es_principal', 'es_respaldo', 'prioridad', 'updated_at'];
+    $ordered = [];
+    foreach ($preferred as $field) {
+      if (isset($map[$field])) {
+        $ordered[] = $map[$field];
+      }
+    }
+
+    return $ordered;
+  }
+
   return array_values(array_filter($columns, function ($column) use ($table) {
     $field = (string) $column['Field'];
 
@@ -257,9 +281,37 @@ function content_list_columns(array $columns, string $table = ''): array
   }));
 }
 
+function content_search_columns(array $columns, string $table): array
+{
+  if ($table === 'lvj_capillas') {
+    $map = content_column_map($columns);
+    return array_values(array_filter([
+      $map['nombre'] ?? null,
+      $map['ciudad'] ?? null,
+      $map['pais'] ?? null,
+    ]));
+  }
+
+  return array_slice(content_list_columns($columns, $table), 0, 8);
+}
+
 function content_order_columns_for_form(array $columns, string $table): array
 {
   $orders = [
+    'lvj_capillas' => [
+      'nombre',
+      'subtitulo',
+      'descripcion',
+      'pais',
+      'ciudad',
+      'sitio_web',
+      'imagen_url',
+      'logo_url',
+      'es_principal',
+      'es_respaldo',
+      'prioridad',
+      'estado',
+    ],
     'lvj_san_santo_dia' => [
       'mes',
       'dia',
@@ -303,6 +355,14 @@ function content_order_columns_for_form(array $columns, string $table): array
 
 function content_form_sections(string $table): array
 {
+  if ($table === 'lvj_capillas') {
+    return [
+      'identidad' => 'Identidad',
+      'recursos' => 'Recursos',
+      'estado' => 'Estado',
+    ];
+  }
+
   if ($table === 'lvj_lit_lectura_dia') {
     return [
       'general' => 'General',
@@ -324,6 +384,18 @@ function content_form_sections(string $table): array
 
 function content_field_section(string $table, string $field): string
 {
+  if ($table === 'lvj_capillas') {
+    if (in_array($field, ['nombre', 'subtitulo', 'descripcion', 'pais', 'ciudad'], true)) {
+      return 'identidad';
+    }
+
+    if (in_array($field, ['sitio_web', 'imagen_url', 'logo_url'], true)) {
+      return 'recursos';
+    }
+
+    return 'estado';
+  }
+
   if ($table === 'lvj_san_santo_dia') {
     $identityFields = [
       'mes',
@@ -663,11 +735,11 @@ function content_status_label($value): array
   $raw = trim((string) $value);
   $normalized = strtolower($raw);
 
-  if ($raw === '1' || in_array($normalized, ['activo', 'publicado', 'active'], true)) {
+  if ($raw === '1' || in_array($normalized, ['activo', 'activa', 'publicado', 'active'], true)) {
     return ['Activo', 'active'];
   }
 
-  if ($raw === '0' || in_array($normalized, ['inactivo', 'desactivado', 'inactive'], true)) {
+  if ($raw === '0' || in_array($normalized, ['inactivo', 'inactiva', 'desactivado', 'desactivada', 'inactive'], true)) {
     return ['Inactivo', 'inactive'];
   }
 
@@ -687,6 +759,11 @@ function content_cell_html(string $table, string $field, $value): string
   if (content_is_status_field($field)) {
     [$label, $state] = content_status_label($value);
     return '<span class="status-pill status-' . e($state) . '">' . e($label) . '</span>';
+  }
+
+  if (in_array($field, ['es_principal', 'es_respaldo'], true)) {
+    $active = (int) $value === 1;
+    return '<span class="status-pill status-' . ($active ? 'active' : 'neutral') . '">' . ($active ? 'Si' : 'No') . '</span>';
   }
 
   if (strpos($field, 'url') !== false || strpos($field, 'imagen') !== false || strpos($field, 'audio') !== false || strpos($field, 'video') !== false) {
@@ -732,6 +809,9 @@ function content_field_html(PDO $pdo, string $table, array $column, array $row =
   $value = $row[$field] ?? ($column['Default'] ?? '');
   $label = content_label($field);
   $isRequired = strtoupper((string) ($column['Null'] ?? '')) === 'NO' && $column['Default'] === null;
+  if ($table === 'lvj_capillas' && $field === 'nombre') {
+    $isRequired = true;
+  }
   $required = $isRequired ? ' required' : '';
   $fieldClass = content_field_class($field, $type);
 
@@ -741,6 +821,15 @@ function content_field_html(PDO $pdo, string $table, array $column, array $row =
 
   if ($table === 'lvj_san_santo_dia' && $field === 'dia') {
     return content_select_html($field, $label, $value, content_day_options(), true, 'content-field relation-field');
+  }
+
+  if ($table === 'lvj_capillas' && $field === 'estado') {
+    $activeValue = (strpos($type, 'tinyint') === 0 || strpos($type, 'int') !== false) ? '1' : 'activo';
+    $inactiveValue = (strpos($type, 'tinyint') === 0 || strpos($type, 'int') !== false) ? '0' : 'inactivo';
+    return content_select_html($field, $label, $value, [
+      ['value' => $activeValue, 'label' => 'Activo'],
+      ['value' => $inactiveValue, 'label' => 'Inactivo'],
+    ], true, 'content-field status-field');
   }
 
   if (content_is_status_field($field)) {
@@ -797,12 +886,149 @@ function content_field_html(PDO $pdo, string $table, array $column, array $row =
     return '<label class="' . e($fieldClass) . '">' . e($label) . '<textarea name="' . e($field) . '" rows="5"' . $required . ' placeholder="' . e($label) . '">' . e((string) $value) . '</textarea></label>';
   }
 
-  return '<label class="' . e($fieldClass) . '">' . e($label) . '<input type="' . e($inputType) . '" name="' . e($field) . '" value="' . e((string) $value) . '"' . $required . ' placeholder="' . e($label) . '"></label>';
+  $extraAttrs = $table === 'lvj_capillas' && $field === 'prioridad' ? ' min="0" step="1"' : '';
+
+  return '<label class="' . e($fieldClass) . '">' . e($label) . '<input type="' . e($inputType) . '" name="' . e($field) . '" value="' . e((string) $value) . '"' . $required . $extraAttrs . ' placeholder="' . e($label) . '"></label>';
 }
 
-function content_inactive_filter(array $columns): string
+function content_status_active_value(array $columns)
 {
   $map = content_column_map($columns);
+  if (!isset($map['estado'])) {
+    return null;
+  }
+
+  $type = strtolower((string) $map['estado']['Type']);
+  return (strpos($type, 'tinyint') === 0 || strpos($type, 'int') !== false) ? 1 : 'activo';
+}
+
+function content_status_inactive_value(array $columns)
+{
+  $map = content_column_map($columns);
+  if (!isset($map['estado'])) {
+    return null;
+  }
+
+  $type = strtolower((string) $map['estado']['Type']);
+  return (strpos($type, 'tinyint') === 0 || strpos($type, 'int') !== false) ? 0 : 'inactivo';
+}
+
+function content_is_active_status(array $columns, $value): bool
+{
+  $normalized = strtolower(trim((string) $value));
+  return (string) $value === (string) content_status_active_value($columns)
+    || in_array($normalized, ['1', 'activo', 'activa', 'active'], true);
+}
+
+function content_update_timestamp_clause(array $columns): string
+{
+  return content_has_column($columns, 'updated_at') ? ', updated_at = NOW()' : '';
+}
+
+function content_capilla_validate(array $columns, array &$data): string
+{
+  $map = content_column_map($columns);
+  $name = trim((string) ($data['nombre'] ?? ''));
+  if ($name === '') {
+    return 'El nombre de la capilla es obligatorio.';
+  }
+  $data['nombre'] = $name;
+
+  if (isset($map['prioridad'])) {
+    $rawPriority = trim((string) ($_POST['prioridad'] ?? ''));
+    if ($rawPriority === '') {
+      $data['prioridad'] = 0;
+    } elseif (!ctype_digit($rawPriority)) {
+      return 'La prioridad debe ser numerica y no negativa.';
+    } else {
+      $data['prioridad'] = (int) $rawPriority;
+    }
+  }
+
+  foreach (['sitio_web', 'imagen_url', 'logo_url'] as $field) {
+    if (!isset($map[$field])) {
+      continue;
+    }
+
+    $url = trim((string) ($data[$field] ?? ''));
+    if ($url === '') {
+      $data[$field] = strtoupper((string) ($map[$field]['Null'] ?? '')) === 'YES' ? null : '';
+      continue;
+    }
+
+    if (!filter_var($url, FILTER_VALIDATE_URL) || !preg_match('/^https?:\/\//i', $url)) {
+      return 'La URL de ' . content_label($field) . ' no es valida.';
+    }
+    $data[$field] = $url;
+  }
+
+  if (isset($map['estado']) && ($data['estado'] ?? '') === '') {
+    $data['estado'] = content_status_active_value($columns);
+  }
+
+  if (isset($map['es_principal']) && isset($map['estado']) && !content_is_active_status($columns, $data['estado'] ?? null)) {
+    $data['es_principal'] = 0;
+  }
+
+  return '';
+}
+
+function content_save_capilla(PDO $pdo, array $columns, string $primaryColumn, int $id, array $data): int
+{
+  $isPrincipal = (int) ($data['es_principal'] ?? 0) === 1
+    && content_is_active_status($columns, $data['estado'] ?? null);
+  $pdo->beginTransaction();
+
+  try {
+    if ($isPrincipal) {
+      $stmt = $pdo->prepare("UPDATE lvj_capillas SET es_principal = 0" . content_update_timestamp_clause($columns) . " WHERE {$primaryColumn} <> :id AND deleted_at IS NULL");
+      $stmt->execute(['id' => $id]);
+    }
+
+    if ($id > 0) {
+      $set = [];
+      foreach ($data as $field => $value) {
+        $set[] = "{$field} = :{$field}";
+      }
+      if (content_has_column($columns, 'updated_at')) {
+        $set[] = 'updated_at = NOW()';
+      }
+      $data['id'] = $id;
+      $stmt = $pdo->prepare("UPDATE lvj_capillas SET " . implode(', ', $set) . " WHERE {$primaryColumn} = :id AND deleted_at IS NULL LIMIT 1");
+      $stmt->execute($data);
+      $savedId = $id;
+    } else {
+      $fields = array_keys($data);
+      $placeholders = array_map(function ($field) {
+        return ':' . $field;
+      }, $fields);
+      $stmt = $pdo->prepare("INSERT INTO lvj_capillas (" . implode(', ', $fields) . ") VALUES (" . implode(', ', $placeholders) . ")");
+      $stmt->execute($data);
+      $savedId = (int) $pdo->lastInsertId();
+    }
+
+    if ($isPrincipal && $id <= 0) {
+      $stmt = $pdo->prepare("UPDATE lvj_capillas SET es_principal = 0" . content_update_timestamp_clause($columns) . " WHERE {$primaryColumn} <> :id AND deleted_at IS NULL");
+      $stmt->execute(['id' => $savedId]);
+    }
+
+    $pdo->commit();
+    return $savedId;
+  } catch (Throwable $error) {
+    if ($pdo->inTransaction()) {
+      $pdo->rollBack();
+    }
+    throw $error;
+  }
+}
+
+function content_inactive_filter(array $columns, string $table = ''): string
+{
+  $map = content_column_map($columns);
+
+  if ($table === 'lvj_capillas' && isset($map['deleted_at'])) {
+    return 'deleted_at IS NULL';
+  }
 
   foreach (['estado', 'activo', 'status'] as $field) {
     if (!isset($map[$field])) {
@@ -823,6 +1049,10 @@ function content_inactive_filter(array $columns): string
 function content_delete_statement(PDO $pdo, string $table, string $primaryColumn, array $columns): PDOStatement
 {
   $map = content_column_map($columns);
+
+  if ($table === 'lvj_capillas' && isset($map['deleted_at'])) {
+    return $pdo->prepare("UPDATE {$table} SET deleted_at = NOW()" . content_update_timestamp_clause($columns) . " WHERE {$primaryColumn} = :id AND deleted_at IS NULL LIMIT 1");
+  }
 
   if (isset($map['estado'])) {
     $type = strtolower((string) $map['estado']['Type']);
@@ -874,6 +1104,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $error = 'Tabla no permitida.';
   } elseif (!$columns) {
     $error = 'La tabla seleccionada no existe o no esta disponible.';
+  } elseif ($table === 'lvj_capillas' && in_array($action, ['set_status', 'set_principal', 'toggle_respaldo'], true)) {
+    $id = (int) ($_POST['id'] ?? 0);
+    if ($id <= 0) {
+      $error = 'ID de capilla no valido.';
+    } else {
+      try {
+        if ($action === 'set_status') {
+          $newStatus = (string) ($_POST['estado'] ?? '');
+          $allowedStatuses = [
+            (string) content_status_active_value($columns),
+            (string) content_status_inactive_value($columns),
+          ];
+          if (!in_array($newStatus, $allowedStatuses, true)) {
+            throw new RuntimeException('Estado no valido.');
+          }
+
+          $principalClause = $newStatus === (string) content_status_inactive_value($columns) ? ', es_principal = 0' : '';
+          $stmt = $pdo->prepare("UPDATE {$table} SET estado = :estado{$principalClause}" . content_update_timestamp_clause($columns) . " WHERE {$primaryColumn} = :id AND deleted_at IS NULL LIMIT 1");
+          $stmt->execute(['estado' => $newStatus, 'id' => $id]);
+          log_activity('status', $table, $id, 'Estado de capilla actualizado');
+          header('Location: content.php?module=' . urlencode($moduleKey) . '&table=' . urlencode($table) . '&saved=updated');
+          exit;
+        }
+
+        if ($action === 'set_principal') {
+          $pdo->beginTransaction();
+          $stmt = $pdo->prepare("UPDATE {$table} SET es_principal = 0" . content_update_timestamp_clause($columns) . " WHERE deleted_at IS NULL");
+          $stmt->execute();
+          $stmt = $pdo->prepare("UPDATE {$table} SET es_principal = 1, estado = :estado" . content_update_timestamp_clause($columns) . " WHERE {$primaryColumn} = :id AND deleted_at IS NULL LIMIT 1");
+          $stmt->execute(['estado' => content_status_active_value($columns), 'id' => $id]);
+          $pdo->commit();
+          log_activity('principal', $table, $id, 'Capilla marcada como principal');
+          header('Location: content.php?module=' . urlencode($moduleKey) . '&table=' . urlencode($table) . '&saved=updated');
+          exit;
+        }
+
+        $newValue = (int) ($_POST['es_respaldo'] ?? 0) === 1 ? 1 : 0;
+        $stmt = $pdo->prepare("UPDATE {$table} SET es_respaldo = :es_respaldo" . content_update_timestamp_clause($columns) . " WHERE {$primaryColumn} = :id AND deleted_at IS NULL LIMIT 1");
+        $stmt->execute(['es_respaldo' => $newValue, 'id' => $id]);
+        log_activity('backup', $table, $id, 'Marca de respaldo actualizada');
+        header('Location: content.php?module=' . urlencode($moduleKey) . '&table=' . urlencode($table) . '&saved=updated');
+        exit;
+      } catch (Throwable $actionError) {
+        if ($pdo->inTransaction()) {
+          $pdo->rollBack();
+        }
+        $error = 'No se pudo actualizar la capilla. Revisa los datos e intenta nuevamente.';
+      }
+    }
   } elseif ($action === 'save') {
     $id = (int) ($_POST['id'] ?? 0);
     $data = [];
@@ -901,6 +1180,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
     }
 
+    if (!$error && $table === 'lvj_capillas') {
+      $error = content_capilla_validate($columns, $data);
+    }
+
     if (!$error && $table === 'lvj_san_santo_dia' && content_has_column($columns, 'fecha') && $id <= 0) {
       $data['fecha'] = date('Y-m-d');
     }
@@ -910,7 +1193,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         throw new RuntimeException($error);
       }
 
-      if ($id > 0) {
+      if ($table === 'lvj_capillas') {
+        $savedId = content_save_capilla($pdo, $columns, $primaryColumn, $id, $data);
+        log_activity($id > 0 ? 'update' : 'create', $table, $savedId, $id > 0 ? 'Capilla actualizada' : 'Capilla creada');
+        header('Location: content.php?module=' . urlencode($moduleKey) . '&table=' . urlencode($table) . '&saved=' . ($id > 0 ? 'updated' : 'created'));
+        exit;
+      } elseif ($id > 0) {
         $set = [];
         foreach ($data as $field => $value) {
           $set[] = "{$field} = :{$field}";
@@ -933,7 +1221,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
       }
     } catch (Throwable $saveError) {
-      $error = $error ?: 'No se pudo guardar: ' . $saveError->getMessage();
+      if ($table === 'lvj_capillas') {
+        $error = $error ?: 'No se pudo guardar la capilla. Revisa los datos e intenta nuevamente.';
+      } else {
+        $error = $error ?: 'No se pudo guardar: ' . $saveError->getMessage();
+      }
     }
   } elseif ($action === 'delete') {
     $id = (int) ($_POST['id'] ?? 0);
@@ -958,7 +1250,11 @@ if (isset($_GET['saved'])) {
 
 if ($editId > 0 && $columns) {
   try {
-    $stmt = $pdo->prepare("SELECT * FROM {$table} WHERE {$primaryColumn} = :id LIMIT 1");
+    $editWhere = "{$primaryColumn} = :id";
+    if ($table === 'lvj_capillas' && content_has_column($columns, 'deleted_at')) {
+      $editWhere .= ' AND deleted_at IS NULL';
+    }
+    $stmt = $pdo->prepare("SELECT * FROM {$table} WHERE {$editWhere} LIMIT 1");
     $stmt->execute(['id' => $editId]);
     $editRow = $stmt->fetch() ?: [];
     if ($table === 'lvj_san_santo_dia' && $editRow && !empty($editRow['fecha']) && preg_match('/^2000-\d{2}-\d{2}$/', (string) $editRow['fecha'])) {
@@ -985,18 +1281,21 @@ $perPage = 20;
 $totalRows = 0;
 $totalPages = 1;
 $searchPlaceholder = $moduleKey === 'liturgia' ? 'Buscar por fecha, tema, santo...' : 'Buscar registros...';
+if ($table === 'lvj_capillas') {
+  $searchPlaceholder = 'Buscar por nombre, ciudad o pais...';
+}
 
 try {
   $whereParts = [];
   $params = [];
-  $where = $columns ? content_inactive_filter($columns) : '';
+  $where = $columns ? content_inactive_filter($columns, $table) : '';
   if ($where) {
     $whereParts[] = $where;
   }
 
   if ($search !== '' && $listColumns) {
     $searchParts = [];
-    foreach (array_slice($listColumns, 0, 8) as $index => $column) {
+    foreach (content_search_columns($columns, $table) as $index => $column) {
       $field = (string) $column['Field'];
       $type = strtolower((string) $column['Type']);
       if (!preg_match('/^[a-zA-Z0-9_]+$/', $field)) {
@@ -1022,7 +1321,10 @@ try {
     $totalPages = max(1, (int) ceil($totalRows / $perPage));
     $page = min($page, $totalPages);
     $offset = ($page - 1) * $perPage;
-    $stmt = $pdo->prepare("SELECT * FROM {$table}{$whereSql} ORDER BY {$primaryColumn} DESC LIMIT {$perPage} OFFSET {$offset}");
+    $orderSql = $table === 'lvj_capillas' && content_has_column($columns, 'prioridad')
+      ? " ORDER BY prioridad ASC, {$primaryColumn} DESC"
+      : " ORDER BY {$primaryColumn} DESC";
+    $stmt = $pdo->prepare("SELECT * FROM {$table}{$whereSql}{$orderSql} LIMIT {$perPage} OFFSET {$offset}");
     $stmt->execute($params);
     $rows = $stmt->fetchAll();
   } else {
@@ -1035,6 +1337,7 @@ try {
 
 $shownFrom = $totalRows > 0 ? (($page - 1) * $perPage) + 1 : 0;
 $shownTo = $totalRows > 0 ? min($totalRows, $page * $perPage) : 0;
+$visibleListColumns = $table === 'lvj_capillas' ? $listColumns : array_slice($listColumns, 0, 6);
 
 $pageTitle = $module['title'];
 $pageSubtitle = $module['subtitle'];
@@ -1157,7 +1460,7 @@ require __DIR__ . '/includes/header.php';
     <table class="admin-grid-table">
       <thead>
         <tr>
-          <?php foreach (array_slice($listColumns, 0, 6) as $column): ?>
+          <?php foreach ($visibleListColumns as $column): ?>
             <th><?php echo e(content_label((string) $column['Field'])); ?></th>
           <?php endforeach; ?>
           <th>Acciones</th>
@@ -1166,12 +1469,45 @@ require __DIR__ . '/includes/header.php';
       <tbody>
         <?php foreach ($rows as $row): ?>
           <tr>
-            <?php foreach (array_slice($listColumns, 0, 6) as $column): ?>
+            <?php foreach ($visibleListColumns as $column): ?>
               <?php $field = (string) $column['Field']; ?>
               <td><?php echo content_cell_html($table, $field, $row[$field] ?? ''); ?></td>
             <?php endforeach; ?>
             <td class="actions grid-actions">
               <a class="action-button action-edit" title="Editar registro" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&edit=<?php echo (int) $row['id']; ?>">Editar</a>
+              <?php if ($table === 'lvj_capillas'): ?>
+                <?php
+                  $isActiveCapilla = content_is_active_status($columns, $row['estado'] ?? null);
+                  $nextStatus = $isActiveCapilla ? content_status_inactive_value($columns) : content_status_active_value($columns);
+                  $isBackup = (int) ($row['es_respaldo'] ?? 0) === 1;
+                  $isPrincipal = (int) ($row['es_principal'] ?? 0) === 1;
+                ?>
+                <form method="post">
+                  <?php echo csrf_field(); ?>
+                  <input type="hidden" name="action" value="set_status">
+                  <input type="hidden" name="table" value="<?php echo e($table); ?>">
+                  <input type="hidden" name="id" value="<?php echo (int) $row['id']; ?>">
+                  <input type="hidden" name="estado" value="<?php echo e((string) $nextStatus); ?>">
+                  <button class="action-button action-edit" type="submit" title="<?php echo $isActiveCapilla ? 'Inactivar capilla' : 'Activar capilla'; ?>"><?php echo $isActiveCapilla ? 'Inactivar' : 'Activar'; ?></button>
+                </form>
+                <?php if (!$isPrincipal): ?>
+                  <form method="post" onsubmit="return confirm('Marcar esta capilla como principal? Se desmarcara la principal anterior.');">
+                    <?php echo csrf_field(); ?>
+                    <input type="hidden" name="action" value="set_principal">
+                    <input type="hidden" name="table" value="<?php echo e($table); ?>">
+                    <input type="hidden" name="id" value="<?php echo (int) $row['id']; ?>">
+                    <button class="action-button action-edit" type="submit" title="Marcar como principal">Principal</button>
+                  </form>
+                <?php endif; ?>
+                <form method="post">
+                  <?php echo csrf_field(); ?>
+                  <input type="hidden" name="action" value="toggle_respaldo">
+                  <input type="hidden" name="table" value="<?php echo e($table); ?>">
+                  <input type="hidden" name="id" value="<?php echo (int) $row['id']; ?>">
+                  <input type="hidden" name="es_respaldo" value="<?php echo $isBackup ? 0 : 1; ?>">
+                  <button class="action-button action-edit" type="submit" title="<?php echo $isBackup ? 'Quitar respaldo' : 'Marcar respaldo'; ?>"><?php echo $isBackup ? 'Quitar respaldo' : 'Respaldo'; ?></button>
+                </form>
+              <?php endif; ?>
               <form method="post" onsubmit="return confirm('Eliminar o desactivar este registro?');">
                 <?php echo csrf_field(); ?>
                 <input type="hidden" name="action" value="delete">
@@ -1183,7 +1519,7 @@ require __DIR__ . '/includes/header.php';
           </tr>
         <?php endforeach; ?>
         <?php if (!$rows): ?>
-          <tr><td colspan="7" class="muted"><?php echo $search !== '' ? 'No hay registros que coincidan con la busqueda.' : 'No hay registros cargados.'; ?></td></tr>
+          <tr><td colspan="<?php echo count($visibleListColumns) + 1; ?>" class="muted"><?php echo $search !== '' ? 'No hay registros que coincidan con la busqueda.' : 'No hay registros cargados.'; ?></td></tr>
         <?php endif; ?>
       </tbody>
     </table>

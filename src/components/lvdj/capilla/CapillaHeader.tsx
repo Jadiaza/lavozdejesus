@@ -1,7 +1,17 @@
 import { ArrowLeft, Maximize2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export const CapillaHeader = () => {
+type CapillaHeaderProps = {
+  nombre?: string;
+  subtitulo?: string;
+  logoUrl?: string;
+};
+
+export const CapillaHeader = ({
+  nombre = "Capilla Virtual",
+  subtitulo = "Adoracion Eucaristica - 24 horas",
+  logoUrl = "",
+}: CapillaHeaderProps) => {
   const navigate = useNavigate();
 
   const handleFullscreen = () => {
@@ -30,13 +40,21 @@ export const CapillaHeader = () => {
         </button>
 
         <div className="min-w-0 text-center">
-          <h1 className="font-display text-3xl font-semibold leading-none text-foreground">
-            Capilla Virtual
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt=""
+              className="mx-auto mb-2 h-10 max-w-32 object-contain"
+              loading="lazy"
+            />
+          ) : null}
+          <h1 className="truncate font-display text-3xl font-semibold leading-none text-foreground">
+            {nombre}
           </h1>
           <div className="mt-2 flex items-center justify-center gap-2 text-xs font-medium text-gold/90">
             <span className="h-px w-10 bg-gradient-gold" />
             <span className="h-1.5 w-1.5 rounded-full bg-gold" />
-            <span className="truncate">Adoracion Eucaristica • 24 horas</span>
+            <span className="truncate">{subtitulo}</span>
             <span className="h-1.5 w-1.5 rounded-full bg-gold" />
             <span className="h-px w-10 bg-gradient-gold" />
           </div>
