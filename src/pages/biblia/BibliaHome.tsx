@@ -102,12 +102,12 @@ export default function BibliaHome() {
           </button>
         </div>
 
-       <div className="absolute left-6 bottom-10 z-10 max-w-[15rem]">
-          <p className="font-display text-[12px] font-normal leading-[1.2] text-[#F8F5EA] drop-shadow-[0_3px_12px_rgba(0,0,0,0.72)]">
+       <div className="absolute left-6 bottom-14 z-10 max-w-[15rem]">
+          <p className="mt-1 text-[11px] font-medium tracking-wide text-[#F8F5EA]/90">
             Antorcha para mis pies es tu palabra,<br />
             y luz para mi senda.
           </p>
-          <p className="mt-1 text-[12px] font-medium tracking-wide text-[#D4AF37]/80">
+          <p className="mt-1 text-[11px] font-medium tracking-wide text-[#D4AF37]/80">
             Salmo 119, 105
           </p>
         </div>
