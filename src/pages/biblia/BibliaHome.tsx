@@ -102,7 +102,7 @@ export default function BibliaHome() {
           </button>
         </div>
 
-       <div className="absolute left-6 bottom-14 z-10 max-w-[15rem]">
+       <div className="absolute left-4 bottom-14 z-10 max-w-[15rem]">
           <p className="mt-1 text-[11px] font-medium tracking-wide text-[#F8F5EA]/90">
             Antorcha para mis pies es tu palabra,<br />
             y luz para mi senda.
@@ -136,9 +136,9 @@ export default function BibliaHome() {
               <span className="text-[0.72rem] font-semibold text-[#D4AF37]">
                 Jn 6, 35
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F2D27A] to-[#D4AF37] px-2 py-1 text-[8px] font-bold text-[#050505] shadow-[0_8px_20px_rgba(212,175,55,0.2)] min-[390px]:px-2.5">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F2D27A] to-[#D4AF37] px-2 py-1 text-[10px] font-bold text-[#050505] shadow-[0_8px_20px_rgba(212,175,55,0.2)] min-[390px]:px-2.5">
                 <BookOpen className="h-3 w-3" strokeWidth={1.8} />
-                Continuar leyendo
+                Continuar
               </span>
             </div>
           </div>
