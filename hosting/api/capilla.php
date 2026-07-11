@@ -33,6 +33,25 @@ function lvj_capilla_stream_normalize(?array $row): ?array
   ];
 }
 
+function lvj_capilla_config_normalize(array $row): array
+{
+  return [
+    'id' => lvj_text($row, 'id'),
+    'capilla_activa_id' => lvj_text($row, 'capilla_activa_id'),
+    'stream_activo_id' => lvj_text($row, 'stream_activo_id'),
+    'modo_reproduccion' => lvj_text($row, 'modo_reproduccion') ?: 'auto',
+    'calidad_default' => lvj_text($row, 'calidad_default') ?: 'auto',
+    'mostrar_nombre' => lvj_capilla_bool($row['mostrar_nombre'] ?? null),
+    'mostrar_pais' => lvj_capilla_bool($row['mostrar_pais'] ?? null),
+    'mostrar_intenciones' => lvj_capilla_bool($row['mostrar_intenciones'] ?? null),
+    'mostrar_boton_radio' => lvj_capilla_bool($row['mostrar_boton_radio'] ?? null),
+    'mensaje_carga' => lvj_text($row, 'mensaje_carga'),
+    'mensaje_error' => lvj_text($row, 'mensaje_error'),
+    'estado' => lvj_text($row, 'estado') ?: 'activo',
+    'updated_at' => lvj_text($row, 'updated_at'),
+  ];
+}
+
 function lvj_capilla_normalize(array $row, ?array $stream): array
 {
   return [
@@ -54,41 +73,77 @@ function lvj_capilla_normalize(array $row, ?array $stream): array
   ];
 }
 
+function lvj_capilla_payload_normalize(array $config, array $capilla, ?array $stream): array
+{
+  $capillaNormalizada = lvj_capilla_normalize($capilla, $stream);
+
+  return array_merge($capillaNormalizada, [
+    'config' => lvj_capilla_config_normalize($config),
+    'capilla' => $capillaNormalizada,
+  ]);
+}
+
 try {
   $pdo = lvj_db();
+  $activeStatusSql = "LOWER(COALESCE(CAST(estado AS CHAR), '')) IN ('', '1', 'activo', 'activa', 'publicado')";
+
+  $config = lvj_optional_first(
+    $pdo,
+    "
+      SELECT *
+      FROM lvj_capilla_config
+      WHERE {$activeStatusSql}
+      ORDER BY updated_at DESC, id DESC
+      LIMIT 1
+    ",
+  );
+
+  $capillaActivaId = $config ? lvj_text($config, 'capilla_activa_id') : '';
+  if (!$config || !$capillaActivaId) {
+    lvj_json_response([]);
+  }
+
   $row = lvj_optional_first(
     $pdo,
     "
       SELECT *
       FROM lvj_capillas
-      WHERE deleted_at IS NULL
-        AND LOWER(COALESCE(estado, '')) IN ('', '1', 'activo', 'activa', 'publicado')
-      ORDER BY es_principal DESC, es_respaldo ASC, prioridad ASC, id DESC
+      WHERE id = :capilla_id
+        AND deleted_at IS NULL
+        AND {$activeStatusSql}
       LIMIT 1
     ",
+    ['capilla_id' => $capillaActivaId],
   );
 
+  if (!$row) {
+    lvj_json_response([]);
+  }
+
   $stream = null;
-  if ($row) {
+  $streamActivoId = lvj_text($config, 'stream_activo_id');
+  if ($streamActivoId) {
     $stream = lvj_optional_first(
       $pdo,
       "
         SELECT *
         FROM lvj_capilla_streams
-        WHERE capilla_id = :capilla_id
+        WHERE id = :stream_id
+          AND capilla_id = :capilla_id
           AND deleted_at IS NULL
-          AND LOWER(COALESCE(estado, '')) IN ('', '1', 'activo', 'activa', 'publicado')
-        ORDER BY es_principal DESC, calidad = 'auto' DESC, id DESC
+          AND {$activeStatusSql}
         LIMIT 1
       ",
-      ['capilla_id' => lvj_text($row, 'id')],
+      [
+        'stream_id' => $streamActivoId,
+        'capilla_id' => lvj_text($row, 'id'),
+      ],
     );
   }
 
-  lvj_json_response($row ? lvj_capilla_normalize($row, $stream) : []);
+  lvj_json_response(lvj_capilla_payload_normalize($config, $row, $stream));
 } catch (Throwable $error) {
   lvj_json_response([
     'error' => 'CAPILLA_QUERY_FAILED',
-    'detail' => $error->getMessage(),
   ], 500);
 }
