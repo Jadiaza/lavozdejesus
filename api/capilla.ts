@@ -10,7 +10,7 @@ type ApiResponse = {
 type DbRow = Record<string, unknown>;
 
 const ACTIVE_STATUS_SQL =
-  "LOWER(COALESCE(CAST(estado AS CHAR), '')) IN ('', '1', 'activo', 'activa', 'publicado')";
+  "LOWER(COALESCE(CAST(estado AS CHAR), '')) IN ('1', 'activo', 'activa', 'publicado')";
 
 const text = (row: DbRow | null | undefined, ...keys: string[]) => {
   if (!row) return "";
@@ -73,32 +73,6 @@ const normalizeChapel = (row: DbRow, stream: DbRow | null) => ({
   stream: normalizeStream(stream),
 });
 
-const normalizeConfig = (row: DbRow) => ({
-  id: text(row, "id"),
-  capilla_activa_id: text(row, "capilla_activa_id"),
-  stream_activo_id: text(row, "stream_activo_id"),
-  modo_reproduccion: text(row, "modo_reproduccion") || "auto",
-  calidad_default: text(row, "calidad_default") || "auto",
-  mostrar_nombre: boolValue(row.mostrar_nombre),
-  mostrar_pais: boolValue(row.mostrar_pais),
-  mostrar_intenciones: boolValue(row.mostrar_intenciones),
-  mostrar_boton_radio: boolValue(row.mostrar_boton_radio),
-  mensaje_carga: text(row, "mensaje_carga"),
-  mensaje_error: text(row, "mensaje_error"),
-  estado: text(row, "estado") || "activo",
-  updated_at: text(row, "updated_at"),
-});
-
-const normalizePayload = (config: DbRow, chapel: DbRow, stream: DbRow | null) => {
-  const capilla = normalizeChapel(chapel, stream);
-
-  return {
-    ...capilla,
-    config: normalizeConfig(config),
-    capilla,
-  };
-};
-
 export default async function handler(_req: unknown, res: ApiResponse) {
   if (!hasMysqlConfig()) {
     res.status(503).json({ error: "MYSQL_ENV_NOT_CONFIGURED" });
@@ -106,35 +80,15 @@ export default async function handler(_req: unknown, res: ApiResponse) {
   }
 
   try {
-    const [configRows] = await getMysqlPool().execute(
-      `
-        SELECT *
-        FROM lvj_capilla_config
-        WHERE ${ACTIVE_STATUS_SQL}
-        ORDER BY updated_at DESC, id DESC
-        LIMIT 1
-      `,
-    );
-
-    const config = (configRows as DbRow[])[0] ?? null;
-    const capillaActivaId = text(config, "capilla_activa_id");
-
-    if (!config || !capillaActivaId) {
-      res.setHeader("Cache-Control", "s-maxage=120, stale-while-revalidate=600");
-      res.status(200).json(null);
-      return;
-    }
-
     const [chapelRows] = await getMysqlPool().execute(
       `
         SELECT *
         FROM lvj_capillas
-        WHERE id = :capilla_id
-          AND deleted_at IS NULL
+        WHERE deleted_at IS NULL
           AND ${ACTIVE_STATUS_SQL}
+        ORDER BY es_principal DESC, prioridad ASC, id ASC
         LIMIT 1
       `,
-      { capilla_id: capillaActivaId },
     );
 
     const chapel = (chapelRows as DbRow[])[0] ?? null;
@@ -145,31 +99,24 @@ export default async function handler(_req: unknown, res: ApiResponse) {
       return;
     }
 
-    let stream: DbRow | null = null;
-    const streamActivoId = text(config, "stream_activo_id");
+    const [streamRows] = await getMysqlPool().execute(
+      `
+        SELECT *
+        FROM lvj_capilla_streams
+        WHERE capilla_id = :capilla_id
+          AND deleted_at IS NULL
+          AND ${ACTIVE_STATUS_SQL}
+        ORDER BY es_principal DESC, calidad = 'auto' DESC, id ASC
+        LIMIT 1
+      `,
+      { capilla_id: text(chapel, "id") },
+    );
 
-    if (streamActivoId) {
-      const [streamRows] = await getMysqlPool().execute(
-        `
-          SELECT *
-          FROM lvj_capilla_streams
-          WHERE id = :stream_id
-            AND capilla_id = :capilla_id
-            AND deleted_at IS NULL
-            AND ${ACTIVE_STATUS_SQL}
-          LIMIT 1
-        `,
-        {
-          stream_id: streamActivoId,
-          capilla_id: capillaActivaId,
-        },
-      );
-      stream = (streamRows as DbRow[])[0] ?? null;
-    }
+    const stream = (streamRows as DbRow[])[0] ?? null;
 
     res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=3600");
-    res.status(200).json(normalizePayload(config, chapel, stream));
-  } catch (error) {
+    res.status(200).json(normalizeChapel(chapel, stream));
+  } catch {
     res.status(500).json({
       error: "CAPILLA_QUERY_FAILED",
     });
