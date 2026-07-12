@@ -84,40 +84,36 @@ const Capilla = () => {
     capilla?.config?.mostrar_intenciones !== false;
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_50%_8%,rgba(196,145,36,0.11),transparent_27%),radial-gradient(circle_at_15%_55%,rgba(18,69,92,0.14),transparent_32%),linear-gradient(180deg,#030b13_0%,#06131e_48%,#02070d_100%)] text-foreground">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[linear-gradient(115deg,transparent,rgba(255,255,255,0.025),transparent)]" />
+    <div className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_50%_12%,rgba(212,175,55,0.16),transparent_32%),linear-gradient(180deg,#05070d,#061826_42%,#02050a)] text-foreground">
       <CapillaHeader
         nombre={nombre}
         subtitulo={subtitulo}
         logoUrl={capilla?.logo_url}
       />
 
-      <main className="relative z-10">
+      <main>
         {cargando ? (
-          <section className="px-4 pt-2">
-            <div className="mx-auto grid aspect-video max-w-[430px] place-items-center rounded-[20px] border border-white/10 bg-[#07111c]/75 px-6 text-center text-sm leading-relaxed text-foreground/75 shadow-[0_22px_55px_rgba(0,0,0,0.3)]">
+          <section className="px-4 pt-4">
+            <div className="mx-auto grid aspect-video max-w-[430px] place-items-center rounded-2xl border border-gold/30 bg-[#07111c] px-6 text-center text-sm leading-relaxed text-foreground/75 shadow-deep">
               {mensajeCarga}
             </div>
           </section>
         ) : error || !capilla ? (
-          <section className="px-4 pt-2">
-            <div className="mx-auto grid aspect-video max-w-[430px] place-items-center rounded-[20px] border border-gold/20 bg-[#07111c]/75 px-6 text-center text-sm leading-relaxed text-foreground/75 shadow-[0_22px_55px_rgba(0,0,0,0.3)]">
+          <section className="px-4 pt-4">
+            <div className="mx-auto grid aspect-video max-w-[430px] place-items-center rounded-2xl border border-red-400/30 bg-[#07111c] px-6 text-center text-sm leading-relaxed text-foreground/75 shadow-deep">
               {mensajeError}
             </div>
           </section>
         ) : (
-          <>
-            <div className="[&_section]:pt-2 [&_section>div]:rounded-[20px] [&_section>div]:border-white/10 [&_section>div]:shadow-[0_22px_55px_rgba(0,0,0,0.34)] [&_section>div>div:nth-child(2)]:hidden [&_.pointer-events-none.absolute.right-4.top-4]:border [&_.pointer-events-none.absolute.right-4.top-4]:border-gold/25 [&_.pointer-events-none.absolute.right-4.top-4]:bg-black/55 [&_.pointer-events-none.absolute.right-4.top-4]:px-2.5 [&_.pointer-events-none.absolute.right-4.top-4]:py-1.5 [&_.pointer-events-none.absolute.right-4.top-4]:text-[10px] [&_.pointer-events-none.absolute.right-4.top-4]:text-gold [&_.pointer-events-none.absolute.right-4.top-4_span]:bg-gold [&_.pointer-events-none.absolute.right-4.top-4_span]:shadow-none">
-              <CapillaVideo
-                nombre={nombre}
-                ciudad=""
-                pais=""
-                imagenUrl={capilla.imagen_url}
-                stream={capilla.stream}
-              />
-            </div>
-
-          </>
+          <CapillaVideo
+            nombre={nombre}
+            descripcion={capilla.descripcion}
+            ciudad={capilla.ciudad}
+            pais={capilla.pais}
+            sitioWeb={capilla.sitio_web}
+            imagenUrl={capilla.imagen_url}
+            stream={capilla.stream}
+          />
         )}
 
         {mostrarIntenciones ? (
