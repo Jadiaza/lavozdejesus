@@ -28,42 +28,41 @@ export const CapillaHeader = ({
   };
 
   return (
-    <header className="sticky top-0 z-30 border-b border-gold/10 bg-black/72 px-4 py-4 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-[430px] items-center justify-between gap-3">
+    <header className="relative z-30 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+      <div className="mx-auto flex max-w-[430px] items-center gap-3 rounded-2xl border border-white/[0.06] bg-[#07111c]/55 p-2.5 shadow-[0_12px_35px_rgba(0,0,0,0.18)] backdrop-blur-xl">
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gold/20 text-foreground/85 transition active:scale-95"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gold/35 bg-black/15 text-foreground/90 transition hover:border-gold/60 hover:text-gold active:scale-95"
           aria-label="Regresar"
         >
           <ArrowLeft className="h-6 w-6" />
         </button>
 
-        <div className="min-w-0 text-center">
+        <div className="flex min-w-0 flex-1 items-center justify-center gap-2.5 text-left">
           {logoUrl ? (
             <img
               src={logoUrl}
-              alt=""
-              className="mx-auto mb-2 h-10 max-w-32 object-contain"
+              alt={`Logotipo de ${nombre}`}
+              className="h-9 w-9 shrink-0 rounded-full object-contain"
               loading="lazy"
             />
           ) : null}
-          <h1 className="truncate font-display text-3xl font-semibold leading-none text-foreground">
-            {nombre}
-          </h1>
-          <div className="mt-2 flex items-center justify-center gap-2 text-xs font-medium text-gold/90">
-            <span className="h-px w-10 bg-gradient-gold" />
-            <span className="h-1.5 w-1.5 rounded-full bg-gold" />
-            <span className="truncate">{subtitulo}</span>
-            <span className="h-1.5 w-1.5 rounded-full bg-gold" />
-            <span className="h-px w-10 bg-gradient-gold" />
+          <div className="min-w-0">
+            <h1 className="truncate font-display text-[1.35rem] font-semibold leading-tight text-foreground min-[390px]:text-2xl">
+              {nombre}
+            </h1>
+            <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[10px] font-medium text-gold/90 min-[390px]:text-[11px]">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />
+              <span className="truncate">{subtitulo}</span>
+            </div>
           </div>
         </div>
 
         <button
           type="button"
           onClick={handleFullscreen}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gold/20 text-foreground/85 transition active:scale-95"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gold/35 bg-black/15 text-foreground/90 transition hover:border-gold/60 hover:text-gold active:scale-95"
           aria-label="Pantalla completa"
         >
           <Maximize2 className="h-5 w-5" />

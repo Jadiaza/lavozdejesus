@@ -18,36 +18,32 @@ export const PrayerCard = ({ item }: { item: PrayerItem }) => {
   };
 
   return (
-    <article className="rounded-2xl border border-gold/16 bg-black/34 p-4 shadow-[0_12px_30px_rgba(0,0,0,0.2)]">
-      <div className="flex gap-3">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-gold/30 bg-gold/10 text-gold">
-          <MessageCircleHeart className="h-6 w-6" />
+    <article className="rounded-[20px] border border-white/[0.09] bg-[linear-gradient(135deg,rgba(255,255,255,0.055),rgba(255,255,255,0.018))] p-3.5 shadow-[0_14px_35px_rgba(0,0,0,0.18)] backdrop-blur-sm">
+      <div className="flex items-center gap-3">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-gold/20 bg-gold/10 text-gold">
+          <MessageCircleHeart className="h-5 w-5" />
         </div>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
-            <div>
-              <h3 className="font-display text-lg font-semibold leading-tight text-foreground">
-                {item.name}
-              </h3>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold leading-snug text-foreground/90">{item.text}</p>
+              <p className="mt-1 text-xs text-foreground/62">{item.name}</p>
               <p className="mt-0.5 text-xs font-medium text-gold">{item.time}</p>
             </div>
-            <div className="text-right text-xs text-foreground/70">
-              <Heart className="ml-auto h-4 w-4 fill-gold text-gold" />
-              <div className="mt-1 font-semibold text-foreground">{item.prayers}</div>
-              personas oran
+            <div className="flex shrink-0 items-center gap-1.5 pt-1 text-gold" aria-label={`${item.prayers} personas orando`}>
+              <Heart className="h-4 w-4" />
+              <span className="text-base font-semibold tabular-nums">{item.prayers}</span>
             </div>
           </div>
-
-          <p className="mt-3 text-sm leading-relaxed text-foreground/84">{item.text}</p>
 
           <button
             type="button"
             onClick={handlePrayer}
-            className={`mt-4 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition active:scale-[0.985] ${
+            className={`mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border px-4 py-2 text-xs font-semibold transition duration-300 active:scale-[0.985] ${
               confirmed
-                ? "border-gold bg-gold text-navy-deep"
-                : "border-gold/35 bg-black/25 text-foreground"
+                ? "border-gold bg-gold text-navy-deep shadow-gold"
+                : "border-gold/25 bg-gold/[0.04] text-gold hover:bg-gold/10"
             }`}
           >
             {confirmed ? <Check className="h-4 w-4" /> : <MessageCircleHeart className="h-4 w-4" />}

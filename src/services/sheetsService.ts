@@ -114,6 +114,23 @@ export interface CapillaPublica {
   estado: EstadoContenido | "activo" | "activa";
   updated_at: string;
   stream: CapillaStreamPublico | null;
+  config: CapillaConfigPublica | null;
+}
+
+export interface CapillaConfigPublica {
+  id: string;
+  capilla_activa_id: string;
+  stream_activo_id: string;
+  modo_reproduccion: string;
+  calidad_default: string;
+  mostrar_nombre: boolean;
+  mostrar_pais: boolean;
+  mostrar_intenciones: boolean;
+  mostrar_boton_radio: boolean;
+  mensaje_carga: string;
+  mensaje_error: string;
+  estado: EstadoContenido | "activo" | "activa";
+  updated_at: string;
 }
 
 export interface CapillaStreamPublico {
@@ -185,7 +202,7 @@ const DEFAULT_PRODUCTION_API_BASE_URL = "https://lavozdejesus.co";
 
 const API_BASE_URL = normalizeApiBaseUrl(
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ??
-    (import.meta.env.PROD ? DEFAULT_PRODUCTION_API_BASE_URL : undefined),
+    DEFAULT_PRODUCTION_API_BASE_URL,
 );
 
 const buildApiUrl = (path: string) => {
@@ -629,6 +646,23 @@ export async function getCapillaPublica(): Promise<CapillaPublica | null> {
       prioridad: Number(data.prioridad ?? 0),
       estado: (clean(data.estado) || "activo") as CapillaPublica["estado"],
       updated_at: clean(data.updated_at),
+      config: data.config
+        ? {
+            id: clean(data.config.id),
+            capilla_activa_id: clean(data.config.capilla_activa_id),
+            stream_activo_id: clean(data.config.stream_activo_id),
+            modo_reproduccion: clean(data.config.modo_reproduccion) || "auto",
+            calidad_default: clean(data.config.calidad_default) || "auto",
+            mostrar_nombre: Boolean(data.config.mostrar_nombre),
+            mostrar_pais: Boolean(data.config.mostrar_pais),
+            mostrar_intenciones: Boolean(data.config.mostrar_intenciones),
+            mostrar_boton_radio: Boolean(data.config.mostrar_boton_radio),
+            mensaje_carga: clean(data.config.mensaje_carga),
+            mensaje_error: clean(data.config.mensaje_error),
+            estado: (clean(data.config.estado) || "activo") as CapillaConfigPublica["estado"],
+            updated_at: clean(data.config.updated_at),
+          }
+        : null,
       stream: data.stream
         ? {
             id: clean(data.stream.id),
