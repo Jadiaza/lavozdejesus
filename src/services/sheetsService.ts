@@ -168,6 +168,38 @@ export interface AppConfig {
   adsense_radio_slot: string;
 }
 
+export type PrayerCategory =
+  | "peticion"
+  | "accion_gracias"
+  | "enfermos"
+  | "familia"
+  | "difuntos"
+  | "vocaciones"
+  | "sacerdotes"
+  | "trabajo"
+  | "paz"
+  | "otra";
+
+export interface PrayerPetition {
+  id: string;
+  nombre: string;
+  ciudad: string;
+  peticion: string;
+  categoria: PrayerCategory;
+  total_oraciones: number;
+  created_at: string;
+  fecha_publicacion: string;
+  estado?: "pendiente" | "aprobado";
+}
+
+export interface CreatePrayerPetitionInput {
+  nombre: string;
+  ciudad: string;
+  peticion: string;
+  categoria: PrayerCategory;
+  anonimo: boolean;
+}
+
 export const DEFAULT_APP_CONFIG: AppConfig = {
   radio_stream_url: "https://stream.zeno.fm/phybdd3ph98uv",
   radio_metadata_url:
@@ -235,6 +267,22 @@ const PROGRAMACION_API_URL =
 const CAPILLA_API_URL =
   (import.meta.env.VITE_CAPILLA_API_URL as string | undefined) ??
   buildApiUrl("/api/capilla");
+
+const PETICIONES_API_URL = buildApiUrl("/api/peticiones");
+const PETICIONES_CREAR_API_URL = buildApiUrl("/api/peticiones-crear");
+const PETICIONES_ORAR_API_URL = buildApiUrl("/api/peticiones-orar");
+
+const PRAYER_SESSION_KEY = "lvj_prayer_session_id";
+
+export const getPrayerSessionId = () => {
+  const current = window.localStorage.getItem(PRAYER_SESSION_KEY);
+  if (current) return current;
+
+  const generated = globalThis.crypto?.randomUUID?.() ??
+    `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+  window.localStorage.setItem(PRAYER_SESSION_KEY, generated);
+  return generated;
+};
 
 const clean = (value: unknown) =>
   typeof value === "string" || typeof value === "number"
@@ -695,8 +743,75 @@ export async function getPodcasts() {
   return getSheetData("PODCASTS");
 }
 
-export async function getPeticiones() {
-  return getSheetData("PETICIONES_ORACION");
+export async function getPeticiones(limit = 10, offset = 0): Promise<PrayerPetition[]> {
+  const rows = await getApiRows<Partial<PrayerPetition>>(PETICIONES_API_URL, {
+    limit: String(limit),
+    offset: String(offset),
+  });
+
+  return rows.map((row) => ({
+    id: clean(row.id),
+    nombre: clean(row.nombre),
+    ciudad: clean(row.ciudad),
+    peticion: preserveText(row.peticion),
+    categoria: (clean(row.categoria) || "peticion") as PrayerCategory,
+    total_oraciones: Number(row.total_oraciones ?? 0),
+    created_at: clean(row.created_at),
+    fecha_publicacion: clean(row.fecha_publicacion),
+    estado: "aprobado",
+  }));
+}
+
+export async function createPeticion(
+  input: CreatePrayerPetitionInput,
+): Promise<{ message: string; registro: PrayerPetition }> {
+  const response = await fetch(PETICIONES_CREAR_API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...input, identificador_sesion: getPrayerSessionId() }),
+  });
+  const data = await response.json();
+  if (!response.ok || !data?.success) {
+    throw new Error(clean(data?.message) || "No fue posible enviar tu intención.");
+  }
+
+  return {
+    message: clean(data.message),
+    registro: {
+      id: clean(data.registro?.id),
+      nombre: clean(data.registro?.nombre),
+      ciudad: clean(data.registro?.ciudad),
+      peticion: preserveText(data.registro?.peticion),
+      categoria: (clean(data.registro?.categoria) || input.categoria) as PrayerCategory,
+      total_oraciones: Number(data.registro?.total_oraciones ?? 0),
+      created_at: clean(data.registro?.created_at),
+      fecha_publicacion: "",
+      estado: "pendiente",
+    },
+  };
+}
+
+export async function prayForPeticion(peticionId: string): Promise<{
+  already_prayed: boolean;
+  total_oraciones: number;
+}> {
+  const response = await fetch(PETICIONES_ORAR_API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      peticion_id: Number(peticionId),
+      identificador_sesion: getPrayerSessionId(),
+    }),
+  });
+  const data = await response.json();
+  if (!response.ok || !data?.success) {
+    throw new Error(clean(data?.message) || "No fue posible registrar tu oración.");
+  }
+
+  return {
+    already_prayed: Boolean(data.already_prayed),
+    total_oraciones: Number(data.total_oraciones ?? 0),
+  };
 }
 
 export async function getComunidad() {

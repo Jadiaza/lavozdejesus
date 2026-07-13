@@ -8,17 +8,62 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { createPeticion, PrayerCategory, PrayerPetition } from "@/services/sheetsService";
 
 const MAX_LENGTH = 300;
+export const PRAYER_CREATED_EVENT = "lvj:prayer-created";
+
+const categories: Array<{ value: PrayerCategory; label: string }> = [
+  { value: "peticion", label: "🙏 Petición" },
+  { value: "accion_gracias", label: "❤️ Acción de gracias" },
+  { value: "enfermos", label: "🕊 Enfermos" },
+  { value: "familia", label: "🏠 Familia" },
+  { value: "difuntos", label: "✝ Difuntos" },
+  { value: "vocaciones", label: "⛪ Vocaciones" },
+  { value: "sacerdotes", label: "🙏 Sacerdotes" },
+  { value: "trabajo", label: "💼 Trabajo" },
+  { value: "paz", label: "🕊 Paz" },
+  { value: "otra", label: "📌 Otra" },
+];
 
 export const PrayerForm = () => {
+  const [open, setOpen] = useState(false);
   const [intention, setIntention] = useState("");
   const [anonymous, setAnonymous] = useState(false);
+  const [name, setName] = useState("");
+  const [city, setCity] = useState("");
+  const [category, setCategory] = useState<PrayerCategory>("peticion");
   const [message, setMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setMessage("Proximamente podras compartir tu intencion.");
+    if (intention.trim().length < 10) {
+      setMessage("Escribe una intención de al menos 10 caracteres.");
+      return;
+    }
+
+    setSubmitting(true);
+    setMessage("");
+    setSuccessMessage("");
+    try {
+      const result = await createPeticion({
+        nombre: name,
+        ciudad: city,
+        peticion: intention.trim(),
+        categoria: category,
+        anonimo: anonymous,
+      });
+      window.dispatchEvent(new CustomEvent<PrayerPetition>(PRAYER_CREATED_EVENT, { detail: result.registro }));
+      setSuccessMessage(result.message);
+      setIntention("");
+      setOpen(false);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "No fue posible enviar tu intención.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -38,7 +83,7 @@ export const PrayerForm = () => {
           </div>
         </div>
 
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <button
               type="button"
@@ -60,6 +105,33 @@ export const PrayerForm = () => {
             </DialogHeader>
 
             <form onSubmit={handleSubmit}>
+              <div className="mb-3 grid grid-cols-2 gap-2">
+                <input
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  maxLength={100}
+                  disabled={anonymous}
+                  aria-label="Nombre"
+                  placeholder={anonymous ? "Anónimo" : "Nombre"}
+                  className="min-h-11 rounded-xl border border-white/10 bg-black/20 px-3 text-sm text-foreground outline-none placeholder:text-foreground/40 focus:border-gold/45 disabled:opacity-60"
+                />
+                <input
+                  value={city}
+                  onChange={(event) => setCity(event.target.value)}
+                  maxLength={100}
+                  aria-label="Ciudad"
+                  placeholder="Ciudad"
+                  className="min-h-11 rounded-xl border border-white/10 bg-black/20 px-3 text-sm text-foreground outline-none placeholder:text-foreground/40 focus:border-gold/45"
+                />
+              </div>
+              <select
+                value={category}
+                onChange={(event) => setCategory(event.target.value as PrayerCategory)}
+                aria-label="Categoría"
+                className="mb-3 min-h-11 w-full rounded-xl border border-white/10 bg-[#07131d] px-3 text-sm text-foreground outline-none focus:border-gold/45"
+              >
+                {categories.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+              </select>
               <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/20 focus-within:border-gold/45">
                 <textarea
                   value={intention}
@@ -87,10 +159,11 @@ export const PrayerForm = () => {
 
               <button
                 type="submit"
+                disabled={submitting}
                 className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-gold px-5 py-3 text-sm font-extrabold text-navy-deep transition active:scale-[0.985]"
               >
                 <Send className="h-4 w-4" />
-                Enviar intención
+                {submitting ? "Depositando intención..." : "Enviar intención"}
               </button>
 
               {message ? (
@@ -102,6 +175,16 @@ export const PrayerForm = () => {
             </form>
           </DialogContent>
         </Dialog>
+
+        {successMessage ? (
+          <div
+            role="status"
+            className="mt-3 flex items-center gap-2 rounded-xl border border-gold/20 bg-gold/10 px-3 py-3 text-xs font-medium leading-relaxed text-gold"
+          >
+            <Lock className="h-4 w-4 shrink-0" />
+            {successMessage}
+          </div>
+        ) : null}
       </div>
     </section>
   );

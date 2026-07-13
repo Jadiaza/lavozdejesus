@@ -10545,6 +10545,36 @@ La experiencia buscada no es la de un chat convencional.
 
 Deberá funcionar como un **muro comunitario de oración**, donde las personas publiquen sus intenciones y otros usuarios puedan unirse espiritualmente a ellas.
 
+La implementación oficial utiliza:
+
+```text
+lvj_com_peticiones_oracion
+
+↓
+
+lvj_com_peticiones_apoyos
+
+↓
+
+API REST PHP
+
+↓
+
+Formulario y muro público de Capilla
+```
+
+Las intenciones nuevas se almacenarán con estado `pendiente` y no serán visibles públicamente hasta su aprobación desde el Panel Administrativo.
+
+La tabla `lvj_com_peticiones_apoyos` registrará una única unión de oración por intención e identificador de sesión. El total público se mantendrá en `lvj_com_peticiones_oracion.total_oraciones` y deberá actualizarse dentro de una transacción.
+
+Endpoints oficiales:
+
+- `GET /api/peticiones`: lista únicamente intenciones aprobadas y no eliminadas.
+- `POST /api/peticiones-crear`: valida y almacena una intención pendiente.
+- `POST /api/peticiones-orar`: registra la unión de oración sin duplicarla por sesión.
+
+El Panel Administrativo deberá permitir revisar, aprobar, rechazar, marcar como respondida y eliminar lógicamente cada intención.
+
 En futuras versiones podrá incorporar:
 
 - Moderación.
@@ -10631,14 +10661,15 @@ Implementado:
 - Configuración dinámica.
 - Soporte HLS.
 - Integración con Panel Administrativo.
+- Intenciones de oración conectadas a MySQL.
+- Moderación de intenciones desde el Panel Administrativo.
+- Acción comunitaria "Estoy orando" con protección contra duplicados por sesión.
 
 Pendiente:
 
 - Conexión completa de la pantalla pública.
 - Health Check.
 - Fallback automático.
-- Intenciones de oración.
-- Moderación.
 - Estadísticas.
 
 ---

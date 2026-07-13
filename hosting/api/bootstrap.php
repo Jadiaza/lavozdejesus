@@ -6,7 +6,10 @@ function lvj_json_response(array $payload, int $status = 200): void
 {
   http_response_code($status);
   header('Content-Type: application/json; charset=utf-8');
-  header('Cache-Control: public, max-age=300, stale-while-revalidate=3600');
+  $requestMethod = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+  header($requestMethod === 'GET'
+    ? 'Cache-Control: public, max-age=300, stale-while-revalidate=3600'
+    : 'Cache-Control: no-store');
 
   $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
   $allowedOrigins = [
@@ -24,6 +27,45 @@ function lvj_json_response(array $payload, int $status = 200): void
 
   echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
   exit;
+}
+
+function lvj_require_method(string $method): void
+{
+  $requestMethod = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+  $allowedMethod = strtoupper($method);
+
+  if ($requestMethod === 'OPTIONS') {
+    header('Access-Control-Allow-Methods: ' . $allowedMethod . ', OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type');
+    lvj_json_response(['success' => true]);
+  }
+
+  if ($requestMethod !== $allowedMethod) {
+    header('Allow: ' . $allowedMethod);
+    lvj_json_response(['success' => false, 'message' => 'Método no permitido.'], 405);
+  }
+}
+
+function lvj_json_input(): array
+{
+  $raw = file_get_contents('php://input');
+  $data = json_decode($raw ?: '', true);
+
+  if (!is_array($data)) {
+    lvj_json_response(['success' => false, 'message' => 'El cuerpo JSON no es válido.'], 400);
+  }
+
+  return $data;
+}
+
+function lvj_clean_text(mixed $value): string
+{
+  $text = is_scalar($value) ? (string) $value : '';
+  $text = strip_tags($text);
+  $text = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $text) ?? '';
+  $text = preg_replace('/[ \t]+/u', ' ', $text) ?? '';
+
+  return trim($text);
 }
 
 function lvj_config(): array
@@ -113,7 +155,7 @@ function lvj_optional_first(PDO $pdo, string $sql, array $params = []): ?array
 {
   try {
     return lvj_first($pdo, $sql, $params);
-  } catch (Throwable) {
+  } catch (Throwable $error) {
     return null;
   }
 }
@@ -125,7 +167,7 @@ function lvj_optional_rows(PDO $pdo, string $sql, array $params = []): array
     $statement->execute($params);
 
     return $statement->fetchAll();
-  } catch (Throwable) {
+  } catch (Throwable $error) {
     return [];
   }
 }
