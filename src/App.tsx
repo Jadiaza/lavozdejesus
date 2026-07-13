@@ -10,6 +10,7 @@ import LecturasDelDia from "./pages/LecturasDelDia.tsx";
 import Programacion from "./pages/Programacion.tsx";
 import Radio from "./pages/Radio.tsx";
 import Capilla from "./pages/Capilla.tsx";
+import Intenciones from "./pages/Intenciones.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import BibliaHome from "./pages/biblia/BibliaHome.tsx";
 import BibliaImportar from "./pages/biblia/BibliaImportar.tsx";
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/radio" element={<Radio />} />
             <Route path="/capilla" element={<Capilla />} />
             <Route path="/capilla-virtual" element={<Capilla />} />
+            <Route path="/capilla/intenciones" element={<Intenciones />} />
             <Route path="/contacto" element={<Contacto />} />
             <Route path="/lecturas-del-dia" element={<LecturasDelDia />} />
             <Route path="/lectura-del-dia" element={<LecturasDelDia />} />

@@ -743,13 +743,18 @@ export async function getPodcasts() {
   return getSheetData("PODCASTS");
 }
 
-export async function getPeticiones(limit = 10, offset = 0): Promise<PrayerPetition[]> {
+export async function getPeticiones(
+  limit = 10,
+  offset = 0,
+  categoria?: PrayerCategory,
+): Promise<PrayerPetition[]> {
   const rows = await getApiRows<Partial<PrayerPetition>>(PETICIONES_API_URL, {
     limit: String(limit),
     offset: String(offset),
+    ...(categoria ? { categoria } : {}),
   });
 
-  return rows.map((row) => ({
+  const petitions = rows.map((row) => ({
     id: clean(row.id),
     nombre: clean(row.nombre),
     ciudad: clean(row.ciudad),
@@ -760,6 +765,12 @@ export async function getPeticiones(limit = 10, offset = 0): Promise<PrayerPetit
     fecha_publicacion: clean(row.fecha_publicacion),
     estado: "aprobado",
   }));
+
+  // Mantiene el filtro funcional mientras el endpoint publicado se actualiza
+  // para aplicar la categoría directamente en MySQL.
+  return categoria
+    ? petitions.filter((petition) => petition.categoria === categoria)
+    : petitions;
 }
 
 export async function createPeticion(

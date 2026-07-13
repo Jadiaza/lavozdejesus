@@ -75,10 +75,10 @@ export const PrayerForm = () => {
           </div>
           <div className="min-w-0">
             <h2 className="font-display text-[1.75rem] font-semibold leading-none text-foreground">
-              Intenciones de oración
+              A los pies de Jesús
             </h2>
             <p className="mt-1.5 text-sm leading-relaxed text-foreground/65">
-              La comunidad ora contigo.
+              Deposita aquí tu intención
             </p>
           </div>
         </div>
