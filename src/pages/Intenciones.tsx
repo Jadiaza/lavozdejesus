@@ -76,15 +76,6 @@ const Intenciones = () => {
   };
 
   return (
-<<<<<<< HEAD
-    <div className="relative min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_50%_8%,rgba(196,145,36,0.11),transparent_27%),radial-gradient(circle_at_15%_55%,rgba(18,69,92,0.14),transparent_32%),linear-gradient(180deg,#030b13_0%,#06131e_48%,#02070d_100%)] text-foreground">
-      <header className="relative z-20 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
-        <div className="mx-auto flex max-w-[430px] items-center gap-3 rounded-2xl border border-white/[0.06] bg-[#07111c]/55 p-2.5 shadow-[0_12px_35px_rgba(0,0,0,0.18)] backdrop-blur-xl">
-          <button
-            type="button"
-            onClick={() => navigate("/capilla")}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gold/35 bg-black/15 text-foreground/90 transition hover:border-gold/60 hover:text-gold active:scale-95"
-=======
     <div className="lvj-sacred-page">
       <div className="lvj-sacred-backdrop" />
       <header className="relative z-20 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
@@ -93,7 +84,6 @@ const Intenciones = () => {
             type="button"
             onClick={() => navigate("/capilla")}
             className="lvj-sacred-icon-button h-11 w-11 shrink-0"
->>>>>>> d4c07cf (Biblia estudio)
             aria-label="Regresar a la Capilla"
           >
             <ArrowLeft className="h-6 w-6" />
@@ -111,11 +101,7 @@ const Intenciones = () => {
 
       <main className="relative z-10 px-4 pb-28">
         <div className="mx-auto max-w-[430px]">
-<<<<<<< HEAD
-          <div className="mb-4 grid grid-cols-2 gap-2 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-1.5" aria-label="Filtros de intenciones">
-=======
           <div className="lvj-sacred-card mb-4 grid grid-cols-2 gap-2 p-1.5" aria-label="Filtros de intenciones">
->>>>>>> d4c07cf (Biblia estudio)
             <button
               type="button"
               className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-gold/35 bg-gold/10 px-3 text-xs font-semibold text-gold"
@@ -139,11 +125,7 @@ const Intenciones = () => {
             “Mis intenciones” estará disponible al habilitar el registro de usuarios.
           </p>
 
-<<<<<<< HEAD
-          <label className="mb-4 flex min-h-11 items-center gap-2 rounded-xl border border-gold/20 bg-gold/[0.04] px-3 text-gold">
-=======
           <label className="lvj-sacred-field mb-4 flex min-h-11 items-center gap-2 rounded-xl px-3">
->>>>>>> d4c07cf (Biblia estudio)
             <Filter className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span className="sr-only">Filtrar por tipo de intención</span>
             <select
@@ -153,11 +135,7 @@ const Intenciones = () => {
               aria-label="Filtrar por tipo de intención"
             >
               {CATEGORY_OPTIONS.map((option) => (
-<<<<<<< HEAD
-                <option key={option.value || "todas"} value={option.value} className="bg-[#07111c] text-foreground">
-=======
                 <option key={option.value || "todas"} value={option.value} className="bg-[#0b0b0a] text-foreground">
->>>>>>> d4c07cf (Biblia estudio)
                   {option.label}
                 </option>
               ))}
@@ -176,11 +154,7 @@ const Intenciones = () => {
                 type="button"
                 onClick={handleLoadMore}
                 disabled={loadingMore}
-<<<<<<< HEAD
-                className="flex min-h-11 w-full items-center justify-center rounded-xl border border-gold/25 bg-gold/[0.04] px-4 py-2 text-xs font-semibold text-gold transition hover:bg-gold/10 disabled:cursor-wait disabled:opacity-60"
-=======
                 className="lvj-sacred-button-secondary w-full disabled:cursor-wait disabled:opacity-60"
->>>>>>> d4c07cf (Biblia estudio)
               >
                 {loadingMore ? "Cargando intenciones..." : "Cargar más intenciones"}
               </button>
