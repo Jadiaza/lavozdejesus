@@ -2,20 +2,14 @@ import { useEffect, useState, type ComponentType } from "react";
 import { Link } from "react-router-dom";
 import {
   BookOpen,
-  Bookmark,
   CalendarCheck2,
-  ChevronRight,
   Columns3,
-  Highlighter,
-  ListTree,
-  MapPin,
+  Compass,
+  Library,
   Search,
-  Star,
-  StickyNote,
   UserRound,
 } from "lucide-react";
 import { BibliaLayout } from "./BibliaLayout";
-import { libroById } from "@/features/biblia/books";
 import { getMeta } from "@/features/biblia/db";
 import bibleHero from "@/assets/lvj_biblia_home_hero_cruz_amanecer.png";
 
@@ -23,34 +17,39 @@ interface Tile {
   to: string;
   label: string;
   icon: ComponentType<{ className?: string; strokeWidth?: string | number }>;
-  className?: string;
 }
 
 const tiles: Tile[] = [
   { to: "/biblia/leer", label: "Leer", icon: BookOpen },
   { to: "/biblia/buscar", label: "Buscar", icon: Search },
-  { to: "/biblia/comparar", label: "Comparar", icon: Columns3 },
-  { to: "/biblia/planes", label: "Plan", icon: CalendarCheck2 },
-  { to: "/biblia/favoritos", label: "Favoritos", icon: Star },
-  { to: "/biblia/notas", label: "Notas", icon: StickyNote },
-  { to: "/biblia/marcadores", label: "Marcadores", icon: Bookmark },
-  { to: "/biblia/resaltados", label: "Resaltados", icon: Highlighter },
-  { to: "/biblia/concordancia", label: "Concordancia", icon: ListTree },
-  { to: "/biblia/personajes", label: "Personajes", icon: UserRound },
-  { to: "/biblia/lugares", label: "Lugares", icon: MapPin, className: "col-start-2 sm:col-start-3" },
+  { to: "/biblia/estudio", label: "Estudio Bíblico", icon: Columns3 },
+  { to: "/biblia/planes", label: "Planes", icon: CalendarCheck2 },
+  { to: "/biblia/mi-biblia", label: "Mi Biblia", icon: Library },
+  { to: "/biblia/explorar", label: "Explorar", icon: Compass },
 ];
 
 export default function BibliaHome() {
   const [continuar, setContinuar] = useState<{
     libroId: number;
+    libroCodigo?: string;
+    libroNombre?: string;
     capitulo: number;
+    versiculo?: number;
+    texto?: string;
   } | null>(null);
 
   useEffect(() => {
     let mounted = true;
 
     (async () => {
-      const last = await getMeta<{ libroId: number; capitulo: number }>("ultimaLectura");
+      const last = await getMeta<{
+        libroId: number;
+        libroCodigo?: string;
+        libroNombre?: string;
+        capitulo: number;
+        versiculo?: number;
+        texto?: string;
+      }>("ultimaLectura");
 
       if (!mounted) return;
       if (last) setContinuar(last);
@@ -61,10 +60,17 @@ export default function BibliaHome() {
     };
   }, []);
 
-  const libroCont = continuar ? libroById(continuar.libroId) : null;
-  const lecturaTo = libroCont
-    ? `/biblia/leer?libro=${libroCont.id}&cap=${continuar!.capitulo}`
-    : "/biblia/leer?libro=50&cap=6";
+  const lecturaTo = continuar?.libroCodigo
+    ? `/biblia/leer?libro=${continuar.libroCodigo}&cap=${continuar.capitulo}${continuar.versiculo ? `&versiculo=${continuar.versiculo}` : ""}`
+    : "/biblia/leer?libro=JHN&cap=6";
+  const continuarTexto = continuar?.texto?.trim()
+    ? `“${continuar.texto.trim()}”`
+    : continuar
+      ? "Retoma la lectura de la Palabra donde la dejaste."
+      : "“Yo soy el pan de vida...”";
+  const continuarReferencia = continuar
+    ? `${continuar.libroNombre ?? continuar.libroCodigo ?? "Biblia"} ${continuar.capitulo}${continuar.versiculo ? `, ${continuar.versiculo}` : ""}`
+    : "Jn 6, 35";
 
   return (
     <BibliaLayout title="Biblia">
@@ -130,11 +136,11 @@ export default function BibliaHome() {
               CONTINÚA DONDE QUEDASTE
             </div>
             <p className="line-clamp-1 mt-2.5 text-[0.72rem] leading-[1.35] text-[#F8F5EA]/88 min-[390px]:text-[0.72rem]">
-              "Yo soy el pan de vida..."
+              {continuarTexto}
             </p>
             <div className="mt-1.5 flex items-center justify-between gap-2">
               <span className="text-[0.72rem] font-semibold text-[#D4AF37]">
-                Jn 6, 35
+                {continuarReferencia}
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F2D27A] to-[#D4AF37] px-2 py-1 text-[10px] font-bold text-[#050505] shadow-[0_8px_20px_rgba(212,175,55,0.2)] min-[390px]:px-2.5">
                 <BookOpen className="h-3 w-3" strokeWidth={1.8} />
@@ -151,12 +157,12 @@ export default function BibliaHome() {
         <span className="h-px flex-1 bg-[#D4AF37]/45" />
       </div>
 
-      <div className="mb-4 grid grid-cols-3 gap-2 sm:grid-cols-5 min-[390px]:gap-2.5">
+      <div className="mb-4 grid grid-cols-3 gap-2 min-[390px]:gap-2.5">
         {tiles.map((tile) => (
           <Link
             key={tile.to}
             to={tile.to}
-            className={`group relative flex min-h-[5.2rem] flex-col items-center justify-center gap-1.5 overflow-hidden rounded-[0.95rem] border border-[#D4AF37]/32 bg-[#090909]/96 p-2 text-center shadow-[0_12px_30px_rgba(0,0,0,0.3)] transition hover:-translate-y-0.5 hover:border-[#D4AF37]/70 active:scale-95 min-[390px]:min-h-[5.65rem] ${tile.className ?? ""}`}
+            className="group relative flex min-h-[5.2rem] flex-col items-center justify-center gap-1.5 overflow-hidden rounded-[0.95rem] border border-[#D4AF37]/32 bg-[#090909]/96 p-2 text-center shadow-[0_12px_30px_rgba(0,0,0,0.3)] transition hover:-translate-y-0.5 hover:border-[#D4AF37]/70 active:scale-95 min-[390px]:min-h-[5.65rem]"
           >
             <span className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(242,210,122,0.14),transparent_45%)] opacity-0 transition group-hover:opacity-100" />
             <tile.icon className="relative h-7 w-7 text-[#D4AF37]" strokeWidth={1.45} />

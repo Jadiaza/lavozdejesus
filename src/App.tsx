@@ -13,9 +13,13 @@ import Capilla from "./pages/Capilla.tsx";
 import Intenciones from "./pages/Intenciones.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import BibliaHome from "./pages/biblia/BibliaHome.tsx";
-import BibliaImportar from "./pages/biblia/BibliaImportar.tsx";
 import BibliaLeer from "./pages/biblia/BibliaLeer.tsx";
+import BibliaComparar from "./pages/biblia/BibliaComparar.tsx";
 import BibliaProximamente from "./pages/biblia/BibliaProximamente.tsx";
+import BibliaEstudio from "./pages/biblia/BibliaEstudio.tsx";
+import BibliaMapas from "./pages/biblia/BibliaMapas.tsx";
+import BibliaPersonajes from "./pages/biblia/BibliaPersonajes.tsx";
+import Auth from "./pages/Auth.tsx";
 import {
   AcercaDe,
   Devociones,
@@ -51,8 +55,13 @@ const App = () => (
             <Route path="/biblia" element={<BibliaHome />} />
             <Route path="/Biblia" element={<BibliaHome />} />
             <Route path="/biblia/leer" element={<BibliaLeer />} />
-            <Route path="/biblia/importar" element={<BibliaImportar />} />
+            <Route path="/biblia/comparar" element={<BibliaComparar />} />
+            <Route path="/biblia/estudio" element={<BibliaEstudio />} />
+            <Route path="/biblia/estudio/:id" element={<BibliaEstudio />} />
+            <Route path="/biblia/mapas" element={<BibliaMapas />} />
+            <Route path="/biblia/personajes" element={<BibliaPersonajes />} />
             <Route path="/biblia/:section" element={<BibliaProximamente />} />
+            <Route path="/acceso" element={<Auth />} />
             <Route path="/devociones" element={<Devociones />} />
             <Route path="/liturgia" element={<Liturgia />} />
             <Route path="/formacion" element={<Formacion />} />

@@ -54,6 +54,17 @@
 
     --transition-smooth: cubic-bezier(0.22, 1, 0.36, 1);
 
+    /* Identidad editorial LVJ: negro, dorado y marfil. */
+    --lvj-black: #050505;
+    --lvj-surface: #0b0b0a;
+    --lvj-surface-raised: #12110e;
+    --lvj-gold: #d4af37;
+    --lvj-gold-bright: #f0d77d;
+    --lvj-gold-deep: #8f6b16;
+    --lvj-ivory: #f8f5ea;
+    --lvj-ivory-muted: #c9c3b4;
+    --lvj-sacred-border: rgb(212 175 55 / 0.26);
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -142,6 +153,128 @@
 }
 
 @layer components {
+  .lvj-sacred-page {
+    position: relative;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    color: var(--lvj-ivory);
+    background:
+      radial-gradient(circle at 50% -5%, rgb(212 175 55 / 0.14), transparent 30rem),
+      linear-gradient(180deg, var(--lvj-surface) 0%, var(--lvj-black) 48%, #020202 100%);
+  }
+
+  .lvj-sacred-backdrop {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 12% 62%, rgb(212 175 55 / 0.045), transparent 25rem),
+      linear-gradient(180deg, transparent 60%, rgb(0 0 0 / 0.35));
+  }
+
+  .lvj-sacred-panel,
+  .lvj-sacred-card {
+    border: 1px solid var(--lvj-sacred-border);
+    background: linear-gradient(145deg, rgb(18 17 14 / 0.92), rgb(6 6 6 / 0.9));
+    box-shadow: 0 24px 60px -38px rgb(0 0 0 / 0.95);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .lvj-sacred-panel {
+    border-radius: 1.25rem;
+  }
+
+  .lvj-sacred-card {
+    border-radius: 1rem;
+    transition: border-color 180ms ease, transform 180ms ease, background-color 180ms ease;
+  }
+
+  .lvj-sacred-card:hover {
+    border-color: rgb(212 175 55 / 0.45);
+  }
+
+  .lvj-sacred-icon,
+  .lvj-sacred-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgb(212 175 55 / 0.38);
+    color: var(--lvj-gold-bright);
+    background: rgb(212 175 55 / 0.08);
+  }
+
+  .lvj-sacred-icon-button {
+    border-radius: 9999px;
+    transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
+  }
+
+  .lvj-sacred-icon-button:hover {
+    border-color: rgb(212 175 55 / 0.65);
+    background: rgb(212 175 55 / 0.14);
+  }
+
+  .lvj-sacred-icon-button:active {
+    transform: scale(0.96);
+  }
+
+  .lvj-sacred-button,
+  .lvj-sacred-button-secondary {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: transform 180ms ease, filter 180ms ease, background-color 180ms ease;
+  }
+
+  .lvj-sacred-button {
+    color: #171208;
+    background: linear-gradient(135deg, var(--lvj-gold-bright), var(--lvj-gold));
+    box-shadow: 0 12px 30px -16px rgb(212 175 55 / 0.8);
+  }
+
+  .lvj-sacred-button-secondary {
+    border: 1px solid rgb(212 175 55 / 0.38);
+    color: var(--lvj-gold-bright);
+    background: rgb(212 175 55 / 0.055);
+  }
+
+  .lvj-sacred-button:hover,
+  .lvj-sacred-button-secondary:hover {
+    filter: brightness(1.08);
+  }
+
+  .lvj-sacred-button:active,
+  .lvj-sacred-button-secondary:active {
+    transform: scale(0.985);
+  }
+
+  .lvj-sacred-field {
+    border: 1px solid rgb(212 175 55 / 0.24);
+    color: var(--lvj-gold-bright);
+    background: rgb(212 175 55 / 0.045);
+  }
+
+  .lvj-reading-page {
+    color: #211d15;
+    background-color: var(--lvj-ivory);
+  }
+
+  .lvj-sacred-button:focus-visible,
+  .lvj-sacred-button-secondary:focus-visible,
+  .lvj-sacred-icon-button:focus-visible,
+  .lvj-sacred-field:focus-within {
+    outline: 2px solid var(--lvj-gold-bright);
+    outline-offset: 3px;
+  }
+
   .glass {
     background: var(--glass);
     backdrop-filter: blur(20px) saturate(140%);

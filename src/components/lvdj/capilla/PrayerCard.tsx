@@ -58,7 +58,7 @@ export const PrayerCard = ({ item, pending = false }: { item: PrayerPetition; pe
   };
 
   return (
-    <article className="rounded-[20px] border border-white/[0.09] bg-[linear-gradient(135deg,rgba(255,255,255,0.055),rgba(255,255,255,0.018))] p-3.5 shadow-[0_14px_35px_rgba(0,0,0,0.18)] backdrop-blur-sm">
+    <article className="lvj-sacred-card rounded-[20px] p-3.5">
       <div className="flex items-center gap-3">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-gold/30 bg-gold/10 text-gold">
           <CategoryIcon className="h-6 w-6 text-gold" />

@@ -130,6 +130,88 @@ button,
   transform: translateX(2px);
 }
 
+.side-nav-group {
+  display: grid;
+  gap: 4px;
+}
+
+.side-nav a.section-active {
+  background: rgba(229, 180, 47, 0.12);
+  color: #fff;
+}
+
+.side-nav-submenu {
+  display: grid;
+  gap: 3px;
+  margin-left: 28px;
+  padding-left: 12px;
+  border-left: 1px solid rgba(229, 180, 47, 0.28);
+}
+
+.side-nav-submenu a {
+  min-height: 36px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.side-nav-submenu .nav-icon {
+  width: 25px;
+  height: 25px;
+  border-radius: 8px;
+  font-size: 10px;
+}
+
+.bible-map-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bible-map-form label {
+  display: grid;
+  gap: 7px;
+  color: #344054;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.bible-map-form .form-span-2 {
+  grid-column: 1 / -1;
+}
+
+.bible-map-form .checkbox-row {
+  display: flex;
+  align-items: center;
+  align-self: center;
+}
+
+.bible-map-form .checkbox-row input {
+  width: auto;
+}
+
+.bible-map-admin-title {
+  display: flex;
+  align-items: center;
+  min-width: 260px;
+  gap: 12px;
+}
+
+.bible-map-admin-title img {
+  width: 76px;
+  height: 54px;
+  flex: 0 0 auto;
+  border-radius: 9px;
+  object-fit: cover;
+  background: #e5e7eb;
+}
+
+.bible-map-admin-title strong {
+  display: block;
+}
+
+.bible-map-table {
+  min-width: 980px;
+}
+
 .nav-icon {
   display: grid;
   place-items: center;
@@ -730,6 +812,60 @@ td small {
   gap: 10px;
 }
 
+.bible-import-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(8, 15, 28, 0.82);
+  backdrop-filter: blur(8px);
+}
+
+.bible-import-overlay[hidden] {
+  display: none;
+}
+
+.bible-import-progress {
+  width: min(100%, 460px);
+  padding: 32px;
+  border: 1px solid rgba(201, 153, 47, 0.35);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.bible-import-progress h2 {
+  margin: 18px 0 8px;
+}
+
+.bible-import-progress p,
+.bible-import-progress small {
+  display: block;
+  margin: 8px 0;
+  color: #64748b;
+}
+
+.bible-import-spinner {
+  display: inline-block;
+  width: 52px;
+  height: 52px;
+  border: 4px solid rgba(201, 153, 47, 0.2);
+  border-top-color: #c9992f;
+  border-radius: 50%;
+  animation: bible-import-spin 0.85s linear infinite;
+}
+
+.bible-import-busy {
+  overflow: hidden;
+}
+
+@keyframes bible-import-spin {
+  to { transform: rotate(360deg); }
+}
+
 .form-inline {
   display: grid;
   grid-template-columns: 1fr 180px auto;
@@ -1216,8 +1352,13 @@ textarea::placeholder {
   .dashboard-bottom,
   .cards-grid,
   .form-inline,
-  .content-form-grid {
+  .content-form-grid,
+  .bible-map-form {
     grid-template-columns: 1fr;
+  }
+
+  .bible-map-form .form-span-2 {
+    grid-column: auto;
   }
 
   .table-selector {
@@ -1255,7 +1396,7 @@ textarea::placeholder {
     flex-direction: column;
   }
 
- }
+}
 
 @media (max-width: 560px) {
   .admin-main {

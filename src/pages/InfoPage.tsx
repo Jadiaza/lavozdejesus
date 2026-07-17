@@ -46,18 +46,15 @@ const InfoPage = ({
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-navy-deep text-foreground">
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(var(--gold)/0.18),transparent_34%),linear-gradient(180deg,hsl(var(--navy-deep)),hsl(var(--navy)))]" />
-        <div className="absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-black/45 to-transparent" />
-      </div>
+    <div className="lvj-sacred-page">
+      <div className="lvj-sacred-backdrop" />
 
       <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 pb-28 pt-5 sm:px-6 lg:px-8 xl:pb-10">
         <header className="flex items-center justify-between">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full gold-border text-gold transition hover:bg-gold/10"
+            className="lvj-sacred-icon-button h-10 w-10"
             aria-label="Volver"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -65,16 +62,16 @@ const InfoPage = ({
           <Logo size="sm" />
           <Link
             to="/contacto"
-            className="flex h-10 w-10 items-center justify-center rounded-full gold-border text-gold transition hover:bg-gold/10"
+            className="lvj-sacred-icon-button h-10 w-10"
             aria-label="Contacto"
           >
             <Mail className="h-5 w-5" />
           </Link>
         </header>
 
-        <section className="mt-8 overflow-hidden rounded-2xl gold-border bg-navy-deep/62 p-6 shadow-deep backdrop-blur sm:p-8">
+        <section className="lvj-sacred-panel mt-8 overflow-hidden p-6 sm:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gold/10 text-gold ring-1 ring-gold/35">
+            <div className="lvj-sacred-icon h-16 w-16 shrink-0 rounded-2xl">
               {icon}
             </div>
             <div>
@@ -93,7 +90,7 @@ const InfoPage = ({
           {sections.map((section) => (
             <article
               key={section.title}
-              className="rounded-2xl gold-border bg-navy-deep/58 p-5 shadow-deep backdrop-blur"
+              className="lvj-sacred-card p-5"
             >
               <h2 className="text-lg font-extrabold text-gold">
                 {section.title}
@@ -105,7 +102,7 @@ const InfoPage = ({
           ))}
         </section>
 
-        <section className="mt-5 rounded-2xl gold-border bg-black/24 p-5 text-center shadow-deep backdrop-blur">
+        <section className="lvj-sacred-panel mt-5 p-5 text-center">
           <p className="mx-auto max-w-2xl text-sm leading-relaxed text-foreground/72">
             La Voz de Jesus trabaja para ofrecer una experiencia catolica clara,
             util y respetuosa. Esta seccion se ira ampliando con nuevos recursos
@@ -114,7 +111,7 @@ const InfoPage = ({
           {cta && (
             <Link
               to={cta.to}
-              className="mt-5 inline-flex rounded-lg bg-gradient-gold px-5 py-3 text-xs font-extrabold uppercase tracking-wide text-navy-deep shadow-gold"
+              className="lvj-sacred-button mt-5"
             >
               {cta.label}
             </Link>

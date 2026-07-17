@@ -56,6 +56,8 @@ $modules = [
       'lvj_bib_versiculos' => 'Versiculos',
       'lvj_bib_versiculos_tematicos' => 'Versiculos tematicos',
       'lvj_bib_versiones' => 'Versiones',
+      'lvj_bib_mapas' => 'Mapas',
+      'lvj_bib_personajes' => 'Personajes bíblicos',
     ],
   ],
   'oracion' => [

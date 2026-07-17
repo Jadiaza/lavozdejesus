@@ -1,0 +1,111 @@
+<?php
+declare(strict_types=1);
+
+final class BibleStudyService
+{
+  private const VERSION_KEYS = ['platense' => 'SPAPLATENSE', 'torres_amat' => 'TORRESAMAT', 'scio' => 'SCIO'];
+  private $pdo;
+  public function __construct(PDO $pdo) { $this->pdo=$pdo; }
+
+  public function findPublishedForInput(array $input): ?array
+  {
+    $range = $this->normalize($input); $context = $this->context($range);
+    $hash = hash('sha256', json_encode([$context, BibleStudyPrompt::METHOD], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    $row = lvj_first($this->pdo, "SELECT * FROM lvj_bib_estudios_ia WHERE hash_contexto=:hash AND metodo_version=:method AND estado='publicado' AND revisado=1 AND es_publico=1 AND deleted_at IS NULL LIMIT 1", ['hash'=>$hash,'method'=>BibleStudyPrompt::METHOD]);
+    return $row ? $this->present($row) : null;
+  }
+
+  public function create(array $input, array $user): array
+  {
+    $range = $this->normalize($input); $context = $this->context($range);
+    $hash = hash('sha256', json_encode([$context, BibleStudyPrompt::METHOD], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    $cached = lvj_first($this->pdo, "SELECT * FROM lvj_bib_estudios_ia WHERE hash_contexto=:hash AND metodo_version=:method AND estado IN ('revision','publicado') AND deleted_at IS NULL LIMIT 1", ['hash' => $hash, 'method' => BibleStudyPrompt::METHOD]);
+    if ($cached) {
+      $this->logRequest((int) $user['id'], (int) $cached['id'], $context['referencia'], 'completada', false);
+      return ['source' => 'cache', 'study' => $this->present($cached)];
+    }
+    $failed = lvj_first($this->pdo, "SELECT id FROM lvj_bib_estudios_ia WHERE hash_contexto=:hash AND metodo_version=:method AND estado='error' AND deleted_at IS NULL LIMIT 1", ['hash' => $hash, 'method' => BibleStudyPrompt::METHOD]);
+    if ($failed) {
+      $this->pdo->prepare("UPDATE lvj_bib_estudios_ia SET hash_contexto=SHA2(CONCAT(hash_contexto,'|error|',id,'|',UTC_TIMESTAMP(6)),256),estado='archivado',es_publico=0,deleted_at=NOW(),updated_at=NOW() WHERE id=:id AND estado='error' AND deleted_at IS NULL")
+        ->execute(['id' => (int) $failed['id']]);
+    }
+    $this->enforceQuota((int) $user['id']);
+    $requestId = $this->logRequest((int) $user['id'], null, $context['referencia'], 'procesando', true);
+    $insert = $this->pdo->prepare("INSERT INTO lvj_bib_estudios_ia (libro_id,capitulo_inicio,versiculo_inicio,capitulo_fin,versiculo_fin,referencia,metodo_version,contenido_json,hash_contexto,estado) VALUES (:libro,:ci,:vi,:cf,:vf,:ref,:method,'{}',:hash,'generando')");
+    try {
+      $insert->execute(['libro'=>$context['libro_id'],'ci'=>$range['capitulo_inicio'],'vi'=>$range['versiculo_inicio'],'cf'=>$range['capitulo_fin'],'vf'=>$range['versiculo_fin'],'ref'=>$context['referencia'],'method'=>BibleStudyPrompt::METHOD,'hash'=>$hash]);
+      $studyId = (int) $this->pdo->lastInsertId();
+    } catch (PDOException $error) {
+      if ((string) $error->getCode() !== '23000') throw $error;
+      $cached = lvj_first($this->pdo, "SELECT * FROM lvj_bib_estudios_ia WHERE hash_contexto=:hash AND metodo_version=:method AND estado IN ('revision','publicado') AND deleted_at IS NULL LIMIT 1", ['hash'=>$hash,'method'=>BibleStudyPrompt::METHOD]);
+      if (!$cached) throw $error;
+      $this->completeRequest($requestId, (int) $cached['id']); return ['source'=>'cache','study'=>$this->present($cached)];
+    }
+    try {
+      $provider = BibleStudyProviderFactory::make(); $generated = null; $last = null;
+      for ($attempt = 0; $attempt < 2; $attempt++) {
+        try { $generated = $provider->generateStudy($context); break; } catch (Throwable $error) { $last = $error; }
+      }
+      if (!$generated) throw ($last ?? new RuntimeException('No se generó el estudio.'));
+      $json = json_encode($generated['study'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+      $this->pdo->prepare("UPDATE lvj_bib_estudios_ia SET titulo=:titulo,proveedor_ia=:provider,modelo_ia=:model,contenido_json=:json,estado='revision',tokens_entrada=:tin,tokens_salida=:tout,error_mensaje=NULL WHERE id=:id")
+        ->execute(['titulo'=>$generated['study']['titulo'],'provider'=>strtolower((string)lvj_setting('BIBLE_AI_PROVIDER')),'model'=>$generated['model'],'json'=>$json,'tin'=>$generated['input_tokens'],'tout'=>$generated['output_tokens'],'id'=>$studyId]);
+      $this->completeRequest($requestId, $studyId);
+      $row = lvj_first($this->pdo, 'SELECT * FROM lvj_bib_estudios_ia WHERE id=:id', ['id'=>$studyId]);
+      return ['source'=>'generated','study'=>$this->present($row ?: [])];
+    } catch (Throwable $error) {
+      $message = mb_substr($error->getMessage(), 0, 1000);
+      $this->pdo->prepare("UPDATE lvj_bib_estudios_ia SET estado='error',error_mensaje=:error WHERE id=:id")->execute(['error'=>$message,'id'=>$studyId]);
+      $this->pdo->prepare("UPDATE lvj_bib_estudios_ia_solicitudes SET estado='error',consume_cupo=0,error_mensaje=:error,completed_at=NOW(),estudio_id=:study WHERE id=:id")->execute(['error'=>$message,'study'=>$studyId,'id'=>$requestId]);
+      throw $error;
+    }
+  }
+
+  public function find(int $id, ?int $userId = null, bool $admin = false): ?array
+  {
+    $row = lvj_first($this->pdo, 'SELECT * FROM lvj_bib_estudios_ia WHERE id=:id AND deleted_at IS NULL LIMIT 1', ['id'=>$id]);
+    if (!$row) return null;
+    $isPublic = $row['estado'] === 'publicado' && (int) $row['revisado'] === 1 && (int) $row['es_publico'] === 1;
+    if (!$admin && !$isPublic) {
+      $allowed = $userId && lvj_first($this->pdo, 'SELECT id FROM lvj_bib_estudios_ia_solicitudes WHERE estudio_id=:study AND usuario_id=:user LIMIT 1', ['study'=>$id,'user'=>$userId]);
+      if (!$allowed) return null;
+    }
+    return $this->present($row);
+  }
+
+  private function normalize(array $input): array
+  {
+    $book = strtoupper(trim((string)($input['libro_codigo'] ?? '')));
+    if (!preg_match('/^[0-9A-Z]{3}$/', $book)) throw new InvalidArgumentException('El libro no es válido.');
+    $ci=(int)($input['capitulo_inicio']??0); $cf=(int)($input['capitulo_fin']??$ci); $vi=(int)($input['versiculo_inicio']??0); $vf=(int)($input['versiculo_fin']??$vi);
+    if ($ci < 1 || $cf !== $ci || $vi < 1 || $vf < $vi) throw new InvalidArgumentException('Selecciona un rango válido del mismo capítulo.');
+    return ['libro_codigo'=>$book,'capitulo_inicio'=>$ci,'versiculo_inicio'=>$vi,'capitulo_fin'=>$cf,'versiculo_fin'=>$vf];
+  }
+
+  private function context(array $range): array
+  {
+    $versions=[]; $mainBook=null; $mainVersionId=0; $codes=self::VERSION_KEYS;
+    foreach ($codes as $key=>$fallback) {
+      $env='BIBLE_VERSION_' . strtoupper($key); $code=strtoupper(trim((string) lvj_setting($env, $fallback)));
+      $version=lvj_first($this->pdo,'SELECT * FROM lvj_bib_versiones WHERE UPPER(codigo)=:code AND estado=1 AND deleted_at IS NULL LIMIT 1',['code'=>$code]);
+      if (!$version) { $versions[$key]=['disponible'=>false,'version'=>$code,'versiculos'=>[],'notas'=>[]]; continue; }
+      $book=lvj_first($this->pdo,'SELECT * FROM lvj_bib_libros WHERE version_id=:version AND codigo=:book AND estado=1 AND deleted_at IS NULL LIMIT 1',['version'=>$version['id'],'book'=>$range['libro_codigo']]);
+      if (!$book) { $versions[$key]=['disponible'=>false,'version'=>$version['nombre'],'versiculos'=>[],'notas'=>[]]; continue; }
+      if ($key==='platense') { $mainBook=$book; $mainVersionId=(int)$version['id']; }
+      $stmt=$this->pdo->prepare('SELECT id,capitulo,versiculo,texto,titulo_seccion FROM lvj_bib_versiculos WHERE version_id=:version AND libro_id=:book AND capitulo=:chapter AND versiculo BETWEEN :start AND :end AND estado=1 AND deleted_at IS NULL ORDER BY versiculo');
+      $stmt->execute(['version'=>$version['id'],'book'=>$book['id'],'chapter'=>$range['capitulo_inicio'],'start'=>$range['versiculo_inicio'],'end'=>$range['versiculo_fin']]); $verses=$stmt->fetchAll();
+      $notes=[]; if ($key==='platense') { $n=$this->pdo->prepare('SELECT versiculo,contenido,titulo,referencia,fuente FROM lvj_bib_notas_versiones WHERE version_id=:version AND libro_id=:book AND capitulo=:chapter AND versiculo BETWEEN :start AND :end AND estado=1 AND deleted_at IS NULL ORDER BY versiculo,orden'); $n->execute(['version'=>$version['id'],'book'=>$book['id'],'chapter'=>$range['capitulo_inicio'],'start'=>$range['versiculo_inicio'],'end'=>$range['versiculo_fin']]); $notes=$n->fetchAll(); }
+      $versions[$key]=['disponible'=>count($verses)>0,'version'=>array_intersect_key($version,array_flip(['codigo','nombre','abreviatura','idioma','licencia','canon','versificacion'])),'libro'=>array_intersect_key($book,array_flip(['codigo','nombre','testamento','grupo'])),'versiculos'=>$verses,'notas'=>$notes];
+    }
+    if (!$mainBook || empty($versions['platense']['versiculos'])) throw new InvalidArgumentException('El pasaje no existe en la Biblia Platense.');
+    if (count($versions['platense']['versiculos']) !== ($range['versiculo_fin']-$range['versiculo_inicio']+1)) throw new InvalidArgumentException('El rango contiene versículos inexistentes.');
+    $ref=$mainBook['nombre'].' '.$range['capitulo_inicio'].','.$range['versiculo_inicio'].($range['versiculo_fin']!==$range['versiculo_inicio']?'-'.$range['versiculo_fin']:'');
+    $themeRows=lvj_optional_rows($this->pdo,'SELECT vt.* FROM lvj_bib_versiculos_tematicos vt INNER JOIN lvj_bib_versiculos v ON v.id=vt.versiculo_id WHERE v.version_id=:version AND v.libro_id=:book AND v.capitulo=:chapter AND v.versiculo BETWEEN :start AND :end LIMIT 100',['version'=>$mainVersionId,'book'=>$mainBook['id'],'chapter'=>$range['capitulo_inicio'],'start'=>$range['versiculo_inicio'],'end'=>$range['versiculo_fin']]);
+    return ['referencia'=>$ref,'libro_id'=>(int)$mainBook['id'],'rango'=>$range,'versiones'=>$versions,'contenido_tematico'=>$themeRows,'metodo_version'=>BibleStudyPrompt::METHOD];
+  }
+
+  private function enforceQuota(int $userId): void { $limit=max(1,(int) lvj_setting('BIBLE_AI_FREE_REQUESTS_PER_MONTH',3)); $s=$this->pdo->prepare("SELECT COUNT(*) FROM lvj_bib_estudios_ia_solicitudes WHERE usuario_id=:user AND consume_cupo=1 AND estado='completada' AND created_at>=DATE_FORMAT(UTC_TIMESTAMP(),'%Y-%m-01')"); $s->execute(['user'=>$userId]); if((int)$s->fetchColumn()>=$limit) throw new RuntimeException('Has utilizado tus estudios nuevos disponibles para este mes.'); }
+  private function logRequest(int $userId,?int $studyId,string $ref,string $state,bool $consume): int { $s=$this->pdo->prepare('INSERT INTO lvj_bib_estudios_ia_solicitudes(estudio_id,usuario_id,referencia,estado,origen,consume_cupo,completed_at) VALUES(:study,:user,:ref,:state,\'lector\',:consume,IF(:state2=\'completada\',NOW(),NULL))'); $s->execute(['study'=>$studyId,'user'=>$userId,'ref'=>$ref,'state'=>$state,'consume'=>$consume?1:0,'state2'=>$state]); return (int)$this->pdo->lastInsertId(); }
+  private function completeRequest(int $id,int $study): void { $this->pdo->prepare("UPDATE lvj_bib_estudios_ia_solicitudes SET estudio_id=:study,estado='completada',completed_at=NOW() WHERE id=:id")->execute(['study'=>$study,'id'=>$id]); }
+  private function present(array $row): array { $content=json_decode((string)($row['contenido_json']??'{}'),true); return ['id'=>(int)($row['id']??0),'referencia'=>(string)($row['referencia']??''),'titulo'=>(string)($row['titulo']??''),'estado'=>(string)($row['estado']??''),'revisado'=>(bool)($row['revisado']??false),'es_publico'=>(bool)($row['es_publico']??false),'contenido'=>is_array($content)?$content:[],'created_at'=>$row['created_at']??null,'updated_at'=>$row['updated_at']??null]; }
+}

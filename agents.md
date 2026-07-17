@@ -11697,6 +11697,28 @@ Nunca almacenar capítulos completos como texto plano cuando los versículos pue
 
 ---
 
+# 10.7.1 Fuentes de la Biblia Platense / Straubinger
+
+Los archivos de la versión **SpaPlatense** se organizarán bajo:
+
+```text
+storage/biblia/spaplatense/
+```
+
+La responsabilidad de cada fuente será la siguiente:
+
+- Los archivos SWORD ubicados en `fuente/sword/` constituyen la fuente original y deberán conservarse sin modificaciones.
+- Los archivos JSON ubicados en `fuente/json/` constituyen la fuente preparada para los futuros procesos de importación.
+- `SpaPlatense.json` se utilizará como fuente de lectura limpia.
+- `SpaPlatense-osis.json` se utilizará como fuente de Biblia de estudio con notas y marcado OSIS.
+- `procesado/` almacenará únicamente resultados intermedios derivados de las fuentes originales.
+- `offline/` almacenará los paquetes offline durante su preparación.
+- `public/offline/biblia/spaplatense/` se utilizará exclusivamente para publicar los paquetes offline finales.
+
+La presencia de estos archivos no implica que su contenido haya sido importado a MySQL. La importación, las modificaciones de tablas, los endpoints y la generación de paquetes offline deberán realizarse como tareas posteriores y expresamente autorizadas.
+
+---
+
 # 10.8 Planes de Lectura
 
 El sistema permitirá administrar múltiples planes.
@@ -11915,6 +11937,33 @@ El crecimiento previsto incluye:
 - Planes inteligentes de lectura.
 - Integración con IA para apoyo al estudio (sin sustituir la interpretación del Magisterio).
 
+## 10.21.1 Mapas bíblicos — Primera etapa
+
+La sección `Biblia > Explorar > Mapas` se implementará inicialmente como una galería de mapas estáticos
+administrables. Las imágenes residirán en una fuente externa o CDN y MySQL almacenará únicamente sus
+metadatos en `lvj_bib_mapas`: título, descripción, periodo, URL, fuente, enlace de la fuente, licencia,
+orden y estado de publicación.
+
+El Backend PHP publicará exclusivamente los registros activos no eliminados. El Panel Administrativo
+permitirá crear, editar, ordenar, publicar, ocultar y eliminar lógicamente cada mapa mediante su URL
+pública. El panel no almacenará ni cargará archivos de mapas. Toda imagen deberá conservar fuente y licencia.
+
+La primera etapa incluye cuadrícula, vista ampliada y créditos. Los puntos geográficos, rutas, relaciones
+con personajes o lugares y demás funciones cartográficas interactivas quedan reservadas para una fase
+posterior y no deberán bloquear la publicación inicial.
+
+## 10.21.2 Personajes bíblicos — Primera etapa
+
+La sección `Biblia > Explorar > Personajes bíblicos` se implementará como una galería administrable con
+búsqueda por nombre y filtros por testamento y categoría. MySQL almacenará los datos editoriales en
+`lvj_bib_personajes`: nombre, nombre alternativo, testamento, categoría, resumen biográfico, pasajes
+principales, enseñanza, URL de imagen, fuente, enlace de la fuente, licencia, orden y publicación.
+
+Las imágenes se consumirán exclusivamente mediante URL pública; el panel no cargará archivos. El Backend
+PHP publicará únicamente registros activos no eliminados. La ficha pública ampliada mostrará la información
+editorial y los créditos de la imagen. Las relaciones normalizadas con lugares, mapas, cronologías y
+versículos quedan reservadas para una fase posterior.
+
 ---
 
 # 10.22 Regla Fundamental
@@ -11994,6 +12043,39 @@ La incorporación de estos módulos se realizará mediante nuevas versiones del 
 # Política de Actualización
 
 Toda modificación relevante en la arquitectura del sistema deberá reflejarse en este documento.
+
+## 10.16 Estudio Bíblico con IA
+
+El módulo Biblia incorpora estudios asistidos por IA sin sustituir el lector ni el comparador. La Biblia
+Platense / Straubinger es el texto principal; Torres Amat y Scío se utilizan como apoyo comparativo.
+
+El backend PHP es el único autorizado para reunir textos, notas y metadatos, llamar al proveedor y guardar
+resultados. La IA nunca consultará traducciones externas ni recibirá datos personales. Los estudios se
+almacenan como JSON puro en `lvj_bib_estudios_ia`; cada petición se audita en
+`lvj_bib_estudios_ia_solicitudes`. La clave de reutilización es SHA-256 del contexto normalizado y la versión
+del método. Un resultado en caché no consume el límite mensual del usuario. Los estudios aprobados,
+revisados y públicos podrán consultarse por invitados sin autenticación y sin consumo de cupo; solamente
+la generación de un contexto nuevo mediante el proveedor de IA requerirá una cuenta autenticada.
+
+La generación requiere una cuenta autenticada mediante Supabase Auth. La identidad externa se relacionará
+con el usuario interno de `lvj_com_usuarios`; los roles y permisos seguirán administrándose en MySQL. La
+lectura bíblica, las notas y la comparación básica permanecerán disponibles para invitados.
+
+Todo estudio nuevo inicia en estado `revision`. El solicitante puede verlo con advertencia editorial; solo
+los estudios aprobados podrán marcarse `publicado`, `revisado = 1` y `es_publico = 1`. La interfaz pública
+utilizará pestañas Texto, Comparación, Estructura, Teología y Oración, conservando la identidad negra, dorada
+y blanca. La selección permitirá estudiar el capítulo completo o un rango continuo de versículos del
+mismo capítulo mediante una cuadrícula. No se aplicará un límite fijo de versículos; el Backend validará
+que todos los versículos solicitados existan en la versión principal.
+
+El sostenimiento del módulo permanecerá separado del acceso bíblico: la comparación y los estudios ya
+publicados serán gratuitos. La interfaz podrá invitar a un aporte voluntario mediante la ruta oficial
+`/donar`, sin convertir la donación en requisito para leer contenido existente ni crear un flujo económico
+paralelo al módulo Economía.
+
+Los proveedores implementarán `BibleStudyAiProviderInterface` y se seleccionarán mediante
+`BIBLE_AI_PROVIDER`. Las claves, modelo, timeout, tokens máximos y cupo mensual se definirán exclusivamente
+mediante variables de entorno. OpenAI y Gemini son adaptadores independientes.
 
 Antes de modificar cualquiera de los siguientes elementos:
 

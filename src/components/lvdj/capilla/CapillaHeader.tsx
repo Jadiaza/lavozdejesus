@@ -15,10 +15,28 @@ export const CapillaHeader = ({
   const navigate = useNavigate();
 
   const handleFullscreen = () => {
-    const element = document.documentElement;
+    const element = document.getElementById("capilla-transmision");
+    const video = element?.querySelector("video") as
+      | (HTMLVideoElement & { webkitEnterFullscreen?: () => void })
+      | null;
+    const fullscreenElement = element as
+      | (HTMLElement & { webkitRequestFullscreen?: () => Promise<void> | void })
+      | null;
+
+    if (!element) return;
 
     if (!document.fullscreenElement && element.requestFullscreen) {
-      void element.requestFullscreen();
+      void element.requestFullscreen().catch(() => video?.webkitEnterFullscreen?.());
+      return;
+    }
+
+    if (!document.fullscreenElement && fullscreenElement?.webkitRequestFullscreen) {
+      void fullscreenElement.webkitRequestFullscreen();
+      return;
+    }
+
+    if (!document.fullscreenElement && video?.webkitEnterFullscreen) {
+      video.webkitEnterFullscreen();
       return;
     }
 

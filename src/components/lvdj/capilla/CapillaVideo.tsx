@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Volume2, VolumeX } from "lucide-react";
 import type { CapillaStreamPublico } from "@/services/sheetsService";
 
 const HLS_JS_URL = "https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js";
@@ -55,14 +56,14 @@ const youtubeEmbedUrl = (url: string) => {
 
   if (!youtubeMatch?.[1]) return "";
 
-  return `https://www.youtube.com/embed/${youtubeMatch[1]}?rel=0&modestbranding=1`;
+  return `https://www.youtube.com/embed/${youtubeMatch[1]}?autoplay=1&mute=1&controls=0&playsinline=1&rel=0&modestbranding=1`;
 };
 
 const vimeoEmbedUrl = (url: string) => {
   const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?([0-9]+)/);
   if (!vimeoMatch?.[1]) return "";
 
-  return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+  return `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1&muted=1&controls=0&playsinline=1`;
 };
 
 const isHlsStream = (stream?: CapillaStreamPublico | null) =>
@@ -79,6 +80,7 @@ export const CapillaVideo = ({
 }: CapillaVideoProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [streamError, setStreamError] = useState("");
+  const [muted, setMuted] = useState(true);
   const location = [ciudad, pais].filter(Boolean).join(", ");
   const streamUrl = stream?.url_stream ?? "";
   const streamType = stream?.tipo_stream?.toLowerCase() ?? "";
@@ -90,6 +92,25 @@ export const CapillaVideo = ({
     Boolean(streamUrl) && (isHlsStream(stream) || streamType === "audio" || streamType === "otro");
 
   useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = muted;
+  }, [muted, useMediaElement]);
+
+  const toggleSound = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const nextMuted = !muted;
+    video.muted = nextMuted;
+    setMuted(nextMuted);
+    if (!nextMuted) {
+      void video.play();
+    }
+  };
+
+  useEffect(() => {
     if (!useMediaElement || !videoRef.current || !streamUrl) return undefined;
 
     const video = videoRef.current;
@@ -97,10 +118,30 @@ export const CapillaVideo = ({
     let cancelled = false;
     setStreamError("");
 
+    const handlePlaybackError = () => {
+      if (!cancelled) {
+        setStreamError(
+          "La transmisión no está disponible en este momento. Permanece en oración; Jesús sigue presente.",
+        );
+      }
+    };
+    const startPlayback = () => {
+      if (!cancelled) {
+        void video.play().catch(handlePlaybackError);
+      }
+    };
+
+    video.addEventListener("error", handlePlaybackError);
+    video.addEventListener("canplay", startPlayback);
+
     if (isHlsStream(stream)) {
       if (video.canPlayType("application/vnd.apple.mpegurl")) {
         video.src = streamUrl;
+        video.load();
         return () => {
+          cancelled = true;
+          video.removeEventListener("error", handlePlaybackError);
+          video.removeEventListener("canplay", startPlayback);
           video.removeAttribute("src");
           video.load();
         };
@@ -109,7 +150,7 @@ export const CapillaVideo = ({
       loadHlsScript()
         .then(() => {
           if (cancelled || !window.Hls?.isSupported()) {
-            setStreamError("La transmision no esta disponible en este navegador.");
+            handlePlaybackError();
             return;
           }
 
@@ -118,13 +159,13 @@ export const CapillaVideo = ({
           hls.attachMedia(video);
         })
         .catch(() => {
-          if (!cancelled) {
-            setStreamError("La transmision se encuentra temporalmente fuera de servicio.");
-          }
+          handlePlaybackError();
         });
 
       return () => {
         cancelled = true;
+        video.removeEventListener("error", handlePlaybackError);
+        video.removeEventListener("canplay", startPlayback);
         hls?.destroy();
         video.removeAttribute("src");
         video.load();
@@ -132,7 +173,11 @@ export const CapillaVideo = ({
     }
 
     video.src = streamUrl;
+    video.load();
     return () => {
+      cancelled = true;
+      video.removeEventListener("error", handlePlaybackError);
+      video.removeEventListener("canplay", startPlayback);
       video.removeAttribute("src");
       video.load();
     };
@@ -141,7 +186,7 @@ export const CapillaVideo = ({
   return (
     <section className="px-4 pt-4">
       <div className="mx-auto max-w-[430px] overflow-hidden rounded-2xl border border-gold/30 bg-black shadow-deep">
-        <div className="relative aspect-video w-full overflow-hidden">
+        <div id="capilla-transmision" className="relative aspect-video w-full overflow-hidden bg-black">
           {embedUrl ? (
             <iframe
               title={`${nombre} - Adoracion Eucaristica`}
@@ -155,21 +200,24 @@ export const CapillaVideo = ({
             <video
               ref={videoRef}
               className="h-full w-full bg-black"
-              controls
+              autoPlay
+              muted={muted}
               playsInline
+              disablePictureInPicture
               poster={imagenUrl || undefined}
               aria-label={`${nombre} - transmision en vivo`}
             />
           ) : (
             <div className="grid h-full place-items-center bg-[#07111c] px-6 text-center text-sm text-foreground/75">
-              La transmision se encuentra temporalmente fuera de servicio. Permanece en oracion.
+              La transmisión no está disponible en este momento. Permanece en oración; Jesús sigue presente.
             </div>
           )}
 
-          <div className="pointer-events-none absolute right-4 top-4 flex items-center gap-2 rounded-xl bg-red-700 px-3 py-2 text-sm font-extrabold uppercase text-white shadow-deep">
-            <span className="h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_14px_rgba(255,255,255,0.9)]" />
+          <div className="pointer-events-none absolute right-4 top-4 flex items-center gap-1.5 rounded-full border border-gold/30 bg-[#07111c]/80 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-gold shadow-[0_8px_24px_rgba(0,0,0,0.28)] backdrop-blur-md">
+            <span className="h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_8px_rgba(214,170,64,0.65)]" />
             En vivo
           </div>
+
         </div>
 
         {(streamError || descripcion || location || imagenUrl || sitioWeb || stream?.nombre) && (
@@ -196,7 +244,7 @@ export const CapillaVideo = ({
               ) : null}
             </div>
             {streamError ? (
-              <p className="rounded-xl border border-red-400/30 bg-red-950/30 p-3 leading-relaxed text-red-100">
+              <p className="rounded-xl border border-gold/20 bg-gold/[0.06] p-3 leading-relaxed text-foreground/75">
                 {streamError}
               </p>
             ) : null}
@@ -216,6 +264,18 @@ export const CapillaVideo = ({
           </div>
         )}
       </div>
+
+      {useMediaElement ? (
+        <button
+          type="button"
+          onClick={toggleSound}
+          className="mx-auto mt-2 flex min-h-11 w-full max-w-[430px] items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-[#07111c]/70 px-4 py-2 text-xs font-semibold text-gold shadow-[0_8px_24px_rgba(0,0,0,0.2)] backdrop-blur-md transition hover:bg-gold/[0.06] active:scale-[0.985]"
+          aria-label={muted ? "Activar sonido" : "Desactivar sonido"}
+        >
+          {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          {muted ? "Activar sonido" : "Desactivar sonido"}
+        </button>
+      ) : null}
     </section>
   );
 };

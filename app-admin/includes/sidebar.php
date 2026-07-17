@@ -37,6 +37,13 @@ function side_files_active(): string
 
   return in_array($currentAdminPage, ['files.php', 'upload.php', 'edit_file.php', 'folders.php', 'download.php'], true) ? 'active' : '';
 }
+
+$bibliaMainActive = side_nav_active('', 'biblia') === 'active';
+$bibliaImportActive = $currentAdminPage === 'biblia-importar.php';
+$bibliaStudiesActive = in_array($currentAdminPage, ['biblia-estudios-ia.php', 'biblia-estudio-ia.php'], true);
+$bibliaMapsActive = $currentAdminPage === 'biblia-mapas.php';
+$bibliaCharactersActive = $currentAdminPage === 'biblia-personajes.php';
+$bibliaGroupActive = $bibliaMainActive || $bibliaImportActive || $bibliaStudiesActive || $bibliaMapsActive || $bibliaCharactersActive;
 ?>
 <aside class="sidebar" data-sidebar>
   <div class="brand brand-large">
@@ -57,7 +64,18 @@ function side_files_active(): string
     <a class="<?php echo $currentAdminPage === 'intenciones.php' ? 'active' : ''; ?>" href="intenciones.php"><span class="nav-icon">I</span> Intenciones de Oración</a>
     <a class="<?php echo side_nav_active('', 'liturgia'); ?>" href="content.php?module=liturgia"><span class="nav-icon">L</span> Liturgia del Dia</a>
     <a class="<?php echo side_nav_active('', 'santoral'); ?>" href="content.php?module=santoral"><span class="nav-icon">S</span> Santoral</a>
-    <a class="<?php echo side_nav_active('', 'biblia'); ?>" href="content.php?module=biblia"><span class="nav-icon">B</span> Biblia / Planes</a>
+      <div class="side-nav-group<?php echo $bibliaGroupActive ? ' is-active' : ''; ?>">
+        <a class="side-nav-parent <?php echo $bibliaMainActive ? 'active' : ($bibliaGroupActive ? 'section-active' : ''); ?>" href="content.php?module=biblia">
+          <span class="nav-icon">B</span>
+          <span>Biblia / Planes</span>
+        </a>
+        <div class="side-nav-submenu" aria-label="Opciones de Biblia y planes">
+          <a class="<?php echo $bibliaImportActive ? 'active' : ''; ?>" href="biblia-importar.php"><span class="nav-icon">Bi</span> Importar Biblias</a>
+          <a class="<?php echo $bibliaStudiesActive ? 'active' : ''; ?>" href="biblia-estudios-ia.php"><span class="nav-icon">IA</span> Estudios IA</a>
+          <a class="<?php echo $bibliaMapsActive ? 'active' : ''; ?>" href="biblia-mapas.php"><span class="nav-icon">M</span> Mapas</a>
+          <a class="<?php echo $bibliaCharactersActive ? 'active' : ''; ?>" href="biblia-personajes.php"><span class="nav-icon">P</span> Personajes</a>
+        </div>
+      </div>
     <a class="<?php echo side_nav_active('', 'oracion'); ?>" href="content.php?module=oracion"><span class="nav-icon">O</span> Rosario</a>
     <a class="<?php echo side_nav_active('', 'podcast'); ?>" href="content.php?module=podcast"><span class="nav-icon">Pc</span> Podcast</a>
     <a class="<?php echo side_files_active(); ?>" href="files.php"><span class="nav-icon">A</span> Biblioteca / Archivos</a>

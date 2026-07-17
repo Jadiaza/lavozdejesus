@@ -829,7 +829,7 @@ const LecturasDelDia = () => {
 
   return (
     <main
-      className="min-h-screen text-[#071a33]"
+      className="lvj-reading-page min-h-screen"
       style={{ backgroundColor: "#fff8ec" }}
     >
       <div
@@ -839,7 +839,7 @@ const LecturasDelDia = () => {
 
       <Link
         to="/"
-        className="fixed left-[max(20px,env(safe-area-inset-left))] top-1/2 z-[999] hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-[#082347] text-white shadow-[0_6px_18px_rgba(8,35,71,0.22)] transition hover:scale-95 hover:bg-[#0b2f5f] active:scale-95 md:inline-flex"
+        className="fixed left-[max(20px,env(safe-area-inset-left))] top-1/2 z-[999] hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-[#d4af37]/50 bg-[#111111] text-[#f8f5ea] shadow-[0_6px_18px_rgba(0,0,0,0.22)] transition hover:scale-95 hover:bg-black active:scale-95 md:inline-flex"
         aria-label="Volver al inicio"
       >
         <ArrowLeft className="h-5 w-5" />
@@ -847,7 +847,7 @@ const LecturasDelDia = () => {
 
       <Link
         to="/"
-        className="fixed left-[max(18px,env(safe-area-inset-left))] top-[max(1.75rem,env(safe-area-inset-top))] z-[999] inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#082347] text-white shadow-[0_6px_18px_rgba(8,35,71,0.22)] transition active:scale-95 md:hidden"
+        className="fixed left-[max(18px,env(safe-area-inset-left))] top-[max(1.75rem,env(safe-area-inset-top))] z-[999] inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#d4af37]/50 bg-[#111111] text-[#f8f5ea] shadow-[0_6px_18px_rgba(0,0,0,0.22)] transition active:scale-95 md:hidden"
         aria-label="Volver al inicio"
       >
         <ArrowLeft className="h-5 w-5" />
