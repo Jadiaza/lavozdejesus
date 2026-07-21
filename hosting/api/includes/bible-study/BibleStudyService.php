@@ -32,7 +32,7 @@ final class BibleStudyService
       $this->pdo->prepare("UPDATE lvj_bib_estudios_ia SET hash_contexto=SHA2(CONCAT(hash_contexto,'|error|',id,'|',UTC_TIMESTAMP(6)),256),estado='archivado',es_publico=0,deleted_at=NOW(),updated_at=NOW() WHERE id=:id AND estado='error' AND deleted_at IS NULL")
         ->execute(['id' => (int) $failed['id']]);
     }
-    $this->enforceQuota((int) $user['id']);
+    $this->enforceQuota($user);
     $requestId = $this->logRequest((int) $user['id'], null, $context['referencia'], 'procesando', true);
     $insert = $this->pdo->prepare("INSERT INTO lvj_bib_estudios_ia (libro_id,capitulo_inicio,versiculo_inicio,capitulo_fin,versiculo_fin,referencia,metodo_version,contenido_json,hash_contexto,estado) VALUES (:libro,:ci,:vi,:cf,:vf,:ref,:method,'{}',:hash,'generando')");
     try {
@@ -50,6 +50,7 @@ final class BibleStudyService
         try { $generated = $provider->generateStudy($context); break; } catch (Throwable $error) { $last = $error; }
       }
       if (!$generated) throw ($last ?? new RuntimeException('No se generó el estudio.'));
+      $this->refreshConnection();
       $json = json_encode($generated['study'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
       $this->pdo->prepare("UPDATE lvj_bib_estudios_ia SET titulo=:titulo,proveedor_ia=:provider,modelo_ia=:model,contenido_json=:json,estado='revision',tokens_entrada=:tin,tokens_salida=:tout,error_mensaje=NULL WHERE id=:id")
         ->execute(['titulo'=>$generated['study']['titulo'],'provider'=>strtolower((string)lvj_setting('BIBLE_AI_PROVIDER')),'model'=>$generated['model'],'json'=>$json,'tin'=>$generated['input_tokens'],'tout'=>$generated['output_tokens'],'id'=>$studyId]);
@@ -58,8 +59,13 @@ final class BibleStudyService
       return ['source'=>'generated','study'=>$this->present($row ?: [])];
     } catch (Throwable $error) {
       $message = mb_substr($error->getMessage(), 0, 1000);
-      $this->pdo->prepare("UPDATE lvj_bib_estudios_ia SET estado='error',error_mensaje=:error WHERE id=:id")->execute(['error'=>$message,'id'=>$studyId]);
-      $this->pdo->prepare("UPDATE lvj_bib_estudios_ia_solicitudes SET estado='error',consume_cupo=0,error_mensaje=:error,completed_at=NOW(),estudio_id=:study WHERE id=:id")->execute(['error'=>$message,'study'=>$studyId,'id'=>$requestId]);
+      try {
+        $this->refreshConnection();
+        $this->pdo->prepare("UPDATE lvj_bib_estudios_ia SET estado='error',error_mensaje=:error WHERE id=:id")->execute(['error'=>$message,'id'=>$studyId]);
+        $this->pdo->prepare("UPDATE lvj_bib_estudios_ia_solicitudes SET estado='error',consume_cupo=0,error_mensaje=:error,completed_at=NOW(),estudio_id=:study WHERE id=:id")->execute(['error'=>$message,'study'=>$studyId,'id'=>$requestId]);
+      } catch (Throwable $logError) {
+        error_log('LVJ Bible Study recovery: '.$logError->getMessage());
+      }
       throw $error;
     }
   }
@@ -134,7 +140,8 @@ final class BibleStudyService
     return ['referencia'=>$ref,'libro_id'=>(int)$mainBook['id'],'rango'=>$range,'versiones'=>$versions,'contenido_tematico'=>$themeRows,'metodo_version'=>BibleStudyPrompt::METHOD];
   }
 
-  private function enforceQuota(int $userId): void { $limit=max(1,(int) lvj_setting('BIBLE_AI_FREE_REQUESTS_PER_MONTH',3)); $s=$this->pdo->prepare("SELECT COUNT(*) FROM lvj_bib_estudios_ia_solicitudes WHERE usuario_id=:user AND consume_cupo=1 AND estado='completada' AND created_at>=DATE_FORMAT(UTC_TIMESTAMP(),'%Y-%m-01')"); $s->execute(['user'=>$userId]); if((int)$s->fetchColumn()>=$limit) throw new RuntimeException('Has utilizado tus estudios nuevos disponibles para este mes.'); }
+  private function enforceQuota(array $user): void { $email=mb_strtolower(trim((string)($user['correo']??$user['email']??''))); $unlimited=array_filter(array_map(static fn($value)=>mb_strtolower(trim($value)),explode(',',(string)lvj_setting('BIBLE_AI_UNLIMITED_EMAILS','lavozdejesusco@gmail.com,lavozdejesus.co@gmail.com')))); if($email!==''&&in_array($email,$unlimited,true))return; $limit=max(1,(int) lvj_setting('BIBLE_AI_FREE_REQUESTS_PER_MONTH',3)); $s=$this->pdo->prepare("SELECT COUNT(*) FROM lvj_bib_estudios_ia_solicitudes WHERE usuario_id=:user AND consume_cupo=1 AND estado='completada' AND created_at>=DATE_FORMAT(UTC_TIMESTAMP(),'%Y-%m-01')"); $s->execute(['user'=>(int)$user['id']]); if((int)$s->fetchColumn()>=$limit) throw new RuntimeException('Has utilizado tus estudios nuevos disponibles para este mes.'); }
+  private function refreshConnection(): void { try { $this->pdo->query('SELECT 1'); } catch (PDOException $error) { $mysqlCode=(int)($error->errorInfo[1]??0); if(!in_array($mysqlCode,[2006,2013],true)&&!str_contains(mb_strtolower($error->getMessage()),'server has gone away'))throw $error; $this->pdo=lvj_db(); } }
   private function tableExists(string $table): bool { $s=$this->pdo->prepare('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=:table'); $s->execute(['table'=>$table]); return (int)$s->fetchColumn()===1; }
   private function equivalenceCount(string $table): array { $sql="SELECT SUM(CASE WHEN estado_revision='aprobado' THEN 1 ELSE 0 END) approved,SUM(CASE WHEN estado_revision IN ('pendiente','revisado') THEN 1 ELSE 0 END) pending FROM {$table} WHERE deleted_at IS NULL"; $row=$this->pdo->query($sql)->fetch() ?: []; return ['approved'=>(int)($row['approved']??0),'pending'=>(int)($row['pending']??0)]; }
   private function logRequest(int $userId,?int $studyId,string $ref,string $state,bool $consume): int { $s=$this->pdo->prepare('INSERT INTO lvj_bib_estudios_ia_solicitudes(estudio_id,usuario_id,referencia,estado,origen,consume_cupo,completed_at) VALUES(:study,:user,:ref,:state,\'lector\',:consume,IF(:state2=\'completada\',NOW(),NULL))'); $s->execute(['study'=>$studyId,'user'=>$userId,'ref'=>$ref,'state'=>$state,'consume'=>$consume?1:0,'state2'=>$state]); return (int)$this->pdo->lastInsertId(); }

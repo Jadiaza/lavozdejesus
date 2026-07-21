@@ -25,6 +25,7 @@ const generate=async()=>{const firstVerse=verseOptions[0];const lastVerse=verseO
 const currentBook=books.find(item=>item.codigo===book);const chapterOptions=Array.from({length:currentBook?.capitulos||1},(_,index)=>index+1);const verseOptions=useMemo(()=>{const primaryColumn=preview.find(column=>column.version.codigo.toUpperCase().includes("SPAPLATENSE"))||preview[0];return (primaryColumn?.versiculos||[]).map(verse=>verse.versiculo);},[preview]);
 const selectRangeVerse=(value:number)=>{setComparisonRequested(false);if(rangeAnchor===null){setStart(value);setEnd(value);setRangeAnchor(value);return;}setStart(Math.min(rangeAnchor,value));setEnd(Math.max(rangeAnchor,value));setRangeAnchor(null);};
 const hasStudyContent=Boolean(study&&study.estado!=="error"&&Object.keys(study.contenido||{}).length>0);
+const quotaReached=error==="Has utilizado tus estudios nuevos disponibles para este mes.";
 useEffect(()=>{if(verseOptions.length===0)return;const first=verseOptions[0];const last=verseOptions[verseOptions.length-1];if(selectionMode==="chapter"){if(start!==first)setStart(first);if(end!==last)setEnd(last);return;}const nextStart=verseOptions.includes(start)?start:first;const nextEnd=verseOptions.includes(end)&&end>=nextStart?end:(verseOptions[Math.min(4,verseOptions.length-1)]??nextStart);if(nextStart!==start)setStart(nextStart);if(nextEnd!==end)setEnd(nextEnd);},[verseOptions,selectionMode,start,end]);
 return <BibliaLayout title="Estudio Bíblico" back="/biblia">
   {!hasStudyContent&&!loading&&<section className="mb-4 rounded-[1.5rem] border border-[#D4AF37]/25 bg-[#0B0B0B] p-5">
@@ -44,7 +45,7 @@ return <BibliaLayout title="Estudio Bíblico" back="/biblia">
   {comparisonRequested&&preview.length>0&&<ComparisonPreview columns={preview} start={start} end={end}/>} 
   {comparisonRequested&&authenticated===false&&<GuestStudyPrompt next={`/biblia/estudio?libro=${book}&cap=${chapter}`}/>}
   {loading&&<Generating/>}
-  {error&&<div className="mb-4 rounded-2xl border border-red-500/30 bg-red-950/20 p-4 text-sm text-red-200"><p>{error||"No fue posible generar el estudio en este momento."}</p><button onClick={()=>id?location.reload():generate()} className="mt-3 rounded-lg border border-red-300/30 px-3 py-2">Intentar nuevamente</button></div>}
+  {error&&<div role="alert" className={`mb-4 rounded-2xl border p-4 text-sm ${quotaReached?"border-amber-400/35 bg-amber-950/20 text-amber-100":"border-red-500/30 bg-red-950/20 text-red-200"}`}><p className="font-semibold">{quotaReached?"Cupo mensual agotado":error||"No fue posible generar el estudio en este momento."}</p>{quotaReached?<p className="mt-1 text-amber-100/80">Podrás solicitar nuevos estudios el próximo mes. Los estudios existentes continúan disponibles sin consumir cupo.</p>:<button onClick={()=>id?location.reload():generate()} className="mt-3 rounded-lg border border-red-300/30 px-3 py-2">Intentar nuevamente</button>}</div>}
   {hasStudyContent&&study&&<><StudyView study={study} tab={tab} setTab={setTab}/><SupportCard/></>} 
 </BibliaLayout>}
 
