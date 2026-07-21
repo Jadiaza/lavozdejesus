@@ -90,7 +90,9 @@ export default function BibliaProximamente({ title }: { title?: string }) {
               aria-label={`Secciones de ${displayTitle}`}
             >
               {groupedTabs.map((tab, index) => {
-                const target = section === "explorar"
+                const target = section === "mi-biblia" && tab === "Favoritos"
+                  ? "/biblia/favoritos"
+                  : section === "explorar"
                   ? tab === "Mapas"
                     ? "/biblia/mapas"
                     : tab === "Personajes bíblicos"

@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -153,6 +154,18 @@
 }
 
 @layer components {
+  .biblia-eink-paper {
+    border-color: rgb(75 75 68 / 0.22);
+    background-color: #e5e5dd;
+    color: #242520;
+    box-shadow: inset 0 0 5rem rgb(72 72 64 / 0.035);
+  }
+
+  .biblia-eink-paper ::selection {
+    background-color: rgb(91 92 82 / 0.24);
+    color: #181914;
+  }
+
   .lvj-sacred-page {
     position: relative;
     min-height: 100dvh;

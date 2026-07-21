@@ -19,8 +19,12 @@ export interface NotaStraubingerRow {
 export interface NotaPersonalRow {
   id: string;
   libroId: number;
+  libroCodigo?: string;
+  libroNombre?: string;
   capitulo: number;
   versiculo: number;
+  versiculos?: number[];
+  version?: string;
   texto: string;
   createdAt: string;
 }
@@ -28,9 +32,50 @@ export interface NotaPersonalRow {
 export interface FavoritoRow {
   id: string;
   libroId: number;
+  libroCodigo?: string;
+  libroNombre?: string;
   capitulo: number;
   versiculo: number;
+  texto?: string;
+  version?: string;
   createdAt: string;
+}
+
+export type ColorResaltado = "dorado" | "verde" | "azul" | "rosa" | "morado";
+
+export interface ResaltadoRow {
+  id: string;
+  version: string;
+  libroCodigo: string;
+  capitulo: number;
+  versiculo: number;
+  color: ColorResaltado;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MarcadorRow {
+  id: string;
+  version: string;
+  libroId: number;
+  libroCodigo: string;
+  libroNombre: string;
+  capitulo: number;
+  versiculo: number;
+  texto?: string;
+  createdAt: string;
+}
+
+export interface HistorialRow {
+  id: string;
+  version: string;
+  libroId: number;
+  libroCodigo: string;
+  libroNombre: string;
+  capitulo: number;
+  versiculo: number;
+  texto?: string;
+  visitedAt: string;
 }
 
 export interface MetaRow<T = unknown> {
@@ -39,13 +84,16 @@ export interface MetaRow<T = unknown> {
 }
 
 const DB_NAME = "lvj_biblia";
-const DB_VERSION = 1;
+const DB_VERSION = 3;
 
 type StoreName =
   | "versiculos"
   | "notas_straubinger"
   | "notas_personales"
   | "favoritos"
+  | "resaltados"
+  | "marcadores"
+  | "historial"
   | "meta";
 
 let dbPromise: Promise<IDBDatabase> | null = null;
@@ -90,6 +138,19 @@ export function getDb(): Promise<IDBDatabase> {
 
       if (!db.objectStoreNames.contains("favoritos")) {
         db.createObjectStore("favoritos", { keyPath: "id" });
+      }
+
+      if (!db.objectStoreNames.contains("resaltados")) {
+        const store = db.createObjectStore("resaltados", { keyPath: "id" });
+        store.createIndex("porCapitulo", ["version", "libroCodigo", "capitulo"]);
+      }
+
+      if (!db.objectStoreNames.contains("marcadores")) {
+        db.createObjectStore("marcadores", { keyPath: "id" });
+      }
+
+      if (!db.objectStoreNames.contains("historial")) {
+        db.createObjectStore("historial", { keyPath: "id" });
       }
 
       if (!db.objectStoreNames.contains("meta")) {
@@ -186,6 +247,10 @@ export async function getMeta<T>(key: string): Promise<T | null> {
   return row?.value ?? null;
 }
 
+export async function deleteMeta(key: string) {
+  await deleteRow("meta", key);
+}
+
 export async function getVersiculosDeCapitulo(
   version: string,
   libroId: number,
@@ -226,6 +291,7 @@ export async function toggleFavorito(
   libroId: number,
   capitulo: number,
   versiculo: number,
+  metadata?: Pick<FavoritoRow, "libroCodigo" | "libroNombre" | "texto" | "version">,
 ) {
   const id = favId(libroId, capitulo, versiculo);
   const exists = await esFavorito(libroId, capitulo, versiculo);
@@ -239,6 +305,7 @@ export async function toggleFavorito(
     libroId,
     capitulo,
     versiculo,
+    ...metadata,
     createdAt: new Date().toISOString(),
   });
   return true;
@@ -263,4 +330,85 @@ export async function listarNotasPersonales() {
 
 export async function eliminarNotaPersonal(id: string) {
   await deleteRow("notas_personales", id);
+}
+
+const resaltadoId = (version: string, libroCodigo: string, capitulo: number, versiculo: number) =>
+  `${version}:${libroCodigo}:${capitulo}:${versiculo}`;
+
+export async function listarResaltadosCapitulo(
+  version: string,
+  libroCodigo: string,
+  capitulo: number,
+) {
+  const key = IDBKeyRange.only([version, libroCodigo, capitulo]);
+  return getAllByIndex<ResaltadoRow>("resaltados", "porCapitulo", key);
+}
+
+export async function guardarResaltado(
+  version: string,
+  libroCodigo: string,
+  capitulo: number,
+  versiculo: number,
+  color: ColorResaltado,
+) {
+  const id = resaltadoId(version, libroCodigo, capitulo, versiculo);
+  const ahora = new Date().toISOString();
+  const { store } = await storeFor("resaltados");
+  const anterior = await requestToPromise<ResaltadoRow | undefined>(store.get(id));
+  await putRow<ResaltadoRow>("resaltados", {
+    id,
+    version,
+    libroCodigo,
+    capitulo,
+    versiculo,
+    color,
+    createdAt: anterior?.createdAt ?? ahora,
+    updatedAt: ahora,
+  });
+}
+
+export async function eliminarResaltado(
+  version: string,
+  libroCodigo: string,
+  capitulo: number,
+  versiculo: number,
+) {
+  await deleteRow("resaltados", resaltadoId(version, libroCodigo, capitulo, versiculo));
+}
+
+export async function listarResaltados() {
+  return getAll<ResaltadoRow>("resaltados");
+}
+
+const referenciaId = (version: string, libroCodigo: string, capitulo: number, versiculo: number) =>
+  `${version}:${libroCodigo}:${capitulo}:${versiculo}`;
+
+export async function esMarcador(version: string, libroCodigo: string, capitulo: number, versiculo: number) {
+  const { store } = await storeFor("marcadores");
+  return !!(await requestToPromise<MarcadorRow | undefined>(store.get(referenciaId(version, libroCodigo, capitulo, versiculo))));
+}
+
+export async function toggleMarcador(row: Omit<MarcadorRow, "id" | "createdAt">) {
+  const id = referenciaId(row.version, row.libroCodigo, row.capitulo, row.versiculo);
+  const { store } = await storeFor("marcadores");
+  const existe = await requestToPromise<MarcadorRow | undefined>(store.get(id));
+  if (existe) {
+    await deleteRow("marcadores", id);
+    return false;
+  }
+  await putRow<MarcadorRow>("marcadores", { ...row, id, createdAt: new Date().toISOString() });
+  return true;
+}
+
+export async function listarMarcadores() {
+  return getAll<MarcadorRow>("marcadores");
+}
+
+export async function registrarHistorial(row: Omit<HistorialRow, "id" | "visitedAt">) {
+  const id = `${row.version}:${row.libroCodigo}:${row.capitulo}`;
+  await putRow<HistorialRow>("historial", { ...row, id, visitedAt: new Date().toISOString() });
+}
+
+export async function listarHistorial() {
+  return getAll<HistorialRow>("historial");
 }

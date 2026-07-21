@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { ChevronRight, Columns3, Loader2, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { BibliaLayout } from "./BibliaLayout";
 import {
   getBibliaCapitulo,
@@ -17,12 +17,15 @@ interface Columna {
 }
 
 export default function BibliaComparar() {
+  const [params] = useSearchParams();
+  const libroInicial = (params.get("libro") || "GEN").toUpperCase();
+  const capituloInicial = Math.max(1, Number(params.get("cap") || 1));
   const [versiones, setVersiones] = useState<BibliaVersion[]>([]);
   const [versionA, setVersionA] = useState("");
   const [versionB, setVersionB] = useState("");
   const [libros, setLibros] = useState<BibliaLibro[]>([]);
-  const [libro, setLibro] = useState("GEN");
-  const [capitulo, setCapitulo] = useState(1);
+  const [libro, setLibro] = useState(libroInicial);
+  const [capitulo, setCapitulo] = useState(capituloInicial);
   const [columnas, setColumnas] = useState<[Columna, Columna] | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");

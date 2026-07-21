@@ -7,9 +7,11 @@ interface Props {
   title?: string;
   children: ReactNode;
   back?: string;
+  hideHeader?: boolean;
+  hideBottomNav?: boolean;
 }
 
-export const BibliaLayout = ({ title, children, back }: Props) => {
+export const BibliaLayout = ({ title, children, back, hideHeader = false, hideBottomNav = false }: Props) => {
   const loc = useLocation();
   const isHome = loc.pathname === "/biblia" || loc.pathname === "/Biblia";
 
@@ -18,7 +20,7 @@ export const BibliaLayout = ({ title, children, back }: Props) => {
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_-8%,rgba(212,175,55,0.18),transparent_30%),radial-gradient(circle_at_50%_100%,rgba(212,175,55,0.08),transparent_36%),linear-gradient(180deg,#050505_0%,#090909_52%,#050505_100%)]" />
       <div className="pointer-events-none fixed inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D4AF37]/70 to-transparent" />
 
-      {!isHome && (
+      {!isHome && !hideHeader && (
         <header className="sticky top-0 z-40 border-b border-[#D4AF37]/15 bg-[#050505]/92 shadow-[0_14px_38px_rgba(0,0,0,0.5)] backdrop-blur-xl">
           <div className="mx-auto flex w-full max-w-[430px] items-center gap-3 px-4 py-3 md:max-w-4xl">
             <Link
@@ -52,7 +54,7 @@ export const BibliaLayout = ({ title, children, back }: Props) => {
       >
         {children}
       </main>
-      <BottomNav activeLabel="Biblia" />
+      {!hideBottomNav && <BottomNav activeLabel="Biblia" />}
     </div>
   );
 };

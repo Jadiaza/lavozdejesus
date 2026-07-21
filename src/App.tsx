@@ -19,6 +19,9 @@ import BibliaProximamente from "./pages/biblia/BibliaProximamente.tsx";
 import BibliaEstudio from "./pages/biblia/BibliaEstudio.tsx";
 import BibliaMapas from "./pages/biblia/BibliaMapas.tsx";
 import BibliaPersonajes from "./pages/biblia/BibliaPersonajes.tsx";
+import BibliaLibros from "./pages/biblia/BibliaLibros.tsx";
+import BibliaFavoritos from "./pages/biblia/BibliaFavoritos.tsx";
+import BibliaMiBiblia from "./pages/biblia/BibliaMiBiblia.tsx";
 import Auth from "./pages/Auth.tsx";
 import {
   AcercaDe,
@@ -55,6 +58,9 @@ const App = () => (
             <Route path="/biblia" element={<BibliaHome />} />
             <Route path="/Biblia" element={<BibliaHome />} />
             <Route path="/biblia/leer" element={<BibliaLeer />} />
+            <Route path="/biblia/libros" element={<BibliaLibros />} />
+            <Route path="/biblia/favoritos" element={<BibliaFavoritos />} />
+            <Route path="/biblia/mi-biblia" element={<BibliaMiBiblia />} />
             <Route path="/biblia/comparar" element={<BibliaComparar />} />
             <Route path="/biblia/estudio" element={<BibliaEstudio />} />
             <Route path="/biblia/estudio/:id" element={<BibliaEstudio />} />

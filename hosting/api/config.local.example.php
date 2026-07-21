@@ -11,6 +11,7 @@ return [
   'db_pass' => 'CAMBIA_ESTA_CLAVE',
   'supabase_url' => '',
   'supabase_anon_key' => '',
+  'auth_allowed_email_domains' => 'gmail.com,googlemail.com,hotmail.com,hotmail.es,outlook.com,outlook.es,live.com,live.com.co,msn.com,yahoo.com,yahoo.es,icloud.com,me.com,proton.me,protonmail.com,aol.com',
   'bible_ai_provider' => 'openai',
   'bible_ai_model' => 'gpt-5.4-mini',
   'bible_ai_api_key' => '',
@@ -24,7 +25,7 @@ return [
 
 /*
 Variables de entorno requeridas para Estudio Bíblico con IA:
-SUPABASE_URL, SUPABASE_ANON_KEY,
+SUPABASE_URL, SUPABASE_ANON_KEY, AUTH_ALLOWED_EMAIL_DOMAINS,
 BIBLE_AI_PROVIDER (openai|gemini), BIBLE_AI_MODEL, BIBLE_AI_API_KEY,
 BIBLE_AI_TIMEOUT, BIBLE_AI_MAX_TOKENS, BIBLE_AI_FREE_REQUESTS_PER_MONTH,
 BIBLE_VERSION_PLATENSE, BIBLE_VERSION_TORRES_AMAT, BIBLE_VERSION_SCIO.

@@ -12061,6 +12061,18 @@ La generación requiere una cuenta autenticada mediante Supabase Auth. La identi
 con el usuario interno de `lvj_com_usuarios`; los roles y permisos seguirán administrándose en MySQL. La
 lectura bíblica, las notas y la comparación básica permanecerán disponibles para invitados.
 
+`lvj_com_usuarios` almacenará el correo confirmado, `auth_provider`, `auth_subject`, `email_verificado`,
+`ia_autorizado` y `ultimo_acceso_at`. Cada operación de IA deberá validar nuevamente el token de Supabase,
+el estado del usuario y su autorización para IA antes de aplicar la cuota por `usuario_id`. El acceso por
+correo se limitará a los proveedores configurados oficialmente. Un invitado podrá consultar la comparación
+de versiones, pero deberá registrar y confirmar su correo antes de solicitar un estudio nuevo.
+
+`lvj_com_usuarios` almacenará el correo confirmado, `auth_provider`, `auth_subject`, `email_verificado`,
+`ia_autorizado` y `ultimo_acceso_at`. Cada operación de IA deberá validar nuevamente el token de Supabase,
+el estado del usuario y su autorización para IA antes de aplicar la cuota por `usuario_id`. El acceso por
+correo se limitará a los proveedores configurados oficialmente. Un invitado podrá consultar la comparación
+de versiones, pero deberá registrar y confirmar su correo antes de solicitar un estudio nuevo.
+
 Todo estudio nuevo inicia en estado `revision`. El solicitante puede verlo con advertencia editorial; solo
 los estudios aprobados podrán marcarse `publicado`, `revisado = 1` y `es_publico = 1`. La interfaz pública
 utilizará pestañas Texto, Comparación, Estructura, Teología y Oración, conservando la identidad negra, dorada

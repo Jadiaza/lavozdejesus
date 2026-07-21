@@ -20,7 +20,7 @@ interface Tile {
 }
 
 const tiles: Tile[] = [
-  { to: "/biblia/leer", label: "Leer", icon: BookOpen },
+  { to: "/biblia/libros", label: "Leer", icon: BookOpen },
   { to: "/biblia/buscar", label: "Buscar", icon: Search },
   { to: "/biblia/estudio", label: "Estudio Bíblico", icon: Columns3 },
   { to: "/biblia/planes", label: "Planes", icon: CalendarCheck2 },
@@ -62,15 +62,15 @@ export default function BibliaHome() {
 
   const lecturaTo = continuar?.libroCodigo
     ? `/biblia/leer?libro=${continuar.libroCodigo}&cap=${continuar.capitulo}${continuar.versiculo ? `&versiculo=${continuar.versiculo}` : ""}`
-    : "/biblia/leer?libro=JHN&cap=6";
+    : "/biblia/libros";
   const continuarTexto = continuar?.texto?.trim()
     ? `“${continuar.texto.trim()}”`
     : continuar
       ? "Retoma la lectura de la Palabra donde la dejaste."
-      : "“Yo soy el pan de vida...”";
+      : "Escoge un libro y comienza a leer la Palabra.";
   const continuarReferencia = continuar
     ? `${continuar.libroNombre ?? continuar.libroCodigo ?? "Biblia"} ${continuar.capitulo}${continuar.versiculo ? `, ${continuar.versiculo}` : ""}`
-    : "Jn 6, 35";
+    : "Elegir libro bíblico";
 
   return (
     <BibliaLayout title="Biblia">
@@ -133,7 +133,7 @@ export default function BibliaHome() {
 
           <div className="min-w-0 flex-1">
             <div className="mb-1 text-[0.65rem] font-semibold uppercase leading-tight tracking-[0.2em] text-[#D4AF37]">
-              CONTINÚA DONDE QUEDASTE
+              {continuar ? "CONTINÚA DONDE QUEDASTE" : "COMIENZA TU LECTURA"}
             </div>
             <p className="line-clamp-1 mt-2.5 text-[0.72rem] leading-[1.35] text-[#F8F5EA]/88 min-[390px]:text-[0.72rem]">
               {continuarTexto}
@@ -144,7 +144,7 @@ export default function BibliaHome() {
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#F2D27A] to-[#D4AF37] px-2 py-1 text-[10px] font-bold text-[#050505] shadow-[0_8px_20px_rgba(212,175,55,0.2)] min-[390px]:px-2.5">
                 <BookOpen className="h-3 w-3" strokeWidth={1.8} />
-                Continuar
+                {continuar ? "Continuar" : "Elegir libro"}
               </span>
             </div>
           </div>
