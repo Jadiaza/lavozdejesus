@@ -36,11 +36,7 @@ function lvj_require_method(string $method): void
 
   if ($requestMethod === 'OPTIONS') {
     header('Access-Control-Allow-Methods: ' . $allowedMethod . ', OPTIONS');
-<<<<<<< HEAD
-    header('Access-Control-Allow-Headers: Content-Type');
-=======
     header('Access-Control-Allow-Headers: Content-Type, Authorization');
->>>>>>> d4c07cf (Biblia estudio)
     lvj_json_response(['success' => true]);
   }
 

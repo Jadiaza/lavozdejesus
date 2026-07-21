@@ -291,7 +291,7 @@ export const CapillaVideo = ({
       <div className="mx-auto max-w-[430px] overflow-hidden rounded-2xl border border-gold/30 bg-black shadow-deep">
         <div
           id="capilla-transmision"
-          className="relative aspect-video w-full overflow-hidden bg-black [&:fullscreen]:h-screen [&:fullscreen]:aspect-auto"
+          className="relative aspect-video w-full overflow-hidden bg-black [&:fullscreen]:h-dvh [&:fullscreen]:w-screen [&:fullscreen]:aspect-auto"
         >
           {embedUrl ? (
             <iframe
@@ -305,7 +305,7 @@ export const CapillaVideo = ({
           ) : useMediaElement ? (
             <video
               ref={setVideoElement}
-              className="h-full w-full bg-black"
+              className="h-full w-full bg-black object-contain"
               autoPlay
               playsInline
               disablePictureInPicture
@@ -334,7 +334,7 @@ export const CapillaVideo = ({
             dateTime={currentDate.toISOString()}
             className={`pointer-events-none absolute z-20 rounded-lg border border-gold/35 bg-[#07111c]/80 text-left font-mono font-semibold leading-tight tracking-[0.04em] text-gold shadow-deep backdrop-blur-md transition-all ${
               isFullscreen
-                ? "bottom-6 left-6 px-4 py-3 text-xl sm:text-2xl"
+                ? "bottom-3 left-3 px-2.5 py-2 text-xs portrait:sm:text-sm landscape:bottom-5 landscape:left-5 landscape:px-4 landscape:py-3 landscape:text-lg landscape:sm:text-xl landscape:lg:text-2xl"
                 : "bottom-3 left-3 px-2.5 py-1.5 text-[10px] min-[390px]:text-xs"
             }`}
             aria-label={`Transmisión en vivo: ${liveDate}, ${liveTime}`}
@@ -363,11 +363,12 @@ export const CapillaVideo = ({
               <button
                 type="button"
                 onClick={toggleVolumePanel}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/35 bg-[#07111c]/80 text-gold shadow-[0_8px_24px_rgba(0,0,0,0.2)] backdrop-blur-md transition active:scale-95"
+                className={`flex h-11 items-center justify-center gap-2 rounded-full border border-gold/35 bg-[#07111c]/80 text-gold shadow-[0_8px_24px_rgba(0,0,0,0.2)] backdrop-blur-md transition active:scale-95 ${muted ? "px-3" : "w-11"}`}
                 aria-label={muted ? "Activar sonido y ajustar volumen" : "Ajustar volumen"}
                 aria-expanded={isVolumePanelOpen}
               >
                 {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                {muted ? <span className="text-xs font-semibold">Activar sonido</span> : null}
               </button>
             </div>
           ) : null}
@@ -440,11 +441,12 @@ export const CapillaVideo = ({
           <button
             type="button"
             onClick={toggleVolumePanel}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/35 bg-[#07111c]/80 text-gold shadow-[0_8px_24px_rgba(0,0,0,0.2)] backdrop-blur-md transition hover:bg-gold/[0.06] active:scale-95"
+            className={`flex h-11 items-center justify-center gap-2 rounded-full border border-gold/35 bg-[#07111c]/80 text-gold shadow-[0_8px_24px_rgba(0,0,0,0.2)] backdrop-blur-md transition hover:bg-gold/[0.06] active:scale-95 ${muted ? "px-3" : "w-11"}`}
             aria-label={muted ? "Activar sonido y ajustar volumen" : "Ajustar volumen"}
             aria-expanded={isVolumePanelOpen}
           >
             {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+            {muted ? <span className="text-xs font-semibold">Activar sonido</span> : null}
           </button>
         </div>
       ) : null}

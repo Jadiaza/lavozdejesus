@@ -14,13 +14,16 @@ try {
   if ($method === 'OPTIONS') lvj_require_method('POST');
   if ($method === 'GET') {
     $configured = BibleStudyProviderFactory::configured();
+    $readiness = $service->generationReadiness();
+    $ready = $configured && $readiness['ready'];
+    $availabilityMessage = !$configured ? 'Servicio de estudio no configurado.' : ($ready ? '' : $readiness['message']);
     $id = filter_var($_GET['id'] ?? null, FILTER_VALIDATE_INT);
-    if (!$id) lvj_json_response(['success'=>true,'configured'=>$configured]);
+    if (!$id) lvj_json_response(['success'=>true,'configured'=>$configured,'ready'=>$ready,'message'=>$availabilityMessage]);
     $user = null;
     if (!empty($_SERVER['HTTP_AUTHORIZATION'])) $user = SupabaseAuth::requireUser($pdo);
     $study = $service->find((int)$id, $user ? (int)$user['id'] : null);
     if (!$study) lvj_json_response(['success'=>false,'message'=>'El estudio no está disponible.'],404);
-    lvj_json_response(['success'=>true,'study'=>$study,'configured'=>$configured]);
+    lvj_json_response(['success'=>true,'study'=>$study,'configured'=>$configured,'ready'=>$ready,'message'=>$availabilityMessage]);
   }
   if ($method !== 'POST') lvj_json_response(['success'=>false,'message'=>'Método no permitido.'],405);
   $input = lvj_json_input();
@@ -32,6 +35,7 @@ try {
   lvj_json_response(['success'=>false,'message'=>$error->getMessage()],422);
 } catch (Throwable $error) {
   error_log('LVJ Bible Study API: '.$error->getMessage());
-  $message=$error->getMessage()==='Servicio de estudio no configurado.'?$error->getMessage():'No fue posible generar el estudio en este momento.';
+  $allowedMessages = ['Servicio de estudio no configurado.', BibleStudyService::EQUIVALENCES_PENDING_MESSAGE, 'El almacenamiento de estudios bíblicos todavía no está disponible.', 'Has utilizado tus estudios nuevos disponibles para este mes.'];
+  $message=in_array($error->getMessage(),$allowedMessages,true)?$error->getMessage():'No fue posible generar el estudio en este momento.';
   lvj_json_response(['success'=>false,'message'=>$message],500);
 }

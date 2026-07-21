@@ -4,7 +4,7 @@ export interface BibleStudy {
   id: number; referencia: string; titulo: string; estado: string; revisado: boolean; es_publico: boolean;
   contenido: Record<string, unknown>; created_at?: string | null; updated_at?: string | null;
 }
-interface StudyResponse { success: boolean; source?: "cache" | "generated"; study?: BibleStudy; configured?: boolean; message?: string; }
+interface StudyResponse { success: boolean; source?: "cache" | "generated"; study?: BibleStudy; configured?: boolean; ready?: boolean; message?: string; }
 
 const baseUrl = ((import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "https://lavozdejesus.co").trim().replace(/\/+$/, "");
 const apiUrl = (import.meta.env.VITE_BIBLE_STUDY_API_URL as string | undefined)?.trim() || `${baseUrl}/api/biblia-estudios.php`;
