@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Fuentes y archivos de trabajo locales de la Biblia.
+/storage/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
