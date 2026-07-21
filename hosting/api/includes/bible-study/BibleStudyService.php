@@ -4,7 +4,7 @@ declare(strict_types=1);
 final class BibleStudyService
 {
   public const EQUIVALENCES_PENDING_MESSAGE = 'El estudio con inteligencia artificial estará disponible cuando finalice la revisión de equivalencias bíblicas.';
-  private const VERSION_KEYS = ['platense' => 'SPAPLATENSE', 'torres_amat' => 'TORRESAMAT', 'scio' => 'SCIO'];
+  private const VERSION_KEYS = ['platense' => 'SPAPLATENSE', 'torres_amat' => 'TORRESAMAT'];
   private $pdo;
   public function __construct(PDO $pdo) { $this->pdo=$pdo; }
 
@@ -12,7 +12,7 @@ final class BibleStudyService
   {
     $range = $this->normalize($input); $context = $this->context($range);
     $hash = hash('sha256', json_encode([$context, BibleStudyPrompt::METHOD], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-    $row = lvj_first($this->pdo, "SELECT * FROM lvj_bib_estudios_ia WHERE hash_contexto=:hash AND metodo_version=:method AND estado='publicado' AND revisado=1 AND es_publico=1 AND deleted_at IS NULL LIMIT 1", ['hash'=>$hash,'method'=>BibleStudyPrompt::METHOD]);
+    $row = lvj_first($this->pdo, "SELECT * FROM lvj_bib_estudios_ia WHERE ((hash_contexto=:hash AND metodo_version=:method) OR (libro_id=:book AND capitulo_inicio=:ci AND versiculo_inicio=:vi AND capitulo_fin=:cf AND versiculo_fin=:vf)) AND estado='publicado' AND revisado=1 AND es_publico=1 AND deleted_at IS NULL ORDER BY updated_at DESC,id DESC LIMIT 1", ['hash'=>$hash,'method'=>BibleStudyPrompt::METHOD,'book'=>$context['libro_id'],'ci'=>$range['capitulo_inicio'],'vi'=>$range['versiculo_inicio'],'cf'=>$range['capitulo_fin'],'vf'=>$range['versiculo_fin']]);
     return $row ? $this->present($row) : null;
   }
 
@@ -20,7 +20,7 @@ final class BibleStudyService
   {
     $range = $this->normalize($input); $context = $this->context($range);
     $hash = hash('sha256', json_encode([$context, BibleStudyPrompt::METHOD], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-    $cached = lvj_first($this->pdo, "SELECT * FROM lvj_bib_estudios_ia WHERE hash_contexto=:hash AND metodo_version=:method AND estado IN ('revision','publicado') AND deleted_at IS NULL LIMIT 1", ['hash' => $hash, 'method' => BibleStudyPrompt::METHOD]);
+    $cached = lvj_first($this->pdo, "SELECT * FROM lvj_bib_estudios_ia WHERE ((hash_contexto=:hash AND metodo_version=:method) OR (libro_id=:book AND capitulo_inicio=:ci AND versiculo_inicio=:vi AND capitulo_fin=:cf AND versiculo_fin=:vf)) AND estado IN ('revision','publicado') AND deleted_at IS NULL ORDER BY updated_at DESC,id DESC LIMIT 1", ['hash'=>$hash,'method'=>BibleStudyPrompt::METHOD,'book'=>$context['libro_id'],'ci'=>$range['capitulo_inicio'],'vi'=>$range['versiculo_inicio'],'cf'=>$range['capitulo_fin'],'vf'=>$range['versiculo_fin']]);
     if ($cached) {
       $this->logRequest((int) $user['id'], (int) $cached['id'], $context['referencia'], 'completada', false);
       return ['source' => 'cache', 'study' => $this->present($cached)];
@@ -102,7 +102,8 @@ final class BibleStudyService
 
   private function context(array $range): array
   {
-    $versions=[]; $mainBook=null; $mainVersionId=0; $codes=self::VERSION_KEYS;
+    $versions=[]; $mainBook=null; $mainVersionId=0; $sourceVerseIds=[]; $targetChapters=[]; $codes=self::VERSION_KEYS;
+    $equivalenceTablesReady=$this->tableExists('lvj_bib_unidades_canonicas') && $this->tableExists('lvj_bib_unidades_versiculos');
     foreach ($codes as $key=>$fallback) {
       $env='BIBLE_VERSION_' . strtoupper($key); $code=strtoupper(trim((string) lvj_setting($env, $fallback)));
       $version=lvj_first($this->pdo,'SELECT * FROM lvj_bib_versiones WHERE UPPER(codigo)=:code AND estado=1 AND deleted_at IS NULL LIMIT 1',['code'=>$code]);
@@ -110,14 +111,25 @@ final class BibleStudyService
       $book=lvj_first($this->pdo,'SELECT * FROM lvj_bib_libros WHERE version_id=:version AND codigo=:book AND estado=1 AND deleted_at IS NULL LIMIT 1',['version'=>$version['id'],'book'=>$range['libro_codigo']]);
       if (!$book) { $versions[$key]=['disponible'=>false,'version'=>$version['nombre'],'versiculos'=>[],'notas'=>[]]; continue; }
       if ($key==='platense') { $mainBook=$book; $mainVersionId=(int)$version['id']; }
-      $stmt=$this->pdo->prepare('SELECT id,capitulo,versiculo,texto,titulo_seccion FROM lvj_bib_versiculos WHERE version_id=:version AND libro_id=:book AND capitulo=:chapter AND versiculo BETWEEN :start AND :end AND estado=1 AND deleted_at IS NULL ORDER BY versiculo');
-      $stmt->execute(['version'=>$version['id'],'book'=>$book['id'],'chapter'=>$range['capitulo_inicio'],'start'=>$range['versiculo_inicio'],'end'=>$range['versiculo_fin']]); $verses=$stmt->fetchAll();
+      if ($key==='torres_amat' && $sourceVerseIds && $equivalenceTablesReady) {
+        $placeholders=implode(',',array_fill(0,count($sourceVerseIds),'?'));
+        $sql="SELECT DISTINCT destino.id,destino.capitulo,destino.versiculo,destino.texto,destino.titulo_seccion FROM lvj_bib_unidades_versiculos origen_rel INNER JOIN lvj_bib_unidades_canonicas unidad ON unidad.id=origen_rel.unidad_canonica_id INNER JOIN lvj_bib_unidades_versiculos destino_rel ON destino_rel.unidad_canonica_id=unidad.id INNER JOIN lvj_bib_versiculos destino ON destino.id=destino_rel.versiculo_id WHERE origen_rel.versiculo_id IN ({$placeholders}) AND origen_rel.estado_revision='aprobado' AND origen_rel.deleted_at IS NULL AND unidad.estado_revision='aprobado' AND unidad.deleted_at IS NULL AND destino_rel.estado_revision='aprobado' AND destino_rel.deleted_at IS NULL AND destino.version_id=? AND destino.libro_id=? AND destino.estado=1 AND destino.deleted_at IS NULL ORDER BY destino.capitulo,destino.versiculo,destino.id";
+        $stmt=$this->pdo->prepare($sql); $stmt->execute(array_merge($sourceVerseIds,[(int)$version['id'],(int)$book['id']])); $verses=$stmt->fetchAll();
+        $targetChapters=array_values(array_unique(array_map(static fn(array $verse): int=>(int)$verse['capitulo'],$verses)));
+      } elseif ($key==='torres_amat') {
+        $verses=[];
+      } else {
+        $stmt=$this->pdo->prepare('SELECT id,capitulo,versiculo,texto,titulo_seccion FROM lvj_bib_versiculos WHERE version_id=:version AND libro_id=:book AND capitulo=:chapter AND versiculo BETWEEN :start AND :end AND estado=1 AND deleted_at IS NULL ORDER BY versiculo');
+        $stmt->execute(['version'=>$version['id'],'book'=>$book['id'],'chapter'=>$range['capitulo_inicio'],'start'=>$range['versiculo_inicio'],'end'=>$range['versiculo_fin']]); $verses=$stmt->fetchAll();
+        if ($key==='platense') $sourceVerseIds=array_map(static fn(array $verse): int=>(int)$verse['id'],$verses);
+      }
       $notes=[]; if ($key==='platense') { $n=$this->pdo->prepare('SELECT versiculo,contenido,titulo,referencia,fuente FROM lvj_bib_notas_versiones WHERE version_id=:version AND libro_id=:book AND capitulo=:chapter AND versiculo BETWEEN :start AND :end AND estado=1 AND deleted_at IS NULL ORDER BY versiculo,orden'); $n->execute(['version'=>$version['id'],'book'=>$book['id'],'chapter'=>$range['capitulo_inicio'],'start'=>$range['versiculo_inicio'],'end'=>$range['versiculo_fin']]); $notes=$n->fetchAll(); }
       $versions[$key]=['disponible'=>count($verses)>0,'version'=>array_intersect_key($version,array_flip(['codigo','nombre','abreviatura','idioma','licencia','canon','versificacion'])),'libro'=>array_intersect_key($book,array_flip(['codigo','nombre','testamento','grupo'])),'versiculos'=>$verses,'notas'=>$notes];
     }
     if (!$mainBook || empty($versions['platense']['versiculos'])) throw new InvalidArgumentException('El pasaje no existe en la Biblia Platense.');
     if (count($versions['platense']['versiculos']) !== ($range['versiculo_fin']-$range['versiculo_inicio']+1)) throw new InvalidArgumentException('El rango contiene versículos inexistentes.');
-    $ref=$mainBook['nombre'].' '.$range['capitulo_inicio'].','.$range['versiculo_inicio'].($range['versiculo_fin']!==$range['versiculo_inicio']?'-'.$range['versiculo_fin']:'');
+    $equivalentChapter=count($targetChapters)===1 && $targetChapters[0]!==$range['capitulo_inicio'] ? ' ('.$targetChapters[0].')' : '';
+    $ref=$mainBook['nombre'].' '.$range['capitulo_inicio'].$equivalentChapter.','.$range['versiculo_inicio'].($range['versiculo_fin']!==$range['versiculo_inicio']?'-'.$range['versiculo_fin']:'');
     $themeRows=lvj_optional_rows($this->pdo,'SELECT vt.* FROM lvj_bib_versiculos_tematicos vt INNER JOIN lvj_bib_versiculos v ON v.id=vt.versiculo_id WHERE v.version_id=:version AND v.libro_id=:book AND v.capitulo=:chapter AND v.versiculo BETWEEN :start AND :end LIMIT 100',['version'=>$mainVersionId,'book'=>$mainBook['id'],'chapter'=>$range['capitulo_inicio'],'start'=>$range['versiculo_inicio'],'end'=>$range['versiculo_fin']]);
     return ['referencia'=>$ref,'libro_id'=>(int)$mainBook['id'],'rango'=>$range,'versiones'=>$versions,'contenido_tematico'=>$themeRows,'metodo_version'=>BibleStudyPrompt::METHOD];
   }

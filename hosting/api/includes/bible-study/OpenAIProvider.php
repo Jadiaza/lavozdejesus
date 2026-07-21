@@ -15,6 +15,7 @@ final class OpenAIProvider implements BibleStudyAiProviderInterface
       'instructions' => BibleStudyPrompt::system(),
       'input' => json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
       'max_output_tokens' => $this->maxTokens,
+      'tools' => [['type' => 'web_search']],
       'text' => ['format' => ['type' => 'json_schema', 'name' => 'bible_study', 'strict' => true, 'schema' => BibleStudySchema::jsonSchema()]],
     ], $this->timeout);
     $text = (string) ($response['output_text'] ?? '');
