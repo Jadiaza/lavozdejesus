@@ -12150,6 +12150,13 @@ nivel. Esta vista incluye búsqueda de libros, testamentos, categorías visuales
 después de escoger capítulo, cuadrícula de versículos. El usuario podrá regresar explícitamente para cambiar
 el nivel sin iniciar una consulta ni perder involuntariamente el contexto ya seleccionado.
 
+La estabilización inicial admite dos familias de contenido almacenado: el formato maestro anterior
+`salmo8-1.0` y el esquema doctrinal `2.x`. El frontend elegirá el renderizador por la versión declarada dentro
+del contenido, preservando la lectura de estudios anteriores. El panel administrativo validará la estructura,
+el nivel y las traducciones permitidas antes de guardar una edición manual, sincronizará `nivel` y
+`esquema_version` con el contenido validado y devolverá siempre el estudio al estado `revision`. En esta fase
+no se incorpora biblioteca semántica ni se modifican las tablas existentes.
+
 El flujo obligatorio será Base de Datos → textos Platense/Straubinger y Torres Amat → notas vinculadas al
 pasaje → equivalencias aprobadas → estudio almacenado → IA solo si falta una versión vigente → persistencia
 → presentación. Mientras Scío no forme parte de la base de datos operativa, quedará excluida de consultas,
