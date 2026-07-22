@@ -20,18 +20,25 @@ export function BibliaPassageGridSelector({ books, book, chapter, onBookChange, 
   }, [selectedBook]);
 
   const normalizedQuery = query.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const visualGroup = (item: BibliaLibro) => {
+    if (["TOB","JDT","1MA","2MA"].includes(item.codigo)) return "Históricos";
+    if (["WIS","SIR"].includes(item.codigo)) return "Sapienciales";
+    if (item.codigo === "BAR") return "Proféticos";
+    return item.grupo;
+  };
   const visibleBooks = books.filter((item) => item.testamento === testament && (!normalizedQuery || `${item.nombre} ${item.abreviatura} ${item.codigo}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().includes(normalizedQuery)));
-  const groups = Array.from(new Set(books.filter((item)=>item.testamento===testament).map((item)=>item.grupo).filter(Boolean)));
+  const groups = Array.from(new Set(books.filter((item)=>item.testamento===testament).map(visualGroup).filter(Boolean)));
   const chapters = Array.from({ length: selectedBook?.capitulos ?? 0 }, (_, index) => index + 1);
 
   const groupTone = (group: string) => {
     const value=group.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
-    if(value.includes("pentateuco")||value.includes("ley"))return "border-amber-400/80 bg-amber-500/35 text-amber-50";
-    if(value.includes("histor"))return "border-lime-400/60 bg-lime-500/20 text-lime-50";
-    if(value.includes("sapien")||value.includes("poet"))return "border-violet-400/65 bg-violet-500/25 text-violet-50";
-    if(value.includes("profet"))return "border-orange-400/75 bg-orange-600/30 text-orange-50";
-    if(value.includes("evangel"))return "border-cyan-400/65 bg-cyan-500/20 text-cyan-50";
-    if(value.includes("carta")||value.includes("paulin")||value.includes("epistol"))return "border-sky-400/65 bg-sky-500/20 text-sky-50";
+    if(value.includes("pentateuco")||value.includes("ley"))return "border-[#D8A91A] bg-[#73520A] text-[#FFF5D4]";
+    if(value.includes("histor"))return "border-[#78972F] bg-[#263B0E] text-[#F1F7DE]";
+    if(value.includes("sapien")||value.includes("poet"))return "border-[#8E63AF] bg-[#33204D] text-[#F4EAFE]";
+    if(value.includes("profet"))return "border-[#D36B18] bg-[#5A270A] text-[#FFF0E1]";
+    if(value.includes("evangel"))return "border-[#18AFC2] bg-[#073C43] text-[#E3FBFE]";
+    if(value.includes("carta")||value.includes("paulin")||value.includes("epistol"))return "border-[#1C9BC4] bg-[#07354B] text-[#E8F8FE]";
+    if(value.includes("apocal"))return "border-[#B89318] bg-[#2E2708] text-[#FFF4C4]";
     return "border-[#D4AF37]/45 bg-[#D4AF37]/12 text-[#F2D27A]";
   };
 
@@ -45,7 +52,7 @@ export function BibliaPassageGridSelector({ books, book, chapter, onBookChange, 
         <div className="mb-3"><p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#D4AF37]">{testament==="AT"?"Antiguo Testamento":"Nuevo Testamento"}</p><div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">{groups.map((group)=><span key={group} className="inline-flex items-center gap-1 text-[9px] text-[#C9C3B3]"><i className={`h-2 w-2 rounded-full border ${groupTone(group)}`}/>{group}</span>)}</div></div>
         <h3 id="selector-libro-title" className="sr-only">{selectedBook?.nombre || "Selecciona un libro"}</h3>
         <div className="grid max-h-[28rem] grid-cols-3 gap-2 overflow-y-auto pr-1 sm:grid-cols-4 lg:grid-cols-5">
-          {visibleBooks.map((item)=><button key={item.codigo} type="button" title={item.nombre} onClick={()=>onBookChange(item.codigo)} aria-pressed={book===item.codigo} className={`min-h-16 rounded-xl border px-1.5 py-2 text-center transition ${book===item.codigo?"border-[#F2D27A] bg-[#D4AF37] text-black ring-2 ring-[#F2D27A]/35":groupTone(item.grupo)}`}><span className="block truncate font-display text-base font-semibold">{item.abreviatura}</span><span className={`mt-0.5 block truncate text-[9px] ${book===item.codigo?"text-black/70":"opacity-80"}`}>{item.nombre}</span></button>)}
+          {visibleBooks.map((item)=><button key={item.codigo} type="button" title={`${item.nombre} · ${visualGroup(item)}`} onClick={()=>onBookChange(item.codigo)} aria-pressed={book===item.codigo} className={`min-h-16 rounded-xl border px-1.5 py-2 text-center transition ${book===item.codigo?"border-[#F2D27A] bg-[#D4AF37] text-black ring-2 ring-[#F2D27A]/35":groupTone(visualGroup(item))}`}><span className="block truncate font-display text-base font-semibold">{item.abreviatura}</span><span className={`mt-0.5 block truncate text-[9px] ${book===item.codigo?"text-black/70":"opacity-80"}`}>{item.nombre}</span></button>)}
           {visibleBooks.length===0&&<p className="col-span-full py-8 text-center text-sm text-[#8F897C]">No se encontraron libros.</p>}
         </div>
       </div>
