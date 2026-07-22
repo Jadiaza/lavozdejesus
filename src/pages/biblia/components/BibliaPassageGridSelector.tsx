@@ -24,6 +24,16 @@ export function BibliaPassageGridSelector({ books, book, chapter, onBookChange, 
     if (["TOB","JDT","1MA","2MA"].includes(item.codigo)) return "Históricos";
     if (["WIS","SIR"].includes(item.codigo)) return "Sapienciales";
     if (item.codigo === "BAR") return "Proféticos";
+    const value=item.grupo.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+    if(value.includes("pentateuco")||value.includes("ley"))return "Pentateuco";
+    if(item.testamento==="AT"&&value.includes("histor"))return "Históricos";
+    if(value.includes("sapien")||value.includes("poet"))return "Sapienciales";
+    if(value.includes("profet"))return "Proféticos";
+    if(value.includes("evangel"))return "Evangelios";
+    if(value.includes("histor")||value.includes("hecho"))return "Hechos";
+    if(value.includes("paulin")||value.includes("pastoral"))return "Cartas paulinas";
+    if(value.includes("catolic")||value.includes("general"))return "Cartas generales";
+    if(value.includes("apocal"))return "Apocalipsis";
     return item.grupo;
   };
   const visibleBooks = books.filter((item) => item.testamento === testament && (!normalizedQuery || `${item.nombre} ${item.abreviatura} ${item.codigo}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().includes(normalizedQuery)));
@@ -32,13 +42,15 @@ export function BibliaPassageGridSelector({ books, book, chapter, onBookChange, 
 
   const groupTone = (group: string) => {
     const value=group.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
-    if(value.includes("pentateuco")||value.includes("ley"))return "border-[#D8A91A] bg-[#73520A] text-[#FFF5D4]";
-    if(value.includes("histor"))return "border-[#78972F] bg-[#263B0E] text-[#F1F7DE]";
-    if(value.includes("sapien")||value.includes("poet"))return "border-[#8E63AF] bg-[#33204D] text-[#F4EAFE]";
-    if(value.includes("profet"))return "border-[#D36B18] bg-[#5A270A] text-[#FFF0E1]";
-    if(value.includes("evangel"))return "border-[#18AFC2] bg-[#073C43] text-[#E3FBFE]";
-    if(value.includes("carta")||value.includes("paulin")||value.includes("epistol"))return "border-[#1C9BC4] bg-[#07354B] text-[#E8F8FE]";
-    if(value.includes("apocal"))return "border-[#B89318] bg-[#2E2708] text-[#FFF4C4]";
+    if(value.includes("pentateuco")||value.includes("ley"))return "border-[#e7bd45] bg-[linear-gradient(145deg,rgba(231,189,69,0.58),rgba(231,189,69,0.22))] text-[#FFF9E9]";
+    if(value.includes("histor"))return "border-[#82974e] bg-[linear-gradient(145deg,rgba(130,151,78,0.58),rgba(130,151,78,0.22))] text-[#FFF9E9]";
+    if(value.includes("sapien")||value.includes("poet"))return "border-[#9b75b8] bg-[linear-gradient(145deg,rgba(155,117,184,0.58),rgba(155,117,184,0.22))] text-[#FFF9E9]";
+    if(value.includes("profet"))return "border-[#df7b31] bg-[linear-gradient(145deg,rgba(223,123,49,0.58),rgba(223,123,49,0.22))] text-[#FFF9E9]";
+    if(value.includes("evangel"))return "border-[#4d8bd8] bg-[linear-gradient(145deg,rgba(77,139,216,0.58),rgba(77,139,216,0.22))] text-[#FFF9E9]";
+    if(value.includes("hecho"))return "border-[#61bbb7] bg-[linear-gradient(145deg,rgba(97,187,183,0.58),rgba(97,187,183,0.22))] text-[#FFF9E9]";
+    if(value.includes("paulin"))return "border-[#e7bd45] bg-[linear-gradient(145deg,rgba(231,189,69,0.58),rgba(231,189,69,0.22))] text-[#FFF9E9]";
+    if(value.includes("general"))return "border-[#9b75b8] bg-[linear-gradient(145deg,rgba(155,117,184,0.58),rgba(155,117,184,0.22))] text-[#FFF9E9]";
+    if(value.includes("apocal"))return "border-[#ce4b57] bg-[linear-gradient(145deg,rgba(206,75,87,0.58),rgba(206,75,87,0.22))] text-[#FFF9E9]";
     return "border-[#D4AF37]/45 bg-[#D4AF37]/12 text-[#F2D27A]";
   };
 
