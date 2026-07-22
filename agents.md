@@ -12145,6 +12145,11 @@ presentan como botones numéricos. Este patrón compartido se aplicará al lecto
 Los selectores de versión, filtros y otras opciones que no representan una referencia bíblica podrán conservar
 controles distintos.
 
+En Estudio Bíblico IA, la elección del nivel abre una vista dedicada y reemplaza temporalmente las tarjetas de
+nivel. Esta vista incluye búsqueda de libros, testamentos, categorías visuales, cuadrícula de capítulos y,
+después de escoger capítulo, cuadrícula de versículos. El usuario podrá regresar explícitamente para cambiar
+el nivel sin iniciar una consulta ni perder involuntariamente el contexto ya seleccionado.
+
 El flujo obligatorio será Base de Datos → textos Platense/Straubinger y Torres Amat → notas vinculadas al
 pasaje → equivalencias aprobadas → estudio almacenado → IA solo si falta una versión vigente → persistencia
 → presentación. Mientras Scío no forme parte de la base de datos operativa, quedará excluida de consultas,
