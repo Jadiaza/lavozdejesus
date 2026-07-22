@@ -167,8 +167,8 @@ final class BibleStudyService
     $book=lvj_first($this->pdo,'SELECT codigo FROM lvj_bib_libros WHERE id=:id AND deleted_at IS NULL LIMIT 1',['id'=>(int)$row['libro_id']]);
     if(!$book)return $content;
     try {
-      $context=$this->context(['libro_codigo'=>(string)$book['codigo'],'capitulo_inicio'=>(int)$row['capitulo_inicio'],'versiculo_inicio'=>(int)$row['versiculo_inicio'],'capitulo_fin'=>(int)$row['capitulo_fin'],'versiculo_fin'=>(int)$row['versiculo_fin']]);
-      foreach(['platense','torres_amat'] as $key){$version=$context['versiones'][$key]??[];$verses=$version['versiculos']??[];$content['textos'][$key]=$verses?['disponible'=>true,'texto'=>implode(' ',array_map(static fn(array $verse): string=>(string)$verse['texto'],$verses))]:['disponible'=>false,'texto'=>'','observacion'=>'No existe una equivalencia aprobada y segura para este pasaje.'];}
+      $context=$this->context(['libro_codigo'=>(string)$book['codigo'],'capitulo_inicio'=>(int)$row['capitulo_inicio'],'versiculo_inicio'=>(int)$row['versiculo_inicio'],'capitulo_fin'=>(int)$row['capitulo_fin'],'versiculo_fin'=>(int)$row['versiculo_fin'],'nivel'=>(string)($row['nivel']??BibleStudyLevel::DEFAULT)]);
+      foreach(['platense','torres_amat'] as $key){$version=$context['versiones'][$key]??[];$verses=$version['versiculos']??[];$original=is_array($content['textos'][$key]??null)?$content['textos'][$key]:[];$content['textos'][$key]=array_merge($original,$verses?['disponible'=>true,'texto'=>implode(' ',array_map(static fn(array $verse): string=>(string)$verse['texto'],$verses)),'version_texto'=>$context['metadata']['texto_version']??null]:['disponible'=>false,'texto'=>'','observacion'=>'No existe una equivalencia aprobada y segura para este pasaje.']);}
       $torresVerses=$context['versiones']['torres_amat']['versiculos']??[];
       if($torresVerses){
         $torresByNumber=[]; foreach($torresVerses as $verse)$torresByNumber[(int)$verse['versiculo']]=(string)$verse['texto'];
@@ -178,6 +178,7 @@ final class BibleStudyService
       }
       unset($content['textos']['scio'],$content['comparacion_traducciones']['scio']);
     } catch(Throwable $error){error_log('LVJ Bible Study text hydration: '.$error->getMessage());}
+    foreach(['platense','torres_amat'] as $key){if(trim((string)($content['textos'][$key]['texto']??''))==='RECUPERAR_DESDE_BD'){$content['textos'][$key]['disponible']=false;$content['textos'][$key]['texto']='';$content['textos'][$key]['observacion']='No fue posible recuperar el texto bíblico desde la base de datos.';}}
     return $content;
   }
 }
