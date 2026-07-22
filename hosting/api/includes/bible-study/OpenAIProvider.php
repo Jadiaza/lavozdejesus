@@ -12,7 +12,7 @@ final class OpenAIProvider implements BibleStudyAiProviderInterface
       'Authorization: Bearer ' . $this->key, 'Content-Type: application/json',
     ], [
       'model' => $this->model,
-      'instructions' => BibleStudyPrompt::system(),
+      'instructions' => BibleStudyPrompt::system((string)($context['nivel'] ?? BibleStudyLevel::DEFAULT)),
       'input' => json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
       'max_output_tokens' => $this->maxTokens,
       'tools' => [['type' => 'web_search']],

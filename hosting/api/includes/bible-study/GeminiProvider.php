@@ -9,7 +9,7 @@ final class GeminiProvider implements BibleStudyAiProviderInterface
   {
     $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . rawurlencode($this->model) . ':generateContent?key=' . rawurlencode($this->key);
     $response = HttpJsonClient::post($url, ['Content-Type: application/json'], [
-      'systemInstruction' => ['parts' => [['text' => BibleStudyPrompt::system()]]],
+      'systemInstruction' => ['parts' => [['text' => BibleStudyPrompt::system((string)($context['nivel'] ?? BibleStudyLevel::DEFAULT))]]],
       'contents' => [['role' => 'user', 'parts' => [['text' => json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]]]],
       'generationConfig' => ['responseMimeType' => 'application/json', 'responseJsonSchema' => BibleStudySchema::jsonSchema(), 'maxOutputTokens' => $this->maxTokens],
     ], $this->timeout);

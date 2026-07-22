@@ -12116,3 +12116,31 @@ Ante cualquier diferencia entre la implementación del sistema y este documento,
 ---
 
 **Fin del documento — AGENTS.md v2.0**
+
+## 10.16.1 Formato maestro y niveles del Estudio Bíblico IA
+
+El formato JSON avanzado validado con el estudio mejorado del Salmo 8 constituye la base compartida de
+todos los estudios. Sus claves se conservan para compatibilidad editorial y cada nivel define la profundidad
+y las secciones prioritarias, sin crear tablas, APIs ni formatos paralelos:
+
+- `pastoral`: comprensión sencilla, mensaje cristológico prudente, aplicación, meditación y Lectio Divina;
+- `teologico`: comparación, delimitación, estructura, proposiciones, semántica, contexto y teología;
+- `doctrinal`: interpretación católica según Escritura, Catecismo, Magisterio y fuentes verificadas;
+- `formador`: desarrollo completo del formato maestro para catequesis, clases y encuentros.
+
+La clave de reutilización incorporará pasaje normalizado, nivel, idioma, versión del método, versión del
+esquema, versiones de los textos y versión de las notas. Un estudio de un nivel nunca podrá satisfacer una
+consulta de otro nivel. Los registros anteriores se consideran `formador`, pues corresponden al formato
+completo existente.
+
+La reutilización admite cobertura de rangos: si existe un estudio vigente del mismo libro, capítulo, nivel y
+versiones cuyo intervalo contiene todos los versículos solicitados, se devolverá ese registro sin insertar ni
+generar otro. Se prioriza una coincidencia exacta y después el intervalo vigente más pequeño que cubra la
+selección. Por ello, un estudio de capítulo completo puede atender todas las selecciones parciales de ese
+capítulo; una selección parcial nunca podrá atender una solicitud que exceda su intervalo.
+
+El flujo obligatorio será Base de Datos → textos Platense/Straubinger y Torres Amat → notas vinculadas al
+pasaje → equivalencias aprobadas → estudio almacenado → IA solo si falta una versión vigente → persistencia
+→ presentación. Mientras Scío no forme parte de la base de datos operativa, quedará excluida de consultas,
+prompts y comparaciones, sin eliminar referencias o estructuras históricas que pudieran necesitarse en una
+incorporación futura documentada.

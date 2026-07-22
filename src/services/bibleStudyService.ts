@@ -2,8 +2,10 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface BibleStudy {
   id: number; referencia: string; titulo: string; estado: string; revisado: boolean; es_publico: boolean;
+  nivel: StudyLevel; idioma: string; esquema_version: string;
   contenido: Record<string, unknown>; created_at?: string | null; updated_at?: string | null;
 }
+export type StudyLevel = "pastoral" | "teologico" | "doctrinal" | "formador";
 interface StudyResponse { success: boolean; source?: "cache" | "generated"; study?: BibleStudy; configured?: boolean; ready?: boolean; message?: string; }
 
 const baseUrl = ((import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "https://lavozdejesus.co").trim().replace(/\/+$/, "");
@@ -23,7 +25,7 @@ export async function getBibleStudy(id: number) {
   const payload = await parse(await fetch(url, { headers: { Accept: "application/json", ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) } }));
   if (!payload.study) throw new Error("El estudio no está disponible."); return payload.study;
 }
-export async function createBibleStudy(input: { libro_codigo: string; capitulo_inicio: number; versiculo_inicio: number; capitulo_fin: number; versiculo_fin: number; }) {
+export async function createBibleStudy(input: { libro_codigo: string; capitulo_inicio: number; versiculo_inicio: number; capitulo_fin: number; versiculo_fin: number; nivel: StudyLevel; }) {
   const accessToken = await token();
   const response = await fetch(apiUrl, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json", ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) }, body: JSON.stringify(input) });
   if (response.status === 401) throw new Error("AUTH_REQUIRED");
