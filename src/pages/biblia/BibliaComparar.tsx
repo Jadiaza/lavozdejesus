@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { ChevronRight, Columns3, Loader2, Sparkles } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { BibliaLayout } from "./BibliaLayout";
+import { BibliaPassageGridSelector } from "./components/BibliaPassageGridSelector";
 import {
   getBibliaCapitulo,
   getBibliaCatalogo,
@@ -97,7 +98,6 @@ export default function BibliaComparar() {
     return () => { active = false; };
   }, [versionA, versionB, libro, capitulo]);
 
-  const libroActual = libros.find((item) => item.codigo === libro);
   const numeros = useMemo(() => {
     if (!columnas) return [];
     return Array.from(new Set(columnas.flatMap((columna) => columna.versiculos.map((item) => item.versiculo)))).sort((a, b) => a - b);
@@ -121,7 +121,7 @@ export default function BibliaComparar() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2">
           <Campo label="Primera versión">
             <select value={versionA} onChange={(event) => setVersionA(event.target.value)}>
               {versiones.map((item) => <option key={item.codigo} value={item.codigo} disabled={item.codigo === versionB}>{item.abreviatura}</option>)}
@@ -132,17 +132,8 @@ export default function BibliaComparar() {
               {versiones.map((item) => <option key={item.codigo} value={item.codigo} disabled={item.codigo === versionA}>{item.abreviatura}</option>)}
             </select>
           </Campo>
-          <Campo label="Libro">
-            <select value={libro} onChange={(event) => cambiarLibro(event.target.value)}>
-              {libros.map((item) => <option key={item.codigo} value={item.codigo}>{item.nombre}</option>)}
-            </select>
-          </Campo>
-          <Campo label="Capítulo">
-            <select value={capitulo} onChange={(event) => setCapitulo(Number(event.target.value))}>
-              {Array.from({ length: libroActual?.capitulos ?? 0 }, (_, index) => index + 1).map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-          </Campo>
         </div>
+        <div className="mt-5 border-t border-[#D4AF37]/15 pt-5"><BibliaPassageGridSelector books={libros} book={libro} chapter={capitulo} onBookChange={cambiarLibro} onChapterChange={setCapitulo}/></div>
       </section>
 
       {error && <div className="mb-4 rounded-2xl border border-red-500/30 bg-red-950/20 p-4 text-sm text-red-200">{error}</div>}

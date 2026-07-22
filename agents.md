@@ -12139,6 +12139,12 @@ generar otro. Se prioriza una coincidencia exacta y después el intervalo vigent
 selección. Por ello, un estudio de capítulo completo puede atender todas las selecciones parciales de ese
 capítulo; una selección parcial nunca podrá atender una solicitud que exceda su intervalo.
 
+La navegación y selección de pasajes dentro del ecosistema Biblia utilizará cuadrículas táctiles para libros,
+capítulos y versículos. Los libros se organizan por Antiguo y Nuevo Testamento; los capítulos y versículos se
+presentan como botones numéricos. Este patrón compartido se aplicará al lector, comparador y estudio bíblico.
+Los selectores de versión, filtros y otras opciones que no representan una referencia bíblica podrán conservar
+controles distintos.
+
 El flujo obligatorio será Base de Datos → textos Platense/Straubinger y Torres Amat → notas vinculadas al
 pasaje → equivalencias aprobadas → estudio almacenado → IA solo si falta una versión vigente → persistencia
 → presentación. Mientras Scío no forme parte de la base de datos operativa, quedará excluida de consultas,
