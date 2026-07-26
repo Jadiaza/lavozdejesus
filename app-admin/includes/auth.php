@@ -11,6 +11,21 @@ function require_login(): void
   }
 }
 
+function is_technical_admin(): bool
+{
+  return (string) (current_user()['role'] ?? '') === 'super_admin';
+}
+
+function require_technical_admin(): void
+{
+  require_login();
+
+  if (!is_technical_admin()) {
+    http_response_code(403);
+    exit('No tienes autorización para acceder a este módulo.');
+  }
+}
+
 function attempt_login(string $email, string $password): bool
 {
   $stmt = lvj_files_db()->prepare("

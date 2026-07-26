@@ -38,6 +38,14 @@ $liturgiaDays = table_count($pdo, 'lvj_lit_dia');
 $lectioItems = table_count($pdo, 'lvj_lit_lectio_divina');
 $palabraDia = table_count($pdo, 'lvj_lit_palabra_dia');
 $santoral = table_count($pdo, 'lvj_san_santo_dia');
+$aiStudies = table_count($pdo, 'lvj_bib_estudios_ia', 'deleted_at IS NULL');
+$aiRequests = table_count($pdo, 'lvj_bib_estudios_ia_solicitudes');
+$pendingPrayerRequests = table_count($pdo, 'lvj_com_peticiones_oracion', "estado = 'pendiente' AND deleted_at IS NULL");
+$pendingAiStudies = table_count($pdo, 'lvj_bib_estudios_ia', "estado = 'revision' AND deleted_at IS NULL");
+$processingAiRequests = table_count($pdo, 'lvj_bib_estudios_ia_solicitudes', "estado IN ('pendiente', 'procesando')");
+$pendingAiReviews = table_count($pdo, 'lvj_ai_response_reviews', "review_status = 'pending'");
+$pendingAiSources = table_count($pdo, 'lvj_ai_knowledge_sources', "verification_status = 'pending' AND deleted_at IS NULL");
+$failedAiTests = table_count($pdo, 'lvj_ai_test_results', 'passed = 0');
 $bibPlans = table_count($pdo, 'lvj_bib_planes');
 $bibBooks = table_count($pdo, 'lvj_bib_libros');
 $bibProgress = table_count($pdo, 'lvj_bib_progreso_planes');
@@ -65,33 +73,68 @@ try {
 }
 
 $moduleCards = [
-  ['radio', 'Radio en Vivo', 'Gestiona la transmision, fuentes y locutores.', ["{$radioStreams} streams", "{$radioHosts} locutores", 'Historial de transmisiones', 'Reproductor en vivo'], 'purple', 'content.php?module=radio', $radioStreams + $radioHosts],
-  ['programacion', 'Programacion', 'Administra la parrilla de radio.', ["{$radioPrograms} programas", "{$radioSchedule} horarios", 'Categorias', 'Conductores'], 'blue', 'content.php?module=radio&table=lvj_rad_programacion', $radioSchedule],
-  ['capilla', 'Capilla Virtual', 'Gestiona la adoracion y sus recursos.', ['Transmision en vivo', 'Imagenes de capilla', 'Configuracion', 'Intenciones conectadas'], 'gold', 'content.php?module=capilla', $prayerRequests],
-  ['intenciones', 'Intenciones de Oracion', 'Administra comunidad, peticiones y testimonios.', ["{$prayerRequests} peticiones", "{$testimonies} testimonios", "{$spiritualNotes} notas espirituales", 'Grupos de oracion'], 'pink', 'content.php?module=capilla&table=lvj_com_peticiones_oracion', $prayerRequests],
-  ['liturgia', 'Liturgia del Dia', 'Publica la lectura diaria centralizada.', ["{$lecturaDia} lecturas del dia", 'Lecturas biblicas', 'Evangelio y reflexion', 'Tiempos y temas'], 'green', 'content.php?module=liturgia&table=lvj_lit_lectura_dia', $lecturaDia],
-  ['santoral', 'Santoral', 'Administra santos y celebraciones.', ["{$santoral} santo del dia", 'Biografias', 'Oraciones', 'Imagenes'], 'orange', 'content.php?module=santoral', $santoral],
-  ['biblia', 'Biblia / Planes', 'Gestiona Biblia, planes y progreso.', ["{$bibBooks} libros", "{$bibPlans} planes", "{$bibProgress} progresos", 'Versiculos tematicos'], 'blue', 'content.php?module=biblia', $bibPlans],
-  ['rosario', 'Rosario', 'Gestiona devociones, misterios y oraciones.', ['Misterios', 'Rosarios', 'Novenas', 'Devociones'], 'gold', 'content.php?module=oracion', table_count($pdo, 'lvj_ora_rosarios')],
-  ['archivos', 'Biblioteca / Archivos', 'Administrador de archivos y recursos.', ["{$totalFiles} archivos", "{$totalFolders} carpetas", format_bytes($totalSize) . ' usados', 'Descargas seguras'], 'teal', 'files.php', $totalFiles],
-  ['podcast', 'Podcast', 'Gestiona audios, categorias y episodios.', ["{$podcasts} podcasts", "{$podCategories} categorias", 'Publicacion', 'Portadas'], 'orange', 'content.php?module=podcast', $podcasts],
-  ['economia', 'Donaciones', 'Gestiona apoyos, padrinos y donaciones.', ["{$supportOptions} apoyos", "{$sponsors} padrinos", "{$donations} donaciones", 'Bonos solidarios'], 'pink', 'content.php?module=economia', $donations + $sponsors],
-  ['publicidad', 'Publicidad', 'Gestiona AdSense, patrocinadores y banners.', ["{$adUnits} espacios", 'Clicks', 'Impresiones', 'Patrocinadores'], 'green', 'content.php?module=publicidad', $adUnits],
-  ['usuarios', 'Usuarios y Roles', 'Administra usuarios, roles y permisos.', ["{$appUsers} usuarios app", "{$adminUsers} admins", 'Roles', "{$totalLogs} logs"], 'purple', 'content.php?module=usuarios', $appUsers + $adminUsers],
-  ['configuracion', 'Configuracion', 'Centraliza emisora, app, redes y apariencia.', ["{$configRows} registros", 'Emisora', 'Apariencia', 'Redes sociales'], 'teal', 'content.php?module=configuracion', $configRows],
+  ['emisora', 'Emisora', 'Radio, programas, programacion y podcast.', ["{$radioStreams} streams", "{$radioPrograms} programas", "{$radioSchedule} horarios", "{$podcasts} podcasts"], 'purple', 'content.php?module=radio', $radioStreams + $radioPrograms],
+  ['capilla', 'Capilla y Oracion', 'Adoracion, transmisiones e intenciones.', ["{$prayerRequests} intenciones", "{$testimonies} testimonios", 'Capillas y streams', 'Rosarios y oraciones'], 'gold', 'content.php?module=capilla', $prayerRequests],
+  ['liturgia-santoral', 'Liturgia y Santoral', 'Contenido liturgico y calendario de santos.', ["{$lecturaDia} lecturas", "{$liturgiaDays} dias liturgicos", "{$lectioItems} Lectio Divina", "{$santoral} santos"], 'green', 'content.php?module=liturgia', $lecturaDia + $santoral],
+  ['biblia', 'Biblia', 'Biblias, planes, recursos y estudios.', ["{$bibBooks} libros", "{$bibPlans} planes", "{$aiStudies} estudios biblicos IA", 'Importacion de Biblias'], 'blue', 'content.php?module=biblia', $bibBooks + $bibPlans],
+  ['biblioteca', 'Formacion y Biblioteca', 'Archivos y recursos de formacion.', ["{$totalFiles} archivos", "{$totalFolders} carpetas", format_bytes($totalSize) . ' usados', 'Descargas seguras'], 'teal', 'files.php', $totalFiles],
+  ['sostenibilidad', 'Sostenibilidad', 'Donaciones, padrinos y publicidad.', ["{$donations} donaciones", "{$sponsors} padrinos", "{$supportOptions} apoyos", "{$adUnits} espacios publicitarios"], 'pink', 'content.php?module=economia', $donations + $sponsors],
+  ['administracion', 'Administracion', 'Usuarios, roles, configuracion y auditoria.', ["{$appUsers} usuarios app", "{$adminUsers} administradores", "{$configRows} configuraciones", "{$totalLogs} logs"], 'purple', 'content.php?module=usuarios', $appUsers + $adminUsers],
 ];
+
+if (is_technical_admin()) {
+  $moduleCards[] = ['entrenamiento-ia', 'Formacion y Supervision IA', 'Perfiles, fuentes, pruebas y control editorial.', ["{$pendingAiReviews} revisiones pendientes", "{$pendingAiSources} fuentes por verificar", "{$failedAiTests} pruebas no aprobadas", 'Auditoria y despliegues'], 'purple', 'ia-entrenamiento.php', $pendingAiReviews + $pendingAiSources + $failedAiTests];
+}
 
 $pageTitle = 'Dashboard';
 $pageSubtitle = 'Bienvenido al panel de administracion';
 require __DIR__ . '/includes/header.php';
 ?>
 
+<section class="dashboard-section-heading">
+  <div><span class="eyebrow">Operacion</span><h2>Estado del contenido principal</h2></div>
+</section>
+
 <section class="stats-grid admin-stats">
-  <article class="stat-card"><div class="stat-icon purple">RA</div><span>Radio / Horarios</span><strong><?php echo $radioSchedule; ?></strong><small><?php echo $radioPrograms; ?> programas registrados</small></article>
-  <article class="stat-card"><div class="stat-icon blue">AR</div><span>Archivos Totales</span><strong><?php echo $totalFiles; ?></strong><small><?php echo e(format_bytes($totalSize)); ?> almacenados</small></article>
-  <article class="stat-card"><div class="stat-icon green">LI</div><span>Lectura del Dia</span><strong><?php echo $lecturaDia; ?></strong><small>Fuente central de la app</small></article>
-  <article class="stat-card"><div class="stat-icon pink">CO</div><span>Comunidad</span><strong><?php echo $prayerRequests + $testimonies; ?></strong><small>Peticiones y testimonios</small></article>
-  <article class="stat-card"><div class="stat-icon gold">EC</div><span>Economia / Apoyos</span><strong><?php echo $supportOptions + $sponsors; ?></strong><small><?php echo $donations; ?> donaciones registradas</small></article>
+  <article class="stat-card"><div class="stat-icon purple">RA</div><span>Radio</span><strong><?php echo $radioStreams; ?></strong><small><?php echo $radioSchedule; ?> horarios configurados</small></article>
+  <article class="stat-card"><div class="stat-icon gold">CA</div><span>Capilla</span><strong><?php echo table_count($pdo, 'lvj_capillas', 'deleted_at IS NULL'); ?></strong><small><?php echo $prayerRequests; ?> intenciones registradas</small></article>
+  <article class="stat-card"><div class="stat-icon green">LI</div><span>Liturgia</span><strong><?php echo $lecturaDia; ?></strong><small>Lecturas disponibles</small></article>
+  <article class="stat-card"><div class="stat-icon gold">SA</div><span>Santoral</span><strong><?php echo $santoral; ?></strong><small>Santos registrados</small></article>
+  <article class="stat-card"><div class="stat-icon blue">BI</div><span>Biblias</span><strong><?php echo $bibBooks; ?></strong><small>Libros disponibles</small></article>
+</section>
+
+<section class="dashboard-section-heading">
+  <div><span class="eyebrow">Revision</span><h2>Pendientes que requieren atencion</h2></div>
+</section>
+
+<section class="stats-grid pending-stats">
+  <a class="stat-card stat-card-link" href="intenciones.php?estado=pendiente"><div class="stat-icon pink">I</div><span>Intenciones</span><strong><?php echo $pendingPrayerRequests; ?></strong><small>Pendientes de moderacion</small></a>
+  <a class="stat-card stat-card-link" href="biblia-estudios-ia.php?estado=revision"><div class="stat-icon purple">EB</div><span>Estudios biblicos</span><strong><?php echo $pendingAiStudies; ?></strong><small>Pendientes de revision</small></a>
+  <article class="stat-card"><div class="stat-icon blue">SO</div><span>Solicitudes IA</span><strong><?php echo $processingAiRequests; ?></strong><small>Pendientes o procesando</small></article>
+  <?php if (is_technical_admin()): ?>
+    <a class="stat-card stat-card-link" href="ia-entrenamiento.php"><div class="stat-icon gold">IA</div><span>Supervision IA</span><strong><?php echo $pendingAiReviews + $pendingAiSources; ?></strong><small>Respuestas y fuentes pendientes</small></a>
+    <a class="stat-card stat-card-link" href="content.php?module=inteligencia-artificial&amp;table=lvj_ai_test_results"><div class="stat-icon pink">PT</div><span>Pruebas IA</span><strong><?php echo $failedAiTests; ?></strong><small>Resultados no aprobados</small></a>
+  <?php endif; ?>
+</section>
+
+<section class="panel dashboard-quick-panel">
+  <div class="panel-header">
+    <div><span class="eyebrow">Accesos rapidos</span><h2>Acciones frecuentes</h2></div>
+  </div>
+  <div class="quick-actions-grid">
+    <a href="content.php?module=radio&amp;table=lvj_rad_programacion&amp;action=new"><span>Pr</span><strong>Nueva programacion</strong></a>
+    <a href="content.php?module=liturgia&amp;table=lvj_lit_lectura_dia"><span>Li</span><strong>Editar liturgia</strong></a>
+    <a href="intenciones.php?estado=pendiente"><span>In</span><strong>Revisar intenciones</strong></a>
+    <a href="biblia-estudios-ia.php?estado=revision"><span>IA</span><strong>Revisar estudios</strong></a>
+    <a href="biblia-importar.php"><span>Bi</span><strong>Importar / Subir Biblias</strong></a>
+    <a href="upload.php"><span>Ar</span><strong>Subir archivo</strong></a>
+    <a href="content.php?module=capilla&amp;table=lvj_capilla_config"><span>Ca</span><strong>Configurar Capilla</strong></a>
+    <?php if (is_technical_admin()): ?><a href="ia-entrenamiento.php"><span>IA</span><strong>Centro de Formacion IA</strong></a><?php endif; ?>
+  </div>
+</section>
+
+<section class="dashboard-section-heading">
+  <div><span class="eyebrow">Areas</span><h2>Administracion por modulos</h2></div>
 </section>
 
 <section class="module-grid">

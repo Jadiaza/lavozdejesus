@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { ArrowLeft, Maximize2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -7,6 +8,11 @@ type CapillaHeaderProps = {
   logoUrl?: string;
 };
 
+type LockableScreenOrientation = ScreenOrientation & {
+  lock?: (orientation: "landscape") => Promise<void>;
+  unlock?: () => void;
+};
+
 export const CapillaHeader = ({
   nombre = "Capilla Virtual",
   subtitulo = "Adoracion Eucaristica - 24 horas",
@@ -14,7 +20,36 @@ export const CapillaHeader = ({
 }: CapillaHeaderProps) => {
   const navigate = useNavigate();
 
-  const handleFullscreen = () => {
+  const lockPhoneLandscape = async () => {
+    const isPhone = window.matchMedia("(max-width: 767px)").matches;
+    const orientation = screen.orientation as LockableScreenOrientation | undefined;
+
+    if (!isPhone || !orientation?.lock) return;
+
+    try {
+      await orientation.lock("landscape");
+    } catch {
+      // Some mobile browsers do not allow locking orientation.
+    }
+  };
+
+  useEffect(() => {
+    const restoreOrientation = () => {
+      if (!document.fullscreenElement) {
+        const orientation = screen.orientation as LockableScreenOrientation | undefined;
+        orientation?.unlock?.();
+      }
+    };
+
+    document.addEventListener("fullscreenchange", restoreOrientation);
+    return () => {
+      document.removeEventListener("fullscreenchange", restoreOrientation);
+      const orientation = screen.orientation as LockableScreenOrientation | undefined;
+      orientation?.unlock?.();
+    };
+  }, []);
+
+  const handleFullscreen = async () => {
     const element = document.getElementById("capilla-transmision");
     const video = element?.querySelector("video") as
       | (HTMLVideoElement & { webkitEnterFullscreen?: () => void })
@@ -26,12 +61,18 @@ export const CapillaHeader = ({
     if (!element) return;
 
     if (!document.fullscreenElement && element.requestFullscreen) {
-      void element.requestFullscreen().catch(() => video?.webkitEnterFullscreen?.());
+      try {
+        await element.requestFullscreen();
+        await lockPhoneLandscape();
+      } catch {
+        video?.webkitEnterFullscreen?.();
+      }
       return;
     }
 
     if (!document.fullscreenElement && fullscreenElement?.webkitRequestFullscreen) {
-      void fullscreenElement.webkitRequestFullscreen();
+      await Promise.resolve(fullscreenElement.webkitRequestFullscreen());
+      await lockPhoneLandscape();
       return;
     }
 

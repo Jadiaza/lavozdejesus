@@ -34,9 +34,10 @@ try {
 } catch (LengthException|InvalidArgumentException $error) {
   lvj_json_response(['success'=>false,'message'=>$error->getMessage()],422);
 } catch (Throwable $error) {
-  $allowedMessages = ['Servicio de estudio no configurado.', BibleStudyService::EQUIVALENCES_PENDING_MESSAGE, BibleStudyService::LEVELS_PENDING_MESSAGE, 'El almacenamiento de estudios bíblicos todavía no está disponible.', 'Has utilizado tus estudios nuevos disponibles para este mes.'];
+  $processingMessage = 'El estudio ya se está procesando. Intenta consultarlo nuevamente en unos momentos.';
+  $allowedMessages = ['Servicio de estudio no configurado.', BibleStudyService::EQUIVALENCES_PENDING_MESSAGE, BibleStudyService::LEVELS_PENDING_MESSAGE, 'El almacenamiento de estudios bíblicos todavía no está disponible.', 'Has utilizado tus estudios nuevos disponibles para este mes.', $processingMessage];
   $message=in_array($error->getMessage(),$allowedMessages,true)?$error->getMessage():'No fue posible generar el estudio en este momento.';
   if($message==='No fue posible generar el estudio en este momento.')error_log('LVJ Bible Study API: '.$error->getMessage());
-  $status=$message==='Has utilizado tus estudios nuevos disponibles para este mes.'?429:500;
+  $status=$message==='Has utilizado tus estudios nuevos disponibles para este mes.'?429:($message===$processingMessage?409:500);
   lvj_json_response(['success'=>false,'message'=>$message],$status);
 }

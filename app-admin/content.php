@@ -27,23 +27,41 @@ $modules = [
     ],
   ],
   'liturgia' => [
-    'title' => 'Liturgia del Dia',
-    'subtitle' => 'Liturgia, palabra diaria, lectio divina y tiempos',
+    'title' => 'Liturgia',
+    'subtitle' => 'Liturgia diaria, calendario, lectio divina y catálogos',
     'tables' => [
       'lvj_lit_lectura_dia' => 'Lectura del Dia',
+      'lvj_lit_dia' => 'Calendario liturgico',
+      'lvj_lit_lectio_divina' => 'Lectio Divina',
+      'lvj_lit_palabra_dia' => 'Palabra del Dia',
       'lvj_lit_tiempos' => 'Tiempos liturgicos',
       'lvj_lit_temas' => 'Temas',
+      'lvj_lit_celebraciones' => 'Celebraciones',
+      'lvj_lit_tipos_celebracion' => 'Tipos de celebracion',
+    ],
+  ],
+  'santoral' => [
+    'title' => 'Santoral',
+    'subtitle' => 'Santos, fiestas y contenido espiritual del calendario',
+    'tables' => [
+      'lvj_san_santo_dia' => 'Santoral',
     ],
   ],
   'capilla' => [
-    'title' => 'Capilla Virtual',
-    'subtitle' => 'Recursos e intenciones para la capilla',
+    'title' => 'Capilla y Oracion',
+    'subtitle' => 'Capillas, transmisiones, selección activa e historial técnico',
     'tables' => [
       'lvj_capillas' => 'Capillas',
       'lvj_capilla_streams' => 'Streams',
-      'lvj_com_peticiones_oracion' => 'Peticiones de oracion',
-      'lvj_com_grupos_oracion' => 'Grupos de oracion',
-      'lvj_com_testimonios' => 'Testimonios',
+      'lvj_capilla_config' => 'Activar capilla',
+      'lvj_capilla_logs' => 'Logs',
+    ],
+    'tabs' => [
+      ['label' => 'Capillas', 'table' => 'lvj_capillas'],
+      ['label' => 'Streams', 'table' => 'lvj_capilla_streams'],
+      ['label' => 'Intenciones', 'href' => 'intenciones.php'],
+      ['label' => 'Activar capilla', 'table' => 'lvj_capilla_config'],
+      ['label' => 'Logs', 'table' => 'lvj_capilla_logs'],
     ],
   ],
   'biblia' => [
@@ -60,8 +78,29 @@ $modules = [
       'lvj_bib_personajes' => 'Personajes bíblicos',
     ],
   ],
+  'inteligencia-artificial' => [
+    'title' => 'Formación y Supervisión IA',
+    'subtitle' => 'Perfiles, instrucciones, reglas, fuentes, pruebas y auditoría técnica',
+    'tables' => [
+      'lvj_ai_profiles' => 'Perfiles',
+      'lvj_ai_prompt_versions' => 'Instrucciones',
+      'lvj_ai_rules' => 'Reglas',
+      'lvj_ai_profile_rules' => 'Reglas por perfil',
+      'lvj_ai_knowledge_sources' => 'Fuentes',
+      'lvj_ai_source_files' => 'Archivos de fuentes',
+      'lvj_ai_examples' => 'Ejemplos',
+      'lvj_ai_test_cases' => 'Casos de prueba',
+      'lvj_ai_test_runs' => 'Ejecuciones',
+      'lvj_ai_test_results' => 'Resultados',
+      'lvj_ai_response_logs' => 'Respuestas',
+      'lvj_ai_response_reviews' => 'Revisiones',
+      'lvj_ai_deployments' => 'Despliegues',
+      'lvj_ai_settings' => 'Configuración',
+      'lvj_ai_audit_logs' => 'Auditoría',
+    ],
+  ],
   'oracion' => [
-    'title' => 'Oracion y Rosario',
+    'title' => 'Rosarios y Oraciones',
     'subtitle' => 'Rosarios, novenas, misterios, devociones y oraciones',
     'tables' => [
       'lvj_ora_rosarios' => 'Rosarios',
@@ -78,13 +117,6 @@ $modules = [
     'tables' => [
       'lvj_pod_categorias' => 'Categorias',
       'lvj_pod_podcasts' => 'Podcasts',
-    ],
-  ],
-  'santoral' => [
-    'title' => 'Santoral',
-    'subtitle' => 'Santos y celebraciones del dia',
-    'tables' => [
-      'lvj_san_santo_dia' => 'Santo del dia',
     ],
   ],
   'economia' => [
@@ -158,6 +190,8 @@ function content_label(string $column): string
 {
   $labels = [
     'emisora_id' => 'Emisora',
+    'capilla_activa_id' => 'Capilla activa',
+    'stream_activo_id' => 'Stream activo',
     'liturgia_id' => 'Liturgia relacionada',
     'programa_id' => 'Programa',
     'categoria_id' => 'Categoria',
@@ -217,6 +251,33 @@ function content_label(string $column): string
     'oracion_intercesion' => 'Oracion de intercesion',
     'destacado' => 'Destacado',
     'orden' => 'Orden',
+    'profile_id' => 'Perfil IA',
+    'prompt_version_id' => 'Versión de instrucciones',
+    'previous_prompt_version_id' => 'Versión anterior',
+    'rule_id' => 'Regla',
+    'source_id' => 'Fuente',
+    'response_log_id' => 'Respuesta',
+    'test_run_id' => 'Ejecución de prueba',
+    'test_case_id' => 'Caso de prueba',
+    'public_id' => 'Identificador público',
+    'code' => 'Código',
+    'module_code' => 'Módulo',
+    'instructions' => 'Instrucciones',
+    'instructions_summary' => 'Resumen de instrucciones',
+    'output_structure' => 'Estructura de salida',
+    'reasoning_effort' => 'Esfuerzo de razonamiento',
+    'response_length' => 'Longitud de respuesta',
+    'verification_status' => 'Verificación',
+    'processing_status' => 'Procesamiento',
+    'user_question' => 'Pregunta',
+    'ideal_response' => 'Respuesta ideal',
+    'rejected_response' => 'Respuesta rechazada',
+    'rule_text' => 'Contenido de la regla',
+    'setting_key' => 'Clave',
+    'setting_value' => 'Valor',
+    'review_status' => 'Estado de revisión',
+    'generated_response' => 'Respuesta generada',
+    'deployment_notes' => 'Notas del despliegue',
   ];
 
   if (isset($labels[$column])) {
@@ -533,6 +594,10 @@ function content_foreign_key_fallback(string $table, string $field): ?array
     'tiempo_id' => ['table' => 'lvj_lit_tiempos', 'column' => 'id'],
     'tema_id' => ['table' => 'lvj_lit_temas', 'column' => 'id'],
     'santo_id' => ['table' => 'lvj_san_santo_dia', 'column' => 'id'],
+    'capilla_id' => ['table' => 'lvj_capillas', 'column' => 'id'],
+    'capilla_activa_id' => ['table' => 'lvj_capillas', 'column' => 'id'],
+    'stream_id' => ['table' => 'lvj_capilla_streams', 'column' => 'id'],
+    'stream_activo_id' => ['table' => 'lvj_capilla_streams', 'column' => 'id'],
     'rol_id' => ['table' => 'lvj_adm_roles', 'column' => 'id'],
     'folder_id' => ['table' => 'lvj_file_folders', 'column' => 'id'],
     'user_id' => ['table' => 'lvj_file_users', 'column' => 'id'],
@@ -542,6 +607,14 @@ function content_foreign_key_fallback(string $table, string $field): ?array
     'version_id' => ['table' => 'lvj_bib_versiones', 'column' => 'id'],
     'rosario_id' => ['table' => 'lvj_ora_rosarios', 'column' => 'id'],
     'novena_id' => ['table' => 'lvj_ora_novenas', 'column' => 'id'],
+    'profile_id' => ['table' => 'lvj_ai_profiles', 'column' => 'id'],
+    'prompt_version_id' => ['table' => 'lvj_ai_prompt_versions', 'column' => 'id'],
+    'previous_prompt_version_id' => ['table' => 'lvj_ai_prompt_versions', 'column' => 'id'],
+    'rule_id' => ['table' => 'lvj_ai_rules', 'column' => 'id'],
+    'source_id' => ['table' => 'lvj_ai_knowledge_sources', 'column' => 'id'],
+    'response_log_id' => ['table' => 'lvj_ai_response_logs', 'column' => 'id'],
+    'test_run_id' => ['table' => 'lvj_ai_test_runs', 'column' => 'id'],
+    'test_case_id' => ['table' => 'lvj_ai_test_cases', 'column' => 'id'],
   ];
 
   if ($field === 'categoria_id') {
@@ -855,6 +928,13 @@ function content_field_html(PDO $pdo, string $table, array $column, array $row =
     $options = content_reference_options($pdo, $foreignKey['table'], $foreignKey['column']);
     if ($options) {
       $selectAttrs = $field === 'tiempo_id' ? ' data-liturgical-time-select' : '';
+      if ($table === 'lvj_capilla_config' && $field === 'capilla_activa_id') {
+        array_unshift($options, ['value' => '', 'label' => 'Selecciona una capilla']);
+        $selectAttrs = ' data-capilla-active-select';
+      } elseif ($table === 'lvj_capilla_config' && $field === 'stream_activo_id') {
+        array_unshift($options, ['value' => '', 'label' => 'Selecciona un stream']);
+        $selectAttrs = ' data-stream-active-select';
+      }
       $select = content_select_html($field, $label, $value, $options, $isRequired, 'content-field relation-field', $selectAttrs);
 
       if (in_array($table, ['lvj_lit_dia', 'lvj_lit_lectura_dia'], true) && $field === 'tiempo_id') {
@@ -975,6 +1055,42 @@ function content_capilla_validate(array $columns, array &$data): string
   return '';
 }
 
+function content_capilla_config_validate(PDO $pdo, array $columns, array $data): string
+{
+  $map = content_column_map($columns);
+  $capillaId = (int) ($data['capilla_activa_id'] ?? 0);
+  $streamId = (int) ($data['stream_activo_id'] ?? 0);
+
+  if (isset($map['capilla_activa_id']) && $capillaId <= 0) {
+    return 'Selecciona la capilla que deseas activar.';
+  }
+
+  if (isset($map['stream_activo_id']) && $streamId <= 0) {
+    return 'Selecciona el stream activo de la capilla.';
+  }
+
+  if ($capillaId > 0) {
+    $capilla = $pdo->prepare('SELECT id FROM lvj_capillas WHERE id = :id AND deleted_at IS NULL LIMIT 1');
+    $capilla->execute(['id' => $capillaId]);
+    if (!$capilla->fetchColumn()) {
+      return 'La capilla seleccionada no existe o fue eliminada.';
+    }
+  }
+
+  if ($streamId > 0) {
+    $stream = $pdo->prepare('SELECT id FROM lvj_capilla_streams WHERE id = :stream_id AND capilla_id = :capilla_id AND deleted_at IS NULL LIMIT 1');
+    $stream->execute([
+      'stream_id' => $streamId,
+      'capilla_id' => $capillaId,
+    ]);
+    if (!$stream->fetchColumn()) {
+      return 'El stream seleccionado no pertenece a la capilla activa.';
+    }
+  }
+
+  return '';
+}
+
 function content_save_capilla(PDO $pdo, array $columns, string $primaryColumn, int $id, array $data): int
 {
   $isPrincipal = (int) ($data['es_principal'] ?? 0) === 1
@@ -1080,11 +1196,24 @@ if (!isset($modules[$moduleKey])) {
   $moduleKey = 'configuracion';
 }
 
+if ($moduleKey === 'inteligencia-artificial') {
+  require_technical_admin();
+}
+
 $module = $modules[$moduleKey];
 $table = (string) ($_GET['table'] ?? array_key_first($module['tables']));
 if (!isset($module['tables'][$table]) || !content_table_allowed($modules, $table)) {
   $table = (string) array_key_first($module['tables']);
 }
+$readOnly = in_array($table, [
+  'lvj_capilla_logs',
+  'lvj_ai_source_files',
+  'lvj_ai_test_runs',
+  'lvj_ai_test_results',
+  'lvj_ai_response_logs',
+  'lvj_ai_deployments',
+  'lvj_ai_audit_logs',
+], true);
 
 $columns = content_columns($pdo, $table);
 $editableColumns = content_order_columns_for_form(content_editable_columns($columns, $table), $table);
@@ -1104,14 +1233,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if ($postedTable !== $table || !content_table_allowed($modules, $postedTable)) {
     $error = 'Tabla no permitida.';
+  } elseif ($readOnly) {
+    $error = 'Esta sección es únicamente de consulta.';
   } elseif (!$columns) {
     $error = 'La tabla seleccionada no existe o no esta disponible.';
-  } elseif ($table === 'lvj_capillas' && in_array($action, ['set_status', 'set_principal', 'toggle_respaldo'], true)) {
+  } elseif ($table === 'lvj_capillas' && in_array($action, ['set_status', 'set_principal', 'set_active', 'toggle_respaldo'], true)) {
     $id = (int) ($_POST['id'] ?? 0);
     if ($id <= 0) {
       $error = 'ID de capilla no valido.';
     } else {
       try {
+        if ($action === 'set_active') {
+          $pdo->beginTransaction();
+
+          $stream = $pdo->prepare("
+            SELECT id
+            FROM lvj_capilla_streams
+            WHERE capilla_id = :capilla_id
+              AND deleted_at IS NULL
+              AND LOWER(COALESCE(CAST(estado AS CHAR), '')) IN ('', '1', 'activo', 'activa', 'publicado')
+            ORDER BY es_principal DESC, prioridad ASC, id ASC
+            LIMIT 1
+          ");
+          $stream->execute(['capilla_id' => $id]);
+          $streamId = (int) $stream->fetchColumn();
+          if ($streamId <= 0) {
+            throw new RuntimeException('La capilla necesita al menos un stream activo.');
+          }
+
+          $configId = (int) $pdo->query('SELECT id FROM lvj_capilla_config ORDER BY updated_at DESC, id DESC LIMIT 1 FOR UPDATE')->fetchColumn();
+          if ($configId <= 0) {
+            throw new RuntimeException('No existe la configuración base de la capilla.');
+          }
+
+          $activateCapilla = $pdo->prepare("UPDATE lvj_capillas SET estado = :estado" . content_update_timestamp_clause($columns) . " WHERE {$primaryColumn} = :id AND deleted_at IS NULL LIMIT 1");
+          $activateCapilla->execute([
+            'estado' => content_status_active_value($columns),
+            'id' => $id,
+          ]);
+
+          $activateConfig = $pdo->prepare("
+            UPDATE lvj_capilla_config
+            SET capilla_activa_id = :capilla_id,
+                stream_activo_id = :stream_id,
+                updated_at = NOW()
+            WHERE id = :config_id
+            LIMIT 1
+          ");
+          $activateConfig->execute([
+            'capilla_id' => $id,
+            'stream_id' => $streamId,
+            'config_id' => $configId,
+          ]);
+
+          $pdo->commit();
+          log_activity('activate', $table, $id, 'Capilla activada en la aplicación');
+          header('Location: content.php?module=' . urlencode($moduleKey) . '&table=' . urlencode($table) . '&saved=activated');
+          exit;
+        }
+
         if ($action === 'set_status') {
           $newStatus = (string) ($_POST['estado'] ?? '');
           $allowedStatuses = [
@@ -1152,7 +1332,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($pdo->inTransaction()) {
           $pdo->rollBack();
         }
-        $error = 'No se pudo actualizar la capilla. Revisa los datos e intenta nuevamente.';
+        $safeActionErrors = [
+          'La capilla necesita al menos un stream activo.',
+          'No existe la configuración base de la capilla.',
+        ];
+        $error = in_array($actionError->getMessage(), $safeActionErrors, true)
+          ? $actionError->getMessage()
+          : 'No se pudo actualizar la capilla. Revisa los datos e intenta nuevamente.';
       }
     }
   } elseif ($action === 'save') {
@@ -1184,6 +1370,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$error && $table === 'lvj_capillas') {
       $error = content_capilla_validate($columns, $data);
+    }
+
+    if (!$error && $table === 'lvj_capilla_config') {
+      $error = content_capilla_config_validate($pdo, $columns, $data);
     }
 
     if (!$error && $table === 'lvj_san_santo_dia' && content_has_column($columns, 'fecha') && $id <= 0) {
@@ -1223,7 +1413,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
       }
     } catch (Throwable $saveError) {
-      if ($table === 'lvj_capillas') {
+      if (in_array($table, ['lvj_capillas', 'lvj_capilla_config'], true)) {
         $error = $error ?: 'No se pudo guardar la capilla. Revisa los datos e intenta nuevamente.';
       } else {
         $error = $error ?: 'No se pudo guardar: ' . $saveError->getMessage();
@@ -1247,7 +1437,9 @@ if (isset($_GET['deleted'])) {
   $message = 'Registro eliminado o desactivado.';
 }
 if (isset($_GET['saved'])) {
-  $message = $_GET['saved'] === 'updated' ? 'Registro actualizado.' : 'Registro creado.';
+  $message = $_GET['saved'] === 'activated'
+    ? 'La capilla y su stream principal están activos en la aplicación.'
+    : ($_GET['saved'] === 'updated' ? 'Registro actualizado.' : 'Registro creado.');
 }
 
 if ($editId > 0 && $columns) {
@@ -1276,7 +1468,7 @@ if ($editId > 0 && $columns) {
 }
 
 $formMode = (string) ($_GET['action'] ?? '');
-$showForm = $formMode === 'new' || ($editId > 0 && $editRow);
+$showForm = !$readOnly && ($formMode === 'new' || ($editId > 0 && $editRow));
 $search = trim((string) ($_GET['q'] ?? ''));
 $page = max(1, (int) ($_GET['page'] ?? 1));
 $perPage = 20;
@@ -1346,13 +1538,27 @@ $pageSubtitle = $module['subtitle'];
 require __DIR__ . '/includes/header.php';
 ?>
 
-<section class="content-toolbar">
-  <div class="content-tabs">
-    <?php foreach ($modules as $key => $item): ?>
-      <a class="<?php echo $key === $moduleKey ? 'active' : ''; ?>" href="content.php?module=<?php echo e($key); ?>"><?php echo e($item['title']); ?></a>
-    <?php endforeach; ?>
-  </div>
-</section>
+<?php $moduleTabs = $module['tabs'] ?? null; ?>
+<?php if (($moduleTabs && count($moduleTabs) > 1) || (!$moduleTabs && count($module['tables']) > 1)): ?>
+  <nav class="content-toolbar" aria-label="Secciones de <?php echo e($module['title']); ?>">
+    <div class="content-tabs">
+      <?php if ($moduleTabs): ?>
+        <?php foreach ($moduleTabs as $tab): ?>
+          <?php
+            $tabTable = (string) ($tab['table'] ?? '');
+            $tabHref = (string) ($tab['href'] ?? ('content.php?module=' . $moduleKey . '&table=' . $tabTable));
+            $tabActive = $tabTable !== '' && $tabTable === $table;
+          ?>
+          <a class="<?php echo $tabActive ? 'active' : ''; ?>" href="<?php echo e($tabHref); ?>" <?php echo $tabActive ? 'aria-current="page"' : ''; ?>><?php echo e($tab['label']); ?></a>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <?php foreach ($module['tables'] as $tableName => $label): ?>
+          <a class="<?php echo $tableName === $table ? 'active' : ''; ?>" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($tableName); ?>" <?php echo $tableName === $table ? 'aria-current="page"' : ''; ?>><?php echo e($label); ?></a>
+        <?php endforeach; ?>
+      <?php endif; ?>
+    </div>
+  </nav>
+<?php endif; ?>
 
 <section class="panel content-overview-panel">
   <div class="content-overview">
@@ -1361,15 +1567,7 @@ require __DIR__ . '/includes/header.php';
       <p class="muted">Gestiona el contenido que luego consumira la app. La vista principal muestra registros; los formularios se abren solo para crear o editar.</p>
     </div>
     <div class="content-actions-bar">
-      <form method="get" class="table-selector">
-        <input type="hidden" name="module" value="<?php echo e($moduleKey); ?>">
-        <select name="table" onchange="this.form.submit()">
-          <?php foreach ($module['tables'] as $tableName => $label): ?>
-            <option value="<?php echo e($tableName); ?>" <?php echo $tableName === $table ? 'selected' : ''; ?>><?php echo e($label); ?></option>
-          <?php endforeach; ?>
-        </select>
-      </form>
-      <?php if ($columns): ?>
+      <?php if ($columns && !$readOnly): ?>
         <a class="btn btn-gold add-record-button" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&action=new"><span>+</span> Agregar registro</a>
       <?php endif; ?>
     </div>
@@ -1465,7 +1663,7 @@ require __DIR__ . '/includes/header.php';
           <?php foreach ($visibleListColumns as $column): ?>
             <th><?php echo e(content_label((string) $column['Field'])); ?></th>
           <?php endforeach; ?>
-          <th>Acciones</th>
+          <?php if (!$readOnly): ?><th>Acciones</th><?php endif; ?>
         </tr>
       </thead>
       <tbody>
@@ -1475,7 +1673,7 @@ require __DIR__ . '/includes/header.php';
               <?php $field = (string) $column['Field']; ?>
               <td><?php echo content_cell_html($table, $field, $row[$field] ?? ''); ?></td>
             <?php endforeach; ?>
-            <td class="actions grid-actions">
+            <?php if (!$readOnly): ?><td class="actions grid-actions">
               <a class="action-button action-edit" title="Editar registro" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&edit=<?php echo (int) $row['id']; ?>">Editar</a>
               <?php if ($table === 'lvj_capillas'): ?>
                 <?php
@@ -1491,6 +1689,13 @@ require __DIR__ . '/includes/header.php';
                   <input type="hidden" name="id" value="<?php echo (int) $row['id']; ?>">
                   <input type="hidden" name="estado" value="<?php echo e((string) $nextStatus); ?>">
                   <button class="action-button action-edit" type="submit" title="<?php echo $isActiveCapilla ? 'Inactivar capilla' : 'Activar capilla'; ?>"><?php echo $isActiveCapilla ? 'Inactivar' : 'Activar'; ?></button>
+                </form>
+                <form method="post" onsubmit="return confirm('¿Activar esta capilla y su stream principal en la aplicación?');">
+                  <?php echo csrf_field(); ?>
+                  <input type="hidden" name="action" value="set_active">
+                  <input type="hidden" name="table" value="<?php echo e($table); ?>">
+                  <input type="hidden" name="id" value="<?php echo (int) $row['id']; ?>">
+                  <button class="action-button action-edit" type="submit" title="Seleccionar como capilla activa">Activar en la app</button>
                 </form>
                 <?php if (!$isPrincipal): ?>
                   <form method="post" onsubmit="return confirm('Marcar esta capilla como principal? Se desmarcara la principal anterior.');">
@@ -1517,11 +1722,11 @@ require __DIR__ . '/includes/header.php';
                 <input type="hidden" name="id" value="<?php echo (int) $row['id']; ?>">
                 <button class="action-button action-delete danger-action" type="submit" title="Eliminar registro">Eliminar</button>
               </form>
-            </td>
+            </td><?php endif; ?>
           </tr>
         <?php endforeach; ?>
         <?php if (!$rows): ?>
-          <tr><td colspan="<?php echo count($visibleListColumns) + 1; ?>" class="muted"><?php echo $search !== '' ? 'No hay registros que coincidan con la busqueda.' : 'No hay registros cargados.'; ?></td></tr>
+          <tr><td colspan="<?php echo count($visibleListColumns) + ($readOnly ? 0 : 1); ?>" class="muted"><?php echo $search !== '' ? 'No hay registros que coincidan con la busqueda.' : 'No hay registros cargados.'; ?></td></tr>
         <?php endif; ?>
       </tbody>
     </table>

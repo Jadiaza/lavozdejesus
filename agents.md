@@ -12162,3 +12162,54 @@ pasaje → equivalencias aprobadas → estudio almacenado → IA solo si falta u
 → presentación. Mientras Scío no forme parte de la base de datos operativa, quedará excluida de consultas,
 prompts y comparaciones, sin eliminar referencias o estructuras históricas que pudieran necesitarse en una
 incorporación futura documentada.
+
+## 10.17 Centro de Formación y Supervisión IA
+
+El Panel Administrativo incorpora un módulo técnico independiente denominado **Centro de Formación y
+Supervisión IA**. Este módulo no pertenece a Estudios Bíblicos IA y no utilizará las tablas
+`lvj_bib_estudios_ia` ni `lvj_bib_estudios_ia_solicitudes` como almacenamiento de entrenamiento.
+
+El Centro administrará exclusivamente las tablas `lvj_ai_*` existentes:
+
+- `lvj_ai_profiles`;
+- `lvj_ai_prompt_versions`;
+- `lvj_ai_rules`;
+- `lvj_ai_profile_rules`;
+- `lvj_ai_knowledge_sources`;
+- `lvj_ai_source_files`;
+- `lvj_ai_examples`;
+- `lvj_ai_test_cases`;
+- `lvj_ai_test_runs`;
+- `lvj_ai_test_results`;
+- `lvj_ai_response_logs`;
+- `lvj_ai_response_reviews`;
+- `lvj_ai_deployments`;
+- `lvj_ai_settings`;
+- `lvj_ai_audit_logs`.
+
+El módulo permitirá organizar perfiles, instrucciones versionadas, reglas, fuentes verificables, ejemplos,
+pruebas, evaluaciones, revisiones, despliegues, configuración y auditoría. Las ejecuciones, respuestas,
+resultados, archivos vinculados, despliegues y auditoría se tratarán como registros técnicos de consulta
+cuando no exista una acción especializada segura.
+
+El acceso requerirá sesión administrativa y rol `super_admin`. Ocultar el enlace lateral no sustituirá la
+validación directa del Backend. El módulo no almacenará claves API, no modificará variables de entorno, no
+publicará automáticamente versiones de instrucciones y no cambiará la integración con OpenAI.
+
+La navegación oficial será:
+
+```text
+Panel Administrativo
+    └── Inteligencia Artificial
+        └── Centro de Formación y Supervisión IA
+            ├── Perfiles
+            ├── Versiones de instrucciones
+            ├── Reglas
+            ├── Fuentes
+            ├── Ejemplos
+            ├── Pruebas
+            ├── Supervisión
+            ├── Despliegues
+            ├── Configuración
+            └── Auditoría
+```

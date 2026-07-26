@@ -45,6 +45,40 @@ document.querySelectorAll("[data-liturgical-time-select]").forEach((select) => {
   syncLiturgicalTime();
 });
 
+document.querySelectorAll("[data-capilla-active-select]").forEach((capillaSelect) => {
+  const form = capillaSelect.closest("form");
+  const streamSelect = form?.querySelector("[data-stream-active-select]");
+
+  if (!streamSelect) {
+    return;
+  }
+
+  const syncCapillaStreams = () => {
+    const capillaId = String(capillaSelect.value || "");
+    let selectedIsAvailable = false;
+
+    Array.from(streamSelect.options).forEach((option) => {
+      if (!option.value) {
+        return;
+      }
+
+      const belongsToCapilla = String(option.dataset.capillaId || "") === capillaId;
+      option.hidden = !belongsToCapilla;
+      option.disabled = !belongsToCapilla;
+      if (belongsToCapilla && option.selected) {
+        selectedIsAvailable = true;
+      }
+    });
+
+    if (!selectedIsAvailable) {
+      streamSelect.value = "";
+    }
+  };
+
+  capillaSelect.addEventListener("change", syncCapillaStreams);
+  syncCapillaStreams();
+});
+
 document.querySelectorAll("[data-content-section-tabs]").forEach((tabList) => {
   const form = tabList.closest("form");
   const tabs = Array.from(tabList.querySelectorAll("[data-content-section-tab]"));

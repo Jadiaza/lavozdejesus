@@ -76,6 +76,16 @@ $pageTitle = 'Intenciones de oración';
 require __DIR__ . '/includes/header.php';
 ?>
 
+<nav class="content-toolbar" aria-label="Secciones de Capilla y Oración">
+  <div class="content-tabs">
+    <a href="content.php?module=capilla&amp;table=lvj_capillas">Capillas</a>
+    <a href="content.php?module=capilla&amp;table=lvj_capilla_streams">Streams</a>
+    <a class="active" href="intenciones.php" aria-current="page">Intenciones</a>
+    <a href="content.php?module=capilla&amp;table=lvj_capilla_config">Activar capilla</a>
+    <a href="content.php?module=capilla&amp;table=lvj_capilla_logs">Logs</a>
+  </div>
+</nav>
+
 <section class="page-heading">
   <div>
     <span class="eyebrow">Comunidad</span>

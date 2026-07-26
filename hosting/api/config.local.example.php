@@ -18,7 +18,7 @@ return [
   'bible_ai_timeout' => 90,
   'bible_ai_max_tokens' => 8000,
   'bible_ai_free_requests_per_month' => 3,
-  'bible_ai_unlimited_emails' => 'lavozdejesusco@gmail.com,lavozdejesus.co@gmail.com',
+  'bible_ai_unlimited_emails' => 'lavozdejesusco@gmail.com,lavozdejesus.co@gmail.com,lenis4842@gmail.com,llenis4842@gmail.com',
   'bible_version_platense' => 'SPAPLATENSE',
   'bible_version_torres_amat' => 'TORRESAMAT',
 ];
