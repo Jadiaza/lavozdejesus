@@ -342,7 +342,7 @@ const Radio = () => {
               {songTitle}
             </h1>
             <p
-              className="radio-artist-text relative mt-1.5 max-w-[20rem] truncate text-sm font-semibold leading-tight text-gold sm:max-w-xl sm:text-base"
+              className="radio-artist-text relative mt-1.5 max-w-[20rem] truncate text-[0.95rem] font-bold leading-tight sm:max-w-xl sm:text-base"
               title={artistName}
             >
               {artistName}

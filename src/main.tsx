@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
-import "@fontsource/literata/400.css";
-import "@fontsource/literata/600.css";
-import "@fontsource/literata/700.css";
+import "@fontsource/literata/latin-400.css";
+import "@fontsource/literata/latin-600.css";
+import "@fontsource/literata/latin-700.css";
 import App from "./App.tsx";
 import "./index.css";
 import { registerSW } from "./pwa/registerSW";
