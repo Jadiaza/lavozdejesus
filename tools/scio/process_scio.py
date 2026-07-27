@@ -192,7 +192,7 @@ def extract_pages(volume: int) -> Iterator[dict[str, Any]]:
                 "izquierda": int_attr(block, "l"), "arriba": int_attr(block, "t"),
                 "derecha": int_attr(block, "r"), "abajo": int_attr(block, "b"),
             }
-            lines, languages, formats = [], set(), []
+            lines, line_details, languages, formats = [], [], set(), []
             for line in (node for node in block.iter() if local(node.tag) == "line"):
                 parts = []
                 for char in (node for node in line.iter() if local(node.tag) == "charParams"):
@@ -201,22 +201,34 @@ def extract_pages(volume: int) -> Iterator[dict[str, Any]]:
                         parts.append(" ")
                     parts.append(token)
                 line_text = normalize("".join(parts), rules)
-                if line_text:
-                    lines.append(line_text)
+                line_sizes = []
                 for fmt in (node for node in line.iter() if local(node.tag) == "formatting"):
                     language = fmt.attrib.get("lang")
                     if language:
                         languages.add(language)
+                    try:
+                        size = float(fmt.attrib.get("fs", "0"))
+                    except ValueError:
+                        size = 0.0
+                    line_sizes.append(size)
                     formats.append({
                         "idioma": language, "fuente": fmt.attrib.get("ff"),
                         "tamano": fmt.attrib.get("fs"), "negrita": fmt.attrib.get("bold") == "1",
                         "cursiva": fmt.attrib.get("italic") == "1",
                     })
+                if line_text:
+                    lines.append(line_text)
+                    line_details.append({
+                        "texto": line_text, "izquierda": int_attr(line, "l"),
+                        "arriba": int_attr(line, "t"), "derecha": int_attr(line, "r"),
+                        "abajo": int_attr(line, "b"),
+                        "tamano_max": max(line_sizes, default=0.0),
+                    })
             text = normalize("\n".join(lines), rules)
             if text:
                 blocks.append({
                     "tipo_abbyy": block.attrib.get("blockType"), "coordenadas": box,
-                    "lineas": lines, "texto": text, "idiomas": sorted(languages),
+                    "lineas": lines, "lineas_detalle": line_details, "texto": text, "idiomas": sorted(languages),
                     "formatos": formats, "clasificacion": classify(text, box, page, formats, ignores),
                 })
         yield {
@@ -282,43 +294,358 @@ def parse_chapter(text: str) -> int | None:
     return total
 
 
+
+def convert_anchored_pages(pages: Iterable[dict[str, Any]], anchors: dict[str, Any],
+                           expected_max: dict[tuple[str, int], int], volume: int) -> list[dict[str, Any]]:
+    """Convierte paginas usando limites de capitulo revisados manualmente."""
+    chapter_anchors = sorted(anchors["chapters"], key=lambda a: (int(a["page_digital"]), int(a["y"])))
+    marker_overrides = {
+        (str(item["book_code"]), int(item["chapter"]), int(item["page_digital"]), int(item["y"])): item
+        for item in anchors.get("marker_overrides", []) if item.get("reviewed")
+    }
+    ignored_lines = {
+        (str(item["book_code"]), int(item["chapter"]), int(item["page_digital"]), int(item["y"]))
+        for item in anchors.get("ignored_lines", []) if item.get("reviewed")
+    }
+    page_rows, verses = list(pages), []
+    number_pattern = re.compile(r"^[^\w]*([1-9](?:\s?[0-9oO]){0,2})[^\w]*\s+(.+)$")
+    ornamental_one = re.compile(r"^[IilJ]\s+(.+)$")
+    for index, anchor in enumerate(chapter_anchors):
+        book_code = str(anchor.get("book_code", anchors.get("book_code")))
+        chapter = int(anchor["chapter"])
+        start = (int(anchor["page_digital"]), int(anchor["y"]))
+        end = None
+        if index + 1 < len(chapter_anchors):
+            following = chapter_anchors[index + 1]
+            end = (int(following["page_digital"]), int(following["y"]))
+        lines = []
+        for page in page_rows:
+            page_number, width, height = int(page["pagina_digital"]), int(page["ancho"]), int(page["alto"])
+            if page_number < start[0] or (end and page_number > end[0]):
+                continue
+            for block in page["bloques"]:
+                if block.get("clasificacion") == "numero_pagina":
+                    continue
+                details = sorted(block.get("lineas_detalle", []), key=lambda line: int(line["arriba"]))
+                small_body_cutoff = None
+                right_details = [line for line in details if int(line["izquierda"]) >= width * .45]
+                small_ratio = (sum(float(line["tamano_max"]) <= 7.5 for line in right_details)
+                               / len(right_details)) if right_details else 0
+                if (len(right_details) >= 4 and int(right_details[0]["arriba"]) < height * .15
+                        and small_ratio >= .9):
+                    gaps = [(int(right_details[i + 1]["arriba"]) - int(right_details[i]["arriba"]), i)
+                            for i in range(len(right_details) - 1)]
+                    large_gaps = [(gap, i) for gap, i in gaps if gap >= 140]
+                    if large_gaps:
+                        _, split_index = max(large_gaps)
+                        prefix = right_details[:split_index + 1]
+                        numeric_prefixes = sum(bool(number_pattern.match(str(line["texto"]).strip())) for line in prefix)
+                        if numeric_prefixes >= 1:
+                            small_body_cutoff = int(right_details[split_index + 1]["arriba"])
+                for line in details:
+                    position, size = (page_number, int(line["arriba"])), float(line["tamano_max"])
+                    forced = marker_overrides.get((book_code, chapter, page_number, int(line["arriba"])))
+                    if (book_code, chapter, page_number, int(line["arriba"])) in ignored_lines:
+                        continue
+                    if position < start or (end and position >= end):
+                        continue
+                    if line.get("clasificacion") == "numero_pagina" and not forced:
+                        continue
+                    if int(line["izquierda"]) < width * .45 and not forced:
+                        continue
+                    regular_body = 8 <= size <= 12
+                    degraded_body = small_body_cutoff is not None and size >= 7 and int(line["arriba"]) < small_body_cutoff
+                    small_match = number_pattern.match(str(line["texto"]).strip())
+                    embedded_small_marker = (size >= 7 and bool(small_match)
+                                             and not re.match(r"^(?:MS\.?|Ferrar\.?)\b", small_match.group(2), re.I)
+                                             and any(int(later["arriba"]) > int(line["arriba"])
+                                                     and float(later["tamano_max"]) >= 8 for later in details))
+                    if not regular_body and not degraded_body and not embedded_small_marker and not forced:
+                        continue
+                    if (int(line["arriba"]) < height * .07 or int(line["abajo"]) > height * .93) and not forced:
+                        continue
+                    lines.append((page_number, line))
+        lines.sort(key=lambda item: (item[0], int(item[1]["arriba"]), int(item[1]["izquierda"])))
+        current_number, current_parts, current_page = None, [], None
+        def flush() -> None:
+            nonlocal current_number, current_parts, current_page
+            if current_number is not None and current_parts:
+                text = re.sub(r"\s+", " ", " ".join(current_parts)).strip()
+                text = re.sub(r"\u00ac\s+", "", text)
+                text = re.sub(r"-\s+(?=[a-z???????])", "", text, flags=re.I)
+                verses.append(make_verse(book_code, chapter, current_number, text, volume,
+                                          current_page, None, "ABBYY", "requiere_revision", .85))
+            current_number, current_parts, current_page = None, [], None
+        maximum = expected_max.get((book_code, chapter), 200)
+        for page_number, line in lines:
+            text = str(line["texto"]).strip()
+            marker_text = re.sub(r"^f\s*\*", "", text, flags=re.I)
+            match = number_pattern.match(marker_text)
+            candidate = int(re.sub(r"\s", "", match.group(1)).replace("o", "0").replace("O", "0")) if match else None
+            remainder = match.group(2) if match else ""
+            forced = marker_overrides.get((book_code, chapter, page_number, int(line["arriba"])))
+            if forced:
+                candidate, remainder = int(forced["verse"]), str(forced["remainder"])
+            if (not forced and current_number is not None and candidate is not None
+                    and candidate > current_number + 1 and (float(line["tamano_max"]) <= 8
+                                                            or float(line["tamano_max"]) > 12)):
+                candidate, remainder = None, ""
+            if current_number is not None and match and candidate is not None and " " in match.group(1) and candidate > current_number + 1:
+                shortest = re.match(r"^[^\w]*([1-9])\s+(.+)$", marker_text)
+                if shortest and int(shortest.group(1)) == current_number + 1:
+                    candidate, remainder = current_number + 1, shortest.group(2)
+            if current_number is None and match and match.group(1) == "1 1":
+                candidate = 1
+            if current_number == 29 and match and candidate == 36:
+                candidate = 30
+            if current_number is not None and match and candidate is not None and candidate <= current_number:
+                structural_prefix = text[:text.find(match.group(2))]
+                contextual = None
+                if current_number == 11 and candidate == 11:
+                    contextual = 12
+                elif current_number == 29 and candidate == 36:
+                    contextual = 30
+                elif current_number == 34 and candidate == 3 and (")" in structural_prefix or "^" in structural_prefix):
+                    contextual = 35
+                elif current_number == 36 and candidate == 7 and "^" in structural_prefix:
+                    contextual = 37
+                elif current_number == 64 and candidate == 6 and ")" in structural_prefix:
+                    contextual = 65
+                elif current_number == 20 and candidate == 2 and "\\" in structural_prefix:
+                    contextual = 21
+                elif current_number == 24 and candidate == 2 and ")" in structural_prefix:
+                    contextual = 25
+                if contextual == current_number + 1:
+                    candidate = contextual
+            if current_number is None and not match:
+                first = ornamental_one.match(text)
+                candidate, remainder = (1, first.group(1)) if first else (1, text)
+            if not match and current_number == 24 and re.match(r"^[^\w]*[).<]+[^\w]*Y\s+", text):
+                candidate, remainder = 25, re.sub(r"^[^\w]*[).<]+[^\w]*", "", text)
+            if not match and current_number is not None:
+                confused = re.match(r"^[^\w]*(IJ|I\s*j|I\s*s|I\s*\^|j|2j|t\s*29|Xo|ro|JO|la|id|'ll|q|y|i6|iij|3\^|i)\s+(.+)$", text, re.I)
+                if confused:
+                    token = re.sub(r"\s", "", confused.group(1)).lower()
+                    mapped = {"i": 11, "j": 5, "ij": 15, "is": 15, "i^": 15, "2j": 25, "t29": 29, "xo": 20, "ro": 10, "jo": 10, "la": 10, "id": 10,
+                              "'ll": 11, "q": 3, "y": 7, "i6": 16, "iij": 17, "3^": 35}.get(token)
+                    if token == "i" and chapter != 26:
+                        mapped = None
+                    if mapped == current_number + 1:
+                        candidate, remainder = mapped, confused.group(2)
+            if candidate is not None and candidate <= maximum and (current_number is None or candidate > current_number):
+                flush(); current_number, current_parts, current_page = candidate, [remainder], page_number
+            elif current_number is not None:
+                current_parts.append(text)
+        flush()
+    return verses
+
+
+
+def txt_fallback_verses(existing: list[dict[str, Any]], volume: int) -> list[dict[str, Any]]:
+    """Agrega ?nicamente excepciones TXT revisadas y declaradas en configuraci?n."""
+    corrections_path = CONFIG / "chapter-corrections.json"
+    if not corrections_path.is_file():
+        return []
+    volume_config = load_json(corrections_path).get("volumes", {}).get(str(volume), {})
+    occupied = {(row["libro_codigo"], int(row["capitulo"]), int(row["versiculo"])) for row in existing}
+    rows = []
+    for item in volume_config.get("txt_fallbacks", []):
+        key = (item["book_code"], int(item["chapter"]), int(item["verse"]))
+        if key in occupied or not item.get("reviewed"):
+            continue
+        text = str(item["text"]).strip()
+        row = make_verse(key[0], key[1], key[2], text, volume, None, None, "TXT",
+                         "requiere_revision_txt", float(item.get("confidence", .55)))
+        row["fuente_archivo"] = item["source_file"]
+        row["fuente_lineas"] = item["source_lines"]
+        rows.append(row)
+        occupied.add(key)
+    return rows
+
+
+def scan_fallback_verses(existing: list[dict[str, Any]], volume: int) -> list[dict[str, Any]]:
+    """Agrega excepciones revisadas desde facsímiles públicos con procedencia explícita."""
+    corrections_path = CONFIG / "chapter-corrections.json"
+    if not corrections_path.is_file():
+        return []
+    volume_config = load_json(corrections_path).get("volumes", {}).get(str(volume), {})
+    occupied = {(row["libro_codigo"], int(row["capitulo"]), int(row["versiculo"])) for row in existing}
+    rows = []
+    for item in volume_config.get("scan_fallbacks", []):
+        key = (item["book_code"], int(item["chapter"]), int(item["verse"]))
+        if key in occupied or not item.get("reviewed"):
+            continue
+        source_type = str(item.get("source_type", "WEB_SCAN"))
+        row = make_verse(key[0], key[1], key[2], str(item["text"]).strip(), volume, None,
+                         item.get("printed_page"), source_type,
+                         "requiere_revision_facsimil", float(item.get("confidence", .75)))
+        row["fuente_url"] = item["source_url"]
+        row["fuente_imagen"] = item["source_image"]
+        rows.append(row)
+        occupied.add(key)
+    return rows
+
+def reviewed_fallback_verses(existing: list[dict[str, Any]], volume: int) -> list[dict[str, Any]]:
+    """Completa claves ausentes con transcripciones revisadas y procedencia explícita."""
+    corrections_path = CONFIG / "chapter-corrections.json"
+    if not corrections_path.is_file():
+        return []
+    volume_config = load_json(corrections_path).get("volumes", {}).get(str(volume), {})
+    occupied = {(row["libro_codigo"], int(row["capitulo"]), int(row["versiculo"])) for row in existing}
+    rows = []
+    for item in volume_config.get("reviewed_fallbacks", []):
+        key = (item["book_code"], int(item["chapter"]), int(item["verse"]))
+        if key in occupied or not item.get("reviewed"):
+            continue
+        source_type = str(item["source_type"])
+        row = make_verse(key[0], key[1], key[2], str(item["text"]).strip(), volume,
+                         item.get("page_digital"), item.get("printed_page"), source_type,
+                         "requiere_revision_fuente", float(item.get("confidence", .9)))
+        row["fuente_archivo"] = item.get("source_file")
+        row["fuente_lineas"] = item.get("source_lines")
+        row["fuente_evidencia"] = item.get("source_evidence")
+        rows.append(row)
+        occupied.add(key)
+    return rows
+
+def apply_reviewed_replacements(rows: list[dict[str, Any]], volume: int) -> None:
+    """Sustituye solo claves existentes con transcripciones revisadas y trazables."""
+    corrections_path = CONFIG / "chapter-corrections.json"
+    if not corrections_path.is_file():
+        return
+    volume_config = load_json(corrections_path).get("volumes", {}).get(str(volume), {})
+    by_key = {(row["libro_codigo"], int(row["capitulo"]), int(row["versiculo"])): index
+              for index, row in enumerate(rows)}
+    for item in volume_config.get("reviewed_replacements", []):
+        key = (item["book_code"], int(item["chapter"]), int(item["verse"]))
+        if key not in by_key or not item.get("reviewed"):
+            continue
+        original = rows[by_key[key]]
+        row = make_verse(key[0], key[1], key[2], str(item["text"]).strip(), volume,
+                         item.get("page_digital", original.get("pagina_digital")),
+                         item.get("printed_page", original.get("pagina_impresa")),
+                         str(item["source_type"]), "revisado_fuente", float(item.get("confidence", 1.0)))
+        row["fuente_archivo"] = item.get("source_file")
+        row["fuente_lineas"] = item.get("source_lines")
+        row["fuente_evidencia"] = item.get("source_evidence")
+        rows[by_key[key]] = row
+
 def command_convert(args: argparse.Namespace) -> int:
     pages_path = PAGES / f"tomo_{args.tomo:02d}_paginas.jsonl"
     if not pages_path.is_file():
         raise ScioError(f"Ejecute primero extraer --tomo {args.tomo}")
     volumes = load_json(CONFIG / "volumes.json")
     codes = volumes[str(args.tomo)]["libros"]
-    books = {book["codigo"]: book for book in load_json(CONFIG / "books.json")}
-    aliases = [(code, books[code]["nombre"]) for code in codes]
+    books_list = load_json(CONFIG / "books.json")
+    books = {book["codigo"]: book for book in books_list}
+    aliases = [(code, words(books[code]["nombre"])) for code in codes]
+    reference_path = ROOT / "storage" / "biblia" / "spaplatense" / "procesado" / "versiculos.json"
+    with reference_path.open("r", encoding="utf-8-sig") as stream:
+        reference_rows = json.load(stream)
+    expected_max: dict[tuple[str, int], int] = {}
+    for row in reference_rows:
+        key = (row["libro_codigo"], int(row["capitulo"]))
+        expected_max[key] = max(expected_max.get(key, 0), int(row["versiculo"]))
+
     active_book = codes[0] if len(codes) == 1 else None
-    chapter = None
+    chapter: int | None = None
+    current_number: int | None = None
+    current_parts: list[str] = []
+    current_page: int | None = None
     verses, notes = [], []
+
+    corrections_path = CONFIG / "chapter-corrections.json"
+    correction_volume = None
+    if corrections_path.is_file():
+        corrections = load_json(corrections_path)
+        correction_volume = corrections.get("volumes", {}).get(str(args.tomo))
+    if correction_volume:
+        page_rows = list(iter_jsonl(pages_path))
+        verses = convert_anchored_pages(page_rows, correction_volume, expected_max, args.tomo)
+        verses.extend(txt_fallback_verses(verses, args.tomo))
+        verses.extend(scan_fallback_verses(verses, args.tomo))
+        verses.extend(reviewed_fallback_verses(verses, args.tomo))
+        apply_reviewed_replacements(verses, args.tomo)
+        verses.sort(key=lambda row: (row["capitulo"], row["versiculo"]))
+        for page in page_rows:
+            for block in page["bloques"]:
+                details = block.get("lineas_detalle", [])
+                if block["clasificacion"] == "nota_scio" or (details and max(
+                    (float(item["tamano_max"]) for item in details), default=0) <= 7.5):
+                    notes.append({"tomo": args.tomo, "pagina_digital": page["pagina_digital"],
+                                  "texto": block["texto"].replace("\n", " ")})
+        atomic_jsonl(STRUCTURED / f"tomo_{args.tomo:02d}_versiculos.jsonl", verses)
+        atomic_jsonl(NOTES / f"tomo_{args.tomo:02d}_notas.jsonl", notes)
+        logging.info("Tomo %02d convertido con anclas: %d candidatos, %d notas",
+                     args.tomo, len(verses), len(notes))
+        return 0
+
+    def flush() -> None:
+        nonlocal current_number, current_parts, current_page
+        if active_book and chapter and current_number and current_parts:
+            text = " ".join(current_parts)
+            text = re.sub(r"\u00ac\s+", "", text)
+            text = re.sub(r"-\s+(?=[a-z???????])", "", text, flags=re.I)
+            text = re.sub(r"\s+", " ", text).strip()
+            verses.append(make_verse(active_book, chapter, current_number, text, args.tomo,
+                                      current_page, None, "ABBYY", "requiere_revision", 0.72))
+        current_number, current_parts, current_page = None, [], None
+
     for page in iter_jsonl(pages_path):
+        width, height = int(page["ancho"]), int(page["alto"])
         for block in page["bloques"]:
-            text, kind = block["texto"].replace("\n", " "), block["clasificacion"]
-            for code, name in aliases:
-                if name.lower() in text.lower() and ("libro" in text.lower() or kind == "titulo_libro"):
-                    active_book, chapter = code, None
-            detected = parse_chapter(text)
-            if detected:
-                chapter = detected
+            heading = block["texto"].replace("\n", " ")
+            heading_words = set(words(heading))
+            for code, alias_words in aliases:
+                if alias_words and set(alias_words) <= heading_words and ("libro" in heading_words or "profecia" in heading_words or len(codes) == 1):
+                    if active_book != code:
+                        flush()
+                        active_book, chapter = code, None
+            heading_box = block["coordenadas"]
+            is_page_heading = (len(heading) <= 120 and int(heading_box["arriba"]) <= height * 0.24)
+            detected = parse_chapter(heading) if is_page_heading else None
+            if detected and active_book and 1 <= detected <= int(books[active_book]["capitulos"]):
+                if chapter is None and detected == 1:
+                    flush()
+                    chapter = detected
+                elif chapter is not None and detected == chapter + 1:
+                    flush()
+                    chapter = detected
                 continue
-            if kind == "nota_scio":
-                notes.append({"tomo": args.tomo, "pagina_digital": page["pagina_digital"], "texto": text})
+            if not active_book or not chapter:
                 continue
-            if kind != "texto_espanol" or active_book is None or chapter is None:
-                continue
-            match = re.match(r"^\s*(\d{1,3})[.)º°]?\s+(.+)$", text)
-            if not match:
-                continue
-            number, verse_text = int(match.group(1)), match.group(2).strip()
-            verses.append(make_verse(active_book, chapter, number, verse_text, args.tomo,
-                                      page["pagina_digital"], None, "ABBYY", "requiere_revision", 0.55))
+            box = block["coordenadas"]
+            details = block.get("lineas_detalle", [])
+            for line in details:
+                # La edici?n biling?e coloca el espa?ol en la columna derecha; las notas usan cuerpo <= 7.5.
+                if int(line["izquierda"]) < width * 0.48 or float(line["tamano_max"]) < 8.0:
+                    continue
+                if int(line["arriba"]) < height * 0.10 or int(line["abajo"]) > height * 0.93:
+                    continue
+                text = str(line["texto"]).strip()
+                match = re.match(r"^([1-9](?:\s?\d){0,2})[.)??]?\s+(.+)$", text)
+                if not match and current_number is None and re.match(r"^[Il]\s+", text):
+                    match = re.match(r"^[Il]\s+(.+)$", text)
+                    candidate, remainder = 1, match.group(1) if match else ""
+                elif match:
+                    candidate = int(re.sub(r"\s", "", match.group(1)))
+                    remainder = match.group(2)
+                else:
+                    candidate, remainder = None, ""
+                maximum = expected_max.get((active_book, chapter), 200)
+                expected = 1 if current_number is None else current_number + 1
+                if candidate is not None and candidate == expected and candidate <= maximum:
+                    flush()
+                    current_number, current_parts, current_page = candidate, [remainder], page["pagina_digital"]
+                elif current_number is not None:
+                    current_parts.append(text)
+            if block["clasificacion"] == "nota_scio" or (details and max((float(x["tamano_max"]) for x in details), default=0) <= 7.5):
+                notes.append({"tomo": args.tomo, "pagina_digital": page["pagina_digital"], "texto": heading})
+    flush()
     atomic_jsonl(STRUCTURED / f"tomo_{args.tomo:02d}_versiculos.jsonl", verses)
     atomic_jsonl(NOTES / f"tomo_{args.tomo:02d}_notas.jsonl", notes)
     logging.info("Tomo %02d convertido: %d candidatos, %d notas", args.tomo, len(verses), len(notes))
     return 0
-
 
 def make_verse(code: str, chapter: int, verse: int, text: str, volume: int | None,
                digital: int | None, printed: str | None, source: str, status: str,
@@ -359,14 +686,14 @@ def command_import_nt(_: argparse.Namespace) -> int:
     return 0
 
 
-def validate(books: list[dict[str, Any]], verses: Iterable[dict[str, Any]]) -> dict[str, Any]:
+def validate(books: list[dict[str, Any]], verses: Iterable[dict[str, Any]], *, full_canon: bool = True) -> dict[str, Any]:
     errors, warnings = [], []
     codes = [book["codigo"] for book in books]
-    if len(books) != 73:
+    if full_canon and len(books) != 73:
         errors.append(f"Se requieren 73 libros; hay {len(books)}")
-    if sum(book["testamento"] == "AT" for book in books) != 46:
+    if full_canon and sum(book["testamento"] == "AT" for book in books) != 46:
         errors.append("El canon debe contener 46 libros AT")
-    if sum(book["testamento"] == "NT" for book in books) != 27:
+    if full_canon and sum(book["testamento"] == "NT" for book in books) != 27:
         errors.append("El canon debe contener 27 libros NT")
     if len(codes) != len(set(codes)):
         errors.append("Existen libros duplicados")
@@ -386,16 +713,18 @@ def validate(books: list[dict[str, Any]], verses: Iterable[dict[str, Any]]) -> d
         counts[row.get("fuente_tipo", "desconocida")] += 1
         expected = previous.get((code, chapter), 0) + 1
         if number != expected:
-            warnings.append(f"Salto/versificación en {code}.{chapter}: esperado {expected}, encontrado {number}")
+            errors.append(f"Salto/versificación en {code}.{chapter}: esperado {expected}, encontrado {number}")
         previous[(code, chapter)] = number
         text = row.get("texto", "")
         if strange.search(text):
             errors.append(f"Unicode extraño en {code}.{chapter}.{number}")
         if latin_phrase.search(text):
             warnings.append(f"Posible latín mezclado en {code}.{chapter}.{number}")
-        if note_phrase.search(text):
+        trusted_review = (row.get("estado_revision") == "revisado_fuente"
+                          or str(row.get("fuente_tipo", "")).endswith("REVIEWED"))
+        if note_phrase.search(text) and not trusted_review:
             warnings.append(f"Posible nota mezclada en {code}.{chapter}.{number}")
-        if furniture.search(text):
+        if furniture.search(text) and not trusted_review:
             warnings.append(f"Posible encabezado/página en {code}.{chapter}.{number}")
     for book in books:
         code = book["codigo"]
@@ -404,7 +733,7 @@ def validate(books: list[dict[str, Any]], verses: Iterable[dict[str, Any]]) -> d
         if missing:
             errors.append(f"Capítulos vacíos en {code}: {sorted(missing)}")
     nt_codes = {book["codigo"] for book in books if book["testamento"] == "NT"}
-    if len(nt_codes & source_books) != 27:
+    if full_canon and len(nt_codes & source_books) != 27:
         errors.append(f"El NT procesado contiene {len(nt_codes & source_books)} libros, no 27")
     return {
         "schema_version": "1.0", "generated_at": utc_now(), "valid": not errors,
@@ -427,9 +756,37 @@ def collect_work_verses() -> list[dict[str, Any]]:
             or row.get("libro_codigo") in {b["codigo"] for b in load_json(CONFIG / "books.json") if b["testamento"] == "AT"}]
 
 
-def command_validate(_: argparse.Namespace) -> int:
-    report = validate(load_json(CONFIG / "books.json"), collect_work_verses())
-    atomic_json(WORK / "reporte-validacion.json", report)
+def command_validate(args: argparse.Namespace) -> int:
+    books = load_json(CONFIG / "books.json")
+    if args.tomo is not None:
+        volume_codes = set(load_json(CONFIG / "volumes.json")[str(args.tomo)]["libros"])
+        volume_books = [book for book in books if book["codigo"] in volume_codes]
+        path = STRUCTURED / f"tomo_{args.tomo:02d}_versiculos.jsonl"
+        if not path.is_file():
+            raise ScioError(f"Falta convertir el tomo {args.tomo}")
+        rows = list(iter_jsonl(path))
+        report = validate(volume_books, rows, full_canon=False)
+        reference_path = ROOT / "storage" / "biblia" / "spaplatense" / "procesado" / "versiculos.json"
+        with reference_path.open("r", encoding="utf-8-sig") as stream:
+            reference_rows = json.load(stream)
+        actual_keys = {(row["libro_codigo"], int(row["capitulo"]), int(row["versiculo"])) for row in rows}
+        expected_by_chapter: dict[tuple[str, int], set[int]] = defaultdict(set)
+        for row in reference_rows:
+            code = row["libro_codigo"]
+            if code in volume_codes:
+                expected_by_chapter[(code, int(row["capitulo"]))].add(int(row["versiculo"]))
+        for (code, chapter), expected_numbers in sorted(expected_by_chapter.items()):
+            missing = sorted(number for number in expected_numbers if (code, chapter, number) not in actual_keys)
+            if missing:
+                report["errors"].append(f"Vers?culos faltantes en {code}.{chapter}: {missing}")
+        report["valid"] = not report["errors"]
+        report["scope"] = {"tipo": "tomo", "tomo": args.tomo, "libros": sorted(volume_codes)}
+        output = WORK / "validacion" / f"tomo_{args.tomo:02d}_reporte.json"
+    else:
+        report = validate(books, collect_work_verses())
+        report["scope"] = {"tipo": "canon_completo"}
+        output = WORK / "reporte-validacion.json"
+    atomic_json(output, report)
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 1 if report["errors"] else 0
 
@@ -479,7 +836,9 @@ def parser() -> argparse.ArgumentParser:
         command.add_argument("--tomo", type=int, choices=EXPECTED_VOLUMES, required=True)
         command.set_defaults(handler=handler)
     sub.add_parser("importar-nt").set_defaults(handler=command_import_nt)
-    sub.add_parser("validar").set_defaults(handler=command_validate)
+    validation = sub.add_parser("validar")
+    validation.add_argument("--tomo", type=int, choices=range(1, 12))
+    validation.set_defaults(handler=command_validate)
     sub.add_parser("construir").set_defaults(handler=command_build)
     return result
 

@@ -3,6 +3,7 @@ import sqlite3
 import tempfile
 import unittest
 import unicodedata
+from contextlib import closing
 from pathlib import Path
 from unittest.mock import patch
 
@@ -40,10 +41,11 @@ class ScioTests(unittest.TestCase):
     def test_bblli_schema_fixture(self):
         with tempfile.TemporaryDirectory() as directory:
             database = Path(directory) / "fixture.bbli"
-            with sqlite3.connect(database) as db:
+            with closing(sqlite3.connect(database)) as db:
                 db.execute("CREATE TABLE Bible (Book INT, Chapter INT, Verse INT, Scripture TEXT)")
                 db.execute("CREATE TABLE Details (Title TEXT)")
-            with sqlite3.connect(database) as db:
+                db.commit()
+            with closing(sqlite3.connect(database)) as db:
                 tables = {row[0] for row in db.execute(
                     "SELECT name FROM sqlite_master WHERE type='table'")}
             self.assertEqual(tables, {"Bible", "Details"})
@@ -63,6 +65,89 @@ class ScioTests(unittest.TestCase):
         for field in required:
             self.assertIn(f'"{field}"', source)
 
+
+    def test_anchored_conversion_sorts_allows_gap_and_restarts_chapter(self):
+        def line(text, left, top, size=9):
+            return {"texto": text, "izquierda": left, "arriba": top, "derecha": left + 400,
+                    "abajo": top + 40, "tamano_max": size}
+        pages = [{"pagina_digital": 1, "ancho": 1000, "alto": 1000, "bloques": [
+            {"clasificacion": "texto_espanol", "lineas_detalle": [line("?3 tercero", 520, 500),
+             line("nota excluida", 520, 450, 7), line("I primero", 520, 200),
+             line("continuacion", 520, 300), line("2 latino", 200, 350)]}]},
+            {"pagina_digital": 2, "ancho": 1000, "alto": 1000, "bloques": [
+            {"clasificacion": "texto_espanol", "lineas_detalle": [line("1 nuevo", 520, 300),
+             line("2 segundo", 520, 400)]}]}]
+        anchors = {"book_code": "GEN", "chapters": [
+            {"chapter": 1, "page_digital": 1, "y": 100},
+            {"chapter": 2, "page_digital": 2, "y": 200}]}
+        rows = scio.convert_anchored_pages(pages, anchors, {("GEN", 1): 3, ("GEN", 2): 2}, 1)
+        self.assertEqual([(r["capitulo"], r["versiculo"]) for r in rows],
+                         [(1, 1), (1, 3), (2, 1), (2, 2)])
+        self.assertEqual(rows[0]["texto"], "primero continuacion")
+        self.assertEqual(rows[1]["texto"], "tercero")
+        self.assertNotIn("nota", " ".join(r["texto"] for r in rows))
+
+
+    def test_anchored_conversion_recovers_degraded_body_before_note_gap(self):
+        def line(text, top, size=7.5):
+            return {"texto": text, "izquierda": 520, "arriba": top, "derecha": 920,
+                    "abajo": top + 40, "tamano_max": size}
+        pages = [{"pagina_digital": 1, "ancho": 1000, "alto": 1000, "bloques": [{
+            "clasificacion": "encabezado", "lineas_detalle": [line("1 primero", 100),
+            line("2 segundo", 180), line("continuacion", 260), line("1 nota", 500)]}]}]
+        anchors = {"book_code": "GEN", "chapters": [{"chapter": 1, "page_digital": 1, "y": 70}]}
+        rows = scio.convert_anchored_pages(pages, anchors, {("GEN", 1): 2}, 1)
+        self.assertEqual([(row["versiculo"], row["texto"]) for row in rows],
+                         [(1, "primero"), (2, "segundo continuacion")])
+
+
+    def test_txt_fallback_does_not_replace_abbyy_key(self):
+        existing = [scio.make_verse("GEN", 37, 26, "ABBYY", 1, 1, None,
+                                    "ABBYY", "requiere_revision", .85)]
+        rows = scio.txt_fallback_verses(existing, 1)
+        self.assertNotIn((37, 26), {(r["capitulo"], r["versiculo"]) for r in rows})
+        self.assertEqual(len(rows), 15)
+
+    def test_txt_fallback_has_explicit_provenance(self):
+        rows = scio.txt_fallback_verses([], 1)
+        self.assertEqual(len(rows), 16)
+        row = next(r for r in rows if (r["capitulo"], r["versiculo"]) == (37, 26))
+        self.assertEqual(row["fuente_tipo"], "TXT")
+        self.assertEqual(row["estado_revision"], "requiere_revision_txt")
+        self.assertLess(row["confianza_estructura"], .85)
+        self.assertIn("fuente_lineas", row)
+
+
+    def test_scan_fallback_has_explicit_provenance(self):
+        rows = scio.scan_fallback_verses([], 1)
+        self.assertEqual(len(rows), 24)
+        row = next(r for r in rows if (r["capitulo"], r["versiculo"]) == (19, 30))
+        self.assertEqual(row["fuente_tipo"], "UA_SCAN")
+        self.assertEqual(row["estado_revision"], "requiere_revision_facsimil")
+        self.assertEqual(row["pagina_impresa"], 53)
+        self.assertIn("sirio.ua.es", row["fuente_url"])
+        self.assertEqual(row["fuente_imagen"], "0091_s.jpg")
+
+    def test_scan_fallback_does_not_replace_existing_key(self):
+        existing = [scio.make_verse("GEN", 8, 5, "ABBYY", 1, 1, None,
+                                    "ABBYY", "requiere_revision", .85)]
+        rows = scio.scan_fallback_verses(existing, 1)
+        self.assertNotIn((8, 5), {(r["capitulo"], r["versiculo"]) for r in rows})
+        self.assertEqual(len(rows), 23)
+
+    def test_reviewed_fallbacks_are_explicit_and_do_not_replace_existing(self):
+        rows = scio.reviewed_fallback_verses([], 2)
+        self.assertEqual(len(rows), 50)
+        self.assertIn("ABBYY_COMBINED", {row["fuente_tipo"] for row in rows})
+        self.assertIn("TXT", {row["fuente_tipo"] for row in rows})
+        self.assertIn("SCIO_VULGATE_CROSSCHECK", {row["fuente_tipo"] for row in rows})
+        self.assertTrue(all(row["fuente_archivo"] for row in rows))
+        existing = [scio.make_verse("EXO", 13, 2, "ABBYY", 2, 1, None,
+                                    "ABBYY", "requiere_revision", .85)]
+        filtered = scio.reviewed_fallback_verses(existing, 2)
+        self.assertEqual(len(filtered), 49)
+        self.assertNotIn(("EXO", 13, 2), {(row["libro_codigo"], row["capitulo"], row["versiculo"])
+                                         for row in filtered})
 
 if __name__ == "__main__":
     unittest.main()
