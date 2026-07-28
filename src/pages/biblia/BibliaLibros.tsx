@@ -82,10 +82,7 @@ export default function BibliaLibros() {
   const grupos = leyenda.filter(([grupo]) => visibles.some((book) => grupoDe(book) === grupo));
 
   return <BibliaLayout title="Elegir libro" back="/biblia">
-    <section className="pb-1 pt-3 text-center">
-      <p className="text-sm text-[#C9C3B3]">Escoge el libro que deseas leer.</p>
-    </section>
-    <div className="relative my-4">
+    <div className="relative mb-4 mt-1">
       <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#D4AF37]" />
       <input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Buscar libro bíblico..." className="h-14 w-full rounded-full border border-[#D4AF37]/35 bg-[#0c0c0c]/90 pl-12 pr-11 text-sm text-[#F8F5EA] outline-none placeholder:text-[#827d72] focus:border-[#D4AF37]/80" />
       {busqueda && <button type="button" onClick={() => setBusqueda("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#C9C3B3]" aria-label="Limpiar búsqueda"><X className="h-4 w-4" /></button>}

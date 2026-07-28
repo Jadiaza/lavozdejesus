@@ -11,13 +11,15 @@ final class BibleStudyService
   private $pdo;
   public function __construct(PDO $pdo) { $this->pdo=$pdo; }
 
-  public function findPublishedForInput(array $input): ?array
+  public function findPublishedForInput(array $input, ?array $user = null): ?array
   {
     $range = $this->normalize($input); $context = $this->context($range);
     $hash = hash('sha256', json_encode([$context, BibleStudyPrompt::METHOD], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     if (!$this->columnExists('lvj_bib_estudios_ia','nivel')) return null;
     $row = lvj_first($this->pdo, "SELECT * FROM lvj_bib_estudios_ia WHERE ((hash_contexto=:hash AND metodo_version=:method) OR (libro_id=:book AND capitulo_inicio=:ci AND capitulo_fin=:cf AND versiculo_inicio<=:vi AND versiculo_fin>=:vf AND nivel=:level AND idioma=:language AND esquema_version=:schema AND texto_version=:text_version AND notas_version=:notes_version)) AND estado='publicado' AND revisado=1 AND es_publico=1 AND deleted_at IS NULL ORDER BY (versiculo_inicio=:exact_vi AND versiculo_fin=:exact_vf) DESC,(versiculo_fin-versiculo_inicio) ASC,updated_at DESC,id DESC LIMIT 1", ['hash'=>$hash,'method'=>BibleStudyPrompt::METHOD,'book'=>$context['libro_id'],'ci'=>$range['capitulo_inicio'],'vi'=>$range['versiculo_inicio'],'cf'=>$range['capitulo_fin'],'vf'=>$range['versiculo_fin'],'level'=>$range['nivel'],'language'=>self::LANGUAGE,'schema'=>self::SCHEMA_VERSION,'text_version'=>$context['metadata']['texto_version'],'notes_version'=>$context['metadata']['notas_version'],'exact_vi'=>$range['versiculo_inicio'],'exact_vf'=>$range['versiculo_fin']]);
-    return $row ? $this->present($row) : null;
+    if (!$row) return null;
+    if ($user) $this->logRequest((int)$user['id'], (int)$row['id'], $context['referencia'], 'completada', false);
+    return $this->present($row);
   }
 
   public function create(array $input, array $user): array
@@ -108,6 +110,29 @@ final class BibleStudyService
     return $this->present($row);
   }
 
+  public function recentForUser(int $userId, int $limit = 12): array
+  {
+    if (!$this->tableExists('lvj_bib_estudios_ia') || !$this->tableExists('lvj_bib_estudios_ia_solicitudes')) return [];
+    $limit = max(1, min(50, $limit));
+    $sql = "SELECT estudio.*, recientes.viewed_at
+      FROM lvj_bib_estudios_ia estudio
+      INNER JOIN (
+        SELECT estudio_id, MAX(COALESCE(completed_at, created_at)) AS viewed_at
+        FROM lvj_bib_estudios_ia_solicitudes
+        WHERE usuario_id=:user AND estado='completada' AND estudio_id IS NOT NULL
+        GROUP BY estudio_id
+      ) recientes ON recientes.estudio_id=estudio.id
+      WHERE estudio.deleted_at IS NULL
+      ORDER BY recientes.viewed_at DESC, estudio.id DESC
+      LIMIT {$limit}";
+    $statement = $this->pdo->prepare($sql);
+    $statement->execute(['user'=>$userId]);
+    return array_map(function(array $row): array {
+      $study = $this->present($row);
+      $study['viewed_at'] = $row['viewed_at'] ?? null;
+      return $study;
+    }, $statement->fetchAll());
+  }
   private function normalize(array $input): array
   {
     $book = strtoupper(trim((string)($input['libro_codigo'] ?? '')));

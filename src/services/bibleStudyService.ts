@@ -3,14 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 export interface BibleStudy {
   id: number; referencia: string; titulo: string; estado: string; revisado: boolean; es_publico: boolean;
   nivel: StudyLevel; idioma: string; esquema_version: string;
-  contenido: Record<string, unknown>; created_at?: string | null; updated_at?: string | null;
+  contenido: Record<string, unknown>; created_at?: string | null; updated_at?: string | null; viewed_at?: string | null;
 }
 export type StudyLevel = "pastoral" | "teologico" | "doctrinal" | "formador";
-interface StudyResponse { success: boolean; source?: "cache" | "generated"; study?: BibleStudy; configured?: boolean; ready?: boolean; message?: string; }
+export type RecentBibleStudy = BibleStudy;
+interface StudyResponse { success: boolean; source?: "cache" | "generated"; study?: BibleStudy; studies?: BibleStudy[]; configured?: boolean; ready?: boolean; message?: string; }
 
 const baseUrl = ((import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "https://lavozdejesus.co").trim().replace(/\/+$/, "");
 const apiUrl = (import.meta.env.VITE_BIBLE_STUDY_API_URL as string | undefined)?.trim() || `${baseUrl}/api/biblia-estudios.php`;
-
 async function token(): Promise<string | null> {
   const { data } = await supabase.auth.getSession(); return data.session?.access_token ?? null;
 }
@@ -33,6 +33,14 @@ async function parse(response: Response): Promise<StudyResponse> {
   return payload;
 }
 export async function getStudyStatus() { return parse(await fetchWithNetworkRetry(apiUrl, { headers: { Accept: "application/json" } })); }
+export async function getRecentBibleStudies() {
+  const accessToken = await token();
+  if (!accessToken) return [];
+  const url = new URL(apiUrl, window.location.origin);
+  url.searchParams.set("recent", "1");
+  const payload = await parse(await fetchWithNetworkRetry(url, { headers: { Accept: "application/json", Authorization: `Bearer ${accessToken}` } }));
+  return payload.studies ?? [];
+}
 export async function getBibleStudy(id: number) {
   const accessToken = await token(); const url = new URL(apiUrl, window.location.origin); url.searchParams.set("id", String(id));
   const payload = await parse(await fetchWithNetworkRetry(url, { headers: { Accept: "application/json", ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) } }));

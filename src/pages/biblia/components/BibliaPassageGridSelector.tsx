@@ -8,9 +8,10 @@ interface BibliaPassageGridSelectorProps {
   chapter: number;
   onBookChange: (book: string) => void;
   onChapterChange: (chapter: number) => void;
+  stage?: "all" | "book" | "chapter";
 }
 
-export function BibliaPassageGridSelector({ books, book, chapter, onBookChange, onChapterChange }: BibliaPassageGridSelectorProps) {
+export function BibliaPassageGridSelector({ books, book, chapter, onBookChange, onChapterChange, stage = "all" }: BibliaPassageGridSelectorProps) {
   const selectedBook = books.find((item) => item.codigo === book);
   const [testament, setTestament] = useState<TestamentoBiblico>(selectedBook?.testamento ?? "AT");
   const [query, setQuery] = useState("");
@@ -55,7 +56,7 @@ export function BibliaPassageGridSelector({ books, book, chapter, onBookChange, 
   };
 
   return <div className="space-y-5">
-    <section aria-labelledby="selector-libro-title">
+    <section aria-labelledby="selector-libro-title" className={stage === "chapter" ? "hidden" : undefined}>
       <label className="relative mb-3 block"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#D4AF37]"/><span className="sr-only">Buscar libro bíblico</span><input value={query} onChange={(event)=>setQuery(event.target.value)} placeholder="Buscar libro bíblico…" className="h-12 w-full rounded-2xl border border-[#D4AF37]/35 bg-[#090909] pl-10 pr-4 text-sm text-[#F8F5EA] outline-none placeholder:text-[#706A5E] focus:border-[#D4AF37]"/></label>
       <div className="mb-3 grid grid-cols-2 rounded-xl border border-[#D4AF37]/35 bg-[#090909] p-1">
         {(["AT","NT"] as TestamentoBiblico[]).map((value)=><button key={value} type="button" onClick={()=>{setTestament(value);setQuery("");}} aria-pressed={testament===value} className={`min-h-10 rounded-lg px-3 text-xs font-semibold ${testament===value?"border border-[#D4AF37]/50 bg-[#D4AF37]/15 text-[#F2D27A]":"text-[#C9C3B3]"}`}>{value==="AT"?"Antiguo Testamento":"Nuevo Testamento"}</button>)}
@@ -70,7 +71,7 @@ export function BibliaPassageGridSelector({ books, book, chapter, onBookChange, 
       </div>
     </section>
 
-    {selectedBook&&<section aria-labelledby="selector-capitulo-title">
+    {stage!=="book"&&selectedBook&&<section aria-labelledby="selector-capitulo-title">
       <div className="mb-2"><p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#D4AF37]">Capítulo</p><h3 id="selector-capitulo-title" className="mt-0.5 text-sm font-semibold text-[#F8F5EA]">{chapter>0?`${selectedBook.nombre} ${chapter}`:"Selecciona un capítulo"}</h3></div>
       <div className="grid max-h-52 grid-cols-6 gap-2 overflow-y-auto pr-1 sm:grid-cols-8">
         {chapters.map((value)=><button key={value} type="button" onClick={()=>onChapterChange(value)} aria-pressed={chapter===value} className={`aspect-square rounded-xl border text-sm font-semibold transition ${chapter===value?"border-[#F2D27A] bg-[#D4AF37] text-black":"border-[#D4AF37]/25 bg-[#111] text-[#F2D27A] hover:border-[#D4AF37]/60"}`}>{value}</button>)}

@@ -17,6 +17,10 @@ try {
     $readiness = $service->generationReadiness();
     $ready = $configured && $readiness['ready'];
     $availabilityMessage = !$configured ? 'Servicio de estudio no configurado.' : ($ready ? '' : $readiness['message']);
+    if (filter_var($_GET['recent'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+      $user = SupabaseAuth::requireUser($pdo);
+      lvj_json_response(['success'=>true,'studies'=>$service->recentForUser((int)$user['id'])]);
+    }
     $id = filter_var($_GET['id'] ?? null, FILTER_VALIDATE_INT);
     if (!$id) lvj_json_response(['success'=>true,'configured'=>$configured,'ready'=>$ready,'message'=>$availabilityMessage]);
     $user = null;
@@ -27,9 +31,10 @@ try {
   }
   if ($method !== 'POST') lvj_json_response(['success'=>false,'message'=>'Método no permitido.'],405);
   $input = lvj_json_input();
-  $published = $service->findPublishedForInput($input);
+  $user = SupabaseAuth::requireUser($pdo);
+  $published = $service->findPublishedForInput($input, $user);
   if ($published) lvj_json_response(['success'=>true,'source'=>'cache','study'=>$published]);
-  $user = SupabaseAuth::requireUser($pdo); $result = $service->create($input, $user);
+  $result = $service->create($input, $user);
   lvj_json_response(['success'=>true,'source'=>$result['source'],'study'=>$result['study']], $result['source']==='generated'?201:200);
 } catch (LengthException|InvalidArgumentException $error) {
   lvj_json_response(['success'=>false,'message'=>$error->getMessage()],422);
