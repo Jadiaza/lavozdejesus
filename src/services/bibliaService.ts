@@ -86,7 +86,12 @@ async function request<T>(params: Record<string, string | number>): Promise<T> {
   const url = new URL(apiUrl, window.location.origin);
   Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, String(value)));
 
-  const response = await fetch(url.toString(), { headers: { Accept: "application/json" } });
+  let response: Response;
+  try {
+    response = await fetch(url.toString(), { headers: { Accept: "application/json" } });
+  } catch {
+    throw new Error("No se pudo conectar con el servidor bíblico. Comprueba tu conexión e inténtalo nuevamente.");
+  }
   const payload = (await response.json().catch(() => null)) as ApiResponse<T> | null;
 
   if (!response.ok || !payload?.success || payload.data === undefined) {

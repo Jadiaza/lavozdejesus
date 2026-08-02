@@ -71,7 +71,7 @@ return <BibliaLayout title="Estudio Bíblico" back="/biblia" headerAction={hasSt
   {comparisonRequested&&authenticated===false&&<GuestStudyPrompt next={`/biblia/estudio?libro=${book}&cap=${chapter}`}/>}
   {loading&&<Generating/>}
   {error&&<div role="alert" className={`mb-4 rounded-2xl border p-4 text-sm ${quotaReached?"border-amber-400/35 bg-amber-950/20 text-amber-100":"border-red-500/30 bg-red-950/20 text-red-200"}`}><p className="font-semibold">{quotaReached?"Cupo mensual agotado":error||"No fue posible generar el estudio en este momento."}</p>{quotaReached?<p className="mt-1 text-amber-100/80">Podrás solicitar nuevos estudios el próximo mes. Los estudios existentes continúan disponibles sin consumir cupo.</p>:<button onClick={()=>id?location.reload():generate()} className="mt-3 rounded-lg border border-red-300/30 px-3 py-2">Intentar nuevamente</button>}</div>}
-  {hasStudyContent&&study&&<><div className="study-reader-host"><StudyReadingFrame><StudyView study={study} tab={tab} setTab={setTab}/>{preview.length>0&&<div className="study-integrated-comparison mt-4"><ComparisonPreview columns={preview} start={start} end={end} onClose={()=>undefined}/></div>}</StudyReadingFrame></div><SupportCard/></>}
+  {hasStudyContent&&study&&<><div className="study-reader-host"><StudyReadingFrame><StudyView study={study} tab={tab} setTab={setTab}/>{tab==="Comparación"&&preview.length>0&&<div className="study-integrated-comparison mt-4"><ComparisonPreview columns={preview} start={start} end={end} onClose={()=>undefined}/></div>}</StudyReadingFrame></div><SupportCard/></>}
 </BibliaLayout>}
 
 type StudyReadingTheme="oscuro"|"claro"|"sepia";

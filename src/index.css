@@ -175,6 +175,8 @@
      no pueden convertir cada pestaña en un módulo visual independiente. */
   .study-reader-host article * {
     font-family: inherit !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
   }
 
   .study-reader-host article p,
@@ -204,19 +206,14 @@
     line-height: 1.45 !important;
   }
 
-  .study-reader-host article button {
-    font-size: 0.82em !important;
-    line-height: 1.35 !important;
-  }
-
   .study-reader-host article td {
     font-size: 1em !important;
-    line-height: 1.55 !important;
+    line-height: inherit !important;
   }
 
   .study-reader-host article th {
-    font-size: 0.92em !important;
-    line-height: 1.45 !important;
+    font-size: 1em !important;
+    line-height: inherit !important;
   }
 
   .study-reader-host article.biblia-eink-paper {
@@ -230,8 +227,47 @@
   }
 
   .study-reader-host article.biblia-eink-paper section,
-  .study-reader-host article.biblia-eink-paper > div {
+  .study-reader-host article.biblia-eink-paper div,
+  .study-reader-host article.biblia-eink-paper article {
     background-color: transparent !important;
+  }
+
+  .study-reader-host article.biblia-eink-paper * {
+    color: #242520 !important;
+    border-color: rgb(75 75 68 / 0.24) !important;
+    box-shadow: none !important;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) {
+    background: #e2e1d8 !important;
+    color: #242520 !important;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > .pointer-events-none {
+    display: none;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header {
+    border-color: rgb(75 75 68 / 0.28) !important;
+    background: rgb(226 225 216 / 0.96) !important;
+    box-shadow: 0 8px 24px rgb(65 65 57 / 0.09) !important;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header div,
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header button,
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header a {
+    color: #242520 !important;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) main {
+    background: #e2e1d8 !important;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) .study-reader-host article.biblia-eink-paper {
+    border: 0 !important;
+    border-radius: 0 !important;
+    padding-left: 0.8rem !important;
+    padding-right: 0.8rem !important;
   }
 
   .study-reader-host article.biblia-eink-paper p,

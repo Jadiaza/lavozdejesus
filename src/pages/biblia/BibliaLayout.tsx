@@ -17,7 +17,7 @@ export const BibliaLayout = ({ title, children, back, headerAction, hideHeader =
   const isHome = loc.pathname === "/biblia" || loc.pathname === "/Biblia";
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#050505] pb-[calc(6rem+env(safe-area-inset-bottom))] text-[#F8F5EA]">
+    <div className="biblia-layout-shell relative min-h-screen overflow-x-hidden bg-[#050505] pb-[calc(6rem+env(safe-area-inset-bottom))] text-[#F8F5EA]">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_-8%,rgba(212,175,55,0.18),transparent_30%),radial-gradient(circle_at_50%_100%,rgba(212,175,55,0.08),transparent_36%),linear-gradient(180deg,#050505_0%,#090909_52%,#050505_100%)]" />
       <div className="pointer-events-none fixed inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D4AF37]/70 to-transparent" />
 
