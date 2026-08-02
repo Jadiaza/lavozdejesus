@@ -45,7 +45,7 @@ useEffect(()=>{if(verseOptions.length===0)return;const first=verseOptions[0];con
 useEffect(()=>{const restore=()=>{if(!document.fullscreenElement)(screen.orientation as LockableScreenOrientation|undefined)?.unlock?.();};document.addEventListener("fullscreenchange",restore);return()=>{document.removeEventListener("fullscreenchange",restore);(screen.orientation as LockableScreenOrientation|undefined)?.unlock?.();};},[]);
 const openComparison=async()=>{setComparisonRequested(true);window.setTimeout(()=>document.getElementById("bible-comparison-view")?.scrollIntoView({behavior:"smooth",block:"start"}),0);if(!window.matchMedia("(max-width: 767px)").matches)return;try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();await (screen.orientation as LockableScreenOrientation|undefined)?.lock?.("landscape");}catch{/* La orientación manual y el diseño adaptable permanecen disponibles. */}};
 const closeComparison=async()=>{setComparisonRequested(false);(screen.orientation as LockableScreenOrientation|undefined)?.unlock?.();if(document.fullscreenElement&&document.exitFullscreen)await document.exitFullscreen().catch(()=>undefined);};
-return <BibliaLayout title="Estudio Bíblico" back="/biblia">
+return <BibliaLayout title="Estudio Bíblico" back="/biblia" headerAction={hasStudyContent?<button type="button" onClick={()=>document.querySelector<HTMLButtonElement>(".study-reader-host > section > .sticky button")?.click()} className="flex h-10 min-w-10 items-center justify-center rounded-full border border-[#D4AF37]/35 bg-[#111111] px-2 font-display text-lg text-[#F2D27A] shadow-[0_0_18px_rgba(212,175,55,0.12)]" aria-label="Formato de lectura">Aa</button>:undefined}>
   {!hasStudyContent&&!loading&&studyStep==="level"&&<>
     <IntroStudyCard/>
     <RecentStudies studies={recentStudies} expanded={showAllRecent} onToggle={()=>setShowAllRecent(value=>!value)}/>
@@ -71,7 +71,7 @@ return <BibliaLayout title="Estudio Bíblico" back="/biblia">
   {comparisonRequested&&authenticated===false&&<GuestStudyPrompt next={`/biblia/estudio?libro=${book}&cap=${chapter}`}/>}
   {loading&&<Generating/>}
   {error&&<div role="alert" className={`mb-4 rounded-2xl border p-4 text-sm ${quotaReached?"border-amber-400/35 bg-amber-950/20 text-amber-100":"border-red-500/30 bg-red-950/20 text-red-200"}`}><p className="font-semibold">{quotaReached?"Cupo mensual agotado":error||"No fue posible generar el estudio en este momento."}</p>{quotaReached?<p className="mt-1 text-amber-100/80">Podrás solicitar nuevos estudios el próximo mes. Los estudios existentes continúan disponibles sin consumir cupo.</p>:<button onClick={()=>id?location.reload():generate()} className="mt-3 rounded-lg border border-red-300/30 px-3 py-2">Intentar nuevamente</button>}</div>}
-  {hasStudyContent&&study&&<><StudyReadingFrame><StudyView study={study} tab={tab} setTab={setTab}/></StudyReadingFrame><SupportCard/></>}
+  {hasStudyContent&&study&&<><div className="study-reader-host"><StudyReadingFrame><StudyView study={study} tab={tab} setTab={setTab}/></StudyReadingFrame></div><SupportCard/></>}
 </BibliaLayout>}
 
 type StudyReadingTheme="oscuro"|"claro"|"sepia";

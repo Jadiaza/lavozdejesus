@@ -166,6 +166,50 @@
     color: #181914;
   }
 
+  /* El disparador vive en la barra superior, como en el lector de la Biblia. */
+  .study-reader-host > section > .sticky {
+    display: none;
+  }
+
+  /* Las tarjetas internas no deben anular el tamaño ni el aspecto de papel. */
+  .study-reader-host article p,
+  .study-reader-host article li {
+    font-size: 1em !important;
+    line-height: inherit !important;
+  }
+
+  .study-reader-host article td {
+    font-size: 0.9em !important;
+    line-height: 1.55 !important;
+  }
+
+  .study-reader-host article.biblia-eink-paper {
+    background:
+      radial-gradient(circle at 18% 12%, rgb(255 255 255 / 0.2), transparent 24rem),
+      linear-gradient(100deg, rgb(65 65 57 / 0.025), transparent 35%, rgb(65 65 57 / 0.018)),
+      #e2e1d8;
+    border-color: rgb(75 75 68 / 0.22);
+    color: #3d3e38;
+    box-shadow: inset 0 0 4.5rem rgb(72 72 64 / 0.055);
+  }
+
+  .study-reader-host article.biblia-eink-paper section,
+  .study-reader-host article.biblia-eink-paper > div {
+    background-color: transparent !important;
+  }
+
+  .study-reader-host article.biblia-eink-paper p,
+  .study-reader-host article.biblia-eink-paper li,
+  .study-reader-host article.biblia-eink-paper td {
+    color: #3d3e38 !important;
+  }
+
+  .study-reader-host article.biblia-eink-paper h1,
+  .study-reader-host article.biblia-eink-paper h2,
+  .study-reader-host article.biblia-eink-paper h3 {
+    color: #292a25 !important;
+  }
+
   .lvj-sacred-page {
     position: relative;
     min-height: 100dvh;

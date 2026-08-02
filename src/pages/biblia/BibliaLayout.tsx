@@ -7,11 +7,12 @@ interface Props {
   title?: string;
   children: ReactNode;
   back?: string;
+  headerAction?: ReactNode;
   hideHeader?: boolean;
   hideBottomNav?: boolean;
 }
 
-export const BibliaLayout = ({ title, children, back, hideHeader = false, hideBottomNav = false }: Props) => {
+export const BibliaLayout = ({ title, children, back, headerAction, hideHeader = false, hideBottomNav = false }: Props) => {
   const loc = useLocation();
   const isHome = loc.pathname === "/biblia" || loc.pathname === "/Biblia";
 
@@ -43,6 +44,7 @@ export const BibliaLayout = ({ title, children, back, hideHeader = false, hideBo
                 </div>
               </div>
             </div>
+            {headerAction && <div className="ml-auto flex items-center">{headerAction}</div>}
           </div>
         </header>
       )}
