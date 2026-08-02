@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 export interface BibleStudy {
   id: number; referencia: string; titulo: string; estado: string; revisado: boolean; es_publico: boolean;
   nivel: StudyLevel; idioma: string; esquema_version: string;
+  libro_codigo?: string; capitulo_inicio?: number; versiculo_inicio?: number; capitulo_fin?: number; versiculo_fin?: number;
   contenido: Record<string, unknown>; created_at?: string | null; updated_at?: string | null; viewed_at?: string | null;
 }
 export type StudyLevel = "pastoral" | "teologico" | "doctrinal" | "formador";

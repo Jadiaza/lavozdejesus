@@ -171,16 +171,52 @@
     display: none;
   }
 
-  /* Las tarjetas internas no deben anular el tamaño ni el aspecto de papel. */
+  /* Todo el estudio hereda la tipografía del lector; las utilidades internas
+     no pueden convertir cada pestaña en un módulo visual independiente. */
+  .study-reader-host article * {
+    font-family: inherit !important;
+  }
+
   .study-reader-host article p,
-  .study-reader-host article li {
+  .study-reader-host article li,
+  .study-reader-host article span,
+  .study-reader-host article strong,
+  .study-reader-host article b,
+  .study-reader-host article em,
+  .study-reader-host article a {
     font-size: 1em !important;
     line-height: inherit !important;
   }
 
+  .study-reader-host article h1 {
+    font-size: 1.38em !important;
+    line-height: 1.35 !important;
+  }
+
+  .study-reader-host article h2 {
+    font-size: 1.22em !important;
+    line-height: 1.4 !important;
+  }
+
+  .study-reader-host article h3,
+  .study-reader-host article h4 {
+    font-size: 1.08em !important;
+    line-height: 1.45 !important;
+  }
+
+  .study-reader-host article button {
+    font-size: 0.82em !important;
+    line-height: 1.35 !important;
+  }
+
   .study-reader-host article td {
-    font-size: 0.9em !important;
+    font-size: 1em !important;
     line-height: 1.55 !important;
+  }
+
+  .study-reader-host article th {
+    font-size: 0.92em !important;
+    line-height: 1.45 !important;
   }
 
   .study-reader-host article.biblia-eink-paper {
@@ -208,6 +244,21 @@
   .study-reader-host article.biblia-eink-paper h2,
   .study-reader-host article.biblia-eink-paper h3 {
     color: #292a25 !important;
+  }
+
+  /* La tabla de versiones forma parte permanente del estudio guardado. */
+  .study-integrated-comparison #bible-comparison-view {
+    position: static !important;
+    inset: auto !important;
+    z-index: auto !important;
+    display: block !important;
+    height: auto !important;
+    margin: 0 !important;
+    border-radius: 1.35rem !important;
+  }
+
+  .study-integrated-comparison button[aria-label^="Cerrar comparación"] {
+    display: none;
   }
 
   .lvj-sacred-page {
