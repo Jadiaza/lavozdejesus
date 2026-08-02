@@ -95,7 +95,8 @@ function bib_equiv_version(PDO $pdo, string $code): array
   $stmt = $pdo->prepare(
     'SELECT id,codigo,nombre,abreviatura,versificacion
      FROM lvj_bib_versiones
-     WHERE UPPER(codigo)=:codigo AND estado=1 AND deleted_at IS NULL
+     WHERE UPPER(codigo)=:codigo AND deleted_at IS NULL
+       AND (estado=1 OR UPPER(codigo)=\'SCIO\')
      LIMIT 1'
   );
   $stmt->execute(['codigo' => strtoupper(trim($code))]);
@@ -109,7 +110,8 @@ function bib_equiv_versions(PDO $pdo): array
   return $pdo->query(
     'SELECT codigo,nombre,abreviatura,versificacion
      FROM lvj_bib_versiones
-     WHERE estado=1 AND deleted_at IS NULL
+     WHERE deleted_at IS NULL
+       AND (estado=1 OR UPPER(codigo)=\'SCIO\')
      ORDER BY id'
   )->fetchAll();
 }
@@ -230,7 +232,9 @@ function bib_equiv_existing_source_units(PDO $pdo, int $versionId, int $bookId):
   $stmt->execute(['version' => $versionId, 'libro' => $bookId]);
   $result = [];
   foreach ($stmt->fetchAll() as $row) {
-    $result[(int) $row['versiculo_id']] = [
+    $verseId = (int) $row['versiculo_id'];
+    if (!isset($result[$verseId])) $result[$verseId] = [];
+    $result[$verseId][] = [
       'unit_id' => (int) $row['unidad_canonica_id'],
       'code' => (string) $row['codigo_canonico'],
     ];
@@ -278,14 +282,33 @@ function bib_equiv_candidates(PDO $pdo, string $sourceCode, string $targetCode, 
       continue;
     }
     $targetVerses = $targetChapters[$targetChapter];
+    $sharedNumbers = array_values(array_intersect(array_keys($sourceVerses), array_keys($targetVerses)));
     if (array_keys($sourceVerses) !== array_keys($targetVerses)) {
-      $ambiguous[] = ['origen' => $sourceChapter, 'destino' => $targetChapter, 'motivo' => 'Numeración interna diferente'];
-      continue;
+      $missingInTarget = array_values(array_diff(array_keys($sourceVerses), array_keys($targetVerses)));
+      $missingInSource = array_values(array_diff(array_keys($targetVerses), array_keys($sourceVerses)));
+      $ambiguous[] = [
+        'origen' => $sourceChapter,
+        'destino' => $targetChapter,
+        'motivo' => sprintf('Numeración interna diferente; %d referencias coincidentes, %d solo en origen y %d solo en destino', count($sharedNumbers), count($missingInTarget), count($missingInSource)),
+      ];
     }
+    if (!$sharedNumbers) continue;
     $eligibleChapters++;
-    foreach ($sourceVerses as $number => $sourceVerseId) {
-      $existingUnit = $existingUnits[$sourceVerseId] ?? null;
-      if ($existingUnit && isset($existingTargetRelations[$existingUnit['unit_id'] . ':' . $targetVerses[$number]])) continue;
+    foreach ($sharedNumbers as $number) {
+      $sourceVerseId = $sourceVerses[$number];
+      $sourceUnits = $existingUnits[$sourceVerseId] ?? [];
+      $existingUnit = null;
+      foreach ($sourceUnits as $sourceUnit) {
+        if (isset($existingTargetRelations[$sourceUnit['unit_id'] . ':' . $targetVerses[$number]])) {
+          $existingUnit = $sourceUnit;
+          break;
+        }
+      }
+      if ($existingUnit) continue;
+      $baseCode = sprintf('%s.%s.%03d.%03d', strtoupper($bookCode), bib_equiv_schema_code($source), $sourceChapter, $number);
+      $pairCode = $sourceUnits
+        ? $baseCode . '.' . preg_replace('/[^A-Z0-9]+/', '', strtoupper((string) $target['codigo']))
+        : $baseCode;
       $candidates[] = [
         'libro_codigo' => strtoupper($bookCode),
         'libro_nombre' => (string) $sourceBook['nombre'],
@@ -294,8 +317,8 @@ function bib_equiv_candidates(PDO $pdo, string $sourceCode, string $targetCode, 
         'versiculo' => (int) $number,
         'versiculo_origen_id' => (int) $sourceVerseId,
         'versiculo_destino_id' => (int) $targetVerses[$number],
-        'unidad_existente_id' => $existingUnit['unit_id'] ?? null,
-        'codigo_canonico' => $existingUnit['code'] ?? sprintf('%s.%s.%03d.%03d', strtoupper($bookCode), bib_equiv_schema_code($source), $sourceChapter, $number),
+        'unidad_existente_id' => null,
+        'codigo_canonico' => $pairCode,
       ];
     }
   }

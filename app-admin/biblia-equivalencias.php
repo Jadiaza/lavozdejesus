@@ -35,7 +35,7 @@ try {
     verify_csrf();
     if ((string) ($_POST['action'] ?? '') !== 'generar') throw new RuntimeException('Acción no permitida.');
     if (bib_equiv_requires_source_audit($bookCode)) {
-      throw new RuntimeException("$bookCode está en auditoría de fuente. No se crearán equivalencias nuevas hasta verificar la segmentación de la edición TORRESAMAT.");
+      throw new RuntimeException("$bookCode está en auditoría de fuente. No se crearán equivalencias nuevas hasta verificar la segmentación de la versión comparativa seleccionada.");
     }
     $result = bib_equiv_generate($pdo, $sourceCode, $targetCode, $bookCode);
     log_activity(
@@ -72,7 +72,7 @@ require __DIR__ . '/includes/header.php';
     <h1>Generador de equivalencias</h1>
     <p>Propone correspondencias estructurales entre versiones. Ningún registro se aprueba automáticamente.</p>
   </div>
-  <div class="form-actions"><a class="btn btn-soft" href="biblia-equivalencias-auditar.php?version_origen=<?php echo e($sourceCode); ?>&amp;version_destino=<?php echo e($targetCode); ?>&amp;libro=<?php echo e($bookCode); ?>">Auditar libro completo</a><a class="btn btn-gold" href="biblia-equivalencias-revisar.php">Revisar equivalencias</a></div>
+  <div class="form-actions"><a class="btn btn-soft" href="biblia-scio-revision.php">Revisar Scío por libros</a><a class="btn btn-soft" href="biblia-equivalencias-auditar.php?version_origen=<?php echo e($sourceCode); ?>&amp;version_destino=<?php echo e($targetCode); ?>&amp;libro=<?php echo e($bookCode); ?>">Auditar libro completo</a><a class="btn btn-gold" href="biblia-equivalencias-revisar.php">Revisar equivalencias</a></div>
 </section>
 
 <?php if ($message): ?><div class="alert success"><?php echo e($message); ?></div><?php endif; ?>

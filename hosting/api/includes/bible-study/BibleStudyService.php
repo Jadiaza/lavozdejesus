@@ -7,7 +7,8 @@ final class BibleStudyService
   public const LEVELS_PENDING_MESSAGE = 'La estructura por niveles de estudio todavía no está disponible en la base de datos.';
   private const SCHEMA_VERSION = 'salmo8-1.0';
   private const LANGUAGE = 'es';
-  private const VERSION_KEYS = ['platense' => 'SPAPLATENSE', 'torres_amat' => 'TORRESAMAT'];
+  private const VERSION_KEYS = ['platense' => 'SPAPLATENSE', 'torres_amat' => 'TORRESAMAT', 'scio' => 'SCIO'];
+  private const SCIO_REVIEW_MESSAGE = 'Texto de Scío en revisión: este libro, capítulo o versículo todavía no está habilitado.';
   private $pdo;
   public function __construct(PDO $pdo) { $this->pdo=$pdo; }
 
@@ -93,8 +94,7 @@ final class BibleStudyService
     }
     $units = $this->equivalenceCount('lvj_bib_unidades_canonicas');
     $relations = $this->equivalenceCount('lvj_bib_unidades_versiculos');
-    $ready = $units['approved'] > 0 && $relations['approved'] > 0
-      && $units['pending'] === 0 && $relations['pending'] === 0;
+    $ready = $units['approved'] > 0 && $relations['approved'] > 0;
     return ['ready'=>$ready, 'message'=>$ready ? '' : self::EQUIVALENCES_PENDING_MESSAGE];
   }
 
@@ -147,23 +147,29 @@ final class BibleStudyService
     $versions=[]; $mainBook=null; $mainVersionId=0; $sourceVerseIds=[]; $targetChapters=[]; $codes=self::VERSION_KEYS;
     $equivalenceTablesReady=$this->tableExists('lvj_bib_unidades_canonicas') && $this->tableExists('lvj_bib_unidades_versiculos');
     foreach ($codes as $key=>$fallback) {
+      $mapping=[];
       $env='BIBLE_VERSION_' . strtoupper($key); $code=strtoupper(trim((string) lvj_setting($env, $fallback)));
-      $version=lvj_first($this->pdo,'SELECT * FROM lvj_bib_versiones WHERE UPPER(codigo)=:code AND estado=1 AND deleted_at IS NULL LIMIT 1',['code'=>$code]);
+      $version=lvj_first($this->pdo,"SELECT * FROM lvj_bib_versiones WHERE UPPER(codigo)=:code AND deleted_at IS NULL AND (estado=1 OR UPPER(codigo)='SCIO') LIMIT 1",['code'=>$code]);
       if (!$version) { $versions[$key]=['disponible'=>false,'version'=>$code,'versiculos'=>[],'notas'=>[]]; continue; }
       $book=lvj_first($this->pdo,'SELECT * FROM lvj_bib_libros WHERE version_id=:version AND codigo=:book AND estado=1 AND deleted_at IS NULL LIMIT 1',['version'=>$version['id'],'book'=>$range['libro_codigo']]);
       if (!$book) { $versions[$key]=['disponible'=>false,'version'=>$version['nombre'],'versiculos'=>[],'notas'=>[]]; continue; }
       if ($key==='platense') { $mainBook=$book; $mainVersionId=(int)$version['id']; }
-      if ($key==='torres_amat' && $sourceVerseIds && $equivalenceTablesReady) {
+      if ($key!=='platense' && $sourceVerseIds && $equivalenceTablesReady) {
         $placeholders=implode(',',array_fill(0,count($sourceVerseIds),'?'));
-        $sql="SELECT DISTINCT destino.id,destino.capitulo,destino.versiculo,destino.texto,destino.titulo_seccion FROM lvj_bib_unidades_versiculos origen_rel INNER JOIN lvj_bib_unidades_canonicas unidad ON unidad.id=origen_rel.unidad_canonica_id INNER JOIN lvj_bib_unidades_versiculos destino_rel ON destino_rel.unidad_canonica_id=unidad.id INNER JOIN lvj_bib_versiculos destino ON destino.id=destino_rel.versiculo_id WHERE origen_rel.versiculo_id IN ({$placeholders}) AND origen_rel.estado_revision='aprobado' AND origen_rel.deleted_at IS NULL AND unidad.estado_revision='aprobado' AND unidad.deleted_at IS NULL AND destino_rel.estado_revision='aprobado' AND destino_rel.deleted_at IS NULL AND destino.version_id=? AND destino.libro_id=? AND destino.estado=1 AND destino.deleted_at IS NULL ORDER BY destino.capitulo,destino.versiculo,destino.id";
-        $stmt=$this->pdo->prepare($sql); $stmt->execute(array_merge($sourceVerseIds,[(int)$version['id'],(int)$book['id']])); $verses=$stmt->fetchAll();
-        if (!$verses) $verses=$this->loadSafeEquivalentRange((int)$version['id'],(int)$book['id'],$range);
-        $targetChapters=array_values(array_unique(array_map(static function(array $verse): int {
+        $sql="SELECT origen.id origen_id,origen.versiculo origen_versiculo,destino.id,destino.capitulo,destino.versiculo,destino.texto,destino.titulo_seccion FROM lvj_bib_unidades_versiculos origen_rel INNER JOIN lvj_bib_versiculos origen ON origen.id=origen_rel.versiculo_id INNER JOIN lvj_bib_unidades_canonicas unidad ON unidad.id=origen_rel.unidad_canonica_id INNER JOIN lvj_bib_unidades_versiculos destino_rel ON destino_rel.unidad_canonica_id=unidad.id INNER JOIN lvj_bib_versiculos destino ON destino.id=destino_rel.versiculo_id WHERE origen_rel.versiculo_id IN ({$placeholders}) AND origen_rel.estado_revision='aprobado' AND origen_rel.deleted_at IS NULL AND unidad.estado_revision='aprobado' AND unidad.deleted_at IS NULL AND destino_rel.estado_revision='aprobado' AND destino_rel.deleted_at IS NULL AND destino.version_id=? AND destino.libro_id=? AND destino.estado=1 AND destino.deleted_at IS NULL ORDER BY origen.versiculo,destino.capitulo,destino.versiculo,destino.id";
+        $stmt=$this->pdo->prepare($sql); $stmt->execute(array_merge($sourceVerseIds,[(int)$version['id'],(int)$book['id']])); $mapping=$stmt->fetchAll();
+        $coveredSourceIds=array_values(array_unique(array_map(static function(array $verse): int { return (int)$verse['origen_id']; },$mapping)));
+        if ($key==='scio' && count($coveredSourceIds)!==count($sourceVerseIds)) $mapping=[];
+        $uniqueVerses=[]; foreach($mapping as $mappedVerse)$uniqueVerses[(int)$mappedVerse['id']]=$mappedVerse; $verses=array_values($uniqueVerses);
+        if (!$verses && $key==='torres_amat') $verses=$this->loadSafeEquivalentRange((int)$version['id'],(int)$book['id'],$range);
+        if ($key==='torres_amat') $targetChapters=array_values(array_unique(array_map(static function(array $verse): int {
           return (int)$verse['capitulo'];
         },$verses)));
-      } elseif ($key==='torres_amat') {
-        $verses=$this->loadSafeEquivalentRange((int)$version['id'],(int)$book['id'],$range);
-        $targetChapters=array_values(array_unique(array_map(static function(array $verse): int {
+      } elseif ($key!=='platense') {
+        $verses=$key==='torres_amat'
+          ? $this->loadSafeEquivalentRange((int)$version['id'],(int)$book['id'],$range)
+          : [];
+        if ($key==='torres_amat') $targetChapters=array_values(array_unique(array_map(static function(array $verse): int {
           return (int)$verse['capitulo'];
         },$verses)));
       } else {
@@ -176,16 +182,26 @@ final class BibleStudyService
         }
       }
       $notes=[]; if ($key==='platense') { $n=$this->pdo->prepare('SELECT id,versiculo,contenido,titulo,referencia,fuente FROM lvj_bib_notas_versiones WHERE version_id=:version AND libro_id=:book AND capitulo=:chapter AND versiculo BETWEEN :start AND :end AND estado=1 AND deleted_at IS NULL ORDER BY versiculo,orden'); $n->execute(['version'=>$version['id'],'book'=>$book['id'],'chapter'=>$range['capitulo_inicio'],'start'=>$range['versiculo_inicio'],'end'=>$range['versiculo_fin']]); $notes=$n->fetchAll(); }
-      $versions[$key]=['disponible'=>count($verses)>0,'version'=>array_intersect_key($version,array_flip(['codigo','nombre','abreviatura','idioma','licencia','canon','versificacion'])),'libro'=>array_intersect_key($book,array_flip(['codigo','nombre','testamento','grupo'])),'versiculos'=>$verses,'notas'=>$notes];
+      $versions[$key]=['disponible'=>count($verses)>0,'version'=>array_intersect_key($version,array_flip(['codigo','nombre','abreviatura','idioma','licencia','canon','versificacion'])),'libro'=>array_intersect_key($book,array_flip(['codigo','nombre','testamento','grupo'])),'versiculos'=>$verses,'mapeo'=>$mapping,'notas'=>$notes];
     }
     if (!$mainBook || empty($versions['platense']['versiculos'])) throw new InvalidArgumentException('El pasaje no existe en la Biblia Platense.');
     if (count($versions['platense']['versiculos']) !== ($range['versiculo_fin']-$range['versiculo_inicio']+1)) throw new InvalidArgumentException('El rango contiene versículos inexistentes.');
     $equivalentChapter=count($targetChapters)===1 && $targetChapters[0]!==$range['capitulo_inicio'] ? ' ('.$targetChapters[0].')' : '';
     $ref=$mainBook['nombre'].' '.$range['capitulo_inicio'].$equivalentChapter.','.$range['versiculo_inicio'].($range['versiculo_fin']!==$range['versiculo_inicio']?'-'.$range['versiculo_fin']:'');
     $themeRows=lvj_optional_rows($this->pdo,'SELECT vt.* FROM lvj_bib_versiculos_tematicos vt INNER JOIN lvj_bib_versiculos v ON v.id=vt.versiculo_id WHERE v.version_id=:version AND v.libro_id=:book AND v.capitulo=:chapter AND v.versiculo BETWEEN :start AND :end LIMIT 100',['version'=>$mainVersionId,'book'=>$mainBook['id'],'chapter'=>$range['capitulo_inicio'],'start'=>$range['versiculo_inicio'],'end'=>$range['versiculo_fin']]);
-    $textVersion=implode('+',array_values(array_filter(array_map(static function(array $item): string {
+    $textCodes=implode('+',array_values(array_filter(array_map(static function(array $item): string {
       return (string)($item['version']['codigo']??'');
     },$versions))));
+    $textFingerprint=substr(hash('sha256',json_encode(array_map(static function(array $item): array {
+      return [
+        'codigo'=>(string)($item['version']['codigo']??$item['version']??''),
+        'disponible'=>(bool)($item['disponible']??false),
+        'versiculos'=>array_map(static function(array $verse): array {
+          return [(int)($verse['id']??0),(int)($verse['capitulo']??0),(int)($verse['versiculo']??0),(string)($verse['texto']??'')];
+        },$item['versiculos']??[]),
+      ];
+    },$versions),JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?:''),0,16);
+    $textVersion=$textCodes.'@'.$textFingerprint.'m'.BibleStudyPrompt::METHOD;
     $notesVersion=trim((string)lvj_setting('BIBLE_STRAUBINGER_NOTES_VERSION','1')) ?: '1';
     return ['referencia'=>$ref,'libro_id'=>(int)$mainBook['id'],'rango'=>$range,'nivel'=>$range['nivel'],'configuracion_nivel'=>BibleStudyLevel::config($range['nivel']),'versiones'=>$versions,'contenido_tematico'=>$themeRows,'metadata'=>['idioma'=>self::LANGUAGE,'esquema_version'=>self::SCHEMA_VERSION,'texto_version'=>$textVersion,'notas_version'=>$notesVersion],'metodo_version'=>BibleStudyPrompt::METHOD];
   }
@@ -209,19 +225,24 @@ final class BibleStudyService
     if(!$book)return $content;
     try {
       $context=$this->context(['libro_codigo'=>(string)$book['codigo'],'capitulo_inicio'=>(int)$row['capitulo_inicio'],'versiculo_inicio'=>(int)$row['versiculo_inicio'],'capitulo_fin'=>(int)$row['capitulo_fin'],'versiculo_fin'=>(int)$row['versiculo_fin'],'nivel'=>(string)($row['nivel']??BibleStudyLevel::DEFAULT)]);
-      foreach(['platense','torres_amat'] as $key){$version=$context['versiones'][$key]??[];$verses=$version['versiculos']??[];$original=is_array($content['textos'][$key]??null)?$content['textos'][$key]:[];$content['textos'][$key]=array_merge($original,$verses?['disponible'=>true,'texto'=>implode(' ',array_map(static function(array $verse): string {
+      foreach(['platense','torres_amat','scio'] as $key){$version=$context['versiones'][$key]??[];$verses=$version['versiculos']??[];$original=is_array($content['textos'][$key]??null)?$content['textos'][$key]:[];$unavailableMessage=$key==='scio'?self::SCIO_REVIEW_MESSAGE:'No existe una equivalencia aprobada y segura para este pasaje.';$content['textos'][$key]=array_merge($original,$verses?['disponible'=>true,'texto'=>implode(' ',array_map(static function(array $verse): string {
         return (string)$verse['texto'];
-      },$verses)),'version_texto'=>$context['metadata']['texto_version']??null]:['disponible'=>false,'texto'=>'','observacion'=>'No existe una equivalencia aprobada y segura para este pasaje.']);}
+      },$verses)),'version_texto'=>$context['metadata']['texto_version']??null]:['disponible'=>false,'texto'=>'','observacion'=>$unavailableMessage]);}
       $torresVerses=$context['versiones']['torres_amat']['versiculos']??[];
       if($torresVerses){
         $torresByNumber=[]; foreach($torresVerses as $verse)$torresByNumber[(int)$verse['versiculo']]=(string)$verse['texto'];
-        foreach(($content['reescritura_comparacion']??[]) as $index=>$comparison){if(preg_match('/(\d+)\s*$/',(string)($comparison['referencia']??''),$match)){$number=(int)$match[1];if(isset($torresByNumber[$number])){$content['reescritura_comparacion'][$index]['torres_amat']=$torresByNumber[$number];$content['reescritura_comparacion'][$index]['observacion']='Texto recuperado de Torres Amat. La correspondencia editorial debe leerse junto con la tabla de equivalencias.';}}}
+        foreach(($content['reescritura_comparacion']??[]) as $index=>$comparison){if(preg_match('/(\d+)\s*$/',(string)($comparison['referencia']??''),$match)){$number=(int)$match[1];if(isset($torresByNumber[$number])){$content['reescritura_comparacion'][$index]['torres_amat']=$torresByNumber[$number];if(trim((string)($comparison['observacion']??''))==='Texto recuperado de Torres Amat. La correspondencia editorial debe leerse junto con la tabla de equivalencias.')$content['reescritura_comparacion'][$index]['observacion']='';}}}
         $serialized=mb_strtolower(json_encode($content['comparacion_traducciones']??[],JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?:'');
         foreach(['no disponible','no se aport','falta de texto','no verificable','no queda disponible'] as $phrase){if(str_contains($serialized,$phrase)){$content['comparacion_desactualizada']=true;break;}}
       }
-      unset($content['textos']['scio'],$content['comparacion_traducciones']['scio']);
+      $scioMapping=$context['versiones']['scio']['mapeo']??[];
+      if($scioMapping){
+        $scioBySource=[];
+        foreach($scioMapping as $verse){$sourceNumber=(int)$verse['origen_versiculo'];if(!isset($scioBySource[$sourceNumber]))$scioBySource[$sourceNumber]=[];$scioBySource[$sourceNumber][]=(string)$verse['texto'];}
+        foreach(($content['reescritura_comparacion']??[]) as $index=>$comparison){if(preg_match('/(\d+)\s*$/',(string)($comparison['referencia']??''),$match)){$number=(int)$match[1];if(isset($scioBySource[$number]))$content['reescritura_comparacion'][$index]['scio']=implode(' ',array_values(array_unique($scioBySource[$number])));}}
+      }
     } catch(Throwable $error){error_log('LVJ Bible Study text hydration: '.$error->getMessage());}
-    foreach(['platense','torres_amat'] as $key){if(trim((string)($content['textos'][$key]['texto']??''))==='RECUPERAR_DESDE_BD'){$content['textos'][$key]['disponible']=false;$content['textos'][$key]['texto']='';$content['textos'][$key]['observacion']='No fue posible recuperar el texto bíblico desde la base de datos.';}}
+    foreach(['platense','torres_amat','scio'] as $key){if(trim((string)($content['textos'][$key]['texto']??''))==='RECUPERAR_DESDE_BD'){$content['textos'][$key]['disponible']=false;$content['textos'][$key]['texto']='';$content['textos'][$key]['observacion']=$key==='scio'?self::SCIO_REVIEW_MESSAGE:'No fue posible recuperar el texto bíblico desde la base de datos.';}}
     return $content;
   }
 }

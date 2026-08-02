@@ -12157,11 +12157,12 @@ el nivel y las traducciones permitidas antes de guardar una edición manual, sin
 `esquema_version` con el contenido validado y devolverá siempre el estudio al estado `revision`. En esta fase
 no se incorpora biblioteca semántica ni se modifican las tablas existentes.
 
-El flujo obligatorio será Base de Datos → textos Platense/Straubinger y Torres Amat → notas vinculadas al
-pasaje → equivalencias aprobadas → estudio almacenado → IA solo si falta una versión vigente → persistencia
-→ presentación. Mientras Scío no forme parte de la base de datos operativa, quedará excluida de consultas,
-prompts y comparaciones, sin eliminar referencias o estructuras históricas que pudieran necesitarse en una
-incorporación futura documentada.
+El flujo obligatorio será Base de Datos → textos Platense/Straubinger, Torres Amat y Scío habilitado → notas
+vinculadas al pasaje → equivalencias aprobadas → estudio almacenado → IA solo si falta una versión vigente →
+persistencia → presentación. Scío se habilitará progresivamente por libro: la versión podrá permanecer activa
+mientras `lvj_bib_libros.estado` determine cuáles libros superaron la revisión editorial. Los libros, capítulos
+o versículos todavía no habilitados no se completarán con fuentes externas; la API y el Estudio Bíblico
+mostrarán un mensaje explícito de texto en revisión.
 
 ## 10.17 Centro de Formación y Supervisión IA
 

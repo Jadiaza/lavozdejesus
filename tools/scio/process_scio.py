@@ -299,6 +299,11 @@ def convert_anchored_pages(pages: Iterable[dict[str, Any]], anchors: dict[str, A
                            expected_max: dict[tuple[str, int], int], volume: int) -> list[dict[str, Any]]:
     """Convierte paginas usando limites de capitulo revisados manualmente."""
     chapter_anchors = sorted(anchors["chapters"], key=lambda a: (int(a["page_digital"]), int(a["y"])))
+    page_sequences = anchors.get("metadata", {}).get("chapter_page_sequences", {})
+    book_ends = {
+        str(code): (int(position["page_digital"]), int(position.get("y", 0)))
+        for code, position in anchors.get("book_ends", {}).items()
+    }
     marker_overrides = {
         (str(item["book_code"]), int(item["chapter"]), int(item["page_digital"]), int(item["y"])): item
         for item in anchors.get("marker_overrides", []) if item.get("reviewed")
@@ -315,13 +320,33 @@ def convert_anchored_pages(pages: Iterable[dict[str, Any]], anchors: dict[str, A
         chapter = int(anchor["chapter"])
         start = (int(anchor["page_digital"]), int(anchor["y"]))
         end = None
-        if index + 1 < len(chapter_anchors):
+        if anchor.get("end_page_digital") is not None:
+            end = (int(anchor["end_page_digital"]), int(anchor.get("end_y", 0)))
+        elif index + 1 < len(chapter_anchors):
             following = chapter_anchors[index + 1]
             end = (int(following["page_digital"]), int(following["y"]))
+            if str(following.get("book_code", anchors.get("book_code"))) != book_code:
+                end = book_ends.get(book_code, end)
+        else:
+            end = book_ends.get(book_code)
+        sequence = page_sequences.get(f"{book_code}.{chapter}")
+        sequence_limits = {
+            int(item["page_digital"]): (
+                int(item.get("start_y", 0)),
+                int(item["end_y"]) if item.get("end_y") is not None else None,
+            )
+            for item in sequence or []
+        }
+        sequence_order = {
+            int(item["page_digital"]): order for order, item in enumerate(sequence or [])
+        }
         lines = []
         for page in page_rows:
             page_number, width, height = int(page["pagina_digital"]), int(page["ancho"]), int(page["alto"])
-            if page_number < start[0] or (end and page_number > end[0]):
+            if sequence:
+                if page_number not in sequence_limits:
+                    continue
+            elif page_number < start[0] or (end and page_number > end[0]):
                 continue
             for block in page["bloques"]:
                 if block.get("clasificacion") == "numero_pagina":
@@ -342,12 +367,33 @@ def convert_anchored_pages(pages: Iterable[dict[str, Any]], anchors: dict[str, A
                         numeric_prefixes = sum(bool(number_pattern.match(str(line["texto"]).strip())) for line in prefix)
                         if numeric_prefixes >= 1:
                             small_body_cutoff = int(right_details[split_index + 1]["arriba"])
+
+                probable_note_starts: set[int] = set()
+                if len(right_details) >= 9:
+                    for index in range(4, len(right_details) - 4):
+                        current_y = int(right_details[index]["arriba"])
+                        prior_gaps = [int(right_details[pos + 1]["arriba"]) - int(right_details[pos]["arriba"])
+                                      for pos in range(index - 4, index)]
+                        following_gaps = [int(right_details[pos + 1]["arriba"]) - int(right_details[pos]["arriba"])
+                                          for pos in range(index, index + 4)]
+                        if (current_y > height * .55
+                                and re.match(r"^\s*[1-9]\d?\s+\D", str(right_details[index]["texto"]))
+                                and sum(prior_gaps) / len(prior_gaps) >= 78
+                                and sum(following_gaps) / len(following_gaps) <= 75):
+                            probable_note_starts.add(current_y)
                 for line in details:
+                    if int(line["arriba"]) in probable_note_starts:
+                        line = {**line, "probable_note_start": True}
                     position, size = (page_number, int(line["arriba"])), float(line["tamano_max"])
                     forced = marker_overrides.get((book_code, chapter, page_number, int(line["arriba"])))
                     if (book_code, chapter, page_number, int(line["arriba"])) in ignored_lines:
                         continue
-                    if position < start or (end and position >= end):
+
+                    if sequence:
+                        lower_y, upper_y = sequence_limits[page_number]
+                        if int(line["arriba"]) < lower_y or (upper_y is not None and int(line["arriba"]) >= upper_y):
+                            continue
+                    elif position < start or (end and position >= end):
                         continue
                     if line.get("clasificacion") == "numero_pagina" and not forced:
                         continue
@@ -365,7 +411,11 @@ def convert_anchored_pages(pages: Iterable[dict[str, Any]], anchors: dict[str, A
                     if (int(line["arriba"]) < height * .07 or int(line["abajo"]) > height * .93) and not forced:
                         continue
                     lines.append((page_number, line))
-        lines.sort(key=lambda item: (item[0], int(item[1]["arriba"]), int(item[1]["izquierda"])))
+        lines.sort(key=lambda item: (
+            sequence_order.get(item[0], item[0]),
+            int(item[1]["arriba"]),
+            int(item[1]["izquierda"]),
+        ))
         current_number, current_parts, current_page = None, [], None
         def flush() -> None:
             nonlocal current_number, current_parts, current_page
@@ -377,8 +427,14 @@ def convert_anchored_pages(pages: Iterable[dict[str, Any]], anchors: dict[str, A
                                           current_page, None, "ABBYY", "requiere_revision", .85))
             current_number, current_parts, current_page = None, [], None
         maximum = expected_max.get((book_code, chapter), 200)
+        skipping_notes_page = None
         for page_number, line in lines:
+            if skipping_notes_page == page_number:
+                continue
+            if skipping_notes_page is not None and skipping_notes_page != page_number:
+                skipping_notes_page = None
             text = str(line["texto"]).strip()
+
             marker_text = re.sub(r"^f\s*\*", "", text, flags=re.I)
             match = number_pattern.match(marker_text)
             candidate = int(re.sub(r"\s", "", match.group(1)).replace("o", "0").replace("O", "0")) if match else None
@@ -417,6 +473,10 @@ def convert_anchored_pages(pages: Iterable[dict[str, Any]], anchors: dict[str, A
                     contextual = 25
                 if contextual == current_number + 1:
                     candidate = contextual
+            if (line.get("probable_note_start") and current_number is not None
+                    and candidate is not None and candidate <= current_number):
+                skipping_notes_page = page_number
+                continue
             if current_number is None and not match:
                 first = ornamental_one.match(text)
                 candidate, remainder = (1, first.group(1)) if first else (1, text)
@@ -447,6 +507,10 @@ def txt_fallback_verses(existing: list[dict[str, Any]], volume: int) -> list[dic
     if not corrections_path.is_file():
         return []
     volume_config = load_json(corrections_path).get("volumes", {}).get(str(volume), {})
+    if not volume_config:
+        recovery_path = WORK / "recuperacion" / f"tomo_{volume:02d}" / f"anclas_tomo_{volume:02d}.json"
+        if recovery_path.is_file():
+            volume_config = load_json(recovery_path)
     occupied = {(row["libro_codigo"], int(row["capitulo"]), int(row["versiculo"])) for row in existing}
     rows = []
     for item in volume_config.get("txt_fallbacks", []):
@@ -469,6 +533,10 @@ def scan_fallback_verses(existing: list[dict[str, Any]], volume: int) -> list[di
     if not corrections_path.is_file():
         return []
     volume_config = load_json(corrections_path).get("volumes", {}).get(str(volume), {})
+    if not volume_config:
+        recovery_path = WORK / "recuperacion" / f"tomo_{volume:02d}" / f"anclas_tomo_{volume:02d}.json"
+        if recovery_path.is_file():
+            volume_config = load_json(recovery_path)
     occupied = {(row["libro_codigo"], int(row["capitulo"]), int(row["versiculo"])) for row in existing}
     rows = []
     for item in volume_config.get("scan_fallbacks", []):
@@ -491,6 +559,10 @@ def reviewed_fallback_verses(existing: list[dict[str, Any]], volume: int) -> lis
     if not corrections_path.is_file():
         return []
     volume_config = load_json(corrections_path).get("volumes", {}).get(str(volume), {})
+    if not volume_config:
+        recovery_path = WORK / "recuperacion" / f"tomo_{volume:02d}" / f"anclas_tomo_{volume:02d}.json"
+        if recovery_path.is_file():
+            volume_config = load_json(recovery_path)
     occupied = {(row["libro_codigo"], int(row["capitulo"]), int(row["versiculo"])) for row in existing}
     rows = []
     for item in volume_config.get("reviewed_fallbacks", []):
@@ -514,6 +586,10 @@ def apply_reviewed_replacements(rows: list[dict[str, Any]], volume: int) -> None
     if not corrections_path.is_file():
         return
     volume_config = load_json(corrections_path).get("volumes", {}).get(str(volume), {})
+    if not volume_config:
+        recovery_path = WORK / "recuperacion" / f"tomo_{volume:02d}" / f"anclas_tomo_{volume:02d}.json"
+        if recovery_path.is_file():
+            volume_config = load_json(recovery_path)
     by_key = {(row["libro_codigo"], int(row["capitulo"]), int(row["versiculo"])): index
               for index, row in enumerate(rows)}
     for item in volume_config.get("reviewed_replacements", []):
@@ -559,9 +635,32 @@ def command_convert(args: argparse.Namespace) -> int:
     if corrections_path.is_file():
         corrections = load_json(corrections_path)
         correction_volume = corrections.get("volumes", {}).get(str(args.tomo))
+    if not correction_volume:
+        recovery_anchors = WORK / "recuperacion" / f"tomo_{args.tomo:02d}" / f"anclas_tomo_{args.tomo:02d}.json"
+        if recovery_anchors.is_file():
+            correction_volume = load_json(recovery_anchors)
     if correction_volume:
-        page_rows = list(iter_jsonl(pages_path))
-        verses = convert_anchored_pages(page_rows, correction_volume, expected_max, args.tomo)
+        for key, maximum in correction_volume.get("metadata", {}).get(
+                "versification_overrides", {}).get("expected_max", {}).items():
+            code, chapter = key.split(".", 1)
+            expected_max[(code, int(chapter))] = int(maximum)
+        anchor_sources = correction_volume.get("anchor_sources", [])
+        page_rows = []
+        if anchor_sources:
+            for source_config in anchor_sources:
+                source_tomo = int(source_config["source_tomo"])
+                source_pages_path = PAGES / f"tomo_{source_tomo:02d}_paginas.jsonl"
+                if not source_pages_path.is_file():
+                    raise ScioError(f"Ejecute primero extraer --tomo {source_tomo}")
+                source_pages = list(iter_jsonl(source_pages_path))
+                source_rows = convert_anchored_pages(source_pages, source_config, expected_max, args.tomo)
+                for row in source_rows:
+                    row["tomo_fuente"] = source_tomo
+                verses.extend(source_rows)
+                page_rows.extend({**page, "tomo_fuente": source_tomo} for page in source_pages)
+        else:
+            page_rows = list(iter_jsonl(pages_path))
+            verses = convert_anchored_pages(page_rows, correction_volume, expected_max, args.tomo)
         verses.extend(txt_fallback_verses(verses, args.tomo))
         verses.extend(scan_fallback_verses(verses, args.tomo))
         verses.extend(reviewed_fallback_verses(verses, args.tomo))
@@ -572,7 +671,9 @@ def command_convert(args: argparse.Namespace) -> int:
                 details = block.get("lineas_detalle", [])
                 if block["clasificacion"] == "nota_scio" or (details and max(
                     (float(item["tamano_max"]) for item in details), default=0) <= 7.5):
-                    notes.append({"tomo": args.tomo, "pagina_digital": page["pagina_digital"],
+                    notes.append({"tomo": args.tomo,
+                                  "tomo_fuente": page.get("tomo_fuente", args.tomo),
+                                  "pagina_digital": page["pagina_digital"],
                                   "texto": block["texto"].replace("\n", " ")})
         atomic_jsonl(STRUCTURED / f"tomo_{args.tomo:02d}_versiculos.jsonl", verses)
         atomic_jsonl(NOTES / f"tomo_{args.tomo:02d}_notas.jsonl", notes)
@@ -770,16 +871,26 @@ def command_validate(args: argparse.Namespace) -> int:
         with reference_path.open("r", encoding="utf-8-sig") as stream:
             reference_rows = json.load(stream)
         actual_keys = {(row["libro_codigo"], int(row["capitulo"]), int(row["versiculo"])) for row in rows}
+        recovery_path = WORK / "recuperacion" / f"tomo_{args.tomo:02d}" / f"anclas_tomo_{args.tomo:02d}.json"
+        volume_config = load_json(recovery_path) if recovery_path.is_file() else {}
+        versification = volume_config.get("metadata", {}).get("versification_overrides", {})
+        allowed_missing = {
+            (str(item["book_code"]), int(item["chapter"]), int(item["verse"]))
+            for item in versification.get("allowed_missing", []) if item.get("reviewed")
+        }
         expected_by_chapter: dict[tuple[str, int], set[int]] = defaultdict(set)
         for row in reference_rows:
             code = row["libro_codigo"]
             if code in volume_codes:
                 expected_by_chapter[(code, int(row["capitulo"]))].add(int(row["versiculo"]))
         for (code, chapter), expected_numbers in sorted(expected_by_chapter.items()):
-            missing = sorted(number for number in expected_numbers if (code, chapter, number) not in actual_keys)
+            missing = sorted(number for number in expected_numbers
+                             if (code, chapter, number) not in actual_keys
+                             and (code, chapter, number) not in allowed_missing)
             if missing:
                 report["errors"].append(f"Vers?culos faltantes en {code}.{chapter}: {missing}")
         report["valid"] = not report["errors"]
+        report["versification_differences"] = versification.get("differences", [])
         report["scope"] = {"tipo": "tomo", "tomo": args.tomo, "libros": sorted(volume_codes)}
         output = WORK / "validacion" / f"tomo_{args.tomo:02d}_reporte.json"
     else:

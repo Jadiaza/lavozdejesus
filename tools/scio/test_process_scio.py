@@ -118,6 +118,30 @@ class ScioTests(unittest.TestCase):
         self.assertIn("fuente_lineas", row)
 
 
+    def test_anchored_conversion_respects_reviewed_page_sequence(self):
+        def line(text, top):
+            return {"texto": text, "izquierda": 520, "arriba": top, "derecha": 920,
+                    "abajo": top + 40, "tamano_max": 9}
+
+        pages = [
+            {"pagina_digital": page, "ancho": 1000, "alto": 1000, "bloques": [
+                {"clasificacion": "texto_espanol", "lineas_detalle": [line(text, 200)]}
+            ]}
+            for page, text in ((1, "2 segundo"), (2, "3 tercero"), (3, "1 primero"))
+        ]
+        anchors = {
+            "book_code": "JER",
+            "chapters": [{"chapter": 46, "page_digital": 3, "y": 100,
+                          "end_page_digital": 2, "end_y": 900}],
+            "metadata": {"chapter_page_sequences": {"JER.46": [
+                {"page_digital": 3, "start_y": 100},
+                {"page_digital": 1},
+                {"page_digital": 2, "end_y": 900},
+            ]}},
+        }
+        rows = scio.convert_anchored_pages(pages, anchors, {("JER", 46): 3}, 9)
+        self.assertEqual([(row["versiculo"], row["texto"]) for row in rows],
+                         [(1, "primero"), (2, "segundo"), (3, "tercero")])
     def test_scan_fallback_has_explicit_provenance(self):
         rows = scio.scan_fallback_verses([], 1)
         self.assertEqual(len(rows), 24)

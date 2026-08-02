@@ -49,6 +49,7 @@ $bibliaMaintenanceActive = in_array($currentAdminPage, [
   'biblia-segmentacion.php',
   'biblia-reparacion-importacion.php',
   'biblia-ajuste-ester.php',
+  'biblia-scio-revision.php',
 ], true);
 $bibliaGroupActive = $bibliaMainActive || $bibliaImportActive || $bibliaStudiesActive || $bibliaMapsActive || $bibliaCharactersActive || $bibliaMaintenanceActive;
 $aiTrainingActive = $currentAdminPage === 'ia-entrenamiento.php' || $currentModule === 'inteligencia-artificial';
@@ -92,6 +93,7 @@ $aiTrainingActive = $currentAdminPage === 'ia-entrenamiento.php' || $currentModu
         <a class="<?php echo $bibliaMapsActive ? 'active' : ''; ?>" href="biblia-mapas.php"><span class="nav-icon">M</span> Mapas</a>
         <a class="<?php echo $bibliaCharactersActive ? 'active' : ''; ?>" href="biblia-personajes.php"><span class="nav-icon">P</span> Personajes</a>
         <a class="<?php echo $bibliaMaintenanceActive ? 'active' : ''; ?>" href="biblia-equivalencias.php"><span class="nav-icon">Mt</span> Mantenimiento Biblico</a>
+        <a class="<?php echo $currentAdminPage === 'biblia-scio-revision.php' ? 'active' : ''; ?>" href="biblia-scio-revision.php"><span class="nav-icon">Sc</span> Revisar Biblia Scio</a>
       </div>
     </div>
 

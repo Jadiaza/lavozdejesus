@@ -41,8 +41,13 @@ function bib_study_validate_texts($texts): void
         if (!array_key_exists('disponible',$texts[$version]) || !is_bool($texts[$version]['disponible'])) throw new RuntimeException("textos.{$version}.disponible debe ser booleano.");
         if (!array_key_exists('texto',$texts[$version]) || !is_string($texts[$version]['texto'])) throw new RuntimeException("textos.{$version}.texto debe ser texto.");
     }
-    $unexpected=array_diff(array_keys($texts),['platense','torres_amat']);
-    if ($unexpected) throw new RuntimeException('Solo Platense/Straubinger y Torres Amat están habilitadas en textos.');
+    if (isset($texts['scio'])) {
+        if (!is_array($texts['scio'])) throw new RuntimeException('textos.scio debe ser un objeto JSON.');
+        if (!array_key_exists('disponible',$texts['scio']) || !is_bool($texts['scio']['disponible'])) throw new RuntimeException('textos.scio.disponible debe ser booleano.');
+        if (!array_key_exists('texto',$texts['scio']) || !is_string($texts['scio']['texto'])) throw new RuntimeException('textos.scio.texto debe ser texto.');
+    }
+    $unexpected=array_diff(array_keys($texts),['platense','torres_amat','scio']);
+    if ($unexpected) throw new RuntimeException('Solo Platense/Straubinger, Torres Amat y Scío están habilitadas en textos.');
 }
 
 function bib_study_validate_doctrinal_v2(array $content, string $level): void

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/biblia-bblx.php';
+require_once __DIR__ . '/includes/biblia-scio-import.php';
 require_login();
 
 $pdo = lvj_files_db();
@@ -25,6 +26,17 @@ if (!isset($availableVersions[$selectedVersion])) {
 }
 $sourceRoot = $bibleStorageRoot . '/' . $selectedVersion;
 $versionDefaults = [
+  'scio' => [
+    'nombre' => 'Biblia de Felipe Scío de San Miguel',
+    'codigo' => 'SCIO',
+    'abreviatura' => 'Scío',
+    'idioma' => 'es',
+    'traductor' => 'Felipe Scío de San Miguel',
+    'anio' => '1797',
+    'licencia' => 'Dominio público',
+    'versificacion' => 'Vulgata',
+    'canon' => '73',
+  ],
   'spaplatense' => [
     'nombre' => 'Biblia Platense / Straubinger',
     'codigo' => 'SPAPLATENSE',
@@ -42,7 +54,12 @@ $versionMeta = $versionDefaults[$selectedVersion] ?? [
   'abreviatura' => $availableVersions[$selectedVersion], 'idioma' => 'es',
   'traductor' => '', 'anio' => '', 'licencia' => '', 'versificacion' => 'Católica', 'canon' => '73',
 ];
-$requiredFiles = [
+$requiredFiles = $selectedVersion === 'scio' ? [
+  'Libros canonicos' => $sourceRoot . '/procesado/libros.json',
+  'Versiculos canonicos' => $sourceRoot . '/procesado/versiculos.json',
+  'Reporte de validacion' => $sourceRoot . '/procesado/reporte-validacion.json',
+  'Manifiesto de integridad' => $sourceRoot . '/procesado/manifiesto.json',
+] : [
   'SWORD: configuración' => $sourceRoot . '/fuente/sword/spaplatense.conf',
   'SWORD: Antiguo Testamento (bzs)' => $sourceRoot . '/fuente/sword/ot.bzs',
   'SWORD: Antiguo Testamento (bzv)' => $sourceRoot . '/fuente/sword/ot.bzv',
@@ -54,7 +71,12 @@ $requiredFiles = [
   'JSON: estudio OSIS' => $sourceRoot . '/fuente/json/SpaPlatense-osis.json',
   'JSON: documentación' => $sourceRoot . '/fuente/json/README.md',
 ];
-$processedFiles = [
+$processedFiles = $selectedVersion === 'scio' ? [
+  'Libros' => $sourceRoot . '/procesado/libros.json',
+  'Versiculos' => $sourceRoot . '/procesado/versiculos.json',
+  'Reporte' => $sourceRoot . '/procesado/reporte-validacion.json',
+  'Manifiesto' => $sourceRoot . '/procesado/manifiesto.json',
+] : [
   'Libros' => $sourceRoot . '/procesado/libros.json',
   'Versículos' => $sourceRoot . '/procesado/versiculos.json',
   'Notas' => $sourceRoot . '/procesado/notas.json',
@@ -267,6 +289,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'No se importó ningún dato BBLX: ' . $importError->getMessage();
       }
     }
+  } elseif ($action === 'importar_scio') {
+    if ($selectedVersion !== 'scio') {
+      $error = 'Selecciona la versión Scío antes de importarla.';
+    } elseif ((string) ($_POST['confirmacion_scio'] ?? '') !== 'IMPORTAR SCIO') {
+      $error = 'Escribe IMPORTAR SCIO para confirmar.';
+    } else {
+      try {
+        $result = bib_scio_import($pdo, dirname(__DIR__));
+        $spanish = $result['spanish'];
+        $message = "Importación Scío completada en revisión: {$spanish['libros']} libros y {$spanish['versiculos']} versículos.";
+        log_activity('importar', 'biblia_version', (int) $spanish['id'], $message);
+      } catch (Throwable $importError) {
+        error_log('LVJ Biblia Scío: ' . $importError->getMessage());
+        $error = 'No se importó ningún dato de Scío: ' . $importError->getMessage();
+      }
+    }
   } elseif ($action === 'importar') {
     if ((string) ($_POST['confirmacion'] ?? '') !== 'IMPORTAR SPAPLATENSE') {
       $error = 'Escribe IMPORTAR SPAPLATENSE para confirmar.';
@@ -293,14 +331,25 @@ $allProcessedReady = !in_array(false, array_column($processed, 'exists'), true);
 $coreTablesReady = $tables['lvj_bib_versiones']['exists']
   && $tables['lvj_bib_libros']['exists']
   && $tables['lvj_bib_versiculos']['exists']
-  && $tables['lvj_bib_notas_versiones']['exists'];
+  && ($selectedVersion === 'scio' || $tables['lvj_bib_notas_versiones']['exists']);
 
-$counts = [
-  'libros' => bib_import_json_count($processedFiles['Libros']),
-  'versiculos' => bib_import_json_count($processedFiles['Versículos']),
-  'notas' => bib_import_json_count($processedFiles['Notas']),
-  'secciones' => bib_import_json_count($processedFiles['Secciones']),
-];
+if ($selectedVersion === 'scio') {
+  $reportPath = $sourceRoot . '/procesado/reporte-validacion.json';
+  $validationReport = is_file($reportPath) ? bib_import_read_json($reportPath) : [];
+  $counts = [
+    'libros' => isset($validationReport['counts']['books']) ? (int) $validationReport['counts']['books'] : null,
+    'versiculos' => isset($validationReport['counts']['verses']) ? (int) $validationReport['counts']['verses'] : null,
+    'notas' => 0,
+    'secciones' => 0,
+  ];
+} else {
+  $counts = [
+    'libros' => bib_import_json_count($sourceRoot . '/procesado/libros.json'),
+    'versiculos' => bib_import_json_count($sourceRoot . '/procesado/versiculos.json'),
+    'notas' => bib_import_json_count($sourceRoot . '/procesado/notas.json'),
+    'secciones' => bib_import_json_count($sourceRoot . '/procesado/secciones.json'),
+  ];
+}
 
 $pageTitle = 'Importar Biblias';
 $pageSubtitle = 'Administración segura de múltiples versiones bíblicas';
@@ -445,19 +494,28 @@ require __DIR__ . '/includes/header.php';
   <h2>Importación</h2>
   <p class="muted">La operación importa una versión nueva dentro de una transacción. Si el código ya existe o una fila falla, no se conserva ningún cambio.</p>
   <?php if ($allSourcesReady && $allProcessedReady && $coreTablesReady): ?>
-    <form method="post" data-bible-import-form>
-      <?php echo csrf_field(); ?><input type="hidden" name="action" value="importar">
-      <label><span>Confirmación</span><input type="text" name="confirmacion" required placeholder="IMPORTAR SPAPLATENSE" autocomplete="off"></label>
-      <button class="btn btn-gold" type="submit" data-bible-import-button>Importar SpaPlatense a MySQL</button>
-    </form>
+    <?php if ($selectedVersion === 'scio'): ?>
+      <form method="post" data-bible-import-form data-version-label="<?php echo e($versionMeta['abreviatura']); ?>">
+        <?php echo csrf_field(); ?><input type="hidden" name="action" value="importar_scio">
+        <label><span>Confirmación</span><input type="text" name="confirmacion_scio" required placeholder="IMPORTAR SCIO" autocomplete="off"></label>
+        <button class="btn btn-gold" type="submit" data-bible-import-button>Importar Scío a MySQL (en revisión)</button>
+      </form>
+      <p class="muted" style="margin-top:12px">Se importarán 73 libros y 35.799 versículos. La versión quedará oculta hasta que un administrador finalice la revisión textual y la active.</p>
+    <?php else: ?>
+      <form method="post" data-bible-import-form data-version-label="<?php echo e($versionMeta['abreviatura']); ?>">
+        <?php echo csrf_field(); ?><input type="hidden" name="action" value="importar">
+        <label><span>Confirmación</span><input type="text" name="confirmacion" required placeholder="IMPORTAR SPAPLATENSE" autocomplete="off"></label>
+        <button class="btn btn-gold" type="submit" data-bible-import-button>Importar SpaPlatense a MySQL</button>
+      </form>
+    <?php endif; ?>
   <?php else: ?><button class="btn btn-gold" type="button" disabled>Importación no disponible</button><?php endif; ?>
 </section>
 
 <div class="bible-import-overlay" data-bible-import-overlay hidden role="status" aria-live="assertive" aria-label="Importación en progreso">
   <div class="bible-import-progress">
     <span class="bible-import-spinner" aria-hidden="true"></span>
-    <h2>Importando Biblia Platense</h2>
-    <p>Estamos registrando libros, versículos y notas de estudio.</p>
+    <h2>Importando <?php echo e($versionMeta['abreviatura']); ?></h2>
+    <p>Estamos validando y registrando la versión bíblica seleccionada.</p>
     <strong>Este proceso puede tardar varios minutos.</strong>
     <small>No cierres ni recargues esta ventana.</small>
   </div>
@@ -471,7 +529,8 @@ require __DIR__ . '/includes/header.php';
     if (!form || !overlay || !button) return;
 
     form.addEventListener('submit', (event) => {
-      if (!window.confirm('¿Importar SpaPlatense a MySQL? La operación puede tardar varios minutos.')) {
+      const versionLabel = form.dataset.versionLabel || 'la versión seleccionada';
+      if (!window.confirm('¿Importar ' + versionLabel + ' a MySQL? La operación puede tardar varios minutos.')) {
         event.preventDefault();
         return;
       }

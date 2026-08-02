@@ -25,12 +25,12 @@ final class BibleStudySchema
       'aplicacion_espiritual','actualizacion_pastoral','preguntas_para_meditar','lectio_divina','advertencias',
     ], 'properties' => [
       'referencia' => ['type' => 'string'], 'titulo' => ['type' => 'string'], 'resumen' => ['type' => 'string'],
-      'textos' => ['type' => 'object', 'additionalProperties' => false, 'required' => ['platense','torres_amat'], 'properties' => [
-        'platense' => $textVersion, 'torres_amat' => $textVersion,
+      'textos' => ['type' => 'object', 'additionalProperties' => false, 'required' => ['platense','torres_amat','scio'], 'properties' => [
+        'platense' => $textVersion, 'torres_amat' => $textVersion, 'scio' => $textVersion,
       ]],
       'comprension_global' => ['type' => 'string'],
-      'comparacion_traducciones' => ['type' => 'object', 'additionalProperties' => false, 'required' => ['platense','torres_amat','coincidencias','diferencias_relevantes','conclusion'], 'properties' => [
-        'platense' => $comparison, 'torres_amat' => $comparison,
+      'comparacion_traducciones' => ['type' => 'object', 'additionalProperties' => false, 'required' => ['platense','torres_amat','scio','coincidencias','diferencias_relevantes','conclusion'], 'properties' => [
+        'platense' => $comparison, 'torres_amat' => $comparison, 'scio' => $comparison,
         'coincidencias' => ['type' => 'array', 'items' => ['type' => 'string']],
         'diferencias_relevantes' => ['type' => 'array', 'items' => ['type' => 'string']],
         'conclusion' => ['type' => 'string'],
@@ -40,7 +40,7 @@ final class BibleStudySchema
         'lectura_inicial'=>['type'=>'string'],'conexiones'=>['type'=>'array','items'=>['type'=>'string']],
         'oposiciones'=>['type'=>'array','items'=>['type'=>'string']],'movimiento_general'=>['type'=>'string'],
       ]],
-      'reescritura_comparacion' => self::objectArray(['referencia','platense','torres_amat','observacion']),
+      'reescritura_comparacion' => self::objectArray(['referencia','platense','torres_amat','scio','observacion']),
       'verificacion_unidad' => ['type'=>'object','additionalProperties'=>false,'required'=>['inicio','fin','criterios','conclusion'],'properties'=>[
         'inicio'=>['type'=>'string'],'fin'=>['type'=>'string'],'criterios'=>['type'=>'array','items'=>['type'=>'string']],'conclusion'=>['type'=>'string'],
       ]],
@@ -69,7 +69,7 @@ final class BibleStudySchema
     if (!is_array($study['textos']) || !is_array($study['lectio_divina'])) {
       throw new RuntimeException('El estudio generado no respeta el esquema requerido.');
     }
-    if (array_keys($study['textos']) !== ['platense','torres_amat'] || array_key_exists('scio', $study['comparacion_traducciones'])) {
+    if (array_keys($study['textos']) !== ['platense','torres_amat','scio'] || !array_key_exists('scio', $study['comparacion_traducciones'])) {
       throw new RuntimeException('El estudio generado contiene versiones bíblicas no autorizadas.');
     }
   }
