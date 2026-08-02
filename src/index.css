@@ -220,7 +220,7 @@
     background:
       radial-gradient(circle at 18% 12%, rgb(255 255 255 / 0.2), transparent 24rem),
       linear-gradient(100deg, rgb(65 65 57 / 0.025), transparent 35%, rgb(65 65 57 / 0.018)),
-      #e2e1d8;
+      #f7f7f3;
     border-color: rgb(75 75 68 / 0.22);
     color: #3d3e38;
     box-shadow: inset 0 0 4.5rem rgb(72 72 64 / 0.055);
@@ -239,7 +239,7 @@
   }
 
   .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) {
-    background: #e2e1d8 !important;
+    background: #f7f7f3 !important;
     color: #242520 !important;
   }
 
@@ -249,7 +249,7 @@
 
   .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header {
     border-color: rgb(75 75 68 / 0.28) !important;
-    background: rgb(226 225 216 / 0.96) !important;
+    background: rgb(247 247 243 / 0.97) !important;
     box-shadow: 0 8px 24px rgb(65 65 57 / 0.09) !important;
   }
 
@@ -273,10 +273,10 @@
   }
 
   .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) main {
-    background: #e2e1d8 !important;
+    background: #f7f7f3 !important;
   }
 
-  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) .study-reader-host article.biblia-eink-paper {
+  .biblia-layout-shell .study-reader-host article:is(.biblia-eink-paper, .study-theme-light, .study-theme-dark) {
     border: 0 !important;
     border-radius: 0 !important;
     padding-left: 0.8rem !important;
@@ -284,18 +284,18 @@
   }
 
   /* En Tinta el estudio es una página continua, no una pila de tarjetas. */
-  .study-reader-host article.biblia-eink-paper > section {
+  .study-reader-host article:is(.biblia-eink-paper, .study-theme-light, .study-theme-dark) > section {
     margin: 0 !important;
     border: 0 !important;
     border-radius: 0 !important;
     padding: 1.25rem 0.35rem !important;
   }
 
-  .study-reader-host article.biblia-eink-paper > section:first-child {
+  .study-reader-host article:is(.biblia-eink-paper, .study-theme-light, .study-theme-dark) > section:first-child {
     border-bottom: 1px solid rgb(75 75 68 / 0.2) !important;
   }
 
-  .study-reader-host article.biblia-eink-paper > div:nth-child(2) {
+  .study-reader-host article:is(.biblia-eink-paper, .study-theme-light, .study-theme-dark) > div:nth-child(2) {
     margin: 0 !important;
     gap: 0 !important;
     border-width: 1px 0 !important;
@@ -303,12 +303,12 @@
     padding: 0.35rem 0 !important;
   }
 
-  .study-reader-host article.biblia-eink-paper > div:nth-child(2) button {
+  .study-reader-host article:is(.biblia-eink-paper, .study-theme-light, .study-theme-dark) > div:nth-child(2) button {
     border-radius: 0.35rem !important;
     color: #464740 !important;
   }
 
-  .study-reader-host article.biblia-eink-paper > div:nth-child(2) button[aria-pressed="true"] {
+  .study-reader-host article:is(.biblia-eink-paper, .study-theme-light, .study-theme-dark) > div:nth-child(2) button[aria-pressed="true"] {
     background: #77786d !important;
     color: #f3f2ea !important;
   }
@@ -326,7 +326,7 @@
   .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) main > aside,
   .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) nav {
     border-color: rgb(75 75 68 / 0.24) !important;
-    background: rgb(226 225 216 / 0.97) !important;
+    background: rgb(247 247 243 / 0.97) !important;
     color: #242520 !important;
     box-shadow: none !important;
   }
@@ -339,7 +339,7 @@
      permanece oscuro como en el lector bíblico original. */
   .biblia-layout-shell:has(.study-reader-host article.study-theme-light),
   .biblia-layout-shell:has(.study-reader-host article.study-theme-light) main {
-    background: #f8f5ea !important;
+    background: #ffffff !important;
     color: #24211a !important;
   }
 
@@ -349,7 +349,7 @@
 
   .biblia-layout-shell:has(.study-reader-host article.study-theme-light) > header {
     border-color: rgb(143 116 31 / 0.25) !important;
-    background: rgb(248 245 234 / 0.96) !important;
+    background: rgb(255 255 255 / 0.97) !important;
     box-shadow: 0 8px 24px rgb(80 66 24 / 0.08) !important;
   }
 
@@ -358,6 +358,49 @@
     background: transparent !important;
     color: #9b7417 !important;
     box-shadow: none !important;
+  }
+
+  /* Claro: toda tarjeta interna adopta papel blanco y texto negro. */
+  .study-reader-host article.study-theme-light section,
+  .study-reader-host article.study-theme-light div,
+  .study-reader-host article.study-theme-light article {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .study-reader-host article.study-theme-light * {
+    border-color: rgb(55 52 45 / 0.18) !important;
+    color: #24211a !important;
+  }
+
+  .study-reader-host article.study-theme-light > div:nth-child(2) button[aria-pressed="true"] {
+    background: #D4AF37 !important;
+    color: #15120b !important;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.study-theme-light) > header div {
+    color: #24211a !important;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.study-theme-light) main > aside,
+  .biblia-layout-shell:has(.study-reader-host article.study-theme-light) nav {
+    border-color: rgb(55 52 45 / 0.18) !important;
+    background: rgb(255 255 255 / 0.97) !important;
+    color: #24211a !important;
+    box-shadow: none !important;
+  }
+
+  /* Oscuro conserva su colorimetría, pero utiliza la misma página continua. */
+  .study-reader-host article.study-theme-dark section,
+  .study-reader-host article.study-theme-dark div,
+  .study-reader-host article.study-theme-dark article {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .study-reader-host article.study-theme-dark > div:nth-child(2) button[aria-pressed="true"] {
+    background: #D4AF37 !important;
+    color: #050505 !important;
   }
 
   .study-reader-host article.biblia-eink-paper p,

@@ -159,7 +159,8 @@ final class BibleStudyService
         $sql="SELECT origen.id origen_id,origen.versiculo origen_versiculo,destino.id,destino.capitulo,destino.versiculo,destino.texto,destino.titulo_seccion FROM lvj_bib_unidades_versiculos origen_rel INNER JOIN lvj_bib_versiculos origen ON origen.id=origen_rel.versiculo_id INNER JOIN lvj_bib_unidades_canonicas unidad ON unidad.id=origen_rel.unidad_canonica_id INNER JOIN lvj_bib_unidades_versiculos destino_rel ON destino_rel.unidad_canonica_id=unidad.id INNER JOIN lvj_bib_versiculos destino ON destino.id=destino_rel.versiculo_id WHERE origen_rel.versiculo_id IN ({$placeholders}) AND origen_rel.estado_revision='aprobado' AND origen_rel.deleted_at IS NULL AND unidad.estado_revision='aprobado' AND unidad.deleted_at IS NULL AND destino_rel.estado_revision='aprobado' AND destino_rel.deleted_at IS NULL AND destino.version_id=? AND destino.libro_id=? AND destino.estado=1 AND destino.deleted_at IS NULL ORDER BY origen.versiculo,destino.capitulo,destino.versiculo,destino.id";
         $stmt=$this->pdo->prepare($sql); $stmt->execute(array_merge($sourceVerseIds,[(int)$version['id'],(int)$book['id']])); $mapping=$stmt->fetchAll();
         $coveredSourceIds=array_values(array_unique(array_map(static function(array $verse): int { return (int)$verse['origen_id']; },$mapping)));
-        if ($key==='scio' && count($coveredSourceIds)!==count($sourceVerseIds)) $mapping=[];
+        /* Scío puede estar habilitada parcialmente. Conservamos cada equivalencia
+           aprobada y marcamos como ausentes únicamente los versículos faltantes. */
         $uniqueVerses=[]; foreach($mapping as $mappedVerse)$uniqueVerses[(int)$mappedVerse['id']]=$mappedVerse; $verses=array_values($uniqueVerses);
         if (!$verses && $key==='torres_amat') $verses=$this->loadSafeEquivalentRange((int)$version['id'],(int)$book['id'],$range);
         if ($key==='torres_amat') $targetChapters=array_values(array_unique(array_map(static function(array $verse): int {
@@ -241,6 +242,29 @@ final class BibleStudyService
         foreach($scioMapping as $verse){$sourceNumber=(int)$verse['origen_versiculo'];if(!isset($scioBySource[$sourceNumber]))$scioBySource[$sourceNumber]=[];$scioBySource[$sourceNumber][]=(string)$verse['texto'];}
         foreach(($content['reescritura_comparacion']??[]) as $index=>$comparison){if(preg_match('/(\d+)\s*$/',(string)($comparison['referencia']??''),$match)){$number=(int)$match[1];if(isset($scioBySource[$number]))$content['reescritura_comparacion'][$index]['scio']=implode(' ',array_values(array_unique($scioBySource[$number])));}}
       }
+      $normalized=[];
+      $mappedBySource=[];
+      foreach(['torres_amat','scio'] as $versionKey){
+        foreach(($context['versiones'][$versionKey]['mapeo']??[]) as $verse){
+          $source=(int)($verse['origen_versiculo']??0);
+          if($source<1)continue;
+          $mappedBySource[$versionKey][$source][]=trim((string)($verse['texto']??''));
+        }
+      }
+      foreach(($context['versiones']['platense']['versiculos']??[]) as $sourceVerse){
+        $number=(int)$sourceVerse['versiculo'];
+        $row=['referencia'=>(string)$context['versiones']['platense']['libro']['nombre'].' '.(int)$sourceVerse['capitulo'].','.$number,'capitulo'=>(int)$sourceVerse['capitulo'],'versiculo'=>$number,'platense'=>(string)$sourceVerse['texto']];
+        foreach(['torres_amat','scio'] as $versionKey){
+          $texts=array_values(array_filter(array_unique($mappedBySource[$versionKey][$number]??[])));
+          if(!$texts){foreach(($context['versiones'][$versionKey]['versiculos']??[]) as $candidate){if((int)($candidate['versiculo']??0)===$number)$texts[]=trim((string)$candidate['texto']);}}
+          $row[$versionKey]=$texts?implode(' ',array_values(array_unique($texts))):'';
+        }
+        $row['coincidencias']=[];$row['diferencias_relevantes']=[];$row['reescritura_fiel']='';$row['observacion']='';
+        $row['estado_validacion']=$row['torres_amat']===''&&$row['scio']===''?'falta_traduccion':(($row['torres_amat']===''||$row['scio']==='')?'incompleto':'completo');
+        $normalized[]=$row;
+      }
+      $content['comparacion_versiculos']=$normalized;
+      $content['reescritura_comparacion']=array_map(static function(array $row): array{return ['referencia'=>$row['referencia'],'platense'=>$row['platense'],'torres_amat'=>$row['torres_amat'],'scio'=>$row['scio'],'observacion'=>$row['observacion']];},$normalized);
     } catch(Throwable $error){error_log('LVJ Bible Study text hydration: '.$error->getMessage());}
     foreach(['platense','torres_amat','scio'] as $key){if(trim((string)($content['textos'][$key]['texto']??''))==='RECUPERAR_DESDE_BD'){$content['textos'][$key]['disponible']=false;$content['textos'][$key]['texto']='';$content['textos'][$key]['observacion']=$key==='scio'?self::SCIO_REVIEW_MESSAGE:'No fue posible recuperar el texto bíblico desde la base de datos.';}}
     return $content;

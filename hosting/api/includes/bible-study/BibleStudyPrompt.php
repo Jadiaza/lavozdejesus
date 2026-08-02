@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 final class BibleStudyPrompt
 {
-  public const METHOD = '4.2';
+  public const METHOD = '5.0';
 
   public static function system(string $level = BibleStudyLevel::DEFAULT): string
   {
@@ -42,7 +42,7 @@ MÉTODO ADAPTADO AL GÉNERO
 
 SECUENCIA OBLIGATORIA PARA TODO ESTUDIO
 1. lectura_comprension: realiza lectura completa y repetida; formula comprensión inicial, conexiones, oposiciones y movimiento general.
-2. reescritura_comparacion: presenta cada versículo o unidad breve con el texto literal de Platense y sus textos habilitados de Torres Amat y Scío, seguido de una observación comparativa. Si Scío está en revisión usa texto vacío. No parafrasees dentro de los campos de texto.
+2. reescritura_comparacion: presenta obligatoriamente una fila por cada versículo, en orden ascendente y sin omisiones ni duplicados. Nunca agrupes rangos. Cada fila debe contener solo el texto literal del mismo versículo en Platense, Torres Amat y Scío. Si una versión está ausente usa texto vacío; nunca la reconstruyas. La síntesis temática se realiza después y nunca sustituye esta comparación individual.
 3. delimitacion y verificacion_unidad: establece inicio y final, y demuestra la unidad mediante vocabulario, sujetos, verbos, conectores, imágenes, paralelismos, oposiciones y progresión.
 4. analisis_proposiciones: separa todas las proposiciones relevantes. Usa clasificacion exclusivamente "PP" para principal o "PS" para subordinada; indica de qué PP depende cada PS, su función y su tema o etapa.
 5. articulacion: organiza el texto con orden, versículos, etapa, pregunta guía, sujeto, verbo central y desarrollo. Debe hacer visible la secuencia inicio, desarrollo, centro, consecuencias y culminación cuando el texto la sostenga; no fuerces esas etiquetas si el género exige otras más precisas.
