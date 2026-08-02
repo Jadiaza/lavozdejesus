@@ -259,6 +259,11 @@
     color: #242520 !important;
   }
 
+  /* Aa es una acción del lector y conserva siempre el dorado institucional. */
+  .biblia-layout-shell header button[aria-label="Formato de lectura"] {
+    color: #D4AF37 !important;
+  }
+
   .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) main {
     background: #e2e1d8 !important;
   }

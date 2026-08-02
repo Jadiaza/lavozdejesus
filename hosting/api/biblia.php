@@ -19,7 +19,7 @@ try {
     $statement = $pdo->query(
       'SELECT codigo, nombre, abreviatura, idioma, licencia, canon, versificacion
        FROM lvj_bib_versiones
-       WHERE (estado = 1 OR UPPER(codigo) = 'SCIO') AND deleted_at IS NULL
+       WHERE (estado = 1 OR UPPER(codigo) = \'SCIO\') AND deleted_at IS NULL
        ORDER BY id ASC'
     );
     lvj_json_response(['success' => true, 'data' => $statement->fetchAll()]);
@@ -79,7 +79,7 @@ try {
   $versionStatement = $pdo->prepare(
     'SELECT id, codigo, nombre, abreviatura, idioma, licencia, canon, versificacion
      FROM lvj_bib_versiones
-     WHERE codigo = :codigo AND (estado = 1 OR UPPER(codigo) = 'SCIO') AND deleted_at IS NULL
+     WHERE codigo = :codigo AND (estado = 1 OR UPPER(codigo) = \'SCIO\') AND deleted_at IS NULL
      LIMIT 1'
   );
   $versionStatement->execute(['codigo' => $versionCode]);
