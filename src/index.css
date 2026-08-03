@@ -373,6 +373,14 @@
     color: #24211a !important;
   }
 
+  /* Los códigos didácticos PP/PS conservan su función cromática en los tres temas. */
+  .study-reader-host article .proposition-label-pp { color: #e66b73 !important; }
+  .study-reader-host article .proposition-label-ps { color: #55a9d6 !important; }
+  .study-reader-host article.study-theme-light .proposition-label-pp { color: #a92f3d !important; }
+  .study-reader-host article.study-theme-light .proposition-label-ps { color: #17678f !important; }
+  .study-reader-host article.study-theme-ink .proposition-label-pp { color: #8f3440 !important; }
+  .study-reader-host article.study-theme-ink .proposition-label-ps { color: #315f78 !important; }
+
   .study-reader-host article.study-theme-light > div:nth-child(2) button[aria-pressed="true"] {
     background: #D4AF37 !important;
     color: #15120b !important;

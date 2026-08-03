@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AlignJustify, AlignLeft, Check, ChevronRight } from "lucide-react";
 import { getMeta, setMeta } from "@/features/biblia/db";
 
@@ -46,6 +46,8 @@ export function StudyReadingFrame({ children }: { children: ReactNode }) {
   const [tab, setTab] = useState<PanelTab>("temas");
   const [showFonts, setShowFonts] = useState(false);
   const [prefs, setPrefs] = useState<Preferences>(defaults);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     void getMeta<Partial<Preferences> & { fuente?: Font | "bookerly" }>("prefsLectura").then((saved) => {
@@ -57,6 +59,18 @@ export function StudyReadingFrame({ children }: { children: ReactNode }) {
       });
     });
   }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const closeOutside = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (triggerRef.current?.contains(target) || panelRef.current?.contains(target)) return;
+      setOpen(false);
+      setShowFonts(false);
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    return () => document.removeEventListener("pointerdown", closeOutside);
+  }, [open]);
 
   const save = (change: Partial<Preferences>) => {
     setPrefs((current) => {
@@ -81,11 +95,11 @@ export function StudyReadingFrame({ children }: { children: ReactNode }) {
   return (
     <section className="mb-4">
       <div className="sticky top-2 z-30 mb-3 flex justify-end">
-        <button type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} className="min-h-11 min-w-11 font-display text-2xl text-[#D4AF37]">Aa</button>
+        <button ref={triggerRef} type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} className="min-h-11 min-w-11 font-display text-2xl text-[#D4AF37]">Aa</button>
       </div>
 
       {open && (
-        <div className="study-format-panel relative z-30 mb-3 overflow-hidden border-y border-[#D4AF37]/20 bg-[#0B0B0B] text-[#F8F5EA] shadow-[0_18px_45px_rgba(0,0,0,0.65)]">
+        <div ref={panelRef} className="study-format-panel relative z-30 mb-3 overflow-hidden border-y border-[#D4AF37]/20 bg-[#0B0B0B] text-[#F8F5EA] shadow-[0_18px_45px_rgba(0,0,0,0.65)]">
           <div className="grid grid-cols-4 border-b border-[#D4AF37]/20 px-2" role="tablist" aria-label="Configuración de lectura">
             {([["temas", "Temas"], ["fuente", "Fuente"], ["formato", "Formato"], ["mas", "Más"]] as Array<[PanelTab, string]>).map(([value, label]) => (
               <button key={value} type="button" role="tab" aria-selected={tab === value} onClick={() => { setTab(value); setShowFonts(false); }} className={"relative min-h-11 px-1 text-[11px] font-semibold " + (tab === value ? "text-[#F2D27A] after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:bg-[#D4AF37]" : "text-[#8F897C]")}>{label}</button>

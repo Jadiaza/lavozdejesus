@@ -39,7 +39,7 @@ export function VerseComparisonTable({ rows, onClose }: { rows?: VerseComparison
   if (!rows?.length) return null;
   return createPortal(<section role="dialog" aria-modal="true" aria-labelledby="verse-comparison-title" className="fixed inset-0 z-[100] flex h-[100dvh] flex-col overflow-hidden bg-[#0B0B0B] p-4 text-[#F8F5EA] sm:p-5">
     <header className="relative mb-3 shrink-0 pr-12"><p className="text-xs uppercase tracking-[0.2em] text-[#D4AF37]">Capa textual verificable</p><h2 id="verse-comparison-title" className="font-display text-xl">Comparación versículo por versículo</h2><p className="mt-1 text-sm opacity-75">Cada registro corresponde exclusivamente al mismo versículo en las tres versiones.</p>{onClose && <button type="button" onClick={onClose} aria-label="Cerrar comparación y volver a orientación vertical" className="absolute right-0 top-0 flex h-10 w-10 items-center justify-center rounded-full border border-[#D4AF37]/35 text-[#D4AF37]"><X className="h-5 w-5" /></button>}</header>
-    <div className="space-y-2 landscape:min-h-0 landscape:flex-1 landscape:overflow-y-auto landscape:pr-1">{rows.map((row) => {
+    <div className="min-h-0 flex-1 touch-pan-y space-y-2 overflow-y-auto overscroll-contain pb-[calc(5rem+env(safe-area-inset-bottom))] pr-1 [-webkit-overflow-scrolling:touch]">{rows.map((row) => {
       const expanded = open === row.versiculo;
       return <article key={row.referencia} className="overflow-hidden border-y border-[#D4AF37]/20">
         <button type="button" onClick={() => setOpen(expanded ? null : row.versiculo)} aria-expanded={expanded} className="flex min-h-14 w-full items-center gap-3 py-2 text-left">
