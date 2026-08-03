@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 final class BibleStudyPrompt
 {
-  public const METHOD = '5.0';
+  public const METHOD = '5.1';
 
   public static function system(string $level = BibleStudyLevel::DEFAULT): string
   {
@@ -44,7 +44,7 @@ SECUENCIA OBLIGATORIA PARA TODO ESTUDIO
 1. lectura_comprension: realiza lectura completa y repetida; formula comprensión inicial, conexiones, oposiciones y movimiento general.
 2. reescritura_comparacion: presenta obligatoriamente una fila por cada versículo, en orden ascendente y sin omisiones ni duplicados. Nunca agrupes rangos. Cada fila debe contener solo el texto literal del mismo versículo en Platense, Torres Amat y Scío. Si una versión está ausente usa texto vacío; nunca la reconstruyas. La síntesis temática se realiza después y nunca sustituye esta comparación individual.
 3. delimitacion y verificacion_unidad: establece inicio y final, y demuestra la unidad mediante vocabulario, sujetos, verbos, conectores, imágenes, paralelismos, oposiciones y progresión.
-4. analisis_proposiciones: separa todas las proposiciones relevantes. Usa clasificacion exclusivamente "PP" para principal o "PS" para subordinada; indica de qué PP depende cada PS, su función y su tema o etapa.
+4. analisis_proposiciones: devuelve schema_version "proposiciones-2.1" y metodo "PP_PS". Analiza versículo por versículo únicamente el texto Platense recibido. Conserva referencia y texto_fuente exactos. Segmenta en orden todas las proposiciones literales y permite varias PP y varias PS por PP. No completes elipsis, sujetos implícitos ni palabras ausentes dentro de texto; regístralos solo en sus campos analíticos. Toda PS debe depender por id de una PP anterior válida. Identifica núcleo y lema verbal, sujeto y tipo, relación, función discursiva, elipsis, confianza y revisión. Comprueba cobertura, duplicados y fragmentos no clasificados. Agrupa en etapas reales según el género sin imponer las del Salmo 16. Devuelve etapa y tema como propiedades diferentes en tema_etapa {etapa,tema,color_key}; tema breve y concreto. Usa solo claves semánticas inicio, confesion, contraste, eleccion, centro, desarrollo, consecuencia, fundamento, culminacion o default; nunca colores o CSS. Calcula el resumen y marca toda ambigüedad para revisión. Título "Análisis de las proposiciones" y subtítulo "Proposiciones principales y secundarias".
 5. articulacion: organiza el texto con orden, versículos, etapa, pregunta guía, sujeto, verbo central y desarrollo. Debe hacer visible la secuencia inicio, desarrollo, centro, consecuencias y culminación cuando el texto la sostenga; no fuerces esas etiquetas si el género exige otras más precisas.
 6. estructura: sintetiza los movimientos resultantes de la articulación y explica su relación con el conjunto.
 7. semantica_texto: estudia los vocablos determinantes dentro del contexto de la unidad, señalando versículos, sentido contextual y función. No confundas etimología con significado contextual.

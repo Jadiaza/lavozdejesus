@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown, ChevronRight, Focus, X } from "lucide-react";
 
 export interface VerseComparison {
@@ -36,7 +37,7 @@ const stateLabel: Record<VerseComparison["estado_validacion"], string> = {
 export function VerseComparisonTable({ rows, onClose }: { rows?: VerseComparison[]; onClose?: () => void }) {
   const [open, setOpen] = useState<number | null>(null);
   if (!rows?.length) return null;
-  return <section aria-labelledby="verse-comparison-title" className="mt-5 landscape:fixed landscape:inset-0 landscape:z-[90] landscape:m-0 landscape:flex landscape:h-[100dvh] landscape:flex-col landscape:overflow-hidden landscape:bg-inherit landscape:p-4">
+  return createPortal(<section role="dialog" aria-modal="true" aria-labelledby="verse-comparison-title" className="fixed inset-0 z-[100] flex h-[100dvh] flex-col overflow-hidden bg-[#0B0B0B] p-4 text-[#F8F5EA] sm:p-5">
     <header className="relative mb-3 shrink-0 pr-12"><p className="text-xs uppercase tracking-[0.2em] text-[#D4AF37]">Capa textual verificable</p><h2 id="verse-comparison-title" className="font-display text-xl">Comparación versículo por versículo</h2><p className="mt-1 text-sm opacity-75">Cada registro corresponde exclusivamente al mismo versículo en las tres versiones.</p>{onClose && <button type="button" onClick={onClose} aria-label="Cerrar comparación y volver a orientación vertical" className="absolute right-0 top-0 flex h-10 w-10 items-center justify-center rounded-full border border-[#D4AF37]/35 text-[#D4AF37]"><X className="h-5 w-5" /></button>}</header>
     <div className="space-y-2 landscape:min-h-0 landscape:flex-1 landscape:overflow-y-auto landscape:pr-1">{rows.map((row) => {
       const expanded = open === row.versiculo;
@@ -58,7 +59,7 @@ export function VerseComparisonTable({ rows, onClose }: { rows?: VerseComparison
         </div>}
       </article>;
     })}</div>
-  </section>;
+  </section>, document.body);
 }
 
 function VersionText({ title, text }: { title: string; text?: string }) {

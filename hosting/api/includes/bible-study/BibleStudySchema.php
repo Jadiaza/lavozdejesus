@@ -47,7 +47,7 @@ final class BibleStudySchema
       'genero_literario' => self::stringObject(['tipo','explicacion']),
       'estructura' => self::objectArray(['versiculos','titulo','explicacion']),
       'proposiciones' => self::objectArray(['texto','tipo','explicacion']),
-      'analisis_proposiciones' => self::objectArray(['versiculos','clasificacion','texto','depende_de','funcion','tema_etapa']),
+      'analisis_proposiciones' => self::propositionAnalysis(),
       'articulacion' => self::objectArray(['orden','versiculos','etapa','pregunta_guia','sujeto','verbo_central','desarrollo']),
       'palabras_clave' => self::objectArray(['termino','significado','funcion_en_el_texto']),
       'semantica_texto' => self::objectArray(['termino','versiculos','sentido_contextual','funcion_en_unidad']),
@@ -61,11 +61,12 @@ final class BibleStudySchema
     ]];
   }
 
-  public static function validate(array $study): void
+  public static function validate(array $study, array $context = []): void
   {
     foreach (self::jsonSchema()['required'] as $key) {
       if (!array_key_exists($key, $study)) throw new RuntimeException("El estudio no contiene {$key}.");
     }
+    self::validatePropositions($study['analisis_proposiciones'] ?? null, $context);
     if (!is_array($study['textos']) || !is_array($study['lectio_divina'])) {
       throw new RuntimeException('El estudio generado no respeta el esquema requerido.');
     }
@@ -82,5 +83,31 @@ final class BibleStudySchema
   private static function objectArray(array $keys): array
   {
     return ['type' => 'array', 'items' => self::stringObject($keys)];
+  }
+
+  private static function propositionAnalysis(): array
+  {
+    $s=['type'=>'string'];$sn=['type'=>['string','null']];
+    $topic=['type'=>'object','additionalProperties'=>false,'required'=>['etapa','tema','color_key'],'properties'=>['etapa'=>$s,'tema'=>$s,'color_key'=>$s]];
+    $prop=['type'=>'object','additionalProperties'=>false,'required'=>['id','orden','tipo','texto','nucleo_verbal','lema_verbal','sujeto','tipo_sujeto','depende_de','relacion','funcion_discursiva','estructura_eliptica','texto_sobreentendido','nivel_confianza','requiere_revision'],'properties'=>['id'=>$s,'orden'=>['type'=>'integer','minimum'=>1],'tipo'=>['type'=>'string','enum'=>['PP','PS']],'texto'=>$s,'nucleo_verbal'=>$s,'lema_verbal'=>$s,'sujeto'=>$s,'tipo_sujeto'=>$s,'depende_de'=>$sn,'relacion'=>$s,'funcion_discursiva'=>$s,'estructura_eliptica'=>['type'=>'boolean'],'texto_sobreentendido'=>$sn,'nivel_confianza'=>['type'=>'string','enum'=>['alta','media','baja']],'requiere_revision'=>['type'=>'boolean']]];
+    $coverage=['type'=>'object','additionalProperties'=>false,'required'=>['completa','fragmentos_no_clasificados','fragmentos_duplicados'],'properties'=>['completa'=>['type'=>'boolean'],'fragmentos_no_clasificados'=>['type'=>'array','items'=>$s],'fragmentos_duplicados'=>['type'=>'array','items'=>$s]]];
+    $verse=['type'=>'object','additionalProperties'=>false,'required'=>['id','numero','referencia','texto_fuente','etapa_id','tema_etapa','proposiciones','cobertura_textual','estado_validacion'],'properties'=>['id'=>$s,'numero'=>['type'=>'integer','minimum'=>1],'referencia'=>$s,'texto_fuente'=>$s,'etapa_id'=>$s,'tema_etapa'=>$topic,'proposiciones'=>['type'=>'array','minItems'=>1,'items'=>$prop],'cobertura_textual'=>$coverage,'estado_validacion'=>['type'=>'string','enum'=>['completo','parcial','pendiente_revision','texto_no_encontrado','referencia_inconsistente','segmentacion_incierta','cobertura_incompleta','proposicion_no_verificable']]];
+    $stage=['type'=>'object','additionalProperties'=>false,'required'=>['id','orden','nombre','color_key','desde_versiculo','hasta_versiculo','versiculos','tema','funcion_estructural','descripcion'],'properties'=>['id'=>$s,'orden'=>['type'=>'integer','minimum'=>1],'nombre'=>$s,'color_key'=>$s,'desde_versiculo'=>['type'=>'integer','minimum'=>1],'hasta_versiculo'=>['type'=>'integer','minimum'=>1],'versiculos'=>['type'=>'array','items'=>$s],'tema'=>$s,'funcion_estructural'=>$s,'descripcion'=>$s]];
+    $summary=['type'=>'object','additionalProperties'=>false,'required'=>['total_versiculos','total_pp','total_ps','total_etapas','requiere_revision'],'properties'=>['total_versiculos'=>['type'=>'integer','minimum'=>1],'total_pp'=>['type'=>'integer','minimum'=>0],'total_ps'=>['type'=>'integer','minimum'=>0],'total_etapas'=>['type'=>'integer','minimum'=>1],'requiere_revision'=>['type'=>'boolean']]];
+    return ['type'=>'object','additionalProperties'=>false,'required'=>['schema_version','referencia','version_biblica','titulo','subtitulo','metodo','resumen','etapas','versiculos'],'properties'=>['schema_version'=>['type'=>'string','enum'=>['proposiciones-2.1']],'referencia'=>$s,'version_biblica'=>$s,'titulo'=>$s,'subtitulo'=>$s,'metodo'=>['type'=>'string','enum'=>['PP_PS']],'resumen'=>$summary,'etapas'=>['type'=>'array','minItems'=>1,'items'=>$stage],'versiculos'=>['type'=>'array','minItems'=>1,'items'=>$verse]]];
+  }
+
+  private static function validatePropositions($analysis,array $context): void
+  {
+    if(!is_array($analysis)||($analysis['schema_version']??'')!=='proposiciones-2.1')throw new RuntimeException('El análisis de proposiciones no utiliza proposiciones-2.1.');
+    $stages=[];foreach(($analysis['etapas']??[]) as $stage){$id=trim((string)($stage['id']??''));if($id===''||isset($stages[$id]))throw new RuntimeException('Identificador de etapa inválido.');$stages[$id]=true;}
+    $source=[];foreach(($context['versiones']['platense']['versiculos']??[]) as $v)$source[(int)$v['versiculo']]=(string)$v['texto'];
+    $verses=[];$ids=[];$pp=0;$ps=0;foreach(($analysis['versiculos']??[]) as $verse){$n=(int)($verse['numero']??0);if($n<1||isset($verses[$n])||!isset($stages[(string)($verse['etapa_id']??'')]))throw new RuntimeException('Versículo o etapa proposicional inválidos.');$verses[$n]=true;$local=[];$last=0;foreach(($verse['proposiciones']??[]) as $p){$id=(string)($p['id']??'');$order=(int)($p['orden']??0);$type=(string)($p['tipo']??'');if($id===''||isset($ids[$id])||$order<=$last||!in_array($type,['PP','PS'],true))throw new RuntimeException('Orden, identificador o tipo proposicional inválido.');$ids[$id]=true;$local[$id]=$type;$last=$order;$type==='PP'?$pp++:$ps++;$fragment=self::normalizeText((string)($p['texto']??''));$whole=self::normalizeText($source[$n]??(string)($verse['texto_fuente']??''));if($fragment===''||$whole===''||!str_contains($whole,$fragment))throw new RuntimeException("La proposición {$id} no existe en el texto fuente.");if($type==='PS'&&($local[(string)($p['depende_de']??'')]??null)!=='PP')throw new RuntimeException("La PS {$id} no depende de una PP anterior válida.");}}
+    if($source&&array_diff(array_keys($source),array_keys($verses)))throw new RuntimeException('El análisis no cubre todos los versículos.');$r=$analysis['resumen']??[];if((int)($r['total_versiculos']??-1)!==count($verses)||(int)($r['total_pp']??-1)!==$pp||(int)($r['total_ps']??-1)!==$ps||(int)($r['total_etapas']??-1)!==count($stages))throw new RuntimeException('Los totales proposicionales no coinciden.');
+  }
+
+  private static function normalizeText(string $text): string
+  {
+    $text=mb_strtolower($text);$text=preg_replace('/[^\p{L}\p{N}]+/u',' ',$text)??'';return trim(preg_replace('/\s+/u',' ',$text)??'');
   }
 }
