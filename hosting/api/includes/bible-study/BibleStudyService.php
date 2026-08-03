@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 final class BibleStudyService
 {
+  public const BUILD = '2026-08-03-v4';
   public const EQUIVALENCES_PENDING_MESSAGE = 'El estudio con inteligencia artificial estará disponible cuando finalice la revisión de equivalencias bíblicas.';
   public const LEVELS_PENDING_MESSAGE = 'La estructura por niveles de estudio todavía no está disponible en la base de datos.';
   private const LANGUAGE = 'es';
@@ -24,15 +25,25 @@ final class BibleStudyService
 
   public function create(array $input, array $user): array
   {
-    $range = $this->normalize($input); $context = $this->context($range); $methodConfig=BibleStudyMethod::config($range['metodo']);
+    $range = $this->normalize($input);
+
+    /*
+     * Debe validarse el esquema antes de ejecutar consultas que utilicen las
+     * columnas metodo, modelo_referencia o tecnica_estructural.
+     */
+    $readiness = $this->generationReadiness();
+    if (!$readiness['ready']) {
+      throw new RuntimeException($readiness['message']);
+    }
+
+    $context = $this->context($range);
+    $methodConfig = BibleStudyMethod::config($range['metodo']);
     $hash = hash('sha256', json_encode([$context, BibleStudyPrompt::METHOD], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     $cached = lvj_first($this->pdo, "SELECT * FROM lvj_bib_estudios_ia WHERE metodo=:study_method AND ((hash_contexto=:hash AND metodo_version=:method) OR (libro_id=:book AND capitulo_inicio=:ci AND capitulo_fin=:cf AND versiculo_inicio<=:vi AND versiculo_fin>=:vf AND nivel=:level AND idioma=:language AND esquema_version=:schema AND texto_version=:text_version AND notas_version=:notes_version)) AND estado IN ('revision','publicado') AND deleted_at IS NULL ORDER BY (versiculo_inicio=:exact_vi AND versiculo_fin=:exact_vf) DESC,(versiculo_fin-versiculo_inicio) ASC,updated_at DESC,id DESC LIMIT 1", ['study_method'=>$range['metodo'],'hash'=>$hash,'method'=>BibleStudyPrompt::METHOD,'book'=>$context['libro_id'],'ci'=>$range['capitulo_inicio'],'vi'=>$range['versiculo_inicio'],'cf'=>$range['capitulo_fin'],'vf'=>$range['versiculo_fin'],'level'=>$range['nivel'],'language'=>self::LANGUAGE,'schema'=>$methodConfig['schema'],'text_version'=>$context['metadata']['texto_version'],'notes_version'=>$context['metadata']['notas_version'],'exact_vi'=>$range['versiculo_inicio'],'exact_vf'=>$range['versiculo_fin']]);
     if ($cached) {
       $this->logRequest((int) $user['id'], (int) $cached['id'], $context['referencia'], 'completada', false);
       return ['source' => 'cache', 'study' => $this->present($cached)];
     }
-    $readiness = $this->generationReadiness();
-    if (!$readiness['ready']) throw new RuntimeException($readiness['message']);
     $failed = lvj_first($this->pdo, "SELECT id FROM lvj_bib_estudios_ia WHERE hash_contexto=:hash AND metodo_version=:method AND deleted_at IS NULL AND (estado='error' OR (estado='generando' AND updated_at < (UTC_TIMESTAMP() - INTERVAL 5 MINUTE))) LIMIT 1", ['hash' => $hash, 'method' => BibleStudyPrompt::METHOD]);
     if ($failed) {
       $this->pdo->prepare("UPDATE lvj_bib_estudios_ia SET hash_contexto=SHA2(CONCAT(hash_contexto,'|retry|',id,'|',UTC_TIMESTAMP(6)),256),estado='archivado',es_publico=0,deleted_at=NOW(),updated_at=NOW() WHERE id=:id AND (estado='error' OR (estado='generando' AND updated_at < (UTC_TIMESTAMP() - INTERVAL 5 MINUTE))) AND deleted_at IS NULL")
@@ -143,6 +154,15 @@ final class BibleStudyService
 
   private function context(array $range): array
   {
+    /*
+     * Compatibilidad con estudios antiguos y llamadas internas previas a la
+     * incorporación de los métodos. La hidratación conserva el método guardado
+     * y, cuando no puede inferirse, utiliza el método oficial por defecto.
+     */
+    $range['metodo'] = BibleStudyMethod::normalize(
+      $range['metodo'] ?? BibleStudyMethod::DEFAULT
+    );
+
     $versions=[]; $mainBook=null; $mainVersionId=0; $sourceVerseIds=[]; $targetChapters=[]; $codes=self::VERSION_KEYS;
     $equivalenceTablesReady=$this->tableExists('lvj_bib_unidades_canonicas') && $this->tableExists('lvj_bib_unidades_versiculos');
     foreach ($codes as $key=>$fallback) {
@@ -213,8 +233,41 @@ final class BibleStudyService
   private function loadSafeEquivalentRange(int $versionId,int $bookId,array $range): array { $chapter=$this->safeEquivalentChapter($range['libro_codigo'],(int)$range['capitulo_inicio']); if($chapter===null)return []; $s=$this->pdo->prepare('SELECT id,capitulo,versiculo,texto,titulo_seccion FROM lvj_bib_versiculos WHERE version_id=:version AND libro_id=:book AND capitulo=:chapter AND versiculo BETWEEN :start AND :end AND estado=1 AND deleted_at IS NULL ORDER BY versiculo,id'); $s->execute(['version'=>$versionId,'book'=>$bookId,'chapter'=>$chapter,'start'=>$range['versiculo_inicio'],'end'=>$range['versiculo_fin']]); return $s->fetchAll(); }
   private function safeEquivalentChapter(string $bookCode,int $chapter): ?int { $bookCode=strtoupper($bookCode); if(in_array($bookCode,['BAR','DAN','EST'],true))return null; if($bookCode!=='PSA')return $chapter; if(in_array($chapter,[9,113,114,115,146,147],true))return null; if(($chapter>=10&&$chapter<=112)||($chapter>=116&&$chapter<=145))return $chapter+1; return $chapter; }
   private function refreshConnection(): void { try { $this->pdo->query('SELECT 1'); } catch (PDOException $error) { $mysqlCode=(int)($error->errorInfo[1]??0); if(!in_array($mysqlCode,[2006,2013],true)&&!str_contains(mb_strtolower($error->getMessage()),'server has gone away'))throw $error; $this->pdo=lvj_db(); } }
-  private function tableExists(string $table): bool { $s=$this->pdo->prepare('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=:table'); $s->execute(['table'=>$table]); return (int)$s->fetchColumn()===1; }
-  private function columnExists(string $table,string $column): bool { $s=$this->pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name=:table AND column_name=:column'); $s->execute(['table'=>$table,'column'=>$column]); return (int)$s->fetchColumn()===1; }
+  private function tableExists(string $table): bool
+  {
+    if (!preg_match('/^[A-Za-z0-9_]+$/', $table)) {
+      return false;
+    }
+
+    /*
+     * Hosting compartido: no consultar information_schema, porque algunos
+     * usuarios de cPanel no tienen acceso directo a esa base del sistema.
+     */
+    $pattern = addcslashes($table, '\\_%');
+    $statement = $this->pdo->query(
+      'SHOW TABLES LIKE ' . $this->pdo->quote($pattern)
+    );
+
+    return (bool) $statement->fetchColumn();
+  }
+
+  private function columnExists(string $table, string $column): bool
+  {
+    if (
+      !preg_match('/^[A-Za-z0-9_]+$/', $table)
+      || !preg_match('/^[A-Za-z0-9_]+$/', $column)
+    ) {
+      return false;
+    }
+
+    $pattern = addcslashes($column, '\\_%');
+    $statement = $this->pdo->query(
+      'SHOW COLUMNS FROM `' . $table . '` LIKE '
+      . $this->pdo->quote($pattern)
+    );
+
+    return (bool) $statement->fetch();
+  }
   private function equivalenceCount(string $table): array { $sql="SELECT SUM(CASE WHEN estado_revision='aprobado' THEN 1 ELSE 0 END) approved,SUM(CASE WHEN estado_revision IN ('pendiente','revisado') THEN 1 ELSE 0 END) pending FROM {$table} WHERE deleted_at IS NULL"; $row=$this->pdo->query($sql)->fetch() ?: []; return ['approved'=>(int)($row['approved']??0),'pending'=>(int)($row['pending']??0)]; }
   private function logRequest(int $userId,?int $studyId,string $ref,string $state,bool $consume): int { $s=$this->pdo->prepare('INSERT INTO lvj_bib_estudios_ia_solicitudes(estudio_id,usuario_id,referencia,estado,origen,consume_cupo,completed_at) VALUES(:study,:user,:ref,:state,\'lector\',:consume,IF(:state2=\'completada\',NOW(),NULL))'); $s->execute(['study'=>$studyId,'user'=>$userId,'ref'=>$ref,'state'=>$state,'consume'=>$consume?1:0,'state2'=>$state]); return (int)$this->pdo->lastInsertId(); }
   private function completeRequest(int $id,int $study): void { $this->pdo->prepare("UPDATE lvj_bib_estudios_ia_solicitudes SET estudio_id=:study,estado='completada',completed_at=NOW() WHERE id=:id")->execute(['study'=>$study,'id'=>$id]); }
@@ -225,7 +278,28 @@ final class BibleStudyService
     $book=lvj_first($this->pdo,'SELECT codigo FROM lvj_bib_libros WHERE id=:id AND deleted_at IS NULL LIMIT 1',['id'=>(int)$row['libro_id']]);
     if(!$book)return $content;
     try {
-      $context=$this->context(['libro_codigo'=>(string)$book['codigo'],'capitulo_inicio'=>(int)$row['capitulo_inicio'],'versiculo_inicio'=>(int)$row['versiculo_inicio'],'capitulo_fin'=>(int)$row['capitulo_fin'],'versiculo_fin'=>(int)$row['versiculo_fin'],'nivel'=>(string)($row['nivel']??BibleStudyLevel::DEFAULT)]);
+      $storedMethod = BibleStudyMethod::infer(
+        isset($row['metodo']) ? (string) $row['metodo'] : null,
+        isset($row['esquema_version']) ? (string) $row['esquema_version'] : null
+      );
+
+      $hydrationMethod = in_array(
+        $storedMethod,
+        BibleStudyMethod::VALUES,
+        true
+      )
+        ? $storedMethod
+        : BibleStudyMethod::DEFAULT;
+
+      $context=$this->context([
+        'libro_codigo'=>(string)$book['codigo'],
+        'capitulo_inicio'=>(int)$row['capitulo_inicio'],
+        'versiculo_inicio'=>(int)$row['versiculo_inicio'],
+        'capitulo_fin'=>(int)$row['capitulo_fin'],
+        'versiculo_fin'=>(int)$row['versiculo_fin'],
+        'metodo'=>$hydrationMethod,
+        'nivel'=>(string)($row['nivel']??BibleStudyLevel::DEFAULT),
+      ]);
       foreach(['platense','torres_amat','scio'] as $key){$version=$context['versiones'][$key]??[];$verses=$version['versiculos']??[];$original=is_array($content['textos'][$key]??null)?$content['textos'][$key]:[];$unavailableMessage=$key==='scio'?self::SCIO_REVIEW_MESSAGE:'No existe una equivalencia aprobada y segura para este pasaje.';$content['textos'][$key]=array_merge($original,$verses?['disponible'=>true,'texto'=>implode(' ',array_map(static function(array $verse): string {
         return (string)$verse['texto'];
       },$verses)),'version_texto'=>$context['metadata']['texto_version']??null]:['disponible'=>false,'texto'=>'','observacion'=>$unavailableMessage]);}

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 final class BibleStudySchema
 {
-  public static function jsonSchema(string $method = BibleStudyMethod::DEFAULT): array
+  public static function jsonSchema(string $method = BibleStudyMethod::DEFAULT)
   {
     $method = BibleStudyMethod::normalize($method);
     $textVersion = ['anyOf' => [
@@ -73,7 +73,7 @@ final class BibleStudySchema
     return $schema;
   }
 
-  public static function validate(array $study, array $context = []): void
+  public static function validate(array $study, array $context = [])
   {
     $method = BibleStudyMethod::normalize($context['metodo'] ?? $study['metodo'] ?? null);
     foreach (self::jsonSchema($method)['required'] as $key) {
@@ -91,17 +91,17 @@ final class BibleStudySchema
     }
   }
 
-  private static function stringObject(array $keys): array
+  private static function stringObject(array $keys)
   {
     return ['type' => 'object', 'additionalProperties' => false, 'required' => $keys, 'properties' => array_fill_keys($keys, ['type' => 'string'])];
   }
 
-  private static function objectArray(array $keys): array
+  private static function objectArray(array $keys)
   {
     return ['type' => 'array', 'items' => self::stringObject($keys)];
   }
 
-  private static function propositionAnalysis(): array
+  private static function propositionAnalysis()
   {
     $s = ['type'=>'string'];
     $sn = ['type'=>['string','null']];
@@ -141,7 +141,7 @@ final class BibleStudySchema
     ]];
   }
 
-  private static function arcingSchema(): array
+  private static function arcingSchema()
   {
     $s=['type'=>'string'];
     $unit=['type'=>'object','additionalProperties'=>false,'required'=>['id','escala','referencia','texto','proposiciones'],'properties'=>['id'=>$s,'escala'=>['type'=>'string','enum'=>['micro','meso','macro']],'referencia'=>$s,'texto'=>$s,'proposiciones'=>['type'=>'array','items'=>$s]]];
@@ -149,12 +149,12 @@ final class BibleStudySchema
     return ['type'=>'object','additionalProperties'=>false,'required'=>['unidades','relaciones','proposicion_dominante','centro'],'properties'=>['unidades'=>['type'=>'array','minItems'=>1,'items'=>$unit],'relaciones'=>['type'=>'array','items'=>$relation],'proposicion_dominante'=>$s,'centro'=>$s]];
   }
 
-  private static function validateArcing($arcing,$analysis): void
+  private static function validateArcing($arcing,$analysis)
   {
     if(!is_array($arcing))throw new RuntimeException('El Método Integral no contiene Arcing válido.');$propositions=[];foreach(($analysis['versiculos']??[]) as $verse)foreach(($verse['proposiciones']??[]) as $proposition)$propositions[(string)($proposition['id']??'')]=true;$units=[];foreach(($arcing['unidades']??[]) as $unit){$id=trim((string)($unit['id']??''));if($id===''||isset($units[$id]))throw new RuntimeException('El Arcing contiene unidades inválidas o duplicadas.');foreach(($unit['proposiciones']??[]) as $propositionId)if(!isset($propositions[(string)$propositionId]))throw new RuntimeException('Una unidad Arcing referencia una proposición inexistente.');$units[$id]=true;}$relations=[];foreach(($arcing['relaciones']??[]) as $relation){$id=trim((string)($relation['id']??''));if($id===''||isset($relations[$id])||!isset($units[(string)($relation['desde']??'')])||!isset($units[(string)($relation['hasta']??'')]))throw new RuntimeException('El Arcing contiene una relación inválida.');if(trim((string)($relation['explicacion']??''))==='')throw new RuntimeException('Una relación Arcing no contiene justificación textual.');$relations[$id]=true;}
   }
 
-  private static function validatePropositions($analysis,array $context): void
+  private static function validatePropositions($analysis,array $context)
   {
     if(!is_array($analysis)||($analysis['schema_version']??'')!=='proposiciones-2.1')throw new RuntimeException('El análisis de proposiciones no utiliza proposiciones-2.1.');
     $stages=[];foreach(($analysis['etapas']??[]) as $stage){$id=trim((string)($stage['id']??''));if($id===''||isset($stages[$id]))throw new RuntimeException('Identificador de etapa inválido.');$stages[$id]=true;}
@@ -163,7 +163,7 @@ final class BibleStudySchema
     if($source&&array_diff(array_keys($source),array_keys($verses)))throw new RuntimeException('El análisis no cubre todos los versículos.');$r=$analysis['resumen']??[];if((int)($r['total_versiculos']??-1)!==count($verses)||(int)($r['total_pp']??-1)!==$pp||(int)($r['total_ps']??-1)!==$ps||(int)($r['total_etapas']??-1)!==count($stages))throw new RuntimeException('Los totales proposicionales no coinciden.');
   }
 
-  private static function normalizeText(string $text): string
+  private static function normalizeText(string $text)
   {
     $text=mb_strtolower($text);$text=preg_replace('/[^\p{L}\p{N}]+/u',' ',$text)??'';return trim(preg_replace('/\s+/u',' ',$text)??'');
   }

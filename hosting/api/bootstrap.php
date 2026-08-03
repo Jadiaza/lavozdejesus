@@ -2,6 +2,58 @@
 
 declare(strict_types=1);
 
+
+/**
+ * Autocargador limitado del módulo de Estudio Bíblico.
+ *
+ * Evita que un endpoint o proceso interno falle con:
+ * Class "BibleStudyMethod" not found
+ *
+ * Solo permite cargar clases conocidas del módulo, sin aceptar rutas arbitrarias.
+ */
+function lvj_register_bible_study_autoloader(): void
+{
+  static $registered = false;
+
+  if ($registered) {
+    return;
+  }
+
+  $registered = true;
+
+  spl_autoload_register(static function (string $class): void {
+    static $allowedClasses = [
+      'BibleStudyAiProviderInterface' => true,
+      'BibleStudyMethod' => true,
+      'BibleStudySchema' => true,
+      'BibleStudyLevel' => true,
+      'BibleStudyPrompt' => true,
+      'HttpJsonClient' => true,
+      'OpenAIProvider' => true,
+      'GeminiProvider' => true,
+      'BibleStudyProviderFactory' => true,
+      'SupabaseAuth' => true,
+      'BibleStudyService' => true,
+    ];
+
+    if (!isset($allowedClasses[$class])) {
+      return;
+    }
+
+    $file = __DIR__ . '/includes/bible-study/' . $class . '.php';
+
+    if (!is_file($file)) {
+      error_log('LVJ Bible Study autoload: missing file for ' . $class);
+      return;
+    }
+
+    require_once $file;
+  });
+}
+
+lvj_register_bible_study_autoloader();
+
+
 function lvj_json_response(array $payload, int $status = 200): void
 {
   http_response_code($status);
