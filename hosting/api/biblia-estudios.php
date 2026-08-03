@@ -4,7 +4,7 @@ declare(strict_types=1);
 require __DIR__ . '/bootstrap.php';
 
 $base = __DIR__ . '/includes/bible-study/';
-foreach (['BibleStudyAiProviderInterface','BibleStudySchema','BibleStudyLevel','BibleStudyPrompt','HttpJsonClient','OpenAIProvider','GeminiProvider','BibleStudyProviderFactory','SupabaseAuth','BibleStudyService'] as $file) {
+foreach (['BibleStudyAiProviderInterface','BibleStudyMethod','BibleStudySchema','BibleStudyLevel','BibleStudyPrompt','HttpJsonClient','OpenAIProvider','GeminiProvider','BibleStudyProviderFactory','SupabaseAuth','BibleStudyService'] as $file) {
   require_once $base . $file . '.php';
 }
 

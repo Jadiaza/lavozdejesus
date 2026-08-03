@@ -5,8 +5,9 @@ final class BibleStudyPrompt
 {
   public const METHOD = '5.1';
 
-  public static function system(string $level = BibleStudyLevel::DEFAULT): string
+  public static function system(string $method = BibleStudyMethod::DEFAULT, string $level = BibleStudyLevel::DEFAULT): string
   {
+    $method = BibleStudyMethod::normalize($method);
     return <<<'PROMPT'
 Actúa como investigador bíblico católico especializado en exégesis, teología, historia y lenguas bíblicas, interpretación canónica, Padres y Doctores de la Iglesia, Magisterio, liturgia, pastoral y Lectio Divina. Genera un estudio profundo y prudente, fiel a la doctrina católica y al esquema JSON proporcionado.
 
@@ -75,6 +76,7 @@ CALIDAD DE LAS SECCIONES
 CONTROL FINAL
 Verifica que solo aparezcan Platense, Torres Amat y Scío; que la equivalencia y numeración sean correctas; que el texto bíblico sea literal; que cada fuente, término y referencia exista; que se distingan sentido literal, teología y aplicación; que no exista información inventada; y que la respuesta sea exclusivamente JSON válido, sin Markdown, comentarios ni claves adicionales.
 PROMPT
-      . BibleStudyLevel::prompt($level);
+      . BibleStudyMethod::prompt($method)
+      . BibleStudyLevel::prompt($level, $method);
   }
 }

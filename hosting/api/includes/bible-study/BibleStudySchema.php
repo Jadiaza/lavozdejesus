@@ -3,8 +3,9 @@ declare(strict_types=1);
 
 final class BibleStudySchema
 {
-  public static function jsonSchema(): array
+  public static function jsonSchema(string $method = BibleStudyMethod::DEFAULT): array
   {
+    $method = BibleStudyMethod::normalize($method);
     $textVersion = ['anyOf' => [
       ['type'=>'object','additionalProperties'=>false,'required'=>['disponible','texto'],'properties'=>[
         'disponible'=>['type'=>'boolean','enum'=>[true]],'texto'=>['type'=>'string'],
@@ -17,13 +18,17 @@ final class BibleStudySchema
       'epoca' => ['type' => 'string'], 'estilo' => ['type' => 'string'],
       'matices' => ['type' => 'array', 'items' => ['type' => 'string']],
     ]];
-    return ['type' => 'object', 'additionalProperties' => false, 'required' => [
+    $schema = ['type' => 'object', 'additionalProperties' => false, 'required' => [
+      'metodo','modelo_referencia','tecnicas',
       'referencia','titulo','resumen','textos','comprension_global','comparacion_traducciones',
       'delimitacion','genero_literario','estructura','proposiciones','palabras_clave','contexto_historico',
       'lectura_comprension','reescritura_comparacion','verificacion_unidad','analisis_proposiciones','articulacion','semantica_texto',
       'contexto_biblico','mensaje_teologico','mensaje_cristologico','referencias_cruzadas',
       'aplicacion_espiritual','actualizacion_pastoral','preguntas_para_meditar','lectio_divina','advertencias',
     ], 'properties' => [
+      'metodo' => ['type'=>'string','enum'=>[$method]],
+      'modelo_referencia' => ['type'=>['string','null']],
+      'tecnicas' => ['type'=>'array','items'=>['type'=>'string']],
       'referencia' => ['type' => 'string'], 'titulo' => ['type' => 'string'], 'resumen' => ['type' => 'string'],
       'textos' => ['type' => 'object', 'additionalProperties' => false, 'required' => ['platense','torres_amat','scio'], 'properties' => [
         'platense' => $textVersion, 'torres_amat' => $textVersion, 'scio' => $textVersion,
@@ -59,13 +64,24 @@ final class BibleStudySchema
       'lectio_divina' => self::stringObject(['lectura','meditacion','oracion','contemplacion','compromiso']),
       'advertencias' => ['type' => 'array', 'items' => ['type' => 'string']],
     ]];
+    if ($method === 'integral_lvj') {
+      $schema['required'][] = 'tecnica_estructural';
+      $schema['required'][] = 'arcing';
+      $schema['properties']['tecnica_estructural'] = ['type'=>'string','enum'=>['arcing']];
+      $schema['properties']['arcing'] = self::arcingSchema();
+    }
+    return $schema;
   }
 
   public static function validate(array $study, array $context = []): void
   {
-    foreach (self::jsonSchema()['required'] as $key) {
+    $method = BibleStudyMethod::normalize($context['metodo'] ?? $study['metodo'] ?? null);
+    foreach (self::jsonSchema($method)['required'] as $key) {
       if (!array_key_exists($key, $study)) throw new RuntimeException("El estudio no contiene {$key}.");
     }
+    if (($study['metodo'] ?? '') !== $method) throw new RuntimeException('El método devuelto no coincide con el método solicitado.');
+    if ($method === 'metodo_salmo' && ($study['modelo_referencia'] ?? null) !== 'salmo8-1.0') throw new RuntimeException('El Método Salmo no conserva su modelo de referencia.');
+    if ($method === 'integral_lvj') self::validateArcing($study['arcing'] ?? null, $study['analisis_proposiciones'] ?? null);
     self::validatePropositions($study['analisis_proposiciones'] ?? null, $context);
     if (!is_array($study['textos']) || !is_array($study['lectio_divina'])) {
       throw new RuntimeException('El estudio generado no respeta el esquema requerido.');
@@ -123,6 +139,19 @@ final class BibleStudySchema
       'titulo'=>$s,'subtitulo'=>$s,'metodo'=>['type'=>'string','enum'=>['PP_PS']],'resumen'=>$summary,
       'etapas'=>['type'=>'array','minItems'=>1,'items'=>$stage],'versiculos'=>['type'=>'array','minItems'=>1,'items'=>$verse],
     ]];
+  }
+
+  private static function arcingSchema(): array
+  {
+    $s=['type'=>'string'];
+    $unit=['type'=>'object','additionalProperties'=>false,'required'=>['id','escala','referencia','texto','proposiciones'],'properties'=>['id'=>$s,'escala'=>['type'=>'string','enum'=>['micro','meso','macro']],'referencia'=>$s,'texto'=>$s,'proposiciones'=>['type'=>'array','items'=>$s]]];
+    $relation=['type'=>'object','additionalProperties'=>false,'required'=>['id','escala','desde','hasta','tipo','etiqueta','explicacion','nivel_confianza','requiere_revision'],'properties'=>['id'=>$s,'escala'=>['type'=>'string','enum'=>['micro','meso','macro']],'desde'=>$s,'hasta'=>$s,'tipo'=>['type'=>'string','enum'=>['serie','continuacion','progresion','contraste','alternativa','comparacion','paralelismo','afirmacion_fundamento','afirmacion_explicacion','general_particular','declaracion_evidencia','promesa_fundamento','causa_resultado','accion_consecuencia','condicion_resultado','problema_solucion','pecado_juicio','fe_respuesta','accion_proposito','medio_fin','mandato_finalidad','peticion_motivo','pregunta_respuesta','objecion_respuesta','mandato_razon','exhortacion_fundamento','anuncio_cumplimiento','situacion_conflicto','accion_reaccion','peticion_respuesta','crisis_intervencion','punto_giro_desenlace','encuentro_transformacion']],'etiqueta'=>$s,'explicacion'=>$s,'nivel_confianza'=>['type'=>'string','enum'=>['alta','media','baja']],'requiere_revision'=>['type'=>'boolean']]];
+    return ['type'=>'object','additionalProperties'=>false,'required'=>['unidades','relaciones','proposicion_dominante','centro'],'properties'=>['unidades'=>['type'=>'array','minItems'=>1,'items'=>$unit],'relaciones'=>['type'=>'array','items'=>$relation],'proposicion_dominante'=>$s,'centro'=>$s]];
+  }
+
+  private static function validateArcing($arcing,$analysis): void
+  {
+    if(!is_array($arcing))throw new RuntimeException('El Método Integral no contiene Arcing válido.');$propositions=[];foreach(($analysis['versiculos']??[]) as $verse)foreach(($verse['proposiciones']??[]) as $proposition)$propositions[(string)($proposition['id']??'')]=true;$units=[];foreach(($arcing['unidades']??[]) as $unit){$id=trim((string)($unit['id']??''));if($id===''||isset($units[$id]))throw new RuntimeException('El Arcing contiene unidades inválidas o duplicadas.');foreach(($unit['proposiciones']??[]) as $propositionId)if(!isset($propositions[(string)$propositionId]))throw new RuntimeException('Una unidad Arcing referencia una proposición inexistente.');$units[$id]=true;}$relations=[];foreach(($arcing['relaciones']??[]) as $relation){$id=trim((string)($relation['id']??''));if($id===''||isset($relations[$id])||!isset($units[(string)($relation['desde']??'')])||!isset($units[(string)($relation['hasta']??'')]))throw new RuntimeException('El Arcing contiene una relación inválida.');if(trim((string)($relation['explicacion']??''))==='')throw new RuntimeException('Una relación Arcing no contiene justificación textual.');$relations[$id]=true;}
   }
 
   private static function validatePropositions($analysis,array $context): void

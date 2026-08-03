@@ -9,9 +9,9 @@ final class GeminiProvider implements BibleStudyAiProviderInterface
   {
     $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . rawurlencode($this->model) . ':generateContent?key=' . rawurlencode($this->key);
     $response = HttpJsonClient::post($url, ['Content-Type: application/json'], [
-      'systemInstruction' => ['parts' => [['text' => BibleStudyPrompt::system((string)($context['nivel'] ?? BibleStudyLevel::DEFAULT))]]],
+      'systemInstruction' => ['parts' => [['text' => BibleStudyPrompt::system((string)($context['metodo'] ?? BibleStudyMethod::DEFAULT), (string)($context['nivel'] ?? BibleStudyLevel::DEFAULT))]]],
       'contents' => [['role' => 'user', 'parts' => [['text' => json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]]]],
-      'generationConfig' => ['responseMimeType' => 'application/json', 'responseJsonSchema' => BibleStudySchema::jsonSchema(), 'maxOutputTokens' => $this->maxTokens],
+      'generationConfig' => ['responseMimeType' => 'application/json', 'responseJsonSchema' => BibleStudySchema::jsonSchema((string)($context['metodo'] ?? BibleStudyMethod::DEFAULT)), 'maxOutputTokens' => $this->maxTokens],
     ], $this->timeout);
     $text = (string) ($response['candidates'][0]['content']['parts'][0]['text'] ?? '');
     $study = json_decode($text, true);

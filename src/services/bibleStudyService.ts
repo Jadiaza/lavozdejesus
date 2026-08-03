@@ -2,11 +2,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface BibleStudy {
   id: number; referencia: string; titulo: string; estado: string; revisado: boolean; es_publico: boolean;
+  metodo: StudyMethod | "metodo_no_determinado"; modelo_referencia?: string | null; tecnica_estructural?: "arcing" | null;
   nivel: StudyLevel; idioma: string; esquema_version: string;
   libro_codigo?: string; capitulo_inicio?: number; versiculo_inicio?: number; capitulo_fin?: number; versiculo_fin?: number;
   contenido: Record<string, unknown>; created_at?: string | null; updated_at?: string | null; viewed_at?: string | null;
 }
-export type StudyLevel = "pastoral" | "teologico" | "doctrinal" | "formador";
+export type StudyLevel = "pastoral" | "teologico" | "doctrinal" | "formativo";
+export type StudyMethod = "metodo_salmo" | "integral_lvj";
 export type RecentBibleStudy = BibleStudy;
 interface StudyResponse { success: boolean; source?: "cache" | "generated"; study?: BibleStudy; studies?: BibleStudy[]; configured?: boolean; ready?: boolean; message?: string; }
 
@@ -47,7 +49,7 @@ export async function getBibleStudy(id: number) {
   const payload = await parse(await fetchWithNetworkRetry(url, { headers: { Accept: "application/json", ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) } }));
   if (!payload.study) throw new Error("El estudio no está disponible."); return payload.study;
 }
-export async function createBibleStudy(input: { libro_codigo: string; capitulo_inicio: number; versiculo_inicio: number; capitulo_fin: number; versiculo_fin: number; nivel: StudyLevel; }) {
+export async function createBibleStudy(input: { libro_codigo: string; capitulo_inicio: number; versiculo_inicio: number; capitulo_fin: number; versiculo_fin: number; metodo: StudyMethod; nivel: StudyLevel; }) {
   const accessToken = await token();
   const response = await fetchWithNetworkRetry(apiUrl, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json", ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) }, body: JSON.stringify(input) });
   if (response.status === 401) throw new Error("AUTH_REQUIRED");

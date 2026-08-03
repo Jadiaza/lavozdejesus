@@ -5,7 +5,6 @@ final class BibleStudyService
 {
   public const EQUIVALENCES_PENDING_MESSAGE = 'El estudio con inteligencia artificial estará disponible cuando finalice la revisión de equivalencias bíblicas.';
   public const LEVELS_PENDING_MESSAGE = 'La estructura por niveles de estudio todavía no está disponible en la base de datos.';
-  private const SCHEMA_VERSION = 'salmo8-1.0';
   private const LANGUAGE = 'es';
   private const VERSION_KEYS = ['platense' => 'SPAPLATENSE', 'torres_amat' => 'TORRESAMAT', 'scio' => 'SCIO'];
   private const SCIO_REVIEW_MESSAGE = 'Texto de Scío en revisión: este libro, capítulo o versículo todavía no está habilitado.';
@@ -14,10 +13,10 @@ final class BibleStudyService
 
   public function findPublishedForInput(array $input, ?array $user = null): ?array
   {
-    $range = $this->normalize($input); $context = $this->context($range);
+    $range = $this->normalize($input); $context = $this->context($range); $methodConfig=BibleStudyMethod::config($range['metodo']);
     $hash = hash('sha256', json_encode([$context, BibleStudyPrompt::METHOD], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-    if (!$this->columnExists('lvj_bib_estudios_ia','nivel')) return null;
-    $row = lvj_first($this->pdo, "SELECT * FROM lvj_bib_estudios_ia WHERE ((hash_contexto=:hash AND metodo_version=:method) OR (libro_id=:book AND capitulo_inicio=:ci AND capitulo_fin=:cf AND versiculo_inicio<=:vi AND versiculo_fin>=:vf AND nivel=:level AND idioma=:language AND esquema_version=:schema AND texto_version=:text_version AND notas_version=:notes_version)) AND estado='publicado' AND revisado=1 AND es_publico=1 AND deleted_at IS NULL ORDER BY (versiculo_inicio=:exact_vi AND versiculo_fin=:exact_vf) DESC,(versiculo_fin-versiculo_inicio) ASC,updated_at DESC,id DESC LIMIT 1", ['hash'=>$hash,'method'=>BibleStudyPrompt::METHOD,'book'=>$context['libro_id'],'ci'=>$range['capitulo_inicio'],'vi'=>$range['versiculo_inicio'],'cf'=>$range['capitulo_fin'],'vf'=>$range['versiculo_fin'],'level'=>$range['nivel'],'language'=>self::LANGUAGE,'schema'=>self::SCHEMA_VERSION,'text_version'=>$context['metadata']['texto_version'],'notes_version'=>$context['metadata']['notas_version'],'exact_vi'=>$range['versiculo_inicio'],'exact_vf'=>$range['versiculo_fin']]);
+    if (!$this->columnExists('lvj_bib_estudios_ia','nivel') || !$this->columnExists('lvj_bib_estudios_ia','metodo')) return null;
+    $row = lvj_first($this->pdo, "SELECT * FROM lvj_bib_estudios_ia WHERE metodo=:study_method AND ((hash_contexto=:hash AND metodo_version=:method) OR (libro_id=:book AND capitulo_inicio=:ci AND capitulo_fin=:cf AND versiculo_inicio<=:vi AND versiculo_fin>=:vf AND nivel=:level AND idioma=:language AND esquema_version=:schema AND texto_version=:text_version AND notas_version=:notes_version)) AND estado='publicado' AND revisado=1 AND es_publico=1 AND deleted_at IS NULL ORDER BY (versiculo_inicio=:exact_vi AND versiculo_fin=:exact_vf) DESC,(versiculo_fin-versiculo_inicio) ASC,updated_at DESC,id DESC LIMIT 1", ['study_method'=>$range['metodo'],'hash'=>$hash,'method'=>BibleStudyPrompt::METHOD,'book'=>$context['libro_id'],'ci'=>$range['capitulo_inicio'],'vi'=>$range['versiculo_inicio'],'cf'=>$range['capitulo_fin'],'vf'=>$range['versiculo_fin'],'level'=>$range['nivel'],'language'=>self::LANGUAGE,'schema'=>$methodConfig['schema'],'text_version'=>$context['metadata']['texto_version'],'notes_version'=>$context['metadata']['notas_version'],'exact_vi'=>$range['versiculo_inicio'],'exact_vf'=>$range['versiculo_fin']]);
     if (!$row) return null;
     if ($user) $this->logRequest((int)$user['id'], (int)$row['id'], $context['referencia'], 'completada', false);
     return $this->present($row);
@@ -25,9 +24,9 @@ final class BibleStudyService
 
   public function create(array $input, array $user): array
   {
-    $range = $this->normalize($input); $context = $this->context($range);
+    $range = $this->normalize($input); $context = $this->context($range); $methodConfig=BibleStudyMethod::config($range['metodo']);
     $hash = hash('sha256', json_encode([$context, BibleStudyPrompt::METHOD], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-    $cached = lvj_first($this->pdo, "SELECT * FROM lvj_bib_estudios_ia WHERE ((hash_contexto=:hash AND metodo_version=:method) OR (libro_id=:book AND capitulo_inicio=:ci AND capitulo_fin=:cf AND versiculo_inicio<=:vi AND versiculo_fin>=:vf AND nivel=:level AND idioma=:language AND esquema_version=:schema AND texto_version=:text_version AND notas_version=:notes_version)) AND estado IN ('revision','publicado') AND deleted_at IS NULL ORDER BY (versiculo_inicio=:exact_vi AND versiculo_fin=:exact_vf) DESC,(versiculo_fin-versiculo_inicio) ASC,updated_at DESC,id DESC LIMIT 1", ['hash'=>$hash,'method'=>BibleStudyPrompt::METHOD,'book'=>$context['libro_id'],'ci'=>$range['capitulo_inicio'],'vi'=>$range['versiculo_inicio'],'cf'=>$range['capitulo_fin'],'vf'=>$range['versiculo_fin'],'level'=>$range['nivel'],'language'=>self::LANGUAGE,'schema'=>self::SCHEMA_VERSION,'text_version'=>$context['metadata']['texto_version'],'notes_version'=>$context['metadata']['notas_version'],'exact_vi'=>$range['versiculo_inicio'],'exact_vf'=>$range['versiculo_fin']]);
+    $cached = lvj_first($this->pdo, "SELECT * FROM lvj_bib_estudios_ia WHERE metodo=:study_method AND ((hash_contexto=:hash AND metodo_version=:method) OR (libro_id=:book AND capitulo_inicio=:ci AND capitulo_fin=:cf AND versiculo_inicio<=:vi AND versiculo_fin>=:vf AND nivel=:level AND idioma=:language AND esquema_version=:schema AND texto_version=:text_version AND notas_version=:notes_version)) AND estado IN ('revision','publicado') AND deleted_at IS NULL ORDER BY (versiculo_inicio=:exact_vi AND versiculo_fin=:exact_vf) DESC,(versiculo_fin-versiculo_inicio) ASC,updated_at DESC,id DESC LIMIT 1", ['study_method'=>$range['metodo'],'hash'=>$hash,'method'=>BibleStudyPrompt::METHOD,'book'=>$context['libro_id'],'ci'=>$range['capitulo_inicio'],'vi'=>$range['versiculo_inicio'],'cf'=>$range['capitulo_fin'],'vf'=>$range['versiculo_fin'],'level'=>$range['nivel'],'language'=>self::LANGUAGE,'schema'=>$methodConfig['schema'],'text_version'=>$context['metadata']['texto_version'],'notes_version'=>$context['metadata']['notas_version'],'exact_vi'=>$range['versiculo_inicio'],'exact_vf'=>$range['versiculo_fin']]);
     if ($cached) {
       $this->logRequest((int) $user['id'], (int) $cached['id'], $context['referencia'], 'completada', false);
       return ['source' => 'cache', 'study' => $this->present($cached)];
@@ -41,9 +40,9 @@ final class BibleStudyService
     }
     $this->enforceQuota($user);
     $requestId = $this->logRequest((int) $user['id'], null, $context['referencia'], 'procesando', true);
-    $insert = $this->pdo->prepare("INSERT INTO lvj_bib_estudios_ia (libro_id,capitulo_inicio,versiculo_inicio,capitulo_fin,versiculo_fin,referencia,nivel,idioma,metodo_version,esquema_version,texto_version,notas_version,contenido_json,hash_contexto,estado) VALUES (:libro,:ci,:vi,:cf,:vf,:ref,:level,:language,:method,:schema,:text_version,:notes_version,'{}',:hash,'generando')");
+    $insert = $this->pdo->prepare("INSERT INTO lvj_bib_estudios_ia (libro_id,capitulo_inicio,versiculo_inicio,capitulo_fin,versiculo_fin,referencia,metodo,nivel,idioma,metodo_version,esquema_version,modelo_referencia,tecnica_estructural,texto_version,notas_version,contenido_json,hash_contexto,estado) VALUES (:libro,:ci,:vi,:cf,:vf,:ref,:study_method,:level,:language,:method,:schema,:model_reference,:structural_technique,:text_version,:notes_version,'{}',:hash,'generando')");
     try {
-      $insert->execute(['libro'=>$context['libro_id'],'ci'=>$range['capitulo_inicio'],'vi'=>$range['versiculo_inicio'],'cf'=>$range['capitulo_fin'],'vf'=>$range['versiculo_fin'],'ref'=>$context['referencia'],'level'=>$range['nivel'],'language'=>self::LANGUAGE,'method'=>BibleStudyPrompt::METHOD,'schema'=>self::SCHEMA_VERSION,'text_version'=>$context['metadata']['texto_version'],'notes_version'=>$context['metadata']['notas_version'],'hash'=>$hash]);
+      $insert->execute(['libro'=>$context['libro_id'],'ci'=>$range['capitulo_inicio'],'vi'=>$range['versiculo_inicio'],'cf'=>$range['capitulo_fin'],'vf'=>$range['versiculo_fin'],'ref'=>$context['referencia'],'study_method'=>$range['metodo'],'level'=>$range['nivel'],'language'=>self::LANGUAGE,'method'=>BibleStudyPrompt::METHOD,'schema'=>$methodConfig['schema'],'model_reference'=>$methodConfig['model_reference'],'structural_technique'=>$range['metodo']==='integral_lvj'?'arcing':null,'text_version'=>$context['metadata']['texto_version'],'notes_version'=>$context['metadata']['notas_version'],'hash'=>$hash]);
       $studyId = (int) $this->pdo->lastInsertId();
     } catch (PDOException $error) {
       if ((string) $error->getCode() !== '23000') throw $error;
@@ -86,7 +85,7 @@ final class BibleStudyService
     if (!$this->tableExists('lvj_bib_estudios_ia') || !$this->tableExists('lvj_bib_estudios_ia_solicitudes')) {
       return ['ready'=>false, 'message'=>'El almacenamiento de estudios bíblicos todavía no está disponible.'];
     }
-    foreach (['nivel','idioma','esquema_version','texto_version','notas_version'] as $column) {
+    foreach (['metodo','modelo_referencia','tecnica_estructural','nivel','idioma','esquema_version','texto_version','notas_version'] as $column) {
       if (!$this->columnExists('lvj_bib_estudios_ia',$column)) return ['ready'=>false,'message'=>self::LEVELS_PENDING_MESSAGE];
     }
     if (!$this->tableExists('lvj_bib_unidades_canonicas') || !$this->tableExists('lvj_bib_unidades_versiculos')) {
@@ -137,9 +136,9 @@ final class BibleStudyService
   {
     $book = strtoupper(trim((string)($input['libro_codigo'] ?? '')));
     if (!preg_match('/^[0-9A-Z]{3}$/', $book)) throw new InvalidArgumentException('El libro no es válido.');
-    $ci=(int)($input['capitulo_inicio']??0); $cf=(int)($input['capitulo_fin']??$ci); $vi=(int)($input['versiculo_inicio']??0); $vf=(int)($input['versiculo_fin']??$vi); $level=BibleStudyLevel::normalize($input['nivel']??null);
+    $ci=(int)($input['capitulo_inicio']??0); $cf=(int)($input['capitulo_fin']??$ci); $vi=(int)($input['versiculo_inicio']??0); $vf=(int)($input['versiculo_fin']??$vi); $method=BibleStudyMethod::normalize($input['metodo']??null); $level=BibleStudyLevel::normalize($input['nivel']??null);
     if ($ci < 1 || $cf !== $ci || $vi < 1 || $vf < $vi) throw new InvalidArgumentException('Selecciona un rango válido del mismo capítulo.');
-    return ['libro_codigo'=>$book,'capitulo_inicio'=>$ci,'versiculo_inicio'=>$vi,'capitulo_fin'=>$cf,'versiculo_fin'=>$vf,'nivel'=>$level];
+    return ['libro_codigo'=>$book,'capitulo_inicio'=>$ci,'versiculo_inicio'=>$vi,'capitulo_fin'=>$cf,'versiculo_fin'=>$vf,'metodo'=>$method,'nivel'=>$level];
   }
 
   private function context(array $range): array
@@ -204,7 +203,8 @@ final class BibleStudyService
     },$versions),JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?:''),0,16);
     $textVersion=$textCodes.'@'.$textFingerprint.'m'.BibleStudyPrompt::METHOD;
     $notesVersion=trim((string)lvj_setting('BIBLE_STRAUBINGER_NOTES_VERSION','1')) ?: '1';
-    return ['referencia'=>$ref,'libro_id'=>(int)$mainBook['id'],'rango'=>$range,'nivel'=>$range['nivel'],'configuracion_nivel'=>BibleStudyLevel::config($range['nivel']),'versiones'=>$versions,'contenido_tematico'=>$themeRows,'metadata'=>['idioma'=>self::LANGUAGE,'esquema_version'=>self::SCHEMA_VERSION,'texto_version'=>$textVersion,'notas_version'=>$notesVersion],'metodo_version'=>BibleStudyPrompt::METHOD];
+    $methodConfig=BibleStudyMethod::config($range['metodo']);
+    return ['referencia'=>$ref,'libro_id'=>(int)$mainBook['id'],'rango'=>$range,'metodo'=>$range['metodo'],'configuracion_metodo'=>$methodConfig,'nivel'=>$range['nivel'],'configuracion_nivel'=>BibleStudyLevel::config($range['nivel'], $range['metodo']),'versiones'=>$versions,'contenido_tematico'=>$themeRows,'metadata'=>['idioma'=>self::LANGUAGE,'esquema_version'=>$methodConfig['schema'],'modelo_referencia'=>$methodConfig['model_reference'],'tecnicas'=>$methodConfig['techniques'],'texto_version'=>$textVersion,'notas_version'=>$notesVersion],'metodo_version'=>BibleStudyPrompt::METHOD];
   }
 
   private function enforceQuota(array $user): void { $email=mb_strtolower(trim((string)($user['correo']??$user['email']??''))); $unlimited=array_filter(array_map(static function($value) {
@@ -218,7 +218,7 @@ final class BibleStudyService
   private function equivalenceCount(string $table): array { $sql="SELECT SUM(CASE WHEN estado_revision='aprobado' THEN 1 ELSE 0 END) approved,SUM(CASE WHEN estado_revision IN ('pendiente','revisado') THEN 1 ELSE 0 END) pending FROM {$table} WHERE deleted_at IS NULL"; $row=$this->pdo->query($sql)->fetch() ?: []; return ['approved'=>(int)($row['approved']??0),'pending'=>(int)($row['pending']??0)]; }
   private function logRequest(int $userId,?int $studyId,string $ref,string $state,bool $consume): int { $s=$this->pdo->prepare('INSERT INTO lvj_bib_estudios_ia_solicitudes(estudio_id,usuario_id,referencia,estado,origen,consume_cupo,completed_at) VALUES(:study,:user,:ref,:state,\'lector\',:consume,IF(:state2=\'completada\',NOW(),NULL))'); $s->execute(['study'=>$studyId,'user'=>$userId,'ref'=>$ref,'state'=>$state,'consume'=>$consume?1:0,'state2'=>$state]); return (int)$this->pdo->lastInsertId(); }
   private function completeRequest(int $id,int $study): void { $this->pdo->prepare("UPDATE lvj_bib_estudios_ia_solicitudes SET estudio_id=:study,estado='completada',completed_at=NOW() WHERE id=:id")->execute(['study'=>$study,'id'=>$id]); }
-  private function present(array $row): array { $content=json_decode((string)($row['contenido_json']??'{}'),true); if(!is_array($content))$content=[]; $content=$this->hydrateBibleTexts($content,$row); $bookCode=''; if(!empty($row['libro_id'])){$book=lvj_first($this->pdo,'SELECT codigo FROM lvj_bib_libros WHERE id=:id AND deleted_at IS NULL LIMIT 1',['id'=>(int)$row['libro_id']]);$bookCode=(string)($book['codigo']??'');} return ['id'=>(int)($row['id']??0),'referencia'=>(string)($row['referencia']??''),'titulo'=>(string)($row['titulo']??''),'nivel'=>(string)($row['nivel']??BibleStudyLevel::DEFAULT),'idioma'=>(string)($row['idioma']??self::LANGUAGE),'esquema_version'=>(string)($row['esquema_version']??'legacy'),'estado'=>(string)($row['estado']??''),'revisado'=>(bool)($row['revisado']??false),'es_publico'=>(bool)($row['es_publico']??false),'libro_codigo'=>$bookCode,'capitulo_inicio'=>(int)($row['capitulo_inicio']??0),'versiculo_inicio'=>(int)($row['versiculo_inicio']??0),'capitulo_fin'=>(int)($row['capitulo_fin']??0),'versiculo_fin'=>(int)($row['versiculo_fin']??0),'contenido'=>$content,'created_at'=>$row['created_at']??null,'updated_at'=>$row['updated_at']??null]; }
+  private function present(array $row): array { $content=json_decode((string)($row['contenido_json']??'{}'),true); if(!is_array($content))$content=[]; $content=$this->hydrateBibleTexts($content,$row); $bookCode=''; if(!empty($row['libro_id'])){$book=lvj_first($this->pdo,'SELECT codigo FROM lvj_bib_libros WHERE id=:id AND deleted_at IS NULL LIMIT 1',['id'=>(int)$row['libro_id']]);$bookCode=(string)($book['codigo']??'');}$method=BibleStudyMethod::infer($row['metodo']??null,$row['esquema_version']??null);return ['id'=>(int)($row['id']??0),'referencia'=>(string)($row['referencia']??''),'titulo'=>(string)($row['titulo']??''),'metodo'=>$method,'modelo_referencia'=>$row['modelo_referencia']??($method==='metodo_salmo'?'salmo8-1.0':null),'tecnica_estructural'=>$row['tecnica_estructural']??($method==='integral_lvj'?'arcing':null),'nivel'=>(string)($row['nivel']??BibleStudyLevel::DEFAULT),'idioma'=>(string)($row['idioma']??self::LANGUAGE),'esquema_version'=>(string)($row['esquema_version']??'legacy'),'estado'=>(string)($row['estado']??''),'revisado'=>(bool)($row['revisado']??false),'es_publico'=>(bool)($row['es_publico']??false),'libro_codigo'=>$bookCode,'capitulo_inicio'=>(int)($row['capitulo_inicio']??0),'versiculo_inicio'=>(int)($row['versiculo_inicio']??0),'capitulo_fin'=>(int)($row['capitulo_fin']??0),'versiculo_fin'=>(int)($row['versiculo_fin']??0),'contenido'=>$content,'created_at'=>$row['created_at']??null,'updated_at'=>$row['updated_at']??null]; }
   private function hydrateBibleTexts(array $content,array $row): array
   {
     if(empty($row['libro_id'])||empty($row['capitulo_inicio'])||empty($row['versiculo_inicio']))return $content;
