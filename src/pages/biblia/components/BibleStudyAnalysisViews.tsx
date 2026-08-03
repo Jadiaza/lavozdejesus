@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, ChevronRight, Focus, X } from "lucide-react";
+import { ChevronDown, ChevronRight, X } from "lucide-react";
 
 export interface VerseComparison {
   referencia: string;
@@ -85,23 +85,19 @@ export function TextStructureView({ rows }: { rows?: StructureRow[] }) {
     return result;
   }, [rows]);
   if (!rows?.length) return null;
-  const centerIndex = rows.findIndex((row) => /centro|giro|cl[ií]max/i.test(row.etapa));
-  const actualCenter = centerIndex >= 0 ? centerIndex : Math.floor(rows.length / 2);
   return <section aria-labelledby="text-structure-title" className="mt-5">
     <header className="mb-4 text-center"><p className="text-xs uppercase tracking-[0.22em] text-[#D4AF37]">Análisis literario dinámico</p><h2 id="text-structure-title" className="font-display text-xl uppercase">Estructura del texto</h2></header>
-    <div className="mb-4 flex gap-2 overflow-x-auto md:hidden" aria-label="Progresión macroestructural">{stages.map((stage, index) => <span key={stage.name + index} className="shrink-0 rounded-full border border-[#D4AF37]/30 px-3 py-2 text-xs">{stage.name}</span>)}</div>
     <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_9rem]">
       <ol className="space-y-3">{rows.map((row, index) => {
         const expanded = open === row.orden;
-        const center = index === actualCenter;
         const color = tone[index % tone.length];
         return <li key={row.orden + row.versiculos} className="grid grid-cols-[0.7rem_minmax(0,1fr)] gap-3">
           <svg aria-hidden="true" className="h-full min-h-24 w-3" viewBox="0 0 12 100" preserveAspectRatio="none"><path d="M11 1H3v98h8" fill="none" stroke={color} strokeWidth="1.5" /></svg>
-          <article className={"py-2 " + (center ? "border-y border-[#D4AF37]/40 bg-[#D4AF37]/5" : "")}>
+          <article className="py-2">
             <button type="button" onClick={() => setOpen(expanded ? null : row.orden)} aria-expanded={expanded} className="flex w-full items-start gap-2 text-left">
               <strong style={{ color }}>{row.orden}.</strong><span className="min-w-0 flex-1"><strong className="block uppercase">{row.verbo_central}</strong><em className="block opacity-70">{row.pregunta_guia}</em></span><span className="shrink-0 opacity-70">{row.versiculos}</span>{expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             </button>
-            {(expanded || center) && <div className="mt-2 pl-6"><p><strong style={{ color }}>{row.sujeto}</strong></p><p>{row.desarrollo}</p>{center && <p className="mt-2 flex items-center gap-2 text-[#D4AF37]"><Focus className="h-4 w-4" />Centro literario o teológico identificado por la articulación.</p>}</div>}
+            <div className="mt-2 pl-6"><p className="font-semibold" style={{color}}>{row.sujeto}</p><p>{row.desarrollo}</p>{expanded&&<p className="mt-2 text-xs italic opacity-70">{row.etapa}</p>}</div>
           </article>
         </li>;
       })}</ol>

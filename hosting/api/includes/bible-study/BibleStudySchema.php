@@ -87,14 +87,42 @@ final class BibleStudySchema
 
   private static function propositionAnalysis(): array
   {
-    $s=['type'=>'string'];$sn=['type'=>['string','null']];
-    $topic=['type'=>'object','additionalProperties'=>false,'required'=>['etapa','tema','color_key'],'properties'=>['etapa'=>$s,'tema'=>$s,'color_key'=>$s]];
-    $prop=['type'=>'object','additionalProperties'=>false,'required'=>['id','orden','tipo','texto','nucleo_verbal','lema_verbal','sujeto','tipo_sujeto','depende_de','relacion','funcion_discursiva','estructura_eliptica','texto_sobreentendido','nivel_confianza','requiere_revision'],'properties'=>['id'=>$s,'orden'=>['type'=>'integer','minimum'=>1],'tipo'=>['type'=>'string','enum'=>['PP','PS']],'texto'=>$s,'nucleo_verbal'=>$s,'lema_verbal'=>$s,'sujeto'=>$s,'tipo_sujeto'=>$s,'depende_de'=>$sn,'relacion'=>$s,'funcion_discursiva'=>$s,'estructura_eliptica'=>['type'=>'boolean'],'texto_sobreentendido'=>$sn,'nivel_confianza'=>['type'=>'string','enum'=>['alta','media','baja']],'requiere_revision'=>['type'=>'boolean']]];
-    $coverage=['type'=>'object','additionalProperties'=>false,'required'=>['completa','fragmentos_no_clasificados','fragmentos_duplicados'],'properties'=>['completa'=>['type'=>'boolean'],'fragmentos_no_clasificados'=>['type'=>'array','items'=>$s],'fragmentos_duplicados'=>['type'=>'array','items'=>$s]]];
-    $verse=['type'=>'object','additionalProperties'=>false,'required'=>['id','numero','referencia','texto_fuente','etapa_id','tema_etapa','proposiciones','cobertura_textual','estado_validacion'],'properties'=>['id'=>$s,'numero'=>['type'=>'integer','minimum'=>1],'referencia'=>$s,'texto_fuente'=>$s,'etapa_id'=>$s,'tema_etapa'=>$topic,'proposiciones'=>['type'=>'array','minItems'=>1,'items'=>$prop],'cobertura_textual'=>$coverage,'estado_validacion'=>['type'=>'string','enum'=>['completo','parcial','pendiente_revision','texto_no_encontrado','referencia_inconsistente','segmentacion_incierta','cobertura_incompleta','proposicion_no_verificable']]];
-    $stage=['type'=>'object','additionalProperties'=>false,'required'=>['id','orden','nombre','color_key','desde_versiculo','hasta_versiculo','versiculos','tema','funcion_estructural','descripcion'],'properties'=>['id'=>$s,'orden'=>['type'=>'integer','minimum'=>1],'nombre'=>$s,'color_key'=>$s,'desde_versiculo'=>['type'=>'integer','minimum'=>1],'hasta_versiculo'=>['type'=>'integer','minimum'=>1],'versiculos'=>['type'=>'array','items'=>$s],'tema'=>$s,'funcion_estructural'=>$s,'descripcion'=>$s]];
-    $summary=['type'=>'object','additionalProperties'=>false,'required'=>['total_versiculos','total_pp','total_ps','total_etapas','requiere_revision'],'properties'=>['total_versiculos'=>['type'=>'integer','minimum'=>1],'total_pp'=>['type'=>'integer','minimum'=>0],'total_ps'=>['type'=>'integer','minimum'=>0],'total_etapas'=>['type'=>'integer','minimum'=>1],'requiere_revision'=>['type'=>'boolean']]];
-    return ['type'=>'object','additionalProperties'=>false,'required'=>['schema_version','referencia','version_biblica','titulo','subtitulo','metodo','resumen','etapas','versiculos'],'properties'=>['schema_version'=>['type'=>'string','enum'=>['proposiciones-2.1']],'referencia'=>$s,'version_biblica'=>$s,'titulo'=>$s,'subtitulo'=>$s,'metodo'=>['type'=>'string','enum'=>['PP_PS']],'resumen'=>$summary,'etapas'=>['type'=>'array','minItems'=>1,'items'=>$stage],'versiculos'=>['type'=>'array','minItems'=>1,'items'=>$verse]]];
+    $s = ['type'=>'string'];
+    $sn = ['type'=>['string','null']];
+    $topic = ['type'=>'object','additionalProperties'=>false,'required'=>['etapa','tema','color_key'],'properties'=>[
+      'etapa'=>$s,'tema'=>$s,'color_key'=>$s,
+    ]];
+    $prop = ['type'=>'object','additionalProperties'=>false,'required'=>['id','orden','tipo','texto','nucleo_verbal','lema_verbal','sujeto','tipo_sujeto','depende_de','relacion','funcion_discursiva','estructura_eliptica','texto_sobreentendido','nivel_confianza','requiere_revision'],'properties'=>[
+      'id'=>$s,'orden'=>['type'=>'integer','minimum'=>1],'tipo'=>['type'=>'string','enum'=>['PP','PS']],
+      'texto'=>$s,'nucleo_verbal'=>$s,'lema_verbal'=>$s,'sujeto'=>$s,'tipo_sujeto'=>$s,
+      'depende_de'=>$sn,'relacion'=>$s,'funcion_discursiva'=>$s,'estructura_eliptica'=>['type'=>'boolean'],
+      'texto_sobreentendido'=>$sn,'nivel_confianza'=>['type'=>'string','enum'=>['alta','media','baja']],
+      'requiere_revision'=>['type'=>'boolean'],
+    ]];
+    $coverage = ['type'=>'object','additionalProperties'=>false,'required'=>['completa','fragmentos_no_clasificados','fragmentos_duplicados'],'properties'=>[
+      'completa'=>['type'=>'boolean'],'fragmentos_no_clasificados'=>['type'=>'array','items'=>$s],
+      'fragmentos_duplicados'=>['type'=>'array','items'=>$s],
+    ]];
+    $verse = ['type'=>'object','additionalProperties'=>false,'required'=>['id','numero','referencia','texto_fuente','etapa_id','tema_etapa','proposiciones','cobertura_textual','estado_validacion'],'properties'=>[
+      'id'=>$s,'numero'=>['type'=>'integer','minimum'=>1],'referencia'=>$s,'texto_fuente'=>$s,'etapa_id'=>$s,
+      'tema_etapa'=>$topic,'proposiciones'=>['type'=>'array','minItems'=>1,'items'=>$prop],
+      'cobertura_textual'=>$coverage,'estado_validacion'=>['type'=>'string','enum'=>['completo','parcial','pendiente_revision','texto_no_encontrado','referencia_inconsistente','segmentacion_incierta','cobertura_incompleta','proposicion_no_verificable']],
+    ]];
+    $stage = ['type'=>'object','additionalProperties'=>false,'required'=>['id','orden','nombre','color_key','desde_versiculo','hasta_versiculo','versiculos','tema','funcion_estructural','descripcion'],'properties'=>[
+      'id'=>$s,'orden'=>['type'=>'integer','minimum'=>1],'nombre'=>$s,'color_key'=>$s,
+      'desde_versiculo'=>['type'=>'integer','minimum'=>1],'hasta_versiculo'=>['type'=>'integer','minimum'=>1],
+      'versiculos'=>['type'=>'array','items'=>$s],'tema'=>$s,'funcion_estructural'=>$s,'descripcion'=>$s,
+    ]];
+    $summary = ['type'=>'object','additionalProperties'=>false,'required'=>['total_versiculos','total_pp','total_ps','total_etapas','requiere_revision'],'properties'=>[
+      'total_versiculos'=>['type'=>'integer','minimum'=>1],'total_pp'=>['type'=>'integer','minimum'=>0],
+      'total_ps'=>['type'=>'integer','minimum'=>0],'total_etapas'=>['type'=>'integer','minimum'=>1],
+      'requiere_revision'=>['type'=>'boolean'],
+    ]];
+    return ['type'=>'object','additionalProperties'=>false,'required'=>['schema_version','referencia','version_biblica','titulo','subtitulo','metodo','resumen','etapas','versiculos'],'properties'=>[
+      'schema_version'=>['type'=>'string','enum'=>['proposiciones-2.1']],'referencia'=>$s,'version_biblica'=>$s,
+      'titulo'=>$s,'subtitulo'=>$s,'metodo'=>['type'=>'string','enum'=>['PP_PS']],'resumen'=>$summary,
+      'etapas'=>['type'=>'array','minItems'=>1,'items'=>$stage],'versiculos'=>['type'=>'array','minItems'=>1,'items'=>$verse],
+    ]];
   }
 
   private static function validatePropositions($analysis,array $context): void
