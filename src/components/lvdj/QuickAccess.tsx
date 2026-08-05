@@ -31,7 +31,7 @@ const items: QuickAccessItem[] = [
     image: "/icons/rosario.png",
     label: "Rosario",
     compactSubtitle: "rezar ahora",
-    to: "/devociones",
+    to: "/rosario",
   },
   {
     image: "/icons/podcast.png",

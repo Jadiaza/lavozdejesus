@@ -5,6 +5,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { RadioPlayerProvider } from "@/context/RadioPlayerContext";
+import {RosarioHome} from "@/modules/rosary/pages/RosarioHome";
+import {RosarioDigital} from "@/modules/rosary/pages/RosarioDigital";
 import Index from "./pages/Index.tsx";
 
 const Contacto = lazy(() => import("./pages/Contacto.tsx"));
@@ -82,6 +84,8 @@ const App = () => (
               <Route path="/privacidad" element={<PoliticaPrivacidad />} />
               <Route path="/terminos" element={<TerminosCondiciones />} />
               <Route path="/terminos-y-condiciones" element={<TerminosCondiciones />} />
+              <Route path="/rosario" element={<RosarioHome />} />
+              <Route path="/rosario/digital" element={<RosarioDigital />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

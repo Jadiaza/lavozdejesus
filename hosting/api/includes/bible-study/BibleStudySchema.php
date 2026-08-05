@@ -86,8 +86,13 @@ final class BibleStudySchema
     if (!is_array($study['textos']) || !is_array($study['lectio_divina'])) {
       throw new RuntimeException('El estudio generado no respeta el esquema requerido.');
     }
-    if (array_keys($study['textos']) !== ['platense','torres_amat','scio'] || !array_key_exists('scio', $study['comparacion_traducciones'])) {
+    $textKeys = array_keys($study['textos']);
+    if (count(array_diff(['platense','torres_amat','scio'], $textKeys)) !== 0) {
       throw new RuntimeException('El estudio generado contiene versiones bíblicas no autorizadas.');
+    }
+    $comparisonKeys = is_array($study['comparacion_traducciones']) ? array_keys($study['comparacion_traducciones']) : [];
+    if (count(array_diff(['platense','torres_amat','scio'], $comparisonKeys)) !== 0) {
+      throw new RuntimeException('La comparación de traducciones no contiene todas las versiones requeridas.');
     }
   }
 
@@ -151,20 +156,121 @@ final class BibleStudySchema
 
   private static function validateArcing($arcing,$analysis)
   {
-    if(!is_array($arcing))throw new RuntimeException('El Método Integral no contiene Arcing válido.');$propositions=[];foreach(($analysis['versiculos']??[]) as $verse)foreach(($verse['proposiciones']??[]) as $proposition)$propositions[(string)($proposition['id']??'')]=true;$units=[];foreach(($arcing['unidades']??[]) as $unit){$id=trim((string)($unit['id']??''));if($id===''||isset($units[$id]))throw new RuntimeException('El Arcing contiene unidades inválidas o duplicadas.');foreach(($unit['proposiciones']??[]) as $propositionId)if(!isset($propositions[(string)$propositionId]))throw new RuntimeException('Una unidad Arcing referencia una proposición inexistente.');$units[$id]=true;}$relations=[];foreach(($arcing['relaciones']??[]) as $relation){$id=trim((string)($relation['id']??''));if($id===''||isset($relations[$id])||!isset($units[(string)($relation['desde']??'')])||!isset($units[(string)($relation['hasta']??'')]))throw new RuntimeException('El Arcing contiene una relación inválida.');if(trim((string)($relation['explicacion']??''))==='')throw new RuntimeException('Una relación Arcing no contiene justificación textual.');$relations[$id]=true;}
+    if(!is_array($arcing))throw new RuntimeException('El Método Integral no contiene Arcing válido.');$propositions=[];foreach(($analysis['versiculos']??[]) as $verse)foreach(($verse['proposiciones']??[]) as $proposition)$propositions[self::normalizeIdValue($proposition['id'] ?? '')]=true;$units=[];foreach(($arcing['unidades']??[]) as $unit){$id=self::normalizeIdValue($unit['id'] ?? '');if($id===''||isset($units[$id]))throw new RuntimeException('El Arcing contiene unidades inválidas o duplicadas.');foreach(($unit['proposiciones']??[]) as $propositionId){$propId = self::normalizeIdValue($propositionId);if($propId === '' || !isset($propositions[$propId]))throw new RuntimeException('Una unidad Arcing referencia una proposición inexistente.');}$units[$id]=true;}$relations=[];foreach(($arcing['relaciones']??[]) as $relation){$id=self::normalizeIdValue($relation['id'] ?? '');$desde=self::normalizeIdValue($relation['desde'] ?? '');$hasta=self::normalizeIdValue($relation['hasta'] ?? '');if($id===''||isset($relations[$id])||!isset($units[$desde])||!isset($units[$hasta]))throw new RuntimeException('El Arcing contiene una relación inválida.');if(trim((string)($relation['explicacion']??''))==='')throw new RuntimeException('Una relación Arcing no contiene justificación textual.');$relations[$id]=true;}
   }
 
   private static function validatePropositions($analysis,array $context)
   {
-    if(!is_array($analysis)||($analysis['schema_version']??'')!=='proposiciones-2.1')throw new RuntimeException('El análisis de proposiciones no utiliza proposiciones-2.1.');
-    $stages=[];foreach(($analysis['etapas']??[]) as $stage){$id=trim((string)($stage['id']??''));if($id===''||isset($stages[$id]))throw new RuntimeException('Identificador de etapa inválido.');$stages[$id]=true;}
-    $source=[];foreach(($context['versiones']['platense']['versiculos']??[]) as $v)$source[(int)$v['versiculo']]=(string)$v['texto'];
-    $verses=[];$ids=[];$pp=0;$ps=0;foreach(($analysis['versiculos']??[]) as $verse){$n=(int)($verse['numero']??0);if($n<1||isset($verses[$n])||!isset($stages[(string)($verse['etapa_id']??'')]))throw new RuntimeException('Versículo o etapa proposicional inválidos.');$verses[$n]=true;$local=[];$last=0;foreach(($verse['proposiciones']??[]) as $p){$id=(string)($p['id']??'');$order=(int)($p['orden']??0);$type=(string)($p['tipo']??'');if($id===''||isset($ids[$id])||$order<=$last||!in_array($type,['PP','PS'],true))throw new RuntimeException('Orden, identificador o tipo proposicional inválido.');$ids[$id]=true;$local[$id]=$type;$last=$order;$type==='PP'?$pp++:$ps++;$fragment=self::normalizeText((string)($p['texto']??''));$whole=self::normalizeText($source[$n]??(string)($verse['texto_fuente']??''));if($fragment===''||$whole===''||!str_contains($whole,$fragment))throw new RuntimeException("La proposición {$id} no existe en el texto fuente.");if($type==='PS'&&($local[(string)($p['depende_de']??'')]??null)!=='PP')throw new RuntimeException("La PS {$id} no depende de una PP anterior válida.");}}
-    if($source&&array_diff(array_keys($source),array_keys($verses)))throw new RuntimeException('El análisis no cubre todos los versículos.');$r=$analysis['resumen']??[];if((int)($r['total_versiculos']??-1)!==count($verses)||(int)($r['total_pp']??-1)!==$pp||(int)($r['total_ps']??-1)!==$ps||(int)($r['total_etapas']??-1)!==count($stages))throw new RuntimeException('Los totales proposicionales no coinciden.');
+    if (!is_array($analysis) || ($analysis['schema_version'] ?? '') !== 'proposiciones-2.1') {
+      throw new RuntimeException('El análisis de proposiciones no utiliza proposiciones-2.1.');
+    }
+    $stages = [];
+    foreach (($analysis['etapas'] ?? []) as $stage) {
+      $id = trim((string) ($stage['id'] ?? ''));
+      if ($id === '' || isset($stages[$id])) {
+        throw new RuntimeException('Identificador de etapa inválido.');
+      }
+      $stages[$id] = true;
+    }
+    $source = [];
+    foreach (($context['versiones']['platense']['versiculos'] ?? []) as $v) {
+      $source[(int) $v['versiculo']] = (string) $v['texto'];
+    }
+    $verses = [];
+    $ids = [];
+    $pp = 0;
+    $ps = 0;
+    $knownProps = [];
+    foreach (($analysis['versiculos'] ?? []) as $verse) {
+      $n = (int) ($verse['numero'] ?? 0);
+      if ($n < 1 || isset($verses[$n]) || !isset($stages[(string) ($verse['etapa_id'] ?? '')])) {
+        throw new RuntimeException('Versículo o etapa proposicional inválidos.');
+      }
+      if ($source && !isset($source[$n])) {
+        throw new RuntimeException('El análisis contiene un versículo fuera del rango solicitado.');
+      }
+      $verses[$n] = true;
+      $local = [];
+      $last = 0;
+      $verseSource = $source[$n] ?? self::normalizeText((string) ($verse['texto_fuente'] ?? ''));
+      foreach (($verse['proposiciones'] ?? []) as $p) {
+        $id = trim((string) ($p['id'] ?? ''));
+        $order = (int) ($p['orden'] ?? 0);
+        $type = (string) ($p['tipo'] ?? '');
+        if ($id === '' || isset($ids[$id]) || $order <= $last || !in_array($type, ['PP', 'PS'], true)) {
+          throw new RuntimeException('Orden, identificador o tipo proposicional inválido.');
+        }
+        $ids[$id] = true;
+        $knownProps[$id] = $type;
+        $local[$id] = $type;
+        $last = $order;
+        if ($type === 'PP') {
+          $pp++;
+        } else {
+          $ps++;
+        }
+        $fragment = self::normalizeText((string) ($p['texto'] ?? ''));
+        if ($fragment === '') {
+          throw new RuntimeException("La proposición {$id} no contiene texto válido.");
+        }
+        if ($verseSource !== '' && !str_contains($verseSource, $fragment)) {
+          throw new RuntimeException("La proposición {$id} no existe en el texto fuente.");
+        }
+        if ($type === 'PS') {
+          $dependency = self::normalizeIdValue($p['depende_de'] ?? '');
+          if ($dependency === '' || ($knownProps[$dependency] ?? null) !== 'PP') {
+            throw new RuntimeException("La PS {$id} no depende de una PP válida.");
+          }
+        }
+      }
+      if (!is_array($verse['proposiciones'] ?? null) || count($verse['proposiciones']) < 1) {
+        throw new RuntimeException('Cada versículo debe contener al menos una proposición.');
+      }
+    }
+    if (count($verses) < 1) {
+      throw new RuntimeException('El análisis proposicional no contiene versículos válidos.');
+    }
+    $r = $analysis['resumen'] ?? [];
+    if (isset($r['total_versiculos']) && (int) ($r['total_versiculos'] ?? 0) < count($verses)) {
+      throw new RuntimeException('El resumen de proposiciones no cubre los versículos analizados.');
+    }
+    if (isset($r['total_pp']) && (int) ($r['total_pp'] ?? 0) < $pp) {
+      throw new RuntimeException('El resumen de proposiciones no cubre todas las PP analizadas.');
+    }
+    if (isset($r['total_ps']) && (int) ($r['total_ps'] ?? 0) < $ps) {
+      throw new RuntimeException('El resumen de proposiciones no cubre todas las PS analizadas.');
+    }
+    if (isset($r['total_etapas']) && (int) ($r['total_etapas'] ?? 0) < count($stages)) {
+      throw new RuntimeException('El resumen de proposiciones no cubre todas las etapas analizadas.');
+    }
   }
 
   private static function normalizeText(string $text)
   {
     $text=mb_strtolower($text);$text=preg_replace('/[^\p{L}\p{N}]+/u',' ',$text)??'';return trim(preg_replace('/\s+/u',' ',$text)??'');
+  }
+
+  private static function normalizeId(string $id)
+  {
+    $id = trim($id);
+    $id = preg_replace('/\s+/u', ' ', $id) ?? $id;
+    return $id;
+  }
+
+  private static function normalizeIdValue($value): string
+  {
+    if (is_string($value) || is_int($value) || is_float($value)) {
+      return self::normalizeId((string) $value);
+    }
+    if (is_array($value)) {
+      if (isset($value['id'])) {
+        return self::normalizeId((string) $value['id']);
+      }
+      if (count($value) === 1) {
+        return self::normalizeId((string) reset($value));
+      }
+      return '';
+    }
+    return '';
   }
 }

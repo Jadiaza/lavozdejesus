@@ -77,7 +77,21 @@ function lvj_json_response(array $payload, int $status = 200): void
     header('Vary: Origin');
   }
 
-  echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  $body = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+  if ($body === false) {
+    error_log('lvj_json_response: json_encode failed: ' . json_last_error_msg());
+    $body = json_encode([
+      'success' => false,
+      'message' => 'Error interno de serialización JSON.',
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{"success":false,"message":"Error interno."}';
+    if ($status < 500) {
+      $status = 500;
+      http_response_code(500);
+    }
+  }
+
+  echo $body;
   exit;
 }
 
@@ -100,11 +114,21 @@ function lvj_require_method(string $method): void
 
 function lvj_json_input(): array
 {
+  $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+  if ($contentType !== '' && stripos($contentType, 'application/json') === false) {
+    lvj_json_response(['success' => false, 'message' => 'El encabezado Content-Type debe ser application/json.'], 415);
+  }
+
   $raw = file_get_contents('php://input');
   $data = json_decode($raw ?: '', true);
 
   if (!is_array($data)) {
-    lvj_json_response(['success' => false, 'message' => 'El cuerpo JSON no es válido.'], 400);
+    $error = json_last_error();
+    $message = $error === JSON_ERROR_NONE
+      ? 'El cuerpo JSON no es válido.'
+      : 'JSON inválido: ' . json_last_error_msg();
+
+    lvj_json_response(['success' => false, 'message' => $message], 400);
   }
 
   return $data;
@@ -163,6 +187,7 @@ function lvj_db(): PDO
   return new PDO($dsn, $config['db_user'], $config['db_pass'], [
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES => false,
   ]);
 }
 

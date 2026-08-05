@@ -1,9 +1,9 @@
 # AGENTS.md
 # Proyecto La Voz de Jesús (LVJ)
 ## Manual Oficial de Arquitectura y Desarrollo
-### Versión 2.1
+### Versión 2.0
 **Estado:** Documento Maestro de Desarrollo  
-**Última actualización:** Agosto de 2026  
+**Última actualización:** Julio de 2026  
 **Proyecto:** La Voz de Jesús – Plataforma Católica Digital  
 **Tipo de documento:** Arquitectura Oficial del Proyecto
 
@@ -2971,46 +2971,10 @@ Cada módulo mantiene independencia funcional, pero comparte una arquitectura co
 
 # 3.6.3 Arquitectura General
 
-Los módulos de contenido seguirán uno de los dos flujos autorizados de ingreso, conservando siempre a MySQL como fuente oficial para la aplicación pública.
+Todos los módulos de contenido siguen el mismo flujo operativo.
 
-## Flujo editorial manual
-
-```text
-Panel Administrativo
-
-↓
-
-Backend PHP
-
-↓
-
-Base de Datos
-
-↓
-
-API
-
-↓
-
-Aplicación
-
-↓
-
-Usuario
 ```
-
-## Flujo automático autorizado
-
-```text
-Proveedor externo autorizado o servicio interno
-
-↓
-
-Adaptador y proceso PHP
-
-↓
-
-Validación, normalización y auditoría
+Panel Administrativo
 
 ↓
 
@@ -3031,9 +2995,7 @@ Usuario
 
 El contenido nunca será administrado directamente desde la aplicación pública.
 
-Las modificaciones podrán originarse en el Panel Administrativo o en procesos internos autorizados. Todo proceso automático deberá ejecutarse exclusivamente desde el Backend, registrar su resultado, respetar los bloqueos editoriales y permitir supervisión desde el Panel Administrativo.
-
-La PWA nunca consumirá directamente credenciales, bases de datos ni proveedores externos protegidos.
+Toda modificación deberá realizarse desde el Panel Administrativo.
 
 ---
 
@@ -3138,30 +3100,18 @@ Incluye:
 
 ## Propósito
 
-Administrar, sincronizar, enriquecer y publicar el contenido litúrgico diario correspondiente a Colombia.
-
-La **Conferencia Episcopal de Colombia (CEC), mediante el Ordo Colombiano y la integración autorizada**, constituye la fuente oficial de las lecturas y del contexto litúrgico colombiano utilizado por LVJPRAYER.
+Administrar el contenido litúrgico diario de la Iglesia.
 
 Incluye:
 
-- Fecha y celebración litúrgica.
-- Tiempo, semana, ciclo y color litúrgico.
 - Primera lectura.
-- Salmo responsorial y estribillo.
-- Segunda lectura cuando corresponda.
-- Aclamación antes del Evangelio.
+- Salmo.
+- Segunda lectura.
 - Evangelio.
-- Referencias y alternativas litúrgicas cuando la fuente las proporcione.
-- Reflexión pastoral propia de LVJPRAYER generada mediante IA.
-- Lectio Divina propia de LVJPRAYER generada mediante IA.
-- Pregunta para meditar.
+- Reflexión.
 - Oración.
-- Contemplación.
 - Compromiso.
-- Frase bíblica destacada.
-- Recursos gráficos y multimedia.
-
-El Santoral continuará como módulo independiente y no forma parte del alcance inicial de la sincronización automática de Liturgia.
+- Recursos gráficos.
 
 ---
 
@@ -3174,12 +3124,6 @@ El Santoral continuará como módulo independiente y no forma parte del alcance 
 ✓ API Liturgia
 
 ✓ Panel Administrativo
-
-✓ Procesos programados de sincronización
-
-✓ Centro de Formación y Supervisión IA
-
-✓ Radio y Podcast cuando exista una integración autorizada
 
 ---
 
@@ -3346,7 +3290,7 @@ Cada módulo mantiene independencia funcional, pero puede compartir información
 
 Todos los módulos de contenido deberán cumplir las siguientes reglas:
 
-- El contenido será administrado desde el Panel Administrativo o mediante procesos internos autorizados, validados y auditados por el Backend.
+- El contenido será administrado exclusivamente desde el Panel Administrativo.
 - La aplicación pública únicamente consumirá información mediante APIs.
 - No escribir textos directamente en el código.
 - No duplicar contenido entre módulos.
@@ -4535,7 +4479,7 @@ Los textos bíblicos se identifican por versión, libro, capítulo y versículo.
 
 # 3.9.10 Liturgia, Lectio Divina y Santoral
 
-## Modelo lógico oficial
+## Modelo lógico actual
 
 ```text
 lvj_lit_tipos_celebracion
@@ -4554,7 +4498,7 @@ lvj_lit_tiempos
       │                            └────────────── N  lvj_lit_lectura_dia
       │
       ├──────────────────── N  lvj_lit_lectura_dia
-      ├──────────────────── N  lvj_lit_dia [COMPATIBILIDAD]
+      ├──────────────────── N  lvj_lit_dia
       └──────────────────── N  lvj_ora_devociones
 
 
@@ -4565,29 +4509,13 @@ lvj_san_santo_dia
       └──────────────────── N  lvj_lit_lectura_dia
 
 
-lvj_lit_lectura_dia [TABLA DIARIA CANÓNICA]
+[TABLA DIARIA CANÓNICA PENDIENTE DE CONSOLIDACIÓN]
       │
       ├──────────────────── 1  lvj_lit_lectio_divina
-      └──────────────────── N  lvj_lit_palabra_dia [CONTENIDO DERIVADO]
+      └──────────────────── N  lvj_lit_palabra_dia
 ```
 
-## Decisión de tabla canónica
-
-La tabla oficial para el contenido litúrgico diario será:
-
-```text
-lvj_lit_lectura_dia
-```
-
-Esta tabla será la única fuente editorial principal para las lecturas, el contexto litúrgico diario y los contenidos breves asociados.
-
-`lvj_lit_dia` se mantiene temporalmente por compatibilidad con implementaciones anteriores. No deberá recibir nuevas sincronizaciones, nuevas funcionalidades ni nuevos endpoints. Su retiro o migración deberá realizarse mediante una tarea específica, después de verificar todas sus dependencias.
-
-`lvj_lit_palabra_dia` será una proyección o resumen derivado para Home, notificaciones y tarjetas. No deberá convertirse en una segunda fuente editorial ni recibir importaciones externas independientes.
-
-`lvj_lit_lectio_divina` almacenará la Lectio Divina generada o editada y se relacionará lógicamente con `lvj_lit_lectura_dia`.
-
-## Relaciones oficiales
+## Relaciones documentadas
 
 ```text
 lvj_lit_tipos_celebracion.id
@@ -4605,38 +4533,36 @@ lvj_lit_temas.id
 lvj_san_santo_dia.id
     → lvj_lit_lectura_dia.santo_id
 
-lvj_lit_lectura_dia.id
-    → lvj_lit_lectio_divina.liturgia_id
-
-lvj_lit_lectura_dia.id
-    → lvj_lit_palabra_dia.liturgia_id
-
 lvj_lit_tiempos.id
-    → lvj_lit_dia.tiempo_id [COMPATIBILIDAD]
+    → lvj_lit_dia.tiempo_id
 
 lvj_lit_tiempos.id
     → lvj_ora_devociones.tiempo_id
 ```
 
-## Verificación física obligatoria
+## Relación pendiente de consolidación
 
-Las relaciones hacia `lvj_lit_lectio_divina` y `lvj_lit_palabra_dia` son decisiones arquitectónicas oficiales, pero no deberá asumirse que ya existen como claves foráneas físicas.
+```text
+lvj_lit_lectio_divina.liturgia_id
+    → [REVISAR: lvj_lit_lectura_dia.id o lvj_lit_dia.id]
 
-Antes de crear o modificar restricciones, Codex deberá:
-
-1. verificar los tipos reales de las columnas;
-2. confirmar índices y claves foráneas en `information_schema`;
-3. localizar registros huérfanos;
-4. comprobar compatibilidad entre `INT` y `BIGINT`;
-5. preparar migración y reversión;
-6. mantener compatibilidad hacia atrás;
-7. no eliminar datos para forzar la relación.
+lvj_lit_palabra_dia.liturgia_id
+    → [REVISAR: tabla diaria canónica]
+```
 
 ## Regla arquitectónica
 
-No deberán alimentarse simultáneamente varias tablas con el mismo contenido litúrgico. La sincronización oficial de la CEC escribirá únicamente en la tabla canónica y en las estructuras hijas o derivadas expresamente documentadas.
+Antes de conectar nuevas interfaces deberá definirse formalmente la tabla canónica para el contenido litúrgico diario.
 
-El Santoral conservará su independencia funcional. La relación `santo_id` será opcional y no autoriza a importar el catálogo de santos desde la misma integración litúrgica si dicho servicio se administra por otra fuente oficial del ecosistema.
+La recomendación actual es utilizar:
+
+```text
+lvj_lit_lectura_dia
+```
+
+como fuente editorial principal, debido a que contiene el conjunto más completo de lecturas, reflexión, oración y recursos multimedia.
+
+No deberán alimentarse simultáneamente varias tablas con el mismo contenido sin una estrategia explícita de sincronización.
 
 ---
 
@@ -5279,23 +5205,19 @@ Las siguientes decisiones deberán resolverse mediante tareas específicas:
 
 ## Liturgia diaria
 
-La tabla canónica ya fue definida como:
+Definir si la tabla canónica será:
 
 ```text
 lvj_lit_lectura_dia
 ```
 
-Las relaciones lógicas oficiales serán:
+y establecer formalmente las relaciones de:
 
 ```text
 lvj_lit_lectio_divina.liturgia_id
-    → lvj_lit_lectura_dia.id
 
 lvj_lit_palabra_dia.liturgia_id
-    → lvj_lit_lectura_dia.id
 ```
-
-Permanece pendiente únicamente la auditoría física de tipos, índices, claves foráneas y registros huérfanos antes de ejecutar una migración. `lvj_lit_dia` se conserva como estructura de compatibilidad y no deberá utilizarse en nuevos desarrollos.
 
 ---
 
@@ -8415,68 +8337,14 @@ El Backend deberá:
 
 # 5.22 Backend de Liturgia
 
-El Backend será la única capa autorizada para consultar la integración de la Conferencia Episcopal de Colombia, normalizar el contenido, generar los recursos de IA, escribir en MySQL y servir la información a la PWA.
-
-El flujo obligatorio será:
-
-```text
-Proceso PHP programado o acción administrativa autorizada
-
-↓
-
-CecOrdoProvider
-
-↓
-
-API autorizada de la CEC
-
-↓
-
-Validación y normalización
-
-↓
-
-Transacción MySQL
-
-↓
-
-Generación de Reflexión y Lectio Divina con IA
-
-↓
-
-Revisión doctrinal automática
-
-↓
-
-Publicación y auditoría
-```
-
 El Backend deberá:
 
-- consultar `lvj_lit_lectura_dia` como tabla canónica;
+- consultar la tabla canónica definida;
 - evitar duplicidad entre tablas;
-- no escribir nuevos contenidos en `lvj_lit_dia`;
-- derivar `lvj_lit_palabra_dia` únicamente desde la tabla canónica;
-- encapsular la CEC en un proveedor o adaptador independiente;
-- consultar la API externa exclusivamente mediante cURL o el cliente HTTP ya existente;
-- almacenar las credenciales únicamente en variables de entorno o secretos protegidos;
-- validar código HTTP, tamaño, codificación, estructura y fecha de las respuestas;
-- calcular un hash de la fuente para evitar reprocesamientos innecesarios;
-- utilizar bloqueo de ejecución para impedir cron simultáneos;
-- aplicar timeout y reintentos limitados;
-- mantener la última versión válida cuando el proveedor falle;
-- impedir que una respuesta incompleta sobrescriba contenido publicado válido;
-- respetar el bloqueo editorial de registros corregidos manualmente;
-- registrar sincronizaciones, cambios, errores y resultados sin almacenar secretos;
-- generar Reflexión y Lectio Divina únicamente cuando falten o cuando cambie el contenido fuente;
-- utilizar perfiles desplegados del Centro de Formación y Supervisión IA;
-- no crear versiones de instrucciones automáticamente;
-- ejecutar una revisión doctrinal separada de la generación;
-- publicar automáticamente solo cuando las validaciones configuradas sean satisfactorias;
-- devolver únicamente el contenido necesario a la aplicación pública;
-- respetar fecha, estado, atribución y origen editorial.
-
-La PWA nunca llamará directamente a la API de la CEC ni a OpenAI.
+- relacionar tiempos, temas y santoral;
+- devolver únicamente el contenido necesario;
+- respetar fecha y estado;
+- no decidir contenido pastoral en el Frontend.
 
 ---
 
@@ -9853,43 +9721,21 @@ Deberá mantener separadas:
 
 # 6.18 Gestión de Liturgia
 
-El Panel Administrativo no tendrá como función ordinaria cargar manualmente las lecturas de cada día. Su responsabilidad principal será supervisar, corregir y auditar la automatización.
+El módulo deberá permitir administrar:
 
-El módulo deberá permitir:
+- fecha;
+- tiempo litúrgico;
+- tema;
+- celebración;
+- lecturas;
+- salmo;
+- Evangelio;
+- reflexión;
+- oración;
+- recursos multimedia;
+- estado.
 
-- consultar la fecha y celebración;
-- visualizar tiempo, semana, ciclo y color litúrgico;
-- revisar las lecturas oficiales sincronizadas;
-- consultar el proveedor, la fecha de sincronización y el hash de fuente;
-- ver el resultado de la última sincronización;
-- ejecutar una sincronización manual autorizada;
-- reprocesar una fecha;
-- comparar la versión anterior con la nueva;
-- bloquear o desbloquear editorialmente un registro;
-- corregir contenido sin que el cron lo sobrescriba;
-- revisar la Reflexión diaria generada;
-- revisar la Lectio Divina generada;
-- regenerar Reflexión o Lectio Divina mediante una acción autorizada;
-- aprobar, rechazar o publicar contenido generado;
-- consultar la evaluación doctrinal;
-- consultar la versión del perfil y de la instrucción utilizada;
-- administrar el estado de publicación;
-- asociar recursos multimedia;
-- consultar errores y auditoría.
-
-El Panel deberá distinguir claramente:
-
-```text
-Contenido oficial CEC
-
-Contenido propio LVJPRAYER generado con IA
-
-Contenido corregido o bloqueado por un editor
-```
-
-No deberá alimentar varias tablas litúrgicas simultáneamente. Toda edición deberá operar sobre la tabla canónica y sus estructuras relacionadas.
-
-Las credenciales de la CEC y de los proveedores de IA no deberán mostrarse, editarse ni almacenarse en el Panel.
+No deberá alimentar varias tablas litúrgicas simultáneamente sin una decisión arquitectónica definida.
 
 ---
 
@@ -11280,1106 +11126,397 @@ Ninguna información crítica del funcionamiento de la emisora deberá permanece
 
 ## 9.1 Objetivo
 
-El módulo **Liturgia** constituye uno de los componentes doctrinales y pastorales centrales de **La Voz de Jesús (LVJPRAYER)**.
+El módulo **Liturgia** constituye uno de los componentes doctrinales más importantes del proyecto **La Voz de Jesús (LVJ)**.
 
-Su propósito es presentar diariamente la Liturgia de la Iglesia Católica correspondiente a Colombia, utilizando como fuente oficial la información autorizada de la **Conferencia Episcopal de Colombia (CEC)** y complementándola con contenidos propios de oración y formación generados mediante inteligencia artificial bajo supervisión doctrinal.
+Su propósito es presentar diariamente la Liturgia de la Iglesia Católica de forma organizada, dinámica y completamente administrable desde la Base de Datos, permitiendo al usuario vivir el ritmo del Año Litúrgico en comunión con la Iglesia Universal.
 
-El módulo deberá ofrecer una experiencia integrada de:
+El módulo deberá integrar en una única experiencia:
 
-- fecha y celebración litúrgica;
-- tiempo, semana, ciclo y color litúrgico;
-- primera lectura;
-- salmo responsorial y estribillo;
-- segunda lectura cuando corresponda;
-- aclamación antes del Evangelio;
-- Evangelio;
-- reflexión pastoral diaria de LVJPRAYER;
-- Lectio Divina de LVJPRAYER;
-- oración, contemplación y compromiso;
-- frase bíblica para guardar;
-- audio y recursos multimedia cuando estén disponibles.
+- Calendario litúrgico.
+- Tiempo litúrgico.
+- Lecturas del día.
+- Evangelio.
+- Salmo responsorial.
+- Reflexión.
+- Lectio Divina.
+- Santoral.
+- Recursos pastorales relacionados.
 
-La operación ordinaria deberá ser automática. El administrador intervendrá únicamente para supervisar, corregir, bloquear, reprocesar o resolver excepciones.
+Toda la información deberá administrarse desde el Panel Administrativo y la Base de Datos, evitando contenido fijo escrito directamente en el código.
 
 ---
 
-## 9.2 Principios doctrinales y editoriales
+# 9.2 Filosofía del Módulo
 
-Toda implementación deberá respetar los siguientes principios:
+La Liturgia constituye el centro de la vida de la Iglesia.
 
-1. La Palabra proclamada y el calendario litúrgico no serán determinados por la IA.
-2. La CEC será la fuente oficial para la Liturgia utilizada en Colombia, conforme a la autorización otorgada al proyecto.
-3. Los textos recibidos de la CEC deberán conservarse fielmente y con la atribución correspondiente.
-4. La IA será una herramienta subordinada a la Sagrada Escritura, la Liturgia y la doctrina de la Iglesia.
-5. La Reflexión y la Lectio Divina generadas serán contenidos propios de LVJPRAYER y nunca se presentarán como documentos oficiales de la CEC.
-6. La centralidad de todo contenido deberá permanecer en Jesucristo.
-7. No se inventarán citas, datos históricos, interpretaciones magisteriales ni elementos biográficos.
-8. El contenido oficial y el contenido generado deberán mantener origen, versión y auditoría diferenciados.
-9. Una falla de IA nunca impedirá consultar las lecturas oficiales.
-10. Una falla del proveedor nunca eliminará ni sobrescribirá la última Liturgia válida almacenada.
+Por esta razón, el módulo deberá construirse respetando los siguientes principios:
 
----
+- Fidelidad al Calendario Litúrgico de la Iglesia Católica.
+- Configuración completamente dinámica.
+- Separación entre contenido y presentación.
+- Escalabilidad.
+- Reutilización de contenidos.
+- Integración con el resto de módulos del sistema.
 
-## 9.3 Alcance oficial de la integración CEC
-
-La integración inicial utilizará los siguientes servicios identificados del Ordo Colombiano:
-
-```text
-GET /liturgia/obtener-contenido-completo
-
-GET /ediciones/obtener-contenido-principal
-
-GET /ediciones/listar-informacion-tiempo-liturgico
-```
-
-Podrá evaluarse como fuente complementaria, sin convertirla en dependencia del núcleo inicial:
-
-```text
-GET /contenido-oraciones-reflexiones
-```
-
-Los siguientes servicios quedan fuera del alcance inicial de Liturgia porque serán atendidos por otros componentes del ecosistema:
-
-```text
-GET /santos
-
-GET /fiestas-principales
-
-GET /oraciones/categorias
-```
-
-El Santoral continuará siendo un módulo independiente alimentado mediante su propio concepto de servicio.
-
-Los nombres, rutas y formato real de los servicios deberán encapsularse en el proveedor. Ningún componente público deberá depender directamente de la estructura externa.
+La aplicación deberá presentar únicamente el contenido correspondiente a la fecha consultada.
 
 ---
 
-## 9.4 Arquitectura oficial
+# 9.3 Objetivos Funcionales
+
+El módulo permitirá administrar:
+
+- Calendario litúrgico.
+- Tiempo litúrgico.
+- Color litúrgico.
+- Solemnidades.
+- Fiestas.
+- Memorias.
+- Santos del día.
+- Primera lectura.
+- Salmo responsorial.
+- Segunda lectura.
+- Evangelio.
+- Frase destacada.
+- Reflexión.
+- Lectio Divina.
+- Pregunta para meditar.
+- Oración.
+- Compromiso.
+- Recursos multimedia.
+
+---
+
+# 9.4 Arquitectura del Módulo
+
+La arquitectura oficial será la siguiente.
 
 ```text
-Conferencia Episcopal de Colombia
+Panel Administrativo
 
-↓
+        │
 
-CecOrdoProvider — Backend PHP
+        ▼
 
-↓
+Calendario Litúrgico
 
-Descarga y validación de la respuesta
+        │
 
-↓
+        ▼
 
-Normalización al contrato interno LVJPRAYER
+Tiempo Litúrgico
 
-↓
+        │
 
-MySQL — tabla canónica de Liturgia
+        ▼
 
-↓
+Lecturas del Día
 
-Generación IA de Reflexión y Lectio Divina
+        │
 
-↓
+        ▼
 
-Revisión doctrinal automática
+API Liturgia
 
-↓
+        │
 
-API PHP interna
+        ▼
 
-↓
+Pantalla Liturgia
 
-PWA / Web / Radio / Podcast
+        │
 
-↓
+        ▼
 
 Usuario
 ```
 
-La PWA nunca consultará directamente a la CEC, MySQL ni OpenAI.
+Todo el contenido deberá obtenerse desde la Base de Datos.
 
 ---
 
-## 9.5 Fuente oficial y atribución
+# 9.5 Arquitectura de Base de Datos
 
-La fuente litúrgica oficial será:
+El módulo Liturgia utiliza un conjunto de tablas relacionadas que permiten administrar completamente el contenido diario.
 
-```text
-Conferencia Episcopal de Colombia
-Ordo Colombiano
-Código interno de proveedor: cec_ordo_colombiano
-País: CO
-```
+Las tablas oficiales se documentan en el **Capítulo 3 – Diccionario Oficial de Base de Datos**.
 
-El proyecto deberá conservar una referencia interna al permiso recibido, sin publicar información privada o confidencial.
+Entre ellas se encuentran:
 
-Toda vista pública que reproduzca el contenido deberá mostrar la atribución exigida por la autorización concedida.
+- lvj_liturgia
+- lvj_tiempos_liturgicos
+- lvj_temas_liturgicos
+- lvj_santoral
+- tablas auxiliares relacionadas
 
-La autorización no permite exponer credenciales, estructura interna protegida ni datos técnicos sensibles.
+Cada tabla posee una responsabilidad específica.
 
----
-
-## 9.6 Proveedor de Liturgia
-
-La integración deberá implementarse mediante un contrato desacoplado, adaptado a la estructura real del repositorio.
-
-Ejemplo conceptual:
-
-```php
-interface LiturgiaProviderInterface
-{
-    public function obtenerContenidoCompleto(): array;
-
-    public function obtenerContenidoPrincipal(): array;
-
-    public function obtenerInformacionTiempoLiturgico(): array;
-}
-```
-
-El adaptador oficial inicial será:
-
-```text
-CecOrdoProvider
-```
-
-Responsabilidades:
-
-- construir las solicitudes;
-- adjuntar encabezados privados desde variables de entorno;
-- aplicar timeout;
-- verificar TLS;
-- limitar redirecciones;
-- validar el código HTTP;
-- validar el tamaño máximo permitido;
-- descomprimir la respuesta cuando corresponda;
-- detectar JSON, JSON serializado o HTML estructurado;
-- devolver una estructura controlada al normalizador;
-- traducir errores externos a excepciones internas seguras;
-- no registrar credenciales;
-- no devolver la respuesta cruda al Frontend.
-
-Las variables de entorno conceptuales serán:
-
-```text
-CEC_ORDO_API_BASE_URL
-CEC_ORDO_API_NAME
-CEC_ORDO_API_KEY
-CEC_ORDO_API_TOKEN
-CEC_ORDO_TIMEOUT_SECONDS
-```
-
-Los nombres definitivos deberán ajustarse al sistema de configuración existente sin duplicar mecanismos.
+No deberán duplicarse contenidos entre tablas.
 
 ---
 
-## 9.7 Tabla canónica y persistencia
+# 9.6 Flujo Oficial
 
-La tabla canónica oficial será:
-
-```text
-lvj_lit_lectura_dia
-```
-
-Esta tabla almacenará el contenido litúrgico diario normalizado utilizado por las APIs públicas.
-
-Las responsabilidades serán:
+El flujo oficial del módulo será:
 
 ```text
-lvj_lit_lectura_dia
-    → Liturgia oficial y contenido diario principal
-
-lvj_lit_lectio_divina
-    → Lectio Divina generada o editada
-
-lvj_lit_palabra_dia
-    → Resumen derivado para Home y notificaciones
-
-lvj_lit_dia
-    → Compatibilidad temporal; no utilizar en nuevos desarrollos
-```
-
-No deberán escribirse simultáneamente las mismas lecturas en `lvj_lit_lectura_dia` y `lvj_lit_dia`.
-
-Antes de agregar columnas o crear tablas, Codex deberá inspeccionar el Diccionario actual, migraciones, APIs y código consumidor.
-
-La implementación deberá reutilizar campos y estructuras existentes para representar, cuando estén disponibles:
-
-- código y nombre de la fuente;
-- hash del contenido fuente;
-- fecha de sincronización;
-- estado de sincronización;
-- bloqueo editorial;
-- versión o identificador de edición;
-- estado de publicación;
-- atribución.
-
-Si no existen estructuras equivalentes, la propuesta de migración deberá documentarse y aprobarse antes de ejecutarse.
-
----
-
-## 9.8 Relación con Lectio Divina y Palabra del Día
-
-Las relaciones lógicas oficiales serán:
-
-```text
-lvj_lit_lectura_dia.id
-    → lvj_lit_lectio_divina.liturgia_id
-
-lvj_lit_lectura_dia.id
-    → lvj_lit_palabra_dia.liturgia_id
-```
-
-Antes de crear claves foráneas físicas deberá verificarse:
-
-- compatibilidad de tipos;
-- índices actuales;
-- registros huérfanos;
-- nulabilidad;
-- impacto sobre APIs existentes;
-- estrategia de reversión.
-
-`lvj_lit_palabra_dia` no deberá recibir una segunda importación. Su contenido deberá derivarse del registro canónico publicado.
-
----
-
-## 9.9 Sincronización automática
-
-La sincronización se ejecutará mediante procesos PHP compatibles con hosting compartido y cPanel.
-
-No dependerá de:
-
-- workers permanentes;
-- servicios Node.js residentes;
-- Docker obligatorio;
-- colas que requieran demonios propios.
-
-Flujo:
-
-```text
-Cron
+Fecha actual
 
 ↓
 
-Bloqueo de ejecución
+Calendario Litúrgico
 
 ↓
 
-Consulta al proveedor
+Tiempo Litúrgico
 
 ↓
 
-Validación de respuesta
+Lecturas
 
 ↓
 
-Cálculo de hash
+Reflexión
 
 ↓
 
-¿Existe cambio válido?
+API
 
-├── No → Registrar y finalizar
+↓
 
-└── Sí → Normalizar, guardar y generar contenidos
+Pantalla
 ```
 
-La primera configuración recomendada será:
-
-```text
-Sincronización completa: una vez al día
-
-Verificación adicional: cada 6 o 12 horas
-
-Generación IA: únicamente cuando falte contenido o cambie la Liturgia fuente
-```
-
-La frecuencia deberá ser configurable desde la arquitectura existente, sin almacenar secretos en MySQL.
+La fecha determina automáticamente el contenido mostrado.
 
 ---
 
-## 9.10 Idempotencia y protección de datos
+# 9.7 Calendario Litúrgico
 
-Toda sincronización deberá ser idempotente.
+El sistema deberá reconocer automáticamente:
 
-El proceso deberá:
+- Adviento
+- Navidad
+- Cuaresma
+- Semana Santa
+- Pascua
+- Tiempo Ordinario
 
-1. evitar registros duplicados por fecha y celebración;
-2. comparar el hash del contenido;
-3. actualizar solo cuando exista un cambio válido;
-4. utilizar transacciones;
-5. conservar la última versión publicada;
-6. no sobrescribir un registro con `editor_locked` o su equivalente;
-7. no borrar contenido por ausencia temporal del proveedor;
-8. registrar el número de elementos procesados, creados, actualizados, omitidos y fallidos;
-9. impedir dos ejecuciones simultáneas;
-10. permitir reintento seguro.
-
-Una respuesta vacía, parcial, ilegible o con fecha incoherente no deberá considerarse una actualización válida.
+Cada fecha pertenece únicamente a un tiempo litúrgico.
 
 ---
 
-## 9.11 Normalización y contrato interno
+# 9.8 Contenido Diario
 
-La respuesta externa deberá convertirse a un contrato interno estable antes de escribir en MySQL.
+Cada día podrá contener:
 
-El contrato conceptual deberá incluir:
+- Celebración.
+- Primera lectura.
+- Salmo.
+- Segunda lectura.
+- Evangelio.
+- Frase destacada.
+- Reflexión.
+- Pregunta para meditar.
+- Oración final.
+- Compromiso.
+- Mensaje final.
 
-```json
-{
-  "fecha": "YYYY-MM-DD",
-  "pais": "CO",
-  "fuente": "cec_ordo_colombiano",
-  "edicion": null,
-  "celebracion": {
-    "nombre": "",
-    "rango": "",
-    "principal": true
-  },
-  "contexto": {
-    "tiempo_liturgico": "",
-    "semana": null,
-    "ciclo_dominical": null,
-    "ciclo_ferial": null,
-    "color": ""
-  },
-  "lecturas": [],
-  "hash_fuente": "",
-  "sincronizado_en": ""
-}
-```
-
-La estructura definitiva deberá derivarse del cuerpo real de las respuestas y no de suposiciones.
-
-El normalizador deberá conservar:
-
-- referencia original;
-- referencia normalizada;
-- título litúrgico;
-- texto proclamado;
-- orden;
-- tipo de lectura;
-- estribillo del salmo;
-- alternativas o formas breves cuando existan;
-- contenido fuente necesario para auditoría.
+Todos estos elementos deberán administrarse desde la Base de Datos.
 
 ---
 
-## 9.12 Celebraciones y lecturas múltiples
+# 9.9 Integración con Santoral
 
-La primera fase utilizará la celebración principal correspondiente a cada fecha.
+El módulo Liturgia se integra con el módulo Santoral.
 
-Si la respuesta real de la CEC contiene varias celebraciones, varias opciones o una secuencia variable de lecturas, el sistema deberá conservar esa información en el contrato normalizado o en el registro de origen sin descartarla silenciosamente.
+Cada fecha podrá relacionarse con:
 
-La creación de nuevas tablas para múltiples celebraciones o lecturas variables requerirá:
+- Santo del día.
+- Memoria.
+- Fiesta.
+- Solemnidad.
 
-1. confirmar la estructura real de la respuesta;
-2. revisar las tablas existentes;
-3. demostrar que la tabla canónica no puede representarla;
-4. actualizar el Diccionario;
-5. preparar migración idempotente y reversión;
-6. mantener compatibilidad con la primera fase.
-
-No deberá modelarse anticipadamente una estructura paralela sin evidencia del proveedor.
+El Santoral mantiene su propia administración y no deberá duplicarse en las tablas de Liturgia.
 
 ---
 
-## 9.13 Contenido diario oficial
+# 9.10 Integración con la Biblia
 
-Cada registro podrá contener:
+Las citas bíblicas deberán almacenarse como referencias independientes.
 
-- fecha;
-- celebración;
-- rango litúrgico;
-- tiempo litúrgico;
-- semana litúrgica;
-- ciclo dominical;
-- ciclo ferial;
-- color;
-- primera lectura;
-- salmo responsorial;
-- estribillo;
-- segunda lectura;
-- aclamación;
-- Evangelio;
-- referencias originales;
-- textos litúrgicos completos;
-- alternativas cuando existan;
-- estado y atribución.
+Ejemplos:
 
-Los textos litúrgicos oficiales deberán almacenarse tal como los suministra la fuente autorizada, conservando únicamente las transformaciones técnicas necesarias para normalización, sanitización y presentación.
+- Génesis 1,1-5
+- Salmo 22
+- Mateo 5,1-12
+
+El texto bíblico podrá obtenerse desde el módulo Biblia cuando exista integración completa.
+
+De esta manera se evita almacenar repetidamente los mismos textos.
 
 ---
 
-## 9.14 Integración con la Biblia
+# 9.11 Lectio Divina
 
-El módulo Liturgia y el módulo Biblia cumplen responsabilidades diferentes.
+Cada día podrá disponer de una Lectio Divina completa.
 
-```text
-Liturgia
-    → Texto oficial proclamado y selección litúrgica del día
+La Lectio podrá incluir:
 
-Biblia
-    → Lectura, comparación, notas y estudio en las versiones autorizadas de LVJPRAYER
-```
+- Introducción.
+- Lectura.
+- Meditación.
+- Oración.
+- Contemplación.
+- Acción.
 
-Las referencias recibidas deberán normalizarse para permitir:
-
-- abrir el pasaje en el lector bíblico;
-- comparar versiones;
-- consultar notas;
-- iniciar un Estudio Bíblico IA;
-- enlazar con recursos formativos.
-
-No deberá sustituirse automáticamente el texto litúrgico de la CEC por la Biblia Platense/Straubinger, Torres Amat, Scío u otra versión interna.
-
-La duplicación técnica del texto litúrgico está justificada por su responsabilidad editorial distinta.
+Este contenido será administrado desde el Panel Administrativo.
 
 ---
 
-## 9.15 Reflexión diaria con IA
+# 9.12 Recursos Multimedia
 
-LVJPRAYER generará una Reflexión pastoral propia utilizando las lecturas oficiales y el contexto litúrgico del día.
+Cada celebración podrá incorporar:
 
-La IA no podrá modificar las lecturas ni decidir la celebración.
+- Imagen principal.
+- Imagen secundaria.
+- Banner.
+- Audio.
+- Video.
 
-La estructura recomendada será:
+Los archivos deberán almacenarse en el servidor.
 
-```text
-Título espiritual
-
-Tema central
-
-Unidad entre las lecturas
-
-Explicación pastoral del Evangelio
-
-Aplicación a la vida
-
-Llamado a la conversión
-
-Oración final
-
-Frase para guardar
-```
-
-La Reflexión deberá:
-
-- utilizar todas las lecturas relevantes;
-- conservar lenguaje católico, pastoral y comprensible;
-- respetar el tiempo y rango litúrgico;
-- distinguir entre texto bíblico e interpretación;
-- evitar moralismo, sentimentalismo vacío y afirmaciones no sustentadas;
-- no atribuir a Dios promesas que las lecturas no contienen;
-- no presentar una interpretación privada como doctrina oficial;
-- mantener una extensión configurada por el perfil desplegado.
+La Base de Datos únicamente almacenará las rutas correspondientes.
 
 ---
 
-## 9.16 Lectio Divina automática
+# 9.13 Panel Administrativo
 
-Cada día podrá disponer de una Lectio Divina propia de LVJPRAYER.
+Desde el Panel Administrativo deberá ser posible:
 
-La estructura oficial será:
+- Crear celebraciones.
+- Editar celebraciones.
+- Publicar contenido.
+- Programar fechas.
+- Asociar tiempos litúrgicos.
+- Asociar santos.
+- Asociar recursos multimedia.
 
-```text
-✠ Invocación al Espíritu Santo
-
-Lectio — ¿Qué dice el texto?
-
-Meditatio — ¿Qué me dice Dios?
-
-Oratio — ¿Qué le respondo al Señor?
-
-Contemplatio — ¿Cómo permanezco ante Él?
-
-Actio — ¿Qué compromiso concreto asumo?
-
-Pregunta para meditar
-
-Palabra para guardar
-
-Oración o envío final
-```
-
-La Lectio Divina deberá:
-
-- partir de la Liturgia oficial del día;
-- mantener el sentido literal antes de la aplicación espiritual;
-- no inventar elementos ausentes del texto;
-- orientar al encuentro personal con Cristo;
-- proponer una acción concreta, prudente y realizable;
-- incluir pausas contemplativas cuando corresponda;
-- permitir una futura versión guiada por audio.
-
-La tabla `lvj_lit_lectio_divina` deberá ampliarse solo después de verificar sus campos reales y su compatibilidad con esta estructura.
+Todo el contenido deberá gestionarse desde esta interfaz.
 
 ---
 
-## 9.17 Centro de Formación y Supervisión IA
+# 9.14 Integraciones
 
-La Liturgia reutilizará el Centro de Formación y Supervisión IA existente.
+El módulo Liturgia se integra con:
 
-No se crearán tablas paralelas de prompts, reglas, fuentes, ejemplos, evaluaciones o auditoría.
+- Santoral.
+- Biblia.
+- Biblioteca.
+- Radio.
+- Podcast.
+- Capilla Virtual.
 
-Los perfiles recomendados serán:
+Ejemplos:
 
-```text
-liturgia_reflexion_diaria
-
-liturgia_lectio_divina
-
-liturgia_revision_doctrinal
-```
-
-Los nombres definitivos deberán ajustarse a la convención real de `lvj_ai_profiles`.
-
-Cada generación deberá registrar, mediante las estructuras existentes:
-
-- perfil;
-- versión de instrucciones desplegada;
-- proveedor y modelo;
-- hash del contexto;
-- fecha de ejecución;
-- respuesta;
-- validación;
-- revisión;
-- estado de publicación;
-- errores.
-
-El proceso de Liturgia no publicará nuevas versiones de instrucciones. Solo podrá utilizar versiones previamente desplegadas y aprobadas desde el Centro.
+- El Evangelio del día podrá enlazar con la Lectio Divina.
+- El Rosario podrá mostrar el misterio correspondiente al tiempo litúrgico.
+- La Radio podrá emitir automáticamente el Evangelio del día.
 
 ---
 
-## 9.18 Revisión doctrinal automática
+# 9.15 Seguridad
 
-La generación y la revisión deberán utilizar perfiles o instrucciones separadas.
+No deberán escribirse directamente en el código:
 
-La revisión verificará como mínimo:
+- Lecturas.
+- Evangelios.
+- Reflexiones.
+- Fechas.
+- Colores litúrgicos.
 
-- fidelidad a las lecturas;
-- centralidad de Jesucristo;
-- coherencia con la doctrina católica;
-- concordancia con el tiempo litúrgico;
-- respeto a la celebración;
-- ausencia de citas inventadas;
-- ausencia de datos históricos no suministrados;
-- distinción entre contenido oficial y contenido generado;
-- lenguaje pastoral prudente;
-- ausencia de promesas automáticas de sanación, liberación o prosperidad;
-- ausencia de interpretaciones contrarias al Magisterio.
-
-El resultado deberá ser estructurado y auditable.
-
-Ejemplo conceptual:
-
-```json
-{
-  "aprobado": true,
-  "fidelidad_biblica": 98,
-  "coherencia_doctrinal": 97,
-  "coherencia_liturgica": 99,
-  "advertencias": []
-}
-```
-
-Los umbrales de publicación serán configurables dentro del sistema de IA existente.
+Todo deberá obtenerse desde la Base de Datos.
 
 ---
 
-## 9.19 Publicación automática
+# 9.16 Buenas Prácticas
 
-Las lecturas oficiales podrán publicarse automáticamente después de superar validaciones técnicas y editoriales de origen.
-
-La Reflexión y la Lectio Divina podrán publicarse automáticamente cuando:
-
-```text
-Liturgia oficial válida
-+
-Generación completa
-+
-Estructura correcta
-+
-Revisión doctrinal aprobada
-+
-Publicación automática habilitada
-=
-Contenido publicado
-```
-
-Si la generación o la revisión fallan:
-
-- las lecturas oficiales permanecerán disponibles;
-- el contenido generado quedará pendiente o en error;
-- no se publicará texto incompleto;
-- se registrará la incidencia;
-- podrá ejecutarse un reintento automático limitado o una acción administrativa.
-
-Las correcciones manuales deberán activar un bloqueo editorial para impedir que el cron las sobrescriba.
+- Separar citas bíblicas del texto.
+- Evitar duplicar contenidos.
+- Mantener la independencia entre Liturgia y Santoral.
+- Utilizar fechas como elemento principal de búsqueda.
+- Centralizar toda la administración en el Panel Administrativo.
 
 ---
 
-## 9.20 Estados editoriales y operativos
+# 9.17 Reglas para Codex
 
-La implementación reutilizará los estados existentes cuando sean compatibles.
+Antes de modificar el módulo Liturgia deberá verificar:
 
-Conceptualmente deberá representar:
+1. Si la fecha ya posee contenido.
+2. Si la celebración ya existe.
+3. Si el tiempo litúrgico ya está definido.
+4. Si la información pertenece realmente al módulo Liturgia o al módulo Santoral.
+5. Si el cambio requiere actualizar AGENTS.md.
 
-```text
-pendiente_sincronizacion
+No está permitido:
 
-sincronizado
-
-validado
-
-pendiente_generacion
-
-generando
-
-generado
-
-pendiente_revision
-
-aprobado
-
-publicado
-
-requiere_revision
-
-bloqueado_editorialmente
-
-error
-```
-
-No deberán agregarse estados nuevos sin revisar catálogos y reglas actuales.
-
-El estado de la Liturgia oficial deberá mantenerse separado del estado de la Reflexión y de la Lectio Divina para que una falla de IA no invalide el contenido oficial.
+- Duplicar textos bíblicos innecesariamente.
+- Escribir lecturas directamente en el frontend.
+- Duplicar información del Santoral.
+- Crear nuevas tablas cuando una existente pueda ampliarse.
 
 ---
 
-## 9.21 Panel Administrativo
-
-El Panel será una consola de supervisión y edición excepcional.
-
-Deberá mostrar:
-
-- proveedor activo;
-- última sincronización;
-- edición o período disponible;
-- cantidad de registros procesados;
-- fechas disponibles;
-- errores pendientes;
-- estado de generación IA;
-- estado de revisión doctrinal;
-- versión del perfil desplegado;
-- registros bloqueados;
-- estado de publicación automática.
-
-Acciones permitidas:
-
-- sincronizar ahora;
-- reprocesar una fecha;
-- ver el contenido fuente sanitizado;
-- comparar cambios;
-- corregir;
-- bloquear o desbloquear;
-- regenerar Reflexión;
-- regenerar Lectio Divina;
-- aprobar o rechazar;
-- publicar o retirar publicación;
-- consultar auditoría.
-
-El Panel no mostrará ni administrará las credenciales externas.
-
----
-
-## 9.22 API interna de LVJPRAYER
-
-La aplicación pública consumirá únicamente endpoints internos.
-
-Rutas conceptuales:
-
-```text
-GET /api/liturgia/hoy
-
-GET /api/liturgia/fecha?fecha=YYYY-MM-DD
-
-GET /api/liturgia/calendario
-
-GET /api/liturgia/reflexion?fecha=YYYY-MM-DD
-
-GET /api/liturgia/lectio?fecha=YYYY-MM-DD
-```
-
-Las rutas reales deberán adaptarse al patrón existente y no duplicar endpoints funcionales.
-
-Las respuestas deberán:
-
-- utilizar el formato oficial del Backend;
-- excluir credenciales y metadatos internos innecesarios;
-- identificar claramente el origen oficial y el contenido propio;
-- devolver estados de carga y ausencia comprensibles;
-- respetar publicación, fecha y borrado lógico;
-- incluir atribución cuando corresponda.
-
----
-
-## 9.23 Experiencia pública
-
-La pantalla recomendada será:
-
-```text
-Liturgia del Día
-
-├── Lecturas
-├── Reflexión
-├── Lectio Divina
-└── Escuchar
-```
-
-### Lecturas
-
-- celebración;
-- tiempo y color;
-- primera lectura;
-- salmo;
-- segunda lectura;
-- aclamación;
-- Evangelio;
-- referencias;
-- enlace al módulo Biblia.
-
-### Reflexión
-
-- título;
-- mensaje central;
-- unidad de las lecturas;
-- aplicación;
-- oración;
-- frase destacada.
-
-### Lectio Divina
-
-- invocación;
-- Lectio;
-- Meditatio;
-- Oratio;
-- Contemplatio;
-- Actio;
-- compromiso;
-- palabra para guardar.
-
-### Escuchar
-
-- audio de cada lectura cuando exista;
-- reproducción continua;
-- Reflexión narrada;
-- Lectio Divina guiada;
-- pausas contemplativas en futuras versiones.
-
-La primera implementación no deberá bloquearse por la ausencia de audio.
-
----
-
-## 9.24 Recursos multimedia y audio
-
-Las imágenes, audios y videos se almacenarán fuera de MySQL. La Base de Datos conservará únicamente URL, tipo, estado y metadatos.
-
-La generación o incorporación de audio será una fase posterior y deberá:
-
-- respetar el texto litúrgico oficial;
-- identificar voz, idioma y versión;
-- no exponer claves de síntesis;
-- reutilizar la infraestructura multimedia existente;
-- coordinarse con el reproductor global para evitar audio simultáneo;
-- permitir regeneración sin alterar el texto fuente.
-
----
-
-## 9.25 Integración con otros módulos
-
-El módulo Liturgia podrá integrarse con:
-
-- Biblia: apertura y comparación del pasaje;
-- Estudio Bíblico IA: profundización opcional;
-- Radio: programación del Evangelio, Reflexión o Lectio;
-- Podcast: publicación de contenido narrado;
-- Capilla Virtual: acceso a adoración y oración;
-- Oraciones: recursos vinculados al tiempo litúrgico;
-- Notificaciones: frase o invitación diaria;
-- Home: resumen derivado desde `lvj_lit_palabra_dia`.
-
-El Santoral conservará su servicio y administración independientes.
-
-Ninguna integración deberá duplicar el contenido fuente.
-
----
-
-## 9.26 Seguridad
-
-Está prohibido:
-
-- exponer claves o tokens de la CEC en React, TypeScript, logs, respuestas o GitHub;
-- consultar la CEC directamente desde el navegador;
-- guardar secretos en MySQL;
-- incluir secretos en capturas, documentación pública o mensajes de error;
-- permitir URLs externas arbitrarias;
-- registrar encabezados privados completos;
-- devolver cuerpos crudos del proveedor al usuario;
-- permitir que una fecha solicitada controle una URL externa sin validación;
-- desactivar TLS;
-- aceptar respuestas ilimitadas;
-- ejecutar sincronizaciones públicas sin autenticación y autorización.
-
-Las credenciales deberán ser exclusivas para LVJPRAYER cuando la CEC las suministre y deberán rotarse conforme a la política acordada.
-
----
-
-## 9.27 Manejo de errores y continuidad
-
-### Proveedor no disponible
-
-```text
-Conservar contenido local válido
-
-Registrar error
-
-Reintentar de forma limitada
-
-No mostrar pantalla vacía
-```
-
-### Respuesta incompleta
-
-```text
-Rechazar actualización
-
-Conservar versión anterior
-
-Marcar para revisión
-```
-
-### IA no disponible
-
-```text
-Publicar o conservar lecturas oficiales
-
-Mantener Reflexión y Lectio pendientes
-
-No generar contenido ficticio de respaldo
-```
-
-### Error doctrinal
-
-```text
-No publicar contenido generado
-
-Guardar evaluación
-
-Enviar a revisión administrativa
-```
-
-### Corrección editorial
-
-```text
-Guardar versión corregida
-
-Registrar usuario y motivo
-
-Activar bloqueo editorial
-```
-
----
-
-## 9.28 Auditoría y trazabilidad
-
-Cada sincronización deberá registrar:
-
-- proveedor;
-- endpoint lógico;
-- inicio y fin;
-- código HTTP;
-- hash de respuesta;
-- hash normalizado;
-- cantidad procesada;
-- cantidad creada;
-- cantidad actualizada;
-- cantidad omitida;
-- errores;
-- versión de normalizador;
-- resultado.
-
-Cada generación IA deberá registrar mediante las tablas `lvj_ai_*` existentes:
-
-- perfil;
-- versión de instrucción;
-- contexto o hash de contexto;
-- modelo;
-- respuesta;
-- evaluación;
-- revisión;
-- publicación.
-
-Nunca se almacenarán credenciales en auditoría.
-
----
-
-## 9.29 Estado actual
+# 9.18 Estado Actual
 
 Estado del módulo:
 
-🟡 Arquitectura aprobada y automatización pendiente de implementación.
+🟢 En desarrollo avanzado.
 
-Confirmado:
+Implementado:
 
-- permiso de uso de la información de la CEC;
-- endpoints principales identificados;
-- Backend PHP como único consumidor externo;
-- MySQL como fuente pública oficial;
-- `lvj_lit_lectura_dia` como tabla canónica;
-- Reflexión y Lectio Divina como contenidos propios de LVJPRAYER;
-- reutilización del Centro de Formación y Supervisión IA;
-- Santoral fuera del alcance inicial de esta integración.
+- Arquitectura general.
+- Modelo de Base de Datos.
+- Integración con el calendario.
+- Administración del contenido diario.
 
 Pendiente:
 
-- inspeccionar y documentar el cuerpo real de las respuestas;
-- mapear los campos al modelo existente;
-- auditar tablas, tipos, índices y claves foráneas;
-- implementar `CecOrdoProvider`;
-- implementar normalizador y validador;
-- implementar sincronización y logs;
-- configurar perfiles de IA;
-- implementar generación y revisión;
-- adaptar Panel, API y pantalla pública;
-- ejecutar pruebas de continuidad y seguridad;
-- habilitar producción de forma controlada.
+- Integración completa con el módulo Biblia.
+- Lectio Divina automática.
+- Recursos multimedia.
+- Audio de las lecturas.
+- Video del Evangelio.
 
 ---
 
-## 9.30 Fases de implementación
+# 9.19 Roadmap
 
-### Fase 1 — Descubrimiento y contrato
+El crecimiento previsto incluye:
 
-- capturar respuestas sanitizadas;
-- identificar estructura real;
-- crear contrato interno;
-- definir mapeo sin modificar producción.
-
-### Fase 2 — Sincronización oficial
-
-- proveedor PHP;
-- normalizador;
-- validaciones;
-- escritura idempotente en tabla canónica;
-- logs;
-- cron;
-- Panel de supervisión básico.
-
-### Fase 3 — Reflexión y Lectio Divina
-
-- perfiles del Centro IA;
-- generación estructurada;
-- revisión doctrinal;
-- persistencia;
-- publicación automática configurable.
-
-### Fase 4 — Experiencia pública
-
-- pestañas Lecturas, Reflexión y Lectio;
-- consulta por fecha;
-- Home derivado;
-- enlaces con Biblia;
-- atribución.
-
-### Fase 5 — Multimedia
-
-- audio por lectura;
-- Reflexión narrada;
-- Lectio guiada;
-- integración con Radio y Podcast.
+- Calendario litúrgico perpetuo.
+- Integración automática con el Santoral.
+- Integración con la Biblia.
+- Lectio Divina enriquecida.
+- Comentarios patrísticos.
+- Comentarios de los Padres de la Iglesia.
+- Recursos audiovisuales.
+- Audio del Evangelio.
+- Sincronización con la programación de la Radio.
 
 ---
 
-## 9.31 Reglas para Codex
+# 9.20 Regla Fundamental
 
-Antes de implementar cualquier cambio en Liturgia, Codex deberá:
+El módulo Liturgia constituye la referencia oficial para el contenido litúrgico diario de la plataforma.
 
-1. leer completamente AGENTS.md;
-2. inspeccionar la implementación real;
-3. revisar el Diccionario actual de Base de Datos;
-4. localizar APIs, servicios, cron, componentes y CRUD existentes;
-5. inspeccionar los cuerpos sanitizados de la CEC;
-6. confirmar la tabla canónica y las dependencias actuales;
-7. verificar tipos, índices y claves foráneas;
-8. identificar incompatibilidades con `lvj_lit_dia`;
-9. reutilizar el Centro de Formación y Supervisión IA;
-10. presentar un plan localizado;
-11. implementar solo la fase autorizada;
-12. mantener compatibilidad hacia atrás;
-13. no ejecutar migraciones en producción;
-14. ejecutar pruebas disponibles;
-15. entregar un informe verificable.
+Toda celebración, lectura, reflexión, recurso multimedia y configuración deberá administrarse exclusivamente desde la Base de Datos y el Panel Administrativo.
 
-Codex no deberá:
+La aplicación nunca deberá contener contenido litúrgico fijo escrito directamente en el código fuente.
 
-- crear un repositorio o aplicación paralela sin autorización;
-- consumir la CEC desde el Frontend;
-- copiar secretos al código;
-- escribir en varias tablas diarias;
-- sustituir el Leccionario por una Biblia interna;
-- integrar Santoral dentro de esta tarea;
-- crear prompts fuera del Centro IA;
-- publicar versiones de instrucciones automáticamente;
-- publicar contenido que no supere la revisión configurada;
-- eliminar o renombrar tablas;
-- alterar producción;
-- ampliar el alcance hacia santos, fiestas u oraciones generales;
-- inventar campos basándose únicamente en los nombres de endpoints.
-
----
-
-## 9.32 Formato de entrega para implementaciones
-
-Toda implementación deberá informar:
-
-1. Diagnóstico de la implementación existente.
-2. Funcionalidad reutilizada.
-3. Inconsistencias encontradas.
-4. Cambios requeridos.
-5. Archivos afectados.
-6. Implementación.
-7. Seguridad aplicada.
-8. Pruebas ejecutadas.
-9. Resultado.
-10. Limitaciones reales.
-
-También deberá especificar:
-
-- endpoints externos e internos utilizados;
-- tablas consultadas y modificadas;
-- migraciones propuestas, no ejecutadas en producción;
-- perfiles y versiones IA usados;
-- programación cron;
-- estrategia de reversión;
-- datos que permanecen pendientes de confirmación.
-
----
-
-## 9.33 Regla Fundamental
-
-La **Conferencia Episcopal de Colombia** será la fuente oficial de la Liturgia diaria utilizada por LVJPRAYER para Colombia.
-
-El Backend PHP será la única capa autorizada para consultar esa fuente, validar, normalizar y persistir el contenido.
-
-MySQL será la fuente consumida por la aplicación pública.
-
-La Reflexión y la Lectio Divina serán contenidos propios de LVJPRAYER, generados mediante perfiles aprobados del Centro de Formación y Supervisión IA y sometidos a revisión doctrinal antes de su publicación automática.
-
-El Panel Administrativo supervisará y corregirá excepciones; no realizará mantenimiento manual diario.
-
-La PWA nunca contendrá lecturas fijas, secretos, llamadas directas a la CEC ni llamadas directas al proveedor de IA.
-
----
+El módulo deberá mantenerse fiel al calendario litúrgico de la Iglesia Católica y estar preparado para evolucionar sin alterar la arquitectura general del sistema.
 
 # CAPÍTULO 10
 # MÓDULO BIBLIA
@@ -12845,28 +11982,15 @@ El código fuente nunca deberá contener textos bíblicos fijos; toda la informa
 
 **Documento:** AGENTS.md
 
-**Versión:** 2.1
+**Versión:** 2.0
 
 **Estado:** 🟢 Vigente
 
-**Última actualización:** Agosto de 2026
+**Última actualización:** Julio de 2026
 
 Este documento constituye la **especificación técnica oficial** del proyecto **La Voz de Jesús (LVJ)**.
 
-La versión 2.1 conserva la arquitectura base del sistema e incorpora como decisión oficial la automatización de la Liturgia diaria desde la Conferencia Episcopal de Colombia, la consolidación de `lvj_lit_lectura_dia` como tabla canónica y la generación supervisada de Reflexión y Lectio Divina mediante IA.
-
-## Cambios principales de la versión 2.1
-
-- Se reconoce a la CEC y al Ordo Colombiano como fuente oficial de Liturgia para Colombia.
-- Se autoriza el ingreso de contenido mediante procesos internos PHP validados y auditados.
-- Se define `lvj_lit_lectura_dia` como tabla canónica.
-- Se clasifica `lvj_lit_dia` como estructura de compatibilidad sin nuevas escrituras.
-- Se definen las relaciones lógicas de Lectio Divina y Palabra del Día con la tabla canónica.
-- Se incorpora la sincronización automática, idempotencia, caché persistente y conservación de la última versión válida.
-- Se incorporan perfiles IA separados para Reflexión, Lectio Divina y revisión doctrinal.
-- Se redefine el Panel de Liturgia como consola de supervisión y excepción, no como carga manual diaria.
-- Se mantiene el Santoral como servicio independiente fuera del alcance inicial.
-- Se actualizan las reglas del Backend, Panel Administrativo, Modelo Relacional y Sistema de Contenidos.
+La versión 2.0 establece la arquitectura base del sistema y define las normas, principios y lineamientos que deberán seguir todos los desarrollos futuros del proyecto.
 
 ---
 
@@ -12991,7 +12115,7 @@ Ante cualquier diferencia entre la implementación del sistema y este documento,
 
 ---
 
-**Fin del documento — AGENTS.md v2.1**
+**Fin del documento — AGENTS.md v2.0**
 
 ## 10.16.1 Formato maestro y niveles del Estudio Bíblico IA
 
