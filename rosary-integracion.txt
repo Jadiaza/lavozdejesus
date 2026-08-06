@@ -1,0 +1,2184 @@
+﻿DIAGNÓSTICO MÓDULO SANTO ROSARIO
+
+========================================
+1. ESTADO DE GIT
+========================================
+?? rosary-integracion.txt
+
+
+========================================
+2. ARCHIVOS DEL MÓDULO ROSARIO
+========================================
+src\modules\rosary\components\PrayerStepCard.tsx
+src\modules\rosary\components\RosaryBeadRing.tsx
+src\modules\rosary\components\RosaryCompletion.tsx
+src\modules\rosary\components\RosaryFullRing.tsx
+src\modules\rosary\components\RosaryIntentionSheet.tsx
+src\modules\rosary\components\RosaryLayout.tsx
+src\modules\rosary\components\RosaryPrayerScene.tsx
+src\modules\rosary\components\RosaryProgress.tsx
+src\modules\rosary\components\RosaryRows.tsx
+src\modules\rosary\components\RosarySettingsSheet.tsx
+src\modules\rosary\components\RosaryStateViews.tsx
+src\modules\rosary\hooks\useKeepAwake.ts
+src\modules\rosary\hooks\useRosaryFlow.ts
+src\modules\rosary\hooks\useRosaryPreferences.ts
+src\modules\rosary\hooks\useRosarySession.ts
+src\modules\rosary\hooks\useRosaryToday.ts
+src\modules\rosary\mocks\mysteries.ts
+src\modules\rosary\mocks\mysteryArt.ts
+src\modules\rosary\mocks\prayers.ts
+src\modules\rosary\pages\RosarioAudio.tsx
+src\modules\rosary\pages\RosarioConfiguracion.tsx
+src\modules\rosary\pages\RosarioDescargas.tsx
+src\modules\rosary\pages\RosarioDiario.tsx
+src\modules\rosary\pages\RosarioDigital.tsx
+src\modules\rosary\pages\RosarioFisico.tsx
+src\modules\rosary\pages\RosarioHome.tsx
+src\modules\rosary\pages\RosarioInfo.tsx
+src\modules\rosary\pages\RosarioIntencion.tsx
+src\modules\rosary\pages\RosarioMisterios.tsx
+src\modules\rosary\pages\RosarioModalidad.tsx
+src\modules\rosary\pages\RosarioSeleccionMisterios.tsx
+src\modules\rosary\services\http.ts
+src\modules\rosary\services\rosaryAudioService.ts
+src\modules\rosary\services\rosaryFlowService.ts
+src\modules\rosary\services\rosaryOfflineService.ts
+src\modules\rosary\services\rosaryRepository.ts
+src\modules\rosary\services\rosarySessionService.ts
+src\modules\rosary\services\rosaryTodayService.ts
+src\modules\rosary\types\index.ts
+src\modules\rosary\utils\buildRosary.ts
+src\modules\rosary\utils\mysteryOfDay.ts
+src\modules\rosary\utils\routes.ts
+
+
+========================================
+3. RECURSOS VISUALES DEL ROSARIO
+========================================
+src\assets\rosary\dolorosos.jpg
+src\assets\rosary\gloriosos.jpg
+src\assets\rosary\gozosos.jpg
+src\assets\rosary\luminosos.jpg
+
+
+========================================
+ARCHIVO: package.json
+========================================
+{
+  "name": "vite_react_shadcn_ts",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:dev": "vite build --mode development",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@fontsource/literata": "^5.3.0",
+    "@hookform/resolvers": "^3.10.0",
+    "@radix-ui/react-accordion": "^1.2.11",
+    "@radix-ui/react-alert-dialog": "^1.1.14",
+    "@radix-ui/react-aspect-ratio": "^1.1.7",
+    "@radix-ui/react-avatar": "^1.1.10",
+    "@radix-ui/react-checkbox": "^1.3.2",
+    "@radix-ui/react-collapsible": "^1.1.11",
+    "@radix-ui/react-context-menu": "^2.2.15",
+    "@radix-ui/react-dialog": "^1.1.14",
+    "@radix-ui/react-dropdown-menu": "^2.1.15",
+    "@radix-ui/react-hover-card": "^1.1.14",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-menubar": "^1.1.15",
+    "@radix-ui/react-navigation-menu": "^1.2.13",
+    "@radix-ui/react-popover": "^1.1.14",
+    "@radix-ui/react-progress": "^1.1.7",
+    "@radix-ui/react-radio-group": "^1.3.7",
+    "@radix-ui/react-scroll-area": "^1.2.9",
+    "@radix-ui/react-select": "^2.2.5",
+    "@radix-ui/react-separator": "^1.1.7",
+    "@radix-ui/react-slider": "^1.3.5",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-switch": "^1.2.5",
+    "@radix-ui/react-tabs": "^1.1.12",
+    "@radix-ui/react-toast": "^1.2.14",
+    "@radix-ui/react-toggle": "^1.1.9",
+    "@radix-ui/react-toggle-group": "^1.1.10",
+    "@radix-ui/react-tooltip": "^1.2.7",
+    "@supabase/supabase-js": "^2.78.0",
+    "@tanstack/react-query": "^5.83.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "date-fns": "^3.6.0",
+    "embla-carousel-react": "^8.6.0",
+    "input-otp": "^1.4.2",
+    "lucide-react": "^0.462.0",
+    "mysql2": "^3.22.5",
+    "next-themes": "^0.3.0",
+    "react": "^18.3.1",
+    "react-day-picker": "^8.10.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.61.1",
+    "react-resizable-panels": "^2.1.9",
+    "react-router-dom": "^6.30.1",
+    "recharts": "^2.15.4",
+    "sonner": "^1.7.4",
+    "tailwind-merge": "^2.6.0",
+    "tailwindcss-animate": "^1.0.7",
+    "vaul": "^0.9.9",
+    "zod": "^3.25.76",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.32.0",
+    "@tailwindcss/typography": "^0.5.16",
+    "@testing-library/jest-dom": "^6.6.0",
+    "@testing-library/react": "^16.0.0",
+    "@types/node": "^22.16.5",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react-swc": "^3.11.0",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.32.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^15.15.0",
+    "jsdom": "^20.0.3",
+    "lovable-tagger": "^1.1.13",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.38.0",
+    "vite": "^5.4.19",
+    "vite-plugin-pwa": "^1.3.0",
+    "vitest": "^3.2.4",
+    "workbox-window": "^7.4.1"
+  }
+}
+
+
+========================================
+ARCHIVO: src\App.tsx
+========================================
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { lazy, Suspense } from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { RadioPlayerProvider } from "@/context/RadioPlayerContext";
+import {RosarioHome} from "@/modules/rosary/pages/RosarioHome";
+import {RosarioDigital} from "@/modules/rosary/pages/RosarioDigital";
+import Index from "./pages/Index.tsx";
+
+const Contacto = lazy(() => import("./pages/Contacto.tsx"));
+const LecturasDelDia = lazy(() => import("./pages/LecturasDelDia.tsx"));
+const Programacion = lazy(() => import("./pages/Programacion.tsx"));
+const Radio = lazy(() => import("./pages/Radio.tsx"));
+const Capilla = lazy(() => import("./pages/Capilla.tsx"));
+const Intenciones = lazy(() => import("./pages/Intenciones.tsx"));
+const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const BibliaHome = lazy(() => import("./pages/biblia/BibliaHome.tsx"));
+const BibliaLeer = lazy(() => import("./pages/biblia/BibliaLeer.tsx"));
+const BibliaComparar = lazy(() => import("./pages/biblia/BibliaComparar.tsx"));
+const BibliaProximamente = lazy(() => import("./pages/biblia/BibliaProximamente.tsx"));
+const BibliaEstudio = lazy(() => import("./pages/biblia/BibliaEstudio.tsx"));
+const BibliaMapas = lazy(() => import("./pages/biblia/BibliaMapas.tsx"));
+const BibliaPersonajes = lazy(() => import("./pages/biblia/BibliaPersonajes.tsx"));
+const BibliaLibros = lazy(() => import("./pages/biblia/BibliaLibros.tsx"));
+const BibliaFavoritos = lazy(() => import("./pages/biblia/BibliaFavoritos.tsx"));
+const BibliaMiBiblia = lazy(() => import("./pages/biblia/BibliaMiBiblia.tsx"));
+const Auth = lazy(() => import("./pages/Auth.tsx"));
+const AcercaDe = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.AcercaDe })));
+const Devociones = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Devociones })));
+const Donar = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Donar })));
+const Eventos = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Eventos })));
+const Formacion = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Formacion })));
+const Liturgia = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Liturgia })));
+const Podcast = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Podcast })));
+const PoliticaPrivacidad = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.PoliticaPrivacidad })));
+const TerminosCondiciones = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.TerminosCondiciones })));
+const Testimonios = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Testimonios })));
+
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <RadioPlayerProvider>
+        <BrowserRouter>
+          <Suspense fallback={<div className="min-h-screen bg-background" aria-label="Cargando contenido" />}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/radio" element={<Radio />} />
+              <Route path="/capilla" element={<Capilla />} />
+              <Route path="/capilla-virtual" element={<Capilla />} />
+              <Route path="/capilla/intenciones" element={<Intenciones />} />
+              <Route path="/contacto" element={<Contacto />} />
+              <Route path="/lecturas-del-dia" element={<LecturasDelDia />} />
+              <Route path="/lectura-del-dia" element={<LecturasDelDia />} />
+              <Route path="/programacion" element={<Programacion />} />
+              <Route path="/biblia" element={<BibliaHome />} />
+              <Route path="/Biblia" element={<BibliaHome />} />
+              <Route path="/biblia/leer" element={<BibliaLeer />} />
+              <Route path="/biblia/libros" element={<BibliaLibros />} />
+              <Route path="/biblia/favoritos" element={<BibliaFavoritos />} />
+              <Route path="/biblia/mi-biblia" element={<BibliaMiBiblia />} />
+              <Route path="/biblia/comparar" element={<BibliaComparar />} />
+              <Route path="/biblia/estudio" element={<BibliaEstudio />} />
+              <Route path="/biblia/estudio/:id" element={<BibliaEstudio />} />
+              <Route path="/biblia/mapas" element={<BibliaMapas />} />
+              <Route path="/biblia/personajes" element={<BibliaPersonajes />} />
+              <Route path="/biblia/:section" element={<BibliaProximamente />} />
+              <Route path="/acceso" element={<Auth />} />
+              <Route path="/devociones" element={<Devociones />} />
+              <Route path="/liturgia" element={<Liturgia />} />
+              <Route path="/formacion" element={<Formacion />} />
+              <Route path="/testimonios" element={<Testimonios />} />
+              <Route path="/podcast" element={<Podcast />} />
+              <Route path="/eventos" element={<Eventos />} />
+              <Route path="/donar" element={<Donar />} />
+              <Route path="/acerca-de" element={<AcercaDe />} />
+              <Route path="/quienes-somos" element={<AcercaDe />} />
+              <Route path="/politica-de-privacidad" element={<PoliticaPrivacidad />} />
+              <Route path="/privacidad" element={<PoliticaPrivacidad />} />
+              <Route path="/terminos" element={<TerminosCondiciones />} />
+              <Route path="/terminos-y-condiciones" element={<TerminosCondiciones />} />
+              <Route path="/rosario" element={<RosarioHome />} />
+              <Route path="/rosario/digital" element={<RosarioDigital />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </RadioPlayerProvider>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
+
+export default App;
+
+========================================
+ARCHIVO: src\components\lvdj\QuickAccess.tsx
+========================================
+/*
+==============================================================================
+PROYECTO: LA VOZ DE JESUS - PWA RADIO CATOLICA
+COMPONENTE: QuickAccess.tsx
+VERSION: 1.1.0
+
+DESCRIPCION:
+Modulo de accesos rapidos a las secciones principales de la aplicacion.
+==============================================================================
+*/
+
+import { Link } from "react-router-dom";
+
+interface QuickAccessItem {
+  image: string;
+  label: string;
+  compactLabel?: string;
+  compactSubtitle?: string;
+  to?: string;
+}
+
+const items: QuickAccessItem[] = [
+  {
+    image: "/icons/evangelio.png",
+    label: "Evangelio",
+    compactLabel: "Liturgia del dia",
+    compactSubtitle: "lecturas y santo",
+    to: "/lecturas-del-dia",
+  },
+  {
+    image: "/icons/rosario.png",
+    label: "Rosario",
+    compactSubtitle: "rezar ahora",
+    to: "/rosario",
+  },
+  {
+    image: "/icons/podcast.png",
+    label: "Podcast",
+    compactSubtitle: "escuchar",
+    to: "/podcast",
+  },
+  {
+    image: "/icons/peticiones.png",
+    label: "Peticiones",
+    compactSubtitle: "eleva tu intenciÃ³n",
+    to: "/contacto",
+  },
+  {
+    image: "/icons/biblia.png",
+    label: "Biblia",
+    compactSubtitle: "leer y meditar",
+    to: "/biblia",
+  },
+  {
+    image: "/icons/programa.png",
+    label: "Programacion",
+    compactLabel: "ProgramaciÃ³n",
+    compactSubtitle: "ver horarios",
+    to: "/programacion",
+  },
+  {
+    image: "/icons/donar.png",
+    label: "Donar",
+    to: "/donar",
+  },
+  {
+    image: "/icons/custodia.png",
+    label: "Capilla\nVirtual",
+    to: "/radio",
+  },
+];
+
+const getVisibleItems = (compact: boolean) =>
+  compact
+    ? [items[0], items[1], items[4], items[2], items[3], items[5]]
+    : items;
+
+export const QuickAccess = ({ compact = false }: { compact?: boolean }) => (
+  <div>
+    <div className="mb-3 px-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-gold/90">
+      Accesos Rapidos
+    </div>
+
+    <div
+      className={`grid gap-2.5 ${
+        compact ? "grid-cols-3" : "grid-cols-4 md:grid-cols-8"
+      }`}
+    >
+      {getVisibleItems(compact).map((item) => {
+        const className =
+          "group relative flex aspect-square cursor-pointer flex-col items-center justify-center gap-2.5 rounded-2xl glass gold-border p-1.5 transition hover:bg-[hsl(var(--gold)/0.08)] active:scale-95";
+        const content = (
+          <>
+            <span className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-radial-gold opacity-0 transition group-hover:opacity-60" />
+
+            <img
+              src={item.image}
+              alt={item.label}
+              className="pointer-events-none relative h-11 w-11 object-contain"
+            />
+
+            <span className="pointer-events-none relative flex min-h-[28px] flex-col items-center justify-start text-center leading-tight">
+              <span
+                className={`whitespace-pre-line text-[10px] font-semibold text-foreground/88 ${
+                  item.label === "Programacion" ? "-mt-1 text-[9.5px]" : ""
+                }`}
+              >
+                {compact ? item.compactLabel ?? item.label : item.label}
+              </span>
+
+              {compact && item.compactSubtitle ? (
+                <span className="mt-0.5 max-w-full truncate text-[8.5px] font-medium text-foreground/70">
+                  {item.compactSubtitle}
+                </span>
+              ) : null}
+            </span>
+          </>
+        );
+
+        return item.to ? (
+          <Link key={item.label} to={item.to} className={className}>
+            {content}
+          </Link>
+        ) : (
+          <button key={item.label} type="button" className={className}>
+            {content}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+);
+
+
+========================================
+ARCHIVO: src\components\lvdj\BottomNav.tsx
+========================================
+/*
+==============================================================================
+PROYECTO: LA VOZ DE JESUS - PWA RADIO CATOLICA
+COMPONENTE: BottomNav.tsx
+VERSION: 1.2.0
+
+DESCRIPCION:
+Menu inferior fijo para la navegacion principal en dispositivos moviles.
+==============================================================================
+*/
+
+import {
+  BookOpen,
+  CalendarRange,
+  Church,
+  HandHeart,
+  Home,
+  MoreHorizontal,
+  Radio,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+
+const defaultItems = [
+  { icon: Home, label: "Inicio", to: "/" },
+  { icon: Radio, label: "Radio", to: "/radio" },
+  { icon: HandHeart, label: "Oracion", to: "/" },
+  { icon: CalendarRange, label: "Programas", to: "/programacion" },
+  { icon: MoreHorizontal, label: "Mas", to: "/" },
+];
+
+const capillaItems = [
+  { icon: Home, label: "Inicio", to: "/" },
+  { icon: Radio, label: "Radio", to: "/radio" },
+  { icon: Church, label: "Capilla", to: "/capilla" },
+  { icon: BookOpen, label: "Biblia", to: "/biblia" },
+  { icon: MoreHorizontal, label: "Mas", to: "/" },
+];
+
+export const BottomNav = ({
+  activeLabel = "Inicio",
+}: {
+  activeLabel?: string;
+}) => {
+  const usesCapillaNav = activeLabel === "Capilla" || activeLabel === "Biblia";
+  const items = usesCapillaNav ? capillaItems : defaultItems;
+
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-[9998] w-full max-w-full overflow-x-hidden xl:hidden">
+      <div className="mx-auto w-full max-w-[430px]">
+        <div className="glass border-t border-[hsl(var(--gold)/0.2)] px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
+          <div className="flex items-end justify-around">
+            {items.map((item) => {
+              const active = item.label === activeLabel;
+
+              return (
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  onClick={() => {
+                    if (item.to === "/" || item.to === "/radio") {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+                  }}
+                  className="flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-1"
+                >
+                  <item.icon
+                    className={`h-5 w-5 ${
+                      active ? "text-gold" : "text-foreground/55"
+                    }`}
+                    strokeWidth={active ? 2 : 1.6}
+                  />
+                  <span
+                    className={`text-[10px] ${
+                      active ? "font-medium text-gold" : "text-foreground/55"
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                  {active && (
+                    <span className="h-0.5 w-5 rounded-full bg-gradient-gold" />
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+
+========================================
+ARCHIVO: src\index.css
+========================================
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* La Voz de JesÃºs â€” dark sacred theme */
+    --background: 222 47% 5%;
+    --foreground: 40 30% 92%;
+
+    --card: 222 45% 8%;
+    --card-foreground: 40 30% 92%;
+
+    --popover: 222 45% 7%;
+    --popover-foreground: 40 30% 92%;
+
+    --primary: 42 65% 55%;
+    --primary-foreground: 222 50% 6%;
+
+    --secondary: 222 40% 12%;
+    --secondary-foreground: 40 30% 92%;
+
+    --muted: 222 30% 14%;
+    --muted-foreground: 40 12% 65%;
+
+    --accent: 42 75% 60%;
+    --accent-foreground: 222 50% 6%;
+
+    --destructive: 0 75% 50%;
+    --destructive-foreground: 40 30% 95%;
+
+    --border: 42 30% 25%;
+    --input: 222 30% 14%;
+    --ring: 42 65% 55%;
+
+    --radius: 1rem;
+
+    --gold: 42 70% 58%;
+    --gold-bright: 45 90% 65%;
+    --gold-deep: 38 60% 38%;
+    --navy: 222 60% 8%;
+    --navy-deep: 224 70% 4%;
+
+    --gradient-gold: linear-gradient(135deg, hsl(45 90% 65%), hsl(38 70% 45%));
+    --gradient-radial-gold: radial-gradient(circle at center, hsl(45 95% 70% / 0.35), transparent 70%);
+    --gradient-navy: linear-gradient(180deg, hsl(224 70% 4%), hsl(222 55% 7%));
+    --gradient-hero: linear-gradient(180deg, hsl(224 70% 4% / 0.6) 0%, hsl(222 60% 6% / 0.85) 60%, hsl(222 47% 5%) 100%);
+
+    --shadow-gold: 0 10px 40px -10px hsl(42 80% 50% / 0.35);
+    --shadow-deep: 0 30px 80px -20px hsl(0 0% 0% / 0.7);
+    --glass: hsl(222 50% 10% / 0.55);
+    --glass-border: hsl(42 60% 60% / 0.18);
+
+    --transition-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+
+    /* Identidad editorial LVJ: negro, dorado y marfil. */
+    --lvj-black: #050505;
+    --lvj-surface: #0b0b0a;
+    --lvj-surface-raised: #12110e;
+    --lvj-gold: #d4af37;
+    --lvj-gold-bright: #f0d77d;
+    --lvj-gold-deep: #8f6b16;
+    --lvj-ivory: #f8f5ea;
+    --lvj-ivory-muted: #c9c3b4;
+    --lvj-sacred-border: rgb(212 175 55 / 0.26);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Montserrat', sans-serif;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+ h1, h2, h3, h4 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0;
+  }
+}
+
+@layer components {
+  .biblia-eink-paper {
+    border-color: rgb(75 75 68 / 0.22);
+    background-color: #e5e5dd;
+    color: #242520;
+    box-shadow: inset 0 0 5rem rgb(72 72 64 / 0.035);
+  }
+
+  .biblia-eink-paper ::selection {
+    background-color: rgb(91 92 82 / 0.24);
+    color: #181914;
+  }
+
+  /* El disparador vive en la barra superior, como en el lector de la Biblia. */
+  .study-reader-host > section > .sticky {
+    display: none;
+  }
+
+  /* Todo el estudio hereda la tipografÃ­a del lector; las utilidades internas
+     no pueden convertir cada pestaÃ±a en un mÃ³dulo visual independiente. */
+  .study-reader-host article * {
+    font-family: inherit !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+  }
+
+  .study-reader-host article p,
+  .study-reader-host article li,
+  .study-reader-host article span,
+  .study-reader-host article strong,
+  .study-reader-host article b,
+  .study-reader-host article em,
+  .study-reader-host article a {
+    font-size: 1em !important;
+    line-height: inherit !important;
+  }
+
+  .study-reader-host article h1 {
+    font-size: 1.38em !important;
+    line-height: 1.35 !important;
+  }
+
+  .study-reader-host article h2 {
+    font-size: 1.22em !important;
+    line-height: 1.4 !important;
+  }
+
+  .study-reader-host article h3,
+  .study-reader-host article h4 {
+    font-size: 1.08em !important;
+    line-height: 1.45 !important;
+  }
+
+  .study-reader-host article td {
+    font-size: 1em !important;
+    line-height: inherit !important;
+  }
+
+  .study-reader-host article th {
+    font-size: 1em !important;
+    line-height: inherit !important;
+  }
+
+  .study-reader-host article.biblia-eink-paper {
+    background:
+      radial-gradient(circle at 18% 12%, rgb(255 255 255 / 0.2), transparent 24rem),
+      linear-gradient(100deg, rgb(65 65 57 / 0.025), transparent 35%, rgb(65 65 57 / 0.018)),
+      #f7f7f3;
+    border-color: rgb(75 75 68 / 0.22);
+    color: #3d3e38;
+    box-shadow: inset 0 0 4.5rem rgb(72 72 64 / 0.055);
+  }
+
+  .study-reader-host article.biblia-eink-paper section,
+  .study-reader-host article.biblia-eink-paper div,
+  .study-reader-host article.biblia-eink-paper article {
+    background: transparent !important;
+  }
+
+  .study-reader-host article.biblia-eink-paper * {
+    color: #242520 !important;
+    border-color: rgb(75 75 68 / 0.24) !important;
+    box-shadow: none !important;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) {
+    background: #f7f7f3 !important;
+    color: #242520 !important;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > .pointer-events-none {
+    display: none;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header {
+    border-color: rgb(75 75 68 / 0.28) !important;
+    background: rgb(247 247 243 / 0.97) !important;
+    box-shadow: 0 8px 24px rgb(65 65 57 / 0.09) !important;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header div,
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header button,
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header a {
+    color: #242520 !important;
+  }
+
+  /* Aa es una acciÃ³n del lector y conserva siempre el dorado institucional. */
+  .biblia-layout-shell header button[aria-label="Formato de lectura"] {
+    color: #D4AF37 !important;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header a[aria-label="Volver"],
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header button[aria-label="Formato de lectura"] {
+    border-color: rgb(139 108 20 / 0.5) !important;
+    background: transparent !important;
+    color: #9b7417 !important;
+    box-shadow: none !important;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) main {
+    background: #f7f7f3 !important;
+  }
+
+  .biblia-layout-shell .study-reader-host article:is(.biblia-eink-paper, .study-theme-light, .study-theme-dark) {
+    border: 0 !important;
+    border-radius: 0 !important;
+    padding-left: 0.8rem !important;
+    padding-right: 0.8rem !important;
+  }
+
+  /* En Tinta el estudio es una pÃ¡gina continua, no una pila de tarjetas. */
+  .study-reader-host article:is(.biblia-eink-paper, .study-theme-light, .study-theme-dark) > section {
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    padding: 1.25rem 0.35rem !important;
+  }
+
+  .study-reader-host article:is(.biblia-eink-paper, .study-theme-light, .study-theme-dark) > section:first-child {
+    border-bottom: 1px solid rgb(75 75 68 / 0.2) !important;
+  }
+
+  .study-reader-host article:is(.biblia-eink-paper, .study-theme-light, .study-theme-dark) > div:nth-child(2) {
+    margin: 0 !important;
+    gap: 0 !important;
+    border-width: 1px 0 !important;
+    border-radius: 0 !important;
+    padding: 0.35rem 0 !important;
+  }
+
+  .study-reader-host article:is(.biblia-eink-paper, .study-theme-light, .study-theme-dark) > div:nth-child(2) button {
+    border-radius: 0.35rem !important;
+    color: #464740 !important;
+  }
+
+  .study-reader-host article:is(.biblia-eink-paper, .study-theme-light, .study-theme-dark) > div:nth-child(2) button[aria-pressed="true"] {
+    background: #77786d !important;
+    color: #f3f2ea !important;
+  }
+
+  .study-reader-host article.biblia-eink-paper table {
+    background: transparent !important;
+    color: #242520 !important;
+  }
+
+  .study-reader-host article.biblia-eink-paper mark {
+    background: rgb(92 93 84 / 0.14) !important;
+    color: #242520 !important;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) main > aside,
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) nav {
+    border-color: rgb(75 75 68 / 0.24) !important;
+    background: rgb(247 247 243 / 0.97) !important;
+    color: #242520 !important;
+    box-shadow: none !important;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) main > aside * {
+    color: #242520 !important;
+  }
+
+  /* Claro tambiÃ©n ocupa la pantalla completa; el panel de configuraciÃ³n
+     permanece oscuro como en el lector bÃ­blico original. */
+  .biblia-layout-shell:has(.study-reader-host article.study-theme-light),
+  .biblia-layout-shell:has(.study-reader-host article.study-theme-light) main {
+    background: #ffffff !important;
+    color: #24211a !important;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.study-theme-light) > .pointer-events-none {
+    display: none;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.study-theme-light) > header {
+    border-color: rgb(143 116 31 / 0.25) !important;
+    background: rgb(255 255 255 / 0.97) !important;
+    box-shadow: 0 8px 24px rgb(80 66 24 / 0.08) !important;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.study-theme-light) > header a[aria-label="Volver"],
+  .biblia-layout-shell:has(.study-reader-host article.study-theme-light) > header button[aria-label="Formato de lectura"] {
+    background: transparent !important;
+    color: #9b7417 !important;
+    box-shadow: none !important;
+  }
+
+  /* Claro: toda tarjeta interna adopta papel blanco y texto negro. */
+  .study-reader-host article.study-theme-light section,
+  .study-reader-host article.study-theme-light div,
+  .study-reader-host article.study-theme-light article {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .study-reader-host article.study-theme-light * {
+    border-color: rgb(55 52 45 / 0.18) !important;
+    color: #24211a !important;
+  }
+
+  /* Los cÃ³digos didÃ¡cticos PP/PS conservan su funciÃ³n cromÃ¡tica en los tres temas. */
+  .study-reader-host article .proposition-label-pp { color: #e66b73 !important; }
+  .study-reader-host article .proposition-label-ps { color: #55a9d6 !important; }
+  .study-reader-host article.study-theme-light .proposition-label-pp { color: #a92f3d !important; }
+  .study-reader-host article.study-theme-light .proposition-label-ps { color: #17678f !important; }
+  .study-reader-host article.study-theme-ink .proposition-label-pp { color: #8f3440 !important; }
+  .study-reader-host article.study-theme-ink .proposition-label-ps { color: #315f78 !important; }
+
+  .study-reader-host article.study-theme-light > div:nth-child(2) button[aria-pressed="true"] {
+    background: #D4AF37 !important;
+    color: #15120b !important;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.study-theme-light) > header div {
+    color: #24211a !important;
+  }
+
+  .biblia-layout-shell:has(.study-reader-host article.study-theme-light) main > aside,
+  .biblia-layout-shell:has(.study-reader-host article.study-theme-light) nav {
+    border-color: rgb(55 52 45 / 0.18) !important;
+    background: rgb(255 255 255 / 0.97) !important;
+    color: #24211a !important;
+    box-shadow: none !important;
+  }
+
+  /* Oscuro conserva su colorimetrÃ­a, pero utiliza la misma pÃ¡gina continua. */
+  .study-reader-host article.study-theme-dark section,
+  .study-reader-host article.study-theme-dark div,
+  .study-reader-host article.study-theme-dark article {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .study-reader-host article.study-theme-dark > div:nth-child(2) button[aria-pressed="true"] {
+    background: #D4AF37 !important;
+    color: #050505 !important;
+  }
+
+  .study-reader-host article.biblia-eink-paper p,
+  .study-reader-host article.biblia-eink-paper li,
+  .study-reader-host article.biblia-eink-paper td {
+    color: #3d3e38 !important;
+  }
+
+  .study-reader-host article.biblia-eink-paper h1,
+  .study-reader-host article.biblia-eink-paper h2,
+  .study-reader-host article.biblia-eink-paper h3 {
+    color: #292a25 !important;
+  }
+
+  /* La tabla de versiones forma parte permanente del estudio guardado. */
+  .study-integrated-comparison #bible-comparison-view {
+    position: static !important;
+    inset: auto !important;
+    z-index: auto !important;
+    display: block !important;
+    height: auto !important;
+    margin: 0 !important;
+    border-radius: 1.35rem !important;
+  }
+
+  .study-integrated-comparison button[aria-label^="Cerrar comparaciÃ³n"] {
+    display: none;
+  }
+
+  .lvj-sacred-page {
+    position: relative;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    color: var(--lvj-ivory);
+    background:
+      radial-gradient(circle at 50% -5%, rgb(212 175 55 / 0.14), transparent 30rem),
+      linear-gradient(180deg, var(--lvj-surface) 0%, var(--lvj-black) 48%, #020202 100%);
+  }
+
+  .lvj-sacred-backdrop {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 12% 62%, rgb(212 175 55 / 0.045), transparent 25rem),
+      linear-gradient(180deg, transparent 60%, rgb(0 0 0 / 0.35));
+  }
+
+  .lvj-sacred-panel,
+  .lvj-sacred-card {
+    border: 1px solid var(--lvj-sacred-border);
+    background: linear-gradient(145deg, rgb(18 17 14 / 0.92), rgb(6 6 6 / 0.9));
+    box-shadow: 0 24px 60px -38px rgb(0 0 0 / 0.95);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .lvj-sacred-panel {
+    border-radius: 1.25rem;
+  }
+
+  .lvj-sacred-card {
+    border-radius: 1rem;
+    transition: border-color 180ms ease, transform 180ms ease, background-color 180ms ease;
+  }
+
+  .lvj-sacred-card:hover {
+    border-color: rgb(212 175 55 / 0.45);
+  }
+
+  .lvj-sacred-icon,
+  .lvj-sacred-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgb(212 175 55 / 0.38);
+    color: var(--lvj-gold-bright);
+    background: rgb(212 175 55 / 0.08);
+  }
+
+  .lvj-sacred-icon-button {
+    border-radius: 9999px;
+    transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
+  }
+
+  .lvj-sacred-icon-button:hover {
+    border-color: rgb(212 175 55 / 0.65);
+    background: rgb(212 175 55 / 0.14);
+  }
+
+  .lvj-sacred-icon-button:active {
+    transform: scale(0.96);
+  }
+
+  .lvj-sacred-button,
+  .lvj-sacred-button-secondary {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: transform 180ms ease, filter 180ms ease, background-color 180ms ease;
+  }
+
+  .lvj-sacred-button {
+    color: #171208;
+    background: linear-gradient(135deg, var(--lvj-gold-bright), var(--lvj-gold));
+    box-shadow: 0 12px 30px -16px rgb(212 175 55 / 0.8);
+  }
+
+  .lvj-sacred-button-secondary {
+    border: 1px solid rgb(212 175 55 / 0.38);
+    color: var(--lvj-gold-bright);
+    background: rgb(212 175 55 / 0.055);
+  }
+
+  .lvj-sacred-button:hover,
+  .lvj-sacred-button-secondary:hover {
+    filter: brightness(1.08);
+  }
+
+  .lvj-sacred-button:active,
+  .lvj-sacred-button-secondary:active {
+    transform: scale(0.985);
+  }
+
+  .lvj-sacred-field {
+    border: 1px solid rgb(212 175 55 / 0.24);
+    color: var(--lvj-gold-bright);
+    background: rgb(212 175 55 / 0.045);
+  }
+
+  .lvj-reading-page {
+    color: #211d15;
+    background-color: var(--lvj-ivory);
+  }
+
+  .lvj-sacred-button:focus-visible,
+  .lvj-sacred-button-secondary:focus-visible,
+  .lvj-sacred-icon-button:focus-visible,
+  .lvj-sacred-field:focus-within {
+    outline: 2px solid var(--lvj-gold-bright);
+    outline-offset: 3px;
+  }
+
+  .glass {
+    background: var(--glass);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid var(--glass-border);
+  }
+  .gold-text {
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .gold-border {
+  border: 1px solid hsl(var(--gold) / 0.35);
+}
+
+.section-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--gold));
+}
+
+.card-title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+}
+
+.card-text {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+}
+  .lvj-frame-card-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .lvj-frame-card {
+    min-width: 0;
+    min-height: 128px;
+    border-radius: 1rem;
+    border: 1px solid hsl(var(--gold) / 0.35);
+    background: hsl(var(--navy-deep) / 0.72);
+    padding: 0.75rem;
+    box-shadow: var(--shadow-deep);
+  }
+
+  .lvj-radio-slot {
+    display: flex;
+    align-items: center;
+  }
+
+  .lvj-radio-slot > * {
+    width: 100%;
+  }
+
+  @media (max-width: 1320px) {
+    .lvj-frame-card-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    .lvj-frame-card-grid > :nth-child(2) {
+      grid-column: span 1;
+    }
+
+    .lvj-frame-card-grid > :nth-child(3) {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .lvj-frame-card-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .lvj-frame-card-grid > :nth-child(2),
+    .lvj-frame-card-grid > :nth-child(3) {
+      grid-column: auto;
+    }
+  }
+  .gold-divider {
+    background: linear-gradient(90deg, transparent, hsl(var(--gold) / 0.5), transparent);
+    height: 1px;
+  }
+  .live-pulse {
+    position: relative;
+  }
+
+  .radio-page {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    min-height: 100dvh;
+    overflow-x: clip;
+    touch-action: pan-y;
+  }
+
+  .radio-content {
+    inline-size: min(100%, 430px);
+    width: min(100%, 430px);
+    max-width: 100%;
+    margin-inline: auto;
+    padding-inline: 18px;
+    box-sizing: border-box;
+  }
+
+  .radio-page *,
+  .radio-page *::before,
+  .radio-page *::after {
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .radio-content > * {
+    max-width: 100%;
+  }
+
+  .radio-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .radio-volume-control,
+  .radio-controls-row {
+    width: min(100%, 360px);
+    max-width: 100%;
+    margin-inline: auto;
+  }
+
+  @media (min-width: 640px) {
+    .radio-volume-control {
+      width: min(100%, 36rem);
+    }
+
+    .radio-controls-row {
+      width: min(100%, 28rem);
+    }
+  }
+
+  .player-section {
+    padding-top: 16px;
+    padding-bottom: 20px;
+  }
+
+  .player-controls {
+    margin-top: 8px;
+    margin-bottom: 12px;
+  }
+
+  .play-button {
+    width: 105px;
+    height: 105px;
+  }
+
+  .audio-bars {
+    transform: scale(0.92);
+  }
+
+  .live-badge {
+    transform: scale(0.95);
+  }
+
+  .next-program-card {
+    min-height: 145px;
+    border-radius: 28px;
+    padding: 20px 22px;
+  }
+
+  .next-program-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .next-program-title {
+    font-size: clamp(1.35rem, 4vw, 1.8rem);
+    line-height: 1.15;
+  }
+
+  .next-program-time,
+  .next-program-description {
+    margin-top: 4px;
+  }
+
+  .next-program-arrow {
+    width: 52px;
+    height: 52px;
+  }
+
+  .quick-access-card {
+    border-radius: 28px;
+    padding: 20px 22px;
+  }
+
+  .quick-access-grid {
+    gap: 14px 16px;
+  }
+
+  .quick-access-button {
+    display: flex;
+    min-height: 52px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    font-size: 0.95rem;
+  }
+
+  .radio-extra-card {
+    min-height: 210px;
+    border-radius: 28px;
+  }
+
+  @media (max-height: 760px) {
+    .player-section {
+      padding-top: 8px;
+      padding-bottom: 12px;
+    }
+
+    .play-button {
+      width: 92px;
+      height: 92px;
+    }
+
+    .audio-bars {
+      transform: scale(0.85);
+    }
+
+    .live-badge {
+      transform: scale(0.9);
+    }
+
+    .next-program-card {
+      min-height: 130px;
+      padding: 18px 20px;
+    }
+
+    .next-program-avatar {
+      width: 72px;
+      height: 72px;
+    }
+
+    .quick-access-card {
+      padding: 18px 20px;
+    }
+
+    .quick-access-button {
+      min-height: 48px;
+    }
+
+    .radio-extra-card {
+      min-height: 180px;
+    }
+  }
+
+  .live-pulse::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: 0 0 0 0 hsl(0 80% 55% / 0.7);
+    animation: live-pulse 1.8s infinite;
+  }
+
+  .radio-cover-orbit {
+    position: absolute;
+    inset: 1.42rem;
+    z-index: 0;
+    aspect-ratio: 1;
+    border-radius: 9999px;
+    pointer-events: none;
+    border: 0;
+    background: transparent;
+    box-shadow:
+      0 0 6px hsl(var(--gold) / 0.14),
+      inset 0 0 5px rgb(255 255 255 / 0.08);
+    transform: scale(1);
+    transition:
+      transform 220ms ease-out,
+      opacity 220ms ease-out,
+      box-shadow 220ms ease-out,
+      border-color 220ms ease-out;
+    will-change: transform, opacity, box-shadow;
+  }
+
+  .radio-cover-eq-bar {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 1;
+    width: 2.2px;
+    height: var(--bar-height, 16px);
+    margin-left: -1.1px;
+    margin-top: calc(var(--bar-height, 16px) * -0.5);
+    border-radius: 9999px;
+    background: linear-gradient(
+      180deg,
+      hsl(var(--gold-bright) / 0.84),
+      hsl(var(--gold) / 0.18)
+    );
+    box-shadow: none;
+    opacity: 0;
+    transform:
+      rotate(calc(var(--bar-index) * 3.75deg))
+      translateY(var(--bar-distance, -8.78rem))
+      scaleY(0.42);
+    transform-origin: center bottom;
+  }
+
+  .radio-cover-eq-bar--bead::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: -5px;
+    height: 5px;
+    width: 5px;
+    margin-left: -2.5px;
+    border-radius: 9999px;
+    border: 1px solid hsl(var(--gold-bright) / 0.72);
+    background: hsl(var(--gold) / 0.72);
+    box-shadow: 0 0 3px hsl(var(--gold) / 0.22);
+  }
+
+  .radio-cover-orbit--playing {
+    animation: none;
+  }
+
+  .radio-cover-orbit::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: inherit;
+    border: 5px solid hsl(var(--gold) / 0.78);
+    box-shadow:
+      0 0 10px hsl(var(--gold) / 0.22),
+      0 0 20px hsl(var(--gold) / 0.1),
+      inset 0 0 8px rgb(255 255 255 / 0.16);
+  }
+
+  .radio-cover-orbit--playing::after {
+    animation: radio-cover-golden-ring 2.4s ease-in-out infinite;
+  }
+
+  .radio-cover-orbit--playing .radio-cover-eq-bar {
+    animation: radio-cover-eq 0.46s linear infinite alternate;
+    animation-delay: calc(var(--bar-index) * -0.018s);
+  }
+
+    @media (max-width: 640px) {
+    .radio-cover-eq-bar {
+      width: 2px;
+      margin-left: -1px;
+      height: calc(var(--bar-height, 16px) * 0.9);
+      margin-top: calc(var(--bar-height, 16px) * -0.45);
+      transform:
+        rotate(calc(var(--bar-index) * 3.75deg))
+        translateY(calc(var(--bar-distance, -8.78rem) + 0.22rem))
+        scaleY(0.42);
+    }
+  }
+
+
+  .radio-visualizer-bg {
+    position: absolute;
+    inset: 34% 0 0;
+    z-index: -1;
+    opacity: 0.9;
+    background:
+      linear-gradient(90deg, #16ff00 0%, #ffe600 34%, #ff8933 60%, #ff1970 100%);
+    clip-path: polygon(
+      0 70%, 1.5% 16%, 3% 66%, 4.5% 30%, 6% 68%, 8% 22%, 10% 72%,
+      13% 42%, 16% 66%, 19% 36%, 23% 74%, 27% 48%, 31% 70%,
+      36% 44%, 41% 68%, 47% 52%, 53% 71%, 60% 56%, 68% 74%,
+      76% 62%, 85% 78%, 93% 66%, 100% 82%, 100% 100%, 0 100%
+    );
+    filter: saturate(1.15) drop-shadow(0 0 24px rgb(255 210 90 / 0.28));
+    transform-origin: center bottom;
+  }
+
+  .radio-visualizer-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      rgb(255 255 255 / 0.85) 0 2px,
+      transparent 2px 6px
+    );
+    mix-blend-mode: screen;
+    opacity: 0.8;
+  }
+
+  .radio-visualizer-bg--playing {
+    animation: radio-visualizer-flow 1.2s steps(4, end) infinite alternate;
+  }
+
+  .radio-bars-toggle__bar {
+    display: block;
+    width: 0.35rem;
+    height: calc(0.9rem + (var(--bar-index, 0) * 0.28rem));
+    border-radius: 9999px;
+    background: currentColor;
+    transform-origin: center bottom;
+    opacity: 0.92;
+  }
+
+  .radio-bars-toggle__bar--playing {
+    animation: radio-button-bars 0.72s ease-in-out infinite alternate;
+    animation-delay: calc(var(--bar-index, 0) * -0.13s);
+  }
+
+  .radio-bars-toggle--active {
+    color: hsl(var(--gold));
+  }
+
+  .radio-live-blink {
+    animation: radio-live-blink 1s ease-in-out infinite;
+  }
+
+  .radio-track-title {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow-wrap: anywhere;
+  }
+
+  .radio-readable-text {
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.45);
+  }
+
+  .radio-artist-text {
+    color: hsl(var(--gold-bright));
+    text-shadow: 0 1px 1px rgb(0 0 0 / 0.2);
+  }
+
+  .radio-volume-slider {
+    height: 18px;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .radio-volume-slider::-webkit-slider-runnable-track {
+    height: 5px;
+    border-radius: 9999px;
+    background: linear-gradient(
+      90deg,
+      hsl(var(--gold)) 0%,
+      hsl(var(--gold)) var(--radio-volume-percent, 80%),
+      rgb(255 255 255 / 0.35) var(--radio-volume-percent, 80%),
+      rgb(255 255 255 / 0.35) 100%
+    );
+    box-shadow: 0 0 18px rgb(255 255 255 / 0.16);
+  }
+
+  .radio-volume-slider::-webkit-slider-thumb {
+    appearance: none;
+    height: 18px;
+    width: 18px;
+    margin-top: -6.5px;
+    border-radius: 9999px;
+    border: 0;
+    background: #05070f;
+    box-shadow: 0 0 0 2px hsl(var(--gold)), 0 0 18px rgb(255 255 255 / 0.28);
+  }
+
+  .radio-volume-slider::-moz-range-track {
+    height: 5px;
+    border-radius: 9999px;
+    background: rgb(255 255 255 / 0.35);
+  }
+
+  .radio-volume-slider::-moz-range-progress {
+    height: 5px;
+    border-radius: 9999px;
+    background: hsl(var(--gold));
+  }
+
+  .radio-volume-slider::-moz-range-thumb {
+    height: 18px;
+    width: 18px;
+    border-radius: 9999px;
+    border: 2px solid hsl(var(--gold));
+    background: #05070f;
+  }
+
+  .title-sacred {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.text-ui {
+  font-family: 'Montserrat', sans-serif;
+}
+}
+
+@keyframes live-pulse {
+  0% { box-shadow: 0 0 0 0 hsl(0 80% 55% / 0.6); }
+  70% { box-shadow: 0 0 0 14px hsl(0 80% 55% / 0); }
+  100% { box-shadow: 0 0 0 0 hsl(0 80% 55% / 0); }
+}
+
+@keyframes radio-cover-golden-ring {
+  0%, 100% {
+    opacity: calc(0.88 + (var(--radio-wave-energy, 0) * 0.08));
+    border-color: hsl(var(--gold) / 0.82);
+    box-shadow:
+      0 0 12px hsl(var(--gold) / 0.26),
+      0 0 26px hsl(var(--gold) / 0.14),
+      inset 0 0 8px rgb(255 255 255 / 0.14);
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: calc(0.96 + (var(--radio-wave-energy, 0) * 0.04));
+    border-color: hsl(var(--gold-bright) / 0.92);
+    box-shadow:
+      0 0 calc(16px + (var(--radio-wave-energy, 0) * 8px)) hsl(var(--gold) / 0.34),
+      0 0 calc(34px + (var(--radio-wave-energy, 0) * 12px)) hsl(var(--gold) / 0.18),
+      inset 0 0 10px rgb(255 255 255 / 0.18);
+    transform: scale(calc(1.002 + (var(--radio-wave-energy, 0) * 0.004)));
+  }
+}
+
+@keyframes radio-cover-eq {
+  0%, 100% {
+    opacity: calc(0.18 + (var(--bar-level, 0) * 0.44));
+    transform:
+      rotate(calc(var(--bar-index) * 3.75deg))
+      translateY(var(--bar-distance, -8.78rem))
+      scaleY(calc(0.22 + (var(--bar-level, 0) * var(--bar-gain, 0.7) * 0.64)));
+  }
+
+  50% {
+    opacity: calc(0.26 + (var(--bar-level, 0) * 0.54));
+    transform:
+      rotate(calc(var(--bar-index) * 3.75deg))
+      translateY(var(--bar-distance, -8.78rem))
+      scaleY(calc(0.32 + (var(--bar-level, 0) * var(--bar-gain, 0.7) * 1.02)));
+    box-shadow: 0 0 2px hsl(var(--gold-bright) / 0.14);
+  }
+}
+
+@media (max-width: 640px) {
+  @keyframes radio-cover-eq {
+    0%, 100% {
+      opacity: calc(0.18 + (var(--bar-level, 0) * 0.44));
+      transform:
+        rotate(calc(var(--bar-index) * 3.75deg))
+        translateY(calc(var(--bar-distance, -8.78rem) + 0.22rem))
+        scaleY(calc(0.22 + (var(--bar-level, 0) * var(--bar-gain, 0.7) * 0.64)));
+    }
+
+    50% {
+      opacity: calc(0.26 + (var(--bar-level, 0) * 0.54));
+      transform:
+        rotate(calc(var(--bar-index) * 3.75deg))
+        translateY(calc(var(--bar-distance, -8.78rem) + 0.22rem))
+        scaleY(calc(0.32 + (var(--bar-level, 0) * var(--bar-gain, 0.7) * 1.02)));
+      box-shadow: 0 0 2px hsl(var(--gold-bright) / 0.14);
+    }
+  }
+}
+
+@keyframes radio-visualizer-flow {
+  0% {
+    clip-path: polygon(
+      0 74%, 2% 18%, 4% 68%, 6% 24%, 8% 72%, 11% 36%, 14% 70%,
+      18% 26%, 22% 76%, 27% 46%, 32% 69%, 38% 40%, 45% 74%,
+      52% 50%, 60% 73%, 69% 54%, 78% 78%, 88% 62%, 100% 80%,
+      100% 100%, 0 100%
+    );
+    transform: translateY(3%) scaleY(0.9);
+    filter: saturate(1.05) drop-shadow(0 0 18px rgb(255 210 90 / 0.22));
+  }
+
+  100% {
+    clip-path: polygon(
+      0 58%, 2% 42%, 4% 34%, 6% 62%, 8% 30%, 11% 78%, 14% 28%,
+      18% 66%, 22% 32%, 27% 82%, 32% 38%, 38% 72%, 45% 28%,
+      52% 76%, 60% 42%, 69% 70%, 78% 34%, 88% 72%, 100% 48%,
+      100% 100%, 0 100%
+    );
+    transform: translateY(-2%) scaleY(1.06);
+    filter: saturate(1.28) drop-shadow(0 0 30px rgb(255 210 90 / 0.32));
+  }
+}
+
+@keyframes radio-button-bars {
+  0% {
+    transform: scaleY(0.45);
+    opacity: 0.65;
+  }
+
+  100% {
+    transform: scaleY(1.45);
+    opacity: 1;
+  }
+}
+
+@keyframes radio-live-blink {
+  0%, 100% {
+    opacity: 1;
+    color: #fff;
+    box-shadow: 0 0 0 0 rgb(255 255 255 / 0.35);
+  }
+
+  50% {
+    opacity: 0.45;
+    color: #fff;
+    box-shadow: 0 0 18px 2px rgb(255 255 255 / 0.24);
+  }
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.02); }
+}
+.shimmer { animation: shimmer 6s ease-in-out infinite; }
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+.float-slow { animation: float-slow 8s ease-in-out infinite; }
+
+::selection {
+  background: hsl(var(--gold) / 0.3);
+  color: hsl(var(--foreground));
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: hsl(var(--background)); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(hsl(var(--gold) / 0.4), hsl(var(--gold-deep) / 0.6));
+  border-radius: 8px;
+}
+
+
+@keyframes marquee-smart {
+  0% {
+    transform: translateX(0);
+  }
+
+  40% {
+    transform: translateX(0);
+  }
+
+  80% {
+    transform: translateX(-50%);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-marquee-smart {
+  animation: marquee-smart 10s ease-in-out infinite;
+}
+
+
+========================================
+ARCHIVO: tailwind.config.ts
+========================================
+import type { Config } from "tailwindcss";
+
+export default {
+  darkMode: ["class"],
+  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  prefix: "",
+  theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
+    extend: {
+      colors: {
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          bright: "hsl(var(--gold-bright))",
+          deep: "hsl(var(--gold-deep))",
+        },
+        navy: {
+          DEFAULT: "hsl(var(--navy))",
+          deep: "hsl(var(--navy-deep))",
+        },
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+        sidebar: {
+          DEFAULT: "hsl(var(--sidebar-background))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: "hsl(var(--sidebar-primary))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
+        },
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['Cormorant Garamond', 'Georgia', 'serif'],
+        display: ['Cormorant Garamond', 'Georgia', 'serif'],
+      },
+      backgroundImage: {
+        'gradient-gold': 'var(--gradient-gold)',
+        'gradient-radial-gold': 'var(--gradient-radial-gold)',
+        'gradient-navy': 'var(--gradient-navy)',
+        'gradient-hero': 'var(--gradient-hero)',
+      },
+      boxShadow: {
+        gold: 'var(--shadow-gold)',
+        deep: 'var(--shadow-deep)',
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+      keyframes: {
+        "accordion-down": {
+          from: {
+            height: "0",
+          },
+          to: {
+            height: "var(--radix-accordion-content-height)",
+          },
+        },
+        "accordion-up": {
+          from: {
+            height: "var(--radix-accordion-content-height)",
+          },
+          to: {
+            height: "0",
+          },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+      },
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
+} satisfies Config;
+
+
+========================================
+ARCHIVO: vite.config.ts
+========================================
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import path from "path";
+import { componentTagger } from "lovable-tagger";
+import { VitePWA } from "vite-plugin-pwa";
+
+// https://vitejs.dev/config/
+export default defineConfig(({ mode }) => ({
+  server: {
+    host: "::",
+    port: 8080,
+    proxy: {
+      "/dominicos-hoy": {
+        target: "https://www.dominicos.org",
+        changeOrigin: true,
+        rewrite: () => "/predicacion/evangelio-del-dia/hoy/",
+      },
+    },
+    hmr: {
+      overlay: false,
+    },
+  },
+  plugins: [
+    react(),
+    mode === "development" && componentTagger(),
+    VitePWA({
+      registerType: "autoUpdate",
+      injectRegister: null,
+      filename: "sw.js",
+      devOptions: { enabled: false },
+      includeAssets: ["favicon.png", "apple-touch-icon.png"],
+      manifest: {
+        name: "La Voz de JesÃºs",
+        short_name: "Voz de JesÃºs",
+        description: "Radio CatÃ³lica 24/7 â€” Adora al SantÃ­simo en cualquier lugar.",
+        start_url: "/",
+        scope: "/",
+        display: "standalone",
+        orientation: "portrait",
+        background_color: "#0a0f1f",
+        theme_color: "#0a0f1f",
+        lang: "es",
+        categories: ["music", "lifestyle", "education"],
+        icons: [
+          { src: "/pwa-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+          { src: "/pwa-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: "/pwa-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+        ],
+      },
+      workbox: {
+        navigateFallback: "/index.html",
+        navigateFallbackDenylist: [/^\/~oauth/],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2}"],
+        runtimeCaching: [
+          {
+            urlPattern: ({ request, url }) =>
+              request.mode === "navigate" && !url.pathname.startsWith("/~oauth"),
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "lvdj-pages",
+              networkTimeoutSeconds: 4,
+              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 },
+            },
+          },
+          {
+            urlPattern: ({ request, sameOrigin }) =>
+              sameOrigin && ["style", "script", "worker", "font"].includes(request.destination),
+            handler: "CacheFirst",
+            options: {
+              cacheName: "lvdj-assets",
+              expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
+          {
+            urlPattern: ({ request, sameOrigin }) => sameOrigin && request.destination === "image",
+            handler: "CacheFirst",
+            options: {
+              cacheName: "lvdj-images",
+              expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
+        ],
+      },
+    }),
+  ].filter(Boolean),
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+    dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
+  },
+}));
+
+
+========================================
+ARCHIVO: tsconfig.json
+========================================
+{
+  "files": [],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "noImplicitAny": false,
+    "noUnusedParameters": false,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "noUnusedLocals": false,
+    "strictNullChecks": false
+  }
+}
+
+
+========================================
+ARCHIVO: tsconfig.app.json
+========================================
+{
+  "compilerOptions": {
+    "types": ["vitest/globals"],
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitAny": false,
+    "noFallthroughCasesInSwitch": false,
+
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"]
+}
+
+
+========================================
+4. IMPORTACIONES DEL MÓDULO
+========================================
+src\modules\rosary\components\PrayerStepCard.tsx:1 import { getPrayer } from "../mocks/prayers";
+src\modules\rosary\components\PrayerStepCard.tsx:2 import type { Mystery, RosaryBead, TextSize } from "../types";
+src\modules\rosary\components\RosaryBeadRing.tsx:1 import type { RosaryBead, RosarySection } from "../types";
+src\modules\rosary\components\RosaryCompletion.tsx:1 import { Link } from "react-router-dom";
+src\modules\rosary\components\RosaryCompletion.tsx:2 import { rosarySessionService } from "../services/rosarySessionService";
+src\modules\rosary\components\RosaryCompletion.tsx:3 import { mysteryArt } from "../mocks/mysteryArt";
+src\modules\rosary\components\RosaryCompletion.tsx:4 import type { MysteryGroupId } from "../types";
+src\modules\rosary\components\RosaryFullRing.tsx:1 import type { RosaryDefinition } from "../types";
+src\modules\rosary\components\RosaryIntentionSheet.tsx:1 import { useState } from "react";
+src\modules\rosary\components\RosaryIntentionSheet.tsx:2 import type { RosaryIntention, RosaryIntentionKind } from "../types";
+src\modules\rosary\components\RosaryLayout.tsx:1 import { ReactNode } from "react";
+src\modules\rosary\components\RosaryLayout.tsx:2 import { Link } from "react-router-dom";
+src\modules\rosary\components\RosaryLayout.tsx:3 import { ArrowLeft } from "lucide-react";
+src\modules\rosary\components\RosaryPrayerScene.tsx:1 import type { Mystery } from "../types";
+src\modules\rosary\components\RosaryRows.tsx:1 import { ReactNode } from "react";
+src\modules\rosary\components\RosaryRows.tsx:2 import { Check, ChevronRight } from "lucide-react";
+src\modules\rosary\components\RosarySettingsSheet.tsx:1 import type { RosaryPreferences, TextSize } from "../types";
+src\modules\rosary\hooks\useKeepAwake.ts:1 import { useEffect } from "react";
+src\modules\rosary\hooks\useRosaryFlow.ts:1 import { useCallback, useEffect, useState } from "react";
+src\modules\rosary\hooks\useRosaryFlow.ts:2 import { defaultFlow, rosaryFlowService } from "../services/rosaryFlowService";
+src\modules\rosary\hooks\useRosaryFlow.ts:3 import type { RosaryFlow } from "../types";
+src\modules\rosary\hooks\useRosaryPreferences.ts:1 import { useCallback, useEffect, useState } from "react";
+src\modules\rosary\hooks\useRosaryPreferences.ts:2 import { defaultPreferences, rosarySessionService } from "../services/rosarySessionService";
+src\modules\rosary\hooks\useRosaryPreferences.ts:3 import type { RosaryPreferences } from "../types";
+src\modules\rosary\hooks\useRosarySession.ts:1 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+src\modules\rosary\hooks\useRosarySession.ts:2 import { rosaryRepository } from "../services/rosaryRepository";
+src\modules\rosary\hooks\useRosarySession.ts:3 import { rosarySessionService } from "../services/rosarySessionService";
+src\modules\rosary\hooks\useRosarySession.ts:4 import { buildRosaryDefinition, totalBeads } from "../utils/buildRosary";
+src\modules\rosary\hooks\useRosarySession.ts:5 import type {
+src\modules\rosary\hooks\useRosaryToday.ts:1 import { useEffect, useState } from "react";
+src\modules\rosary\hooks\useRosaryToday.ts:2 import { rosaryTodayService } from "../services/rosaryTodayService";
+src\modules\rosary\hooks\useRosaryToday.ts:3 import type { AsyncState, RosaryToday } from "../types";
+src\modules\rosary\mocks\mysteries.ts:1 import type { Mystery, MysteryGroup, MysteryGroupId } from "../types";
+src\modules\rosary\mocks\mysteryArt.ts:1 import gozosos from "@/assets/rosary/gozosos.jpg";
+src\modules\rosary\mocks\mysteryArt.ts:2 import luminosos from "@/assets/rosary/luminosos.jpg";
+src\modules\rosary\mocks\mysteryArt.ts:3 import dolorosos from "@/assets/rosary/dolorosos.jpg";
+src\modules\rosary\mocks\mysteryArt.ts:4 import gloriosos from "@/assets/rosary/gloriosos.jpg";
+src\modules\rosary\mocks\mysteryArt.ts:5 import type { MysteryGroupId } from "../types";
+src\modules\rosary\mocks\prayers.ts:1 import type { Prayer } from "../types";
+src\modules\rosary\pages\RosarioAudio.tsx:1 import { useMemo, useState } from "react";
+src\modules\rosary\pages\RosarioAudio.tsx:2 import { useSearchParams } from "react-router-dom";
+src\modules\rosary\pages\RosarioAudio.tsx:3 import { List, Pause, Play, RotateCcw, RotateCw, SkipForward, WifiOff } from "lucide-react";
+src\modules\rosary\pages\RosarioAudio.tsx:4 import { RosaryLayout } from "../components/RosaryLayout";
+src\modules\rosary\pages\RosarioAudio.tsx:5 import { RosaryLoading } from "../components/RosaryStateViews";
+src\modules\rosary\pages\RosarioAudio.tsx:6 import { RosaryPrayerScene } from "../components/RosaryPrayerScene";
+src\modules\rosary\pages\RosarioAudio.tsx:7 import { RosaryCompletion } from "../components/RosaryCompletion";
+src\modules\rosary\pages\RosarioAudio.tsx:8 import { RosarySliderRow, RosarySwitchRow } from "../components/RosaryRows";
+src\modules\rosary\pages\RosarioAudio.tsx:9 import { useRosarySession } from "../hooks/useRosarySession";
+src\modules\rosary\pages\RosarioAudio.tsx:10 import { useRosaryPreferences } from "../hooks/useRosaryPreferences";
+src\modules\rosary\pages\RosarioAudio.tsx:11 import { useRosaryFlow } from "../hooks/useRosaryFlow";
+src\modules\rosary\pages\RosarioAudio.tsx:12 import { mysteryGroups } from "../mocks/mysteries";
+src\modules\rosary\pages\RosarioAudio.tsx:13 import { mysteryArt } from "../mocks/mysteryArt";
+src\modules\rosary\pages\RosarioAudio.tsx:14 import { rosaryTodayService } from "../services/rosaryTodayService";
+src\modules\rosary\pages\RosarioAudio.tsx:15 import type { MysteryGroupId } from "../types";
+src\modules\rosary\pages\RosarioConfiguracion.tsx:1 import { useNavigate } from "react-router-dom";
+src\modules\rosary\pages\RosarioConfiguracion.tsx:2 import { RosaryLayout } from "../components/RosaryLayout";
+src\modules\rosary\pages\RosarioConfiguracion.tsx:3 import { RosarySwitchRow, RosaryValueRow } from "../components/RosaryRows";
+src\modules\rosary\pages\RosarioConfiguracion.tsx:4 import { useRosaryFlow } from "../hooks/useRosaryFlow";
+src\modules\rosary\pages\RosarioConfiguracion.tsx:5 import { useRosaryPreferences } from "../hooks/useRosaryPreferences";
+src\modules\rosary\pages\RosarioConfiguracion.tsx:6 import { routeForMode } from "../utils/routes";
+src\modules\rosary\pages\RosarioConfiguracion.tsx:7 import { rosarySessionService } from "../services/rosarySessionService";
+src\modules\rosary\pages\RosarioConfiguracion.tsx:8 import type { RosaryVoiceId, TextSize } from "../types";
+src\modules\rosary\pages\RosarioDescargas.tsx:1 import { useState } from "react";
+src\modules\rosary\pages\RosarioDescargas.tsx:2 import { Check, Download } from "lucide-react";
+src\modules\rosary\pages\RosarioDescargas.tsx:3 import { RosaryLayout } from "../components/RosaryLayout";
+src\modules\rosary\pages\RosarioDescargas.tsx:4 import { mysteryGroups } from "../mocks/mysteries";
+src\modules\rosary\pages\RosarioDescargas.tsx:5 import { mysteryArt } from "../mocks/mysteryArt";
+src\modules\rosary\pages\RosarioDescargas.tsx:6 import type { MysteryGroupId } from "../types";
+src\modules\rosary\pages\RosarioDiario.tsx:1 import { useEffect, useState } from "react";
+src\modules\rosary\pages\RosarioDiario.tsx:2 import { Trash2 } from "lucide-react";
+src\modules\rosary\pages\RosarioDiario.tsx:3 import { RosaryLayout } from "../components/RosaryLayout";
+src\modules\rosary\pages\RosarioDiario.tsx:4 import { RosarySwitchRow } from "../components/RosaryRows";
+src\modules\rosary\pages\RosarioDiario.tsx:5 import { rosaryFlowService } from "../services/rosaryFlowService";
+src\modules\rosary\pages\RosarioDiario.tsx:6 import { mysteryGroups } from "../mocks/mysteries";
+src\modules\rosary\pages\RosarioDiario.tsx:7 import type { RosaryJournalEntry } from "../types";
+src\modules\rosary\pages\RosarioDigital.tsx:1 import { useMemo, useState } from "react";
+src\modules\rosary\pages\RosarioDigital.tsx:2 import { useSearchParams } from "react-router-dom";
+src\modules\rosary\pages\RosarioDigital.tsx:3 import { ChevronLeft, ChevronRight, CircleDot, Settings } from "lucide-react";
+src\modules\rosary\pages\RosarioDigital.tsx:4 import { RosaryLayout } from "../components/RosaryLayout";
+src\modules\rosary\pages\RosarioDigital.tsx:5 import { RosaryLoading } from "../components/RosaryStateViews";
+src\modules\rosary\pages\RosarioDigital.tsx:6 import { PrayerStepCard } from "../components/PrayerStepCard";
+src\modules\rosary\pages\RosarioDigital.tsx:7 import { RosaryProgress } from "../components/RosaryProgress";
+src\modules\rosary\pages\RosarioDigital.tsx:8 import { RosaryBeadRing } from "../components/RosaryBeadRing";
+src\modules\rosary\pages\RosarioDigital.tsx:9 import { RosaryFullRing, RosaryRingLegend } from "../components/RosaryFullRing";
+src\modules\rosary\pages\RosarioDigital.tsx:10 import { RosaryPrayerScene } from "../components/RosaryPrayerScene";
+src\modules\rosary\pages\RosarioDigital.tsx:11 import { RosaryCompletion } from "../components/RosaryCompletion";
+src\modules\rosary\pages\RosarioDigital.tsx:12 import { RosarySettingsSheet } from "../components/RosarySettingsSheet";
+src\modules\rosary\pages\RosarioDigital.tsx:13 import { useRosarySession } from "../hooks/useRosarySession";
+src\modules\rosary\pages\RosarioDigital.tsx:14 import { useRosaryPreferences } from "../hooks/useRosaryPreferences";
+src\modules\rosary\pages\RosarioDigital.tsx:15 import { useRosaryFlow } from "../hooks/useRosaryFlow";
+src\modules\rosary\pages\RosarioDigital.tsx:16 import { useKeepAwake } from "../hooks/useKeepAwake";
+src\modules\rosary\pages\RosarioDigital.tsx:17 import { mysteryGroups } from "../mocks/mysteries";
+src\modules\rosary\pages\RosarioDigital.tsx:18 import { mysteryArt } from "../mocks/mysteryArt";
+src\modules\rosary\pages\RosarioDigital.tsx:19 import { rosaryTodayService } from "../services/rosaryTodayService";
+src\modules\rosary\pages\RosarioDigital.tsx:20 import type { MysteryGroupId } from "../types";
+src\modules\rosary\pages\RosarioFisico.tsx:1 import { useMemo, useState } from "react";
+src\modules\rosary\pages\RosarioFisico.tsx:2 import { useSearchParams } from "react-router-dom";
+src\modules\rosary\pages\RosarioFisico.tsx:3 import { ChevronLeft, ChevronRight, Settings } from "lucide-react";
+src\modules\rosary\pages\RosarioFisico.tsx:4 import { RosaryLayout } from "../components/RosaryLayout";
+src\modules\rosary\pages\RosarioFisico.tsx:5 import { RosaryLoading } from "../components/RosaryStateViews";
+src\modules\rosary\pages\RosarioFisico.tsx:6 import { RosaryPrayerScene } from "../components/RosaryPrayerScene";
+src\modules\rosary\pages\RosarioFisico.tsx:7 import { RosaryCompletion } from "../components/RosaryCompletion";
+src\modules\rosary\pages\RosarioFisico.tsx:8 import { RosarySettingsSheet } from "../components/RosarySettingsSheet";
+src\modules\rosary\pages\RosarioFisico.tsx:9 import { useRosarySession } from "../hooks/useRosarySession";
+src\modules\rosary\pages\RosarioFisico.tsx:10 import { useRosaryPreferences } from "../hooks/useRosaryPreferences";
+src\modules\rosary\pages\RosarioFisico.tsx:11 import { useRosaryFlow } from "../hooks/useRosaryFlow";
+src\modules\rosary\pages\RosarioFisico.tsx:12 import { mysteryGroups } from "../mocks/mysteries";
+src\modules\rosary\pages\RosarioFisico.tsx:13 import { mysteryArt } from "../mocks/mysteryArt";
+src\modules\rosary\pages\RosarioFisico.tsx:14 import { rosaryTodayService } from "../services/rosaryTodayService";
+src\modules\rosary\pages\RosarioFisico.tsx:15 import type { MysteryGroupId } from "../types";
+src\modules\rosary\pages\RosarioHome.tsx:1 import { useEffect, useMemo, useState } from "react";
+src\modules\rosary\pages\RosarioHome.tsx:2 import { Link, useNavigate } from "react-router-dom";
+src\modules\rosary\pages\RosarioHome.tsx:3 import { ChevronRight, Info, NotebookPen, WifiOff } from "lucide-react";
+src\modules\rosary\pages\RosarioHome.tsx:4 import { RosaryLayout } from "../components/RosaryLayout";
+src\modules\rosary\pages\RosarioHome.tsx:5 import { RosaryLoading } from "../components/RosaryStateViews";
+src\modules\rosary\pages\RosarioHome.tsx:6 import { useRosaryToday } from "../hooks/useRosaryToday";
+src\modules\rosary\pages\RosarioHome.tsx:7 import { useRosaryFlow } from "../hooks/useRosaryFlow";
+src\modules\rosary\pages\RosarioHome.tsx:8 import { mysteryGroups } from "../mocks/mysteries";
+src\modules\rosary\pages\RosarioHome.tsx:9 import { mysteryArt } from "../mocks/mysteryArt";
+src\modules\rosary\pages\RosarioHome.tsx:10 import { rosarySessionService } from "../services/rosarySessionService";
+src\modules\rosary\pages\RosarioHome.tsx:11 import { rosaryTodayService } from "../services/rosaryTodayService";
+src\modules\rosary\pages\RosarioHome.tsx:12 import { routeForMode } from "../utils/routes";
+src\modules\rosary\pages\RosarioHome.tsx:13 import type { MysteryGroupId, RosarySession } from "../types";
+src\modules\rosary\pages\RosarioInfo.tsx:1 import { CircleDot, Headphones, Sparkles } from "lucide-react";
+src\modules\rosary\pages\RosarioInfo.tsx:2 import { RosaryLayout } from "../components/RosaryLayout";
+src\modules\rosary\pages\RosarioIntencion.tsx:1 import { useState } from "react";
+src\modules\rosary\pages\RosarioIntencion.tsx:2 import { useNavigate } from "react-router-dom";
+src\modules\rosary\pages\RosarioIntencion.tsx:3 import { Bird, Church, Cross, HeartHandshake, PenLine, Stethoscope, User, Users } from "lucide-react";
+src\modules\rosary\pages\RosarioIntencion.tsx:4 import { RosaryLayout } from "../components/RosaryLayout";
+src\modules\rosary\pages\RosarioIntencion.tsx:5 import { RosaryRadioRow } from "../components/RosaryRows";
+src\modules\rosary\pages\RosarioIntencion.tsx:6 import { useRosaryFlow } from "../hooks/useRosaryFlow";
+src\modules\rosary\pages\RosarioIntencion.tsx:7 import type { RosaryIntentionKind } from "../types";
+src\modules\rosary\pages\RosarioMisterios.tsx:1 import { useState } from "react";
+src\modules\rosary\pages\RosarioMisterios.tsx:2 import { useNavigate } from "react-router-dom";
+src\modules\rosary\pages\RosarioMisterios.tsx:3 import { RosaryLayout } from "../components/RosaryLayout";
+src\modules\rosary\pages\RosarioMisterios.tsx:4 import { useRosaryFlow } from "../hooks/useRosaryFlow";
+src\modules\rosary\pages\RosarioMisterios.tsx:5 import { mysteryGroups } from "../mocks/mysteries";
+src\modules\rosary\pages\RosarioMisterios.tsx:6 import { mysteryArt, mysteryDays } from "../mocks/mysteryArt";
+src\modules\rosary\pages\RosarioMisterios.tsx:7 import { rosaryTodayService } from "../services/rosaryTodayService";
+src\modules\rosary\pages\RosarioMisterios.tsx:8 import { routeForMode } from "../utils/routes";
+src\modules\rosary\pages\RosarioMisterios.tsx:9 import type { MysteryGroupId } from "../types";
+src\modules\rosary\pages\RosarioModalidad.tsx:1 import { useNavigate } from "react-router-dom";
+src\modules\rosary\pages\RosarioModalidad.tsx:2 import { CircleDot, Headphones, Sparkles } from "lucide-react";
+src\modules\rosary\pages\RosarioModalidad.tsx:3 import { RosaryLayout } from "../components/RosaryLayout";
+src\modules\rosary\pages\RosarioModalidad.tsx:4 import { RosaryNavRow } from "../components/RosaryRows";
+src\modules\rosary\pages\RosarioModalidad.tsx:5 import { useRosaryFlow } from "../hooks/useRosaryFlow";
+src\modules\rosary\pages\RosarioModalidad.tsx:6 import { useRosaryPreferences } from "../hooks/useRosaryPreferences";
+src\modules\rosary\pages\RosarioModalidad.tsx:7 import type { RosaryModeId } from "../types";
+src\modules\rosary\pages\RosarioSeleccionMisterios.tsx:1 import { useState } from "react";
+src\modules\rosary\pages\RosarioSeleccionMisterios.tsx:2 import { useNavigate } from "react-router-dom";
+src\modules\rosary\pages\RosarioSeleccionMisterios.tsx:3 import { CircleDot, Sparkles } from "lucide-react";
+src\modules\rosary\pages\RosarioSeleccionMisterios.tsx:4 import { RosaryLayout } from "../components/RosaryLayout";
+src\modules\rosary\pages\RosarioSeleccionMisterios.tsx:5 import { RosaryRadioRow } from "../components/RosaryRows";
+src\modules\rosary\pages\RosarioSeleccionMisterios.tsx:6 import { useRosaryFlow } from "../hooks/useRosaryFlow";
+src\modules\rosary\pages\RosarioSeleccionMisterios.tsx:7 import { mysteryGroups } from "../mocks/mysteries";
+src\modules\rosary\pages\RosarioSeleccionMisterios.tsx:8 import { mysteryArt, mysteryDays } from "../mocks/mysteryArt";
+src\modules\rosary\pages\RosarioSeleccionMisterios.tsx:9 import { rosaryTodayService } from "../services/rosaryTodayService";
+src\modules\rosary\pages\RosarioSeleccionMisterios.tsx:10 import type { MysteryGroupId, RosaryScope } from "../types";
+src\modules\rosary\services\rosaryAudioService.ts:1 import type { AudioSegment } from "../types";
+src\modules\rosary\services\rosaryAudioService.ts:2 import { isSafeMediaUrl } from "./http";
+src\modules\rosary\services\rosaryFlowService.ts:1 import type { MysteryGroupId, RosaryFlow, RosaryJournalEntry } from "../types";
+src\modules\rosary\services\rosaryOfflineService.ts:1 import type { AudioManifest, DownloadState } from "../types";
+src\modules\rosary\services\rosaryRepository.ts:1 import { mysteryGroups } from "../mocks/mysteries";
+src\modules\rosary\services\rosaryRepository.ts:2 import { prayers } from "../mocks/prayers";
+src\modules\rosary\services\rosaryRepository.ts:3 import { buildRosaryDefinition } from "../utils/buildRosary";
+src\modules\rosary\services\rosaryRepository.ts:4 import type {
+src\modules\rosary\services\rosaryRepository.ts:11 import { apiRequest, isSafeMediaUrl } from "./http";
+src\modules\rosary\services\rosarySessionService.ts:1 import type {
+src\modules\rosary\services\rosaryTodayService.ts:1 import type { MysteryGroupId, RosaryToday, RosaryTodayDto } from "../types";
+src\modules\rosary\services\rosaryTodayService.ts:2 import {
+src\modules\rosary\services\rosaryTodayService.ts:10 import { apiRequest } from "./http";
+src\modules\rosary\utils\buildRosary.ts:1 import { mysteryGroups } from "../mocks/mysteries";
+src\modules\rosary\utils\buildRosary.ts:2 import type {
+src\modules\rosary\utils\mysteryOfDay.ts:1 import type { MysteryGroupId } from "../types";
+src\modules\rosary\utils\routes.ts:1 import type { RosaryModeId } from "../types";
+
