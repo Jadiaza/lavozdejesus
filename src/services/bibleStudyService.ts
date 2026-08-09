@@ -49,7 +49,7 @@ export async function getBibleStudy(id: number) {
   const payload = await parse(await fetchWithNetworkRetry(url, { headers: { Accept: "application/json", ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) } }));
   if (!payload.study) throw new Error("El estudio no está disponible."); return payload.study;
 }
-export async function createBibleStudy(input: { libro_codigo: string; capitulo_inicio: number; versiculo_inicio: number; capitulo_fin: number; versiculo_fin: number; metodo: StudyMethod; nivel: StudyLevel; }) {
+export async function createBibleStudy(input: { libro_codigo: string; capitulo_inicio: number; versiculo_inicio: number; capitulo_fin: number; versiculo_fin: number; nivel: StudyLevel; }) {
   const accessToken = await token();
   const response = await fetchWithNetworkRetry(apiUrl, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json", ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) }, body: JSON.stringify(input) });
   if (response.status === 401) throw new Error("AUTH_REQUIRED");

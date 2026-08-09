@@ -26,6 +26,14 @@ final class BibleStudyMethod
     return $method;
   }
 
+  public static function forBook(string $bookCode): string
+  {
+    $bookCode = strtoupper(trim($bookCode));
+    return in_array($bookCode, ['SAL', 'PSA', 'PSS', 'PS'], true)
+      ? 'metodo_salmo'
+      : 'integral_lvj';
+  }
+
   public static function config(string $method): array
   {
     $method = self::normalize($method);

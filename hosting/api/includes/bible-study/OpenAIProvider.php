@@ -21,6 +21,7 @@ final class OpenAIProvider implements BibleStudyAiProviderInterface
     $text = self::extractOpenAIText($response);
     $study = json_decode(self::normalizeJsonText($text), true);
     if (!is_array($study)) throw new RuntimeException('OpenAI no devolvió JSON válido.');
+    $study = BibleStudySchema::prepareGenerated($study, $context);
     BibleStudySchema::validate($study, $context);
     return ['study' => $study, 'input_tokens' => $response['usage']['input_tokens'] ?? null,
       'output_tokens' => $response['usage']['output_tokens'] ?? null, 'model' => $this->model];

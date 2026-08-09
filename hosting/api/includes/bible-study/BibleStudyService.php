@@ -147,7 +147,7 @@ final class BibleStudyService
   {
     $book = strtoupper(trim((string)($input['libro_codigo'] ?? '')));
     if (!preg_match('/^[0-9A-Z]{3}$/', $book)) throw new InvalidArgumentException('El libro no es válido.');
-    $ci=(int)($input['capitulo_inicio']??0); $cf=(int)($input['capitulo_fin']??$ci); $vi=(int)($input['versiculo_inicio']??0); $vf=(int)($input['versiculo_fin']??$vi); $method=BibleStudyMethod::normalize($input['metodo']??null); $level=BibleStudyLevel::normalize($input['nivel']??null);
+    $ci=(int)($input['capitulo_inicio']??0); $cf=(int)($input['capitulo_fin']??$ci); $vi=(int)($input['versiculo_inicio']??0); $vf=(int)($input['versiculo_fin']??$vi); $method=BibleStudyMethod::forBook($book); $level=BibleStudyLevel::normalize($input['nivel']??null);
     if ($ci < 1 || $cf !== $ci || $vi < 1 || $vf < $vi) throw new InvalidArgumentException('Selecciona un rango válido del mismo capítulo.');
     return ['libro_codigo'=>$book,'capitulo_inicio'=>$ci,'versiculo_inicio'=>$vi,'capitulo_fin'=>$cf,'versiculo_fin'=>$vf,'metodo'=>$method,'nivel'=>$level];
   }

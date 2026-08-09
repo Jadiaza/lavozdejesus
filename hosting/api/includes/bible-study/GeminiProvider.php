@@ -16,6 +16,7 @@ final class GeminiProvider implements BibleStudyAiProviderInterface
     $text = self::extractGeminiText($response);
     $study = json_decode(self::normalizeJsonText($text), true);
     if (!is_array($study)) throw new RuntimeException('Gemini no devolvió JSON válido.');
+    $study = BibleStudySchema::prepareGenerated($study, $context);
     BibleStudySchema::validate($study, $context);
     return ['study' => $study, 'input_tokens' => $response['usageMetadata']['promptTokenCount'] ?? null,
       'output_tokens' => $response['usageMetadata']['candidatesTokenCount'] ?? null, 'model' => $this->model];

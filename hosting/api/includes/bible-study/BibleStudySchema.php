@@ -73,6 +73,159 @@ final class BibleStudySchema
     return $schema;
   }
 
+  public static function prepareGenerated(array $study, array $context): array
+  {
+    $method = BibleStudyMethod::normalize(
+      $context['metodo'] ?? BibleStudyMethod::DEFAULT
+    );
+    $config = BibleStudyMethod::config($method);
+
+    // Estos campos pertenecen al servidor, no al contenido creativo de la IA.
+    $study['metodo'] = $method;
+    $study['modelo_referencia'] = $config['model_reference'];
+    $study['tecnicas'] = $config['techniques'];
+    if ($method === 'integral_lvj') {
+      $study['tecnica_estructural'] = 'arcing';
+    } else {
+      unset($study['tecnica_estructural'], $study['arcing']);
+    }
+
+    $analysis = $study['analisis_proposiciones'] ?? null;
+    if (!is_array($analysis)) return $study;
+
+    $source = [];
+    foreach (($context['versiones']['platense']['versiculos'] ?? []) as $verse) {
+      $source[(int) ($verse['versiculo'] ?? 0)] =
+        self::normalizeText((string) ($verse['texto'] ?? ''));
+    }
+
+    $idMap = [];
+    $positionMap = [];
+    $firstProposition = '';
+    foreach (($analysis['versiculos'] ?? []) as $verseIndex => &$verse) {
+      $number = (int) ($verse['numero'] ?? 0);
+      $firstPp = '';
+      foreach (($verse['proposiciones'] ?? []) as $propIndex => &$proposition) {
+        $order = $propIndex + 1;
+        $oldId = self::normalizeIdValue($proposition['id'] ?? '');
+        $canonicalId = 'v'.$number.'_p'.$order;
+        if ($oldId !== '') $idMap[$oldId] = $canonicalId;
+        $positionMap[$number.':'.$order] = $canonicalId;
+        $proposition['id'] = $canonicalId;
+        $proposition['orden'] = $order;
+        if ($firstProposition === '') $firstProposition = $canonicalId;
+        if (($proposition['tipo'] ?? '') === 'PP' && $firstPp === '') {
+          $firstPp = $canonicalId;
+        }
+
+        $fragment = self::normalizeText((string) ($proposition['texto'] ?? ''));
+        if (
+          isset($source[$number])
+          && $fragment !== ''
+          && !str_contains($source[$number], $fragment)
+        ) {
+          $proposition['requiere_revision'] = true;
+          $proposition['nivel_confianza'] = 'baja';
+          $verse['estado_validacion'] = 'proposicion_no_verificable';
+          $verse['cobertura_textual']['completa'] = false;
+          $verse['cobertura_textual']['fragmentos_no_clasificados'][] =
+            (string) ($proposition['texto'] ?? '');
+        }
+      }
+      unset($proposition);
+
+      foreach (($verse['proposiciones'] ?? []) as &$proposition) {
+        if (($proposition['tipo'] ?? '') !== 'PS') {
+          $proposition['depende_de'] = null;
+          continue;
+        }
+        $dependency = self::normalizeIdValue($proposition['depende_de'] ?? '');
+        $proposition['depende_de'] =
+          ($idMap[$dependency] ?? $firstPp) ?: null;
+        if ($proposition['depende_de'] === null) {
+          $proposition['requiere_revision'] = true;
+          $proposition['nivel_confianza'] = 'baja';
+        }
+      }
+      unset($proposition);
+    }
+    unset($verse);
+    $study['analisis_proposiciones'] = $analysis;
+
+    if ($method !== 'integral_lvj' || !is_array($study['arcing'] ?? null)) {
+      return $study;
+    }
+
+    $resolveProposition = static function ($raw) use (
+      $idMap,
+      $positionMap,
+      $firstProposition
+    ): string {
+      $raw = self::normalizeIdValue($raw);
+      if (isset($idMap[$raw])) return $idMap[$raw];
+      if (in_array($raw, $positionMap, true)) return $raw;
+      preg_match_all('/\d+/', $raw, $matches);
+      $numbers = $matches[0] ?? [];
+      if (count($numbers) >= 2) {
+        $key = ((int) $numbers[0]).':'.((int) end($numbers));
+        if (isset($positionMap[$key])) return $positionMap[$key];
+      }
+      return $firstProposition;
+    };
+
+    $unitMap = [];
+    $uncertain = false;
+    foreach (($study['arcing']['unidades'] ?? []) as $index => &$unit) {
+      $oldId = self::normalizeIdValue($unit['id'] ?? '');
+      $unit['id'] = 'a'.($index + 1);
+      if ($oldId !== '') $unitMap[$oldId] = $unit['id'];
+      $resolved = [];
+      foreach (($unit['proposiciones'] ?? []) as $rawId) {
+        $resolvedId = $resolveProposition($rawId);
+        if ($resolvedId !== '') $resolved[$resolvedId] = true;
+        if ($resolvedId !== self::normalizeIdValue($rawId)) $uncertain = true;
+      }
+      if (!$resolved && $firstProposition !== '') {
+        $resolved[$firstProposition] = true;
+        $uncertain = true;
+      }
+      $unit['proposiciones'] = array_keys($resolved);
+    }
+    unset($unit);
+    $unitIds = array_values($unitMap);
+
+    foreach (($study['arcing']['relaciones'] ?? []) as $index => &$relation) {
+      $relation['id'] = 'r'.($index + 1);
+      $fromRaw = self::normalizeIdValue($relation['desde'] ?? '');
+      $toRaw = self::normalizeIdValue($relation['hasta'] ?? '');
+      $relation['desde'] = $unitMap[$fromRaw] ?? '';
+      $relation['hasta'] = $unitMap[$toRaw] ?? '';
+      if ($relation['desde'] === '' && preg_match('/\d+/', $fromRaw, $match)) {
+        $relation['desde'] = 'a'.max(1, min(count($unitIds), (int) $match[0]));
+        $uncertain = true;
+      }
+      if ($relation['hasta'] === '' && preg_match('/\d+/', $toRaw, $match)) {
+        $relation['hasta'] = 'a'.max(1, min(count($unitIds), (int) $match[0]));
+        $uncertain = true;
+      }
+      if ($relation['desde'] === '' && $unitIds) {
+        $relation['desde'] = $unitIds[0];
+        $uncertain = true;
+      }
+      if ($relation['hasta'] === '' && $unitIds) {
+        $relation['hasta'] = $unitIds[min(1, count($unitIds) - 1)];
+        $uncertain = true;
+      }
+      if ($uncertain) {
+        $relation['nivel_confianza'] = 'baja';
+        $relation['requiere_revision'] = true;
+      }
+    }
+    unset($relation);
+
+    return $study;
+  }
+
   public static function validate(array $study, array $context = [])
   {
     $method = BibleStudyMethod::normalize($context['metodo'] ?? $study['metodo'] ?? null);
@@ -213,7 +366,11 @@ final class BibleStudySchema
         if ($fragment === '') {
           throw new RuntimeException("La proposición {$id} no contiene texto válido.");
         }
-        if ($verseSource !== '' && !str_contains($verseSource, $fragment)) {
+        if (
+          $verseSource !== ''
+          && !str_contains($verseSource, $fragment)
+          && !($p['requiere_revision'] ?? false)
+        ) {
           throw new RuntimeException("La proposición {$id} no existe en el texto fuente.");
         }
         if ($type === 'PS') {
