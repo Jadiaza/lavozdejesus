@@ -15,7 +15,6 @@ final class OpenAIProvider implements BibleStudyAiProviderInterface
       'instructions' => BibleStudyPrompt::system((string)($context['metodo'] ?? BibleStudyMethod::DEFAULT), (string)($context['nivel'] ?? BibleStudyLevel::DEFAULT)),
       'input' => json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
       'max_output_tokens' => $this->maxTokens,
-      'tools' => [['type' => 'web_search']],
       'text' => ['format' => ['type' => 'json_schema', 'name' => 'bible_study', 'strict' => true, 'schema' => BibleStudySchema::jsonSchema((string)($context['metodo'] ?? BibleStudyMethod::DEFAULT))]],
     ], $this->timeout);
     $text = self::extractOpenAIText($response);

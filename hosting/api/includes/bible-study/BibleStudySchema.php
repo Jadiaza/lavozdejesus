@@ -81,6 +81,11 @@ final class BibleStudySchema
     $config = BibleStudyMethod::config($method);
 
     // Estos campos pertenecen al servidor, no al contenido creativo de la IA.
+    // La referencia procede del rango canónico validado y nunca debe depender
+    // de que el proveedor la repita literalmente en su respuesta.
+    $study['referencia'] = (string) (
+      $context['referencia'] ?? $study['referencia'] ?? ''
+    );
     $study['metodo'] = $method;
     $study['modelo_referencia'] = $config['model_reference'];
     $study['tecnicas'] = $config['techniques'];
@@ -92,6 +97,9 @@ final class BibleStudySchema
 
     $analysis = $study['analisis_proposiciones'] ?? null;
     if (!is_array($analysis)) return $study;
+    if (!isset($analysis['versiculos']) || !is_array($analysis['versiculos'])) {
+      return $study;
+    }
 
     $source = [];
     foreach (($context['versiones']['platense']['versiculos'] ?? []) as $verse) {
@@ -102,10 +110,13 @@ final class BibleStudySchema
     $idMap = [];
     $positionMap = [];
     $firstProposition = '';
-    foreach (($analysis['versiculos'] ?? []) as $verseIndex => &$verse) {
+    foreach ($analysis['versiculos'] as $verseIndex => &$verse) {
       $number = (int) ($verse['numero'] ?? 0);
       $firstPp = '';
-      foreach (($verse['proposiciones'] ?? []) as $propIndex => &$proposition) {
+      if (!isset($verse['proposiciones']) || !is_array($verse['proposiciones'])) {
+        continue;
+      }
+      foreach ($verse['proposiciones'] as $propIndex => &$proposition) {
         $order = $propIndex + 1;
         $oldId = self::normalizeIdValue($proposition['id'] ?? '');
         $canonicalId = 'v'.$number.'_p'.$order;
@@ -134,7 +145,7 @@ final class BibleStudySchema
       }
       unset($proposition);
 
-      foreach (($verse['proposiciones'] ?? []) as &$proposition) {
+      foreach ($verse['proposiciones'] as &$proposition) {
         if (($proposition['tipo'] ?? '') !== 'PS') {
           $proposition['depende_de'] = null;
           continue;
@@ -154,6 +165,12 @@ final class BibleStudySchema
 
     if ($method !== 'integral_lvj' || !is_array($study['arcing'] ?? null)) {
       return $study;
+    }
+    if (!isset($study['arcing']['unidades']) || !is_array($study['arcing']['unidades'])) {
+      return $study;
+    }
+    if (!isset($study['arcing']['relaciones']) || !is_array($study['arcing']['relaciones'])) {
+      $study['arcing']['relaciones'] = [];
     }
 
     $resolveProposition = static function ($raw) use (
@@ -175,7 +192,7 @@ final class BibleStudySchema
 
     $unitMap = [];
     $uncertain = false;
-    foreach (($study['arcing']['unidades'] ?? []) as $index => &$unit) {
+    foreach ($study['arcing']['unidades'] as $index => &$unit) {
       $oldId = self::normalizeIdValue($unit['id'] ?? '');
       $unit['id'] = 'a'.($index + 1);
       if ($oldId !== '') $unitMap[$oldId] = $unit['id'];
@@ -194,7 +211,7 @@ final class BibleStudySchema
     unset($unit);
     $unitIds = array_values($unitMap);
 
-    foreach (($study['arcing']['relaciones'] ?? []) as $index => &$relation) {
+    foreach ($study['arcing']['relaciones'] as $index => &$relation) {
       $relation['id'] = 'r'.($index + 1);
       $fromRaw = self::normalizeIdValue($relation['desde'] ?? '');
       $toRaw = self::normalizeIdValue($relation['hasta'] ?? '');
