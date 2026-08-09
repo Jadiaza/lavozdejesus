@@ -102,7 +102,7 @@ function lvj_require_method(string $method): void
 
   if ($requestMethod === 'OPTIONS') {
     header('Access-Control-Allow-Methods: ' . $allowedMethod . ', OPTIONS');
-    header('Access-Control-Allow-Headers: Content-Type, Authorization');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-LVJ-Authorization');
     lvj_json_response(['success' => true]);
   }
 

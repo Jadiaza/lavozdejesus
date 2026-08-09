@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-const LVJ_BIBLE_API_BUILD = '2026-08-03-v5';
+const LVJ_BIBLE_API_BUILD = '2026-08-09-v7';
 
 function lvj_bible_api_fallback_response(array $payload, int $status): void
 {
@@ -128,7 +128,7 @@ try {
 
     $user = null;
 
-    if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
+    if (SupabaseAuth::hasCredentials()) {
       $user = SupabaseAuth::requireUser($pdo);
     }
 

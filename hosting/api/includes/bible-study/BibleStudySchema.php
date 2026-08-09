@@ -191,48 +191,50 @@ final class BibleStudySchema
     };
 
     $unitMap = [];
-    $uncertain = false;
+    $unitIds = [];
     foreach ($study['arcing']['unidades'] as $index => &$unit) {
       $oldId = self::normalizeIdValue($unit['id'] ?? '');
-      $unit['id'] = 'a'.($index + 1);
-      if ($oldId !== '') $unitMap[$oldId] = $unit['id'];
+      $canonicalUnitId = 'a'.($index + 1);
+      $unit['id'] = $canonicalUnitId;
+      $unitIds[] = $canonicalUnitId;
+      $unitMap[$canonicalUnitId] = $canonicalUnitId;
+      if ($oldId !== '') $unitMap[$oldId] = $canonicalUnitId;
       $resolved = [];
       foreach (($unit['proposiciones'] ?? []) as $rawId) {
         $resolvedId = $resolveProposition($rawId);
         if ($resolvedId !== '') $resolved[$resolvedId] = true;
-        if ($resolvedId !== self::normalizeIdValue($rawId)) $uncertain = true;
       }
       if (!$resolved && $firstProposition !== '') {
         $resolved[$firstProposition] = true;
-        $uncertain = true;
       }
       $unit['proposiciones'] = array_keys($resolved);
     }
     unset($unit);
-    $unitIds = array_values($unitMap);
+
+    $resolveUnit = static function ($raw, int $fallbackIndex) use (
+      $unitMap,
+      $unitIds
+    ): string {
+      if (!$unitIds) return '';
+      $raw = self::normalizeIdValue($raw);
+      if ($raw !== '' && isset($unitMap[$raw])) return $unitMap[$raw];
+      if ($raw !== '' && preg_match('/\d+/', $raw, $match)) {
+        $position = max(1, min(count($unitIds), (int) $match[0]));
+        return $unitIds[$position - 1];
+      }
+      $position = max(0, min(count($unitIds) - 1, $fallbackIndex));
+      return $unitIds[$position];
+    };
 
     foreach ($study['arcing']['relaciones'] as $index => &$relation) {
       $relation['id'] = 'r'.($index + 1);
       $fromRaw = self::normalizeIdValue($relation['desde'] ?? '');
       $toRaw = self::normalizeIdValue($relation['hasta'] ?? '');
-      $relation['desde'] = $unitMap[$fromRaw] ?? '';
-      $relation['hasta'] = $unitMap[$toRaw] ?? '';
-      if ($relation['desde'] === '' && preg_match('/\d+/', $fromRaw, $match)) {
-        $relation['desde'] = 'a'.max(1, min(count($unitIds), (int) $match[0]));
-        $uncertain = true;
-      }
-      if ($relation['hasta'] === '' && preg_match('/\d+/', $toRaw, $match)) {
-        $relation['hasta'] = 'a'.max(1, min(count($unitIds), (int) $match[0]));
-        $uncertain = true;
-      }
-      if ($relation['desde'] === '' && $unitIds) {
-        $relation['desde'] = $unitIds[0];
-        $uncertain = true;
-      }
-      if ($relation['hasta'] === '' && $unitIds) {
-        $relation['hasta'] = $unitIds[min(1, count($unitIds) - 1)];
-        $uncertain = true;
-      }
+      $relation['desde'] = $resolveUnit($fromRaw, $index);
+      $relation['hasta'] = $resolveUnit($toRaw, $index + 1);
+      $uncertain =
+        !isset($unitMap[$fromRaw])
+        || !isset($unitMap[$toRaw]);
       if ($uncertain) {
         $relation['nivel_confianza'] = 'baja';
         $relation['requiere_revision'] = true;

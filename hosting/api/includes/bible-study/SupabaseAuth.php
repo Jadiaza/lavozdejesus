@@ -5,7 +5,7 @@ final class SupabaseAuth
 {
   public static function requireUser(PDO $pdo): array
   {
-    $header = (string) ($_SERVER['HTTP_AUTHORIZATION'] ?? '');
+    $header = self::authorizationHeader();
     if (!preg_match('/^Bearer\s+(.+)$/i', $header, $match)) {
       lvj_json_response(['success' => false, 'message' => 'Inicia sesión para solicitar un estudio bíblico.'], 401);
     }
@@ -37,6 +37,35 @@ final class SupabaseAuth
       lvj_json_response(['success' => false, 'message' => 'Tu cuenta no tiene autorización para realizar consultas de IA.'], 403);
     }
     return $user;
+  }
+
+  public static function hasCredentials(): bool
+  {
+    return self::authorizationHeader() !== '';
+  }
+
+  private static function authorizationHeader(): string
+  {
+    foreach ([
+      'HTTP_AUTHORIZATION',
+      'REDIRECT_HTTP_AUTHORIZATION',
+      'HTTP_X_LVJ_AUTHORIZATION',
+    ] as $key) {
+      $value = trim((string) ($_SERVER[$key] ?? ''));
+      if ($value !== '') return $value;
+    }
+
+    if (function_exists('getallheaders')) {
+      $headers = getallheaders();
+      if (is_array($headers)) {
+        foreach (['Authorization', 'authorization', 'X-LVJ-Authorization', 'x-lvj-authorization'] as $key) {
+          $value = trim((string) ($headers[$key] ?? ''));
+          if ($value !== '') return $value;
+        }
+      }
+    }
+
+    return '';
   }
 
   private static function isAllowedEmail(string $email): bool
