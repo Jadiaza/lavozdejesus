@@ -117,6 +117,7 @@ const App = () => (
               <Route path="/biblia/personajes" element={<BibliaPersonajes />} />
               <Route path="/biblia/:section" element={<BibliaProximamente />} />
               <Route path="/acceso" element={<Auth />} />
+              <Route path="/acceso/recuperar" element={<Auth />} />
               <Route path="/devociones" element={<Devociones />} />
               <Route path="/liturgia" element={<Liturgia />} />
               <Route path="/formacion" element={<Formacion />} />
