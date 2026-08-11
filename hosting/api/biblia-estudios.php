@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-const LVJ_BIBLE_API_BUILD = '2026-08-10-v8';
+const LVJ_BIBLE_API_BUILD = '2026-08-11-v9';
 
 function lvj_bible_api_fallback_response(array $payload, int $status): void
 {

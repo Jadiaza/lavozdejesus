@@ -11,9 +11,16 @@ node_modules
 dist
 dist-ssr
 *.local
+*.tsbuildinfo
 
 # Fuentes y archivos de trabajo locales de la Biblia.
 /storage/
+/.tmp-chrome-pdf/
+/.claude/
+/estructura.txt
+/spa.traineddata
+/rosary-exportaciones.txt
+/rosary-integracion.txt
 
 # Editor directories and files
 .vscode/*

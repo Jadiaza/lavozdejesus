@@ -1,34 +1,46 @@
 import { useEffect, useMemo, useState } from "react";
+import { BookOpen, Eye, EyeOff, LockKeyhole, Mail, UserRound } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { BookOpen, Mail } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  bibleStudyAuth,
+  getBibleStudyRememberSession,
+  isBibleStudyAuthConfigured,
+  setBibleStudyRememberSession,
+} from "@/features/biblia/auth/bibleStudyAuth";
 import { getRecentBibleStudies } from "@/services/bibleStudyService";
 
+type AccessMode = "login" | "register";
 const DEFAULT_DESTINATION = "/biblia/estudio";
-const ALLOWED_EMAIL_DOMAINS = new Set([
-  "gmail.com", "googlemail.com", "hotmail.com", "hotmail.es", "outlook.com", "outlook.es",
-  "live.com", "live.com.co", "msn.com", "yahoo.com", "yahoo.es", "icloud.com", "me.com",
-  "proton.me", "protonmail.com", "aol.com",
-]);
 
-const getSafeDestination = (search: string) => {
+function safeDestination(search: string): string {
   const requested = new URLSearchParams(search).get("next");
   return requested?.startsWith("/biblia") ? requested : DEFAULT_DESTINATION;
-};
+}
 
-const isAllowedEmail = (value: string) => {
-  const domain = value.trim().toLowerCase().split("@").at(-1) ?? "";
-  return ALLOWED_EMAIL_DOMAINS.has(domain);
-};
+function friendlyError(message: string): string {
+  const normalized = message.toLowerCase();
+  if (normalized.includes("invalid login credentials")) return "El correo o la contraseña no son correctos.";
+  if (normalized.includes("email not confirmed")) return "Confirma tu correo antes de iniciar sesión.";
+  if (normalized.includes("user already registered")) return "Este correo ya está registrado. Inicia sesión o recupera tu contraseña.";
+  if (normalized.includes("password should be")) return "La contraseña debe tener al menos 8 caracteres.";
+  if (normalized.includes("rate limit")) return "Has realizado varios intentos. Espera unos minutos y vuelve a intentarlo.";
+  return message || "No fue posible completar el acceso.";
+}
 
 export default function Auth() {
+  const [mode, setMode] = useState<AccessMode>("login");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [remember, setRemember] = useState(getBibleStudyRememberSession);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const next = useMemo(() => getSafeDestination(location.search), [location.search]);
-
+  const next = useMemo(() => safeDestination(location.search), [location.search]);
   const callbackUrl = useMemo(() => {
     const url = new URL("/acceso", window.location.origin);
     url.searchParams.set("next", next);
@@ -37,131 +49,154 @@ export default function Auth() {
 
   useEffect(() => {
     let active = true;
-    let verifying = false;
-
-    const finishAccess = async () => {
-      if (!active || verifying) return;
-      verifying = true;
-      setLoading(true);
-
-      const callback = new URL(window.location.href);
-      const code = callback.searchParams.get("code");
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        callback.searchParams.delete("code");
-        window.history.replaceState({}, "", callback.pathname + callback.search + callback.hash);
-        if (error) {
-          if (active) {
-            setMessage("El enlace de acceso no pudo validarse o ya expiró. Solicita uno nuevo.");
-            setLoading(false);
-          }
-          verifying = false;
-          return;
-        }
-      }
-
-      const { data, error } = await supabase.auth.getSession();
+    const completeAccess = async () => {
+      const { data, error } = await bibleStudyAuth.auth.getSession();
       if (!active) return;
       if (error) {
-        setMessage("No fue posible recuperar la sesión. Solicita un nuevo enlace.");
+        setMessage(friendlyError(error.message));
         setLoading(false);
-        verifying = false;
         return;
       }
       if (!data.session) {
-        const callbackError = callback.searchParams.get("error_description");
-        if (callbackError) setMessage("El enlace de acceso no es válido o ya expiró.");
         setLoading(false);
-        verifying = false;
         return;
       }
-
       try {
         await getRecentBibleStudies();
         if (active) navigate(next, { replace: true });
       } catch (accessError) {
-        if (active) {
-          const detail = accessError instanceof Error ? accessError.message : "";
-          setMessage(detail === "AUTH_REQUIRED"
-            ? "La sesión no pudo ser confirmada por el servidor. Solicita un nuevo enlace."
-            : detail || "No fue posible validar el acceso al estudio bíblico.");
-          setLoading(false);
-        }
-      } finally {
-        verifying = false;
+        if (!active) return;
+        setMessage(accessError instanceof Error ? friendlyError(accessError.message) : "No fue posible validar tu cuenta con el servidor.");
+        setLoading(false);
       }
     };
-
-    void finishAccess();
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (active && session) void finishAccess();
+    void completeAccess();
+    const { data } = bibleStudyAuth.auth.onAuthStateChange((event, session) => {
+      if (active && session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) void completeAccess();
     });
-
     return () => {
       active = false;
-      listener.subscription.unsubscribe();
+      data.subscription.unsubscribe();
     };
   }, [navigate, next]);
 
-  const magic = async (event: React.FormEvent) => {
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!isAllowedEmail(email)) {
-      setMessage("Utiliza un correo de un proveedor reconocido como Gmail, Outlook, Hotmail, Yahoo, iCloud o Proton.");
+    setMessage("");
+    setSuccess(false);
+    if (!isBibleStudyAuthConfigured()) {
+      setMessage("El acceso de usuarios no está configurado en este entorno. Faltan la URL o la clave pública de Supabase.");
+      return;
+    }
+    const normalizedEmail = email.trim().toLowerCase();
+    if (password.length < 8) {
+      setMessage("La contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+    if (mode === "register" && password !== confirmPassword) {
+      setMessage("Las contraseñas no coinciden.");
+      return;
+    }
+    setLoading(true);
+    setBibleStudyRememberSession(remember);
+    if (mode === "register") {
+      const { data, error } = await bibleStudyAuth.auth.signUp({
+        email: normalizedEmail,
+        password,
+        options: {
+          emailRedirectTo: callbackUrl,
+          data: { full_name: name.trim() || "Usuario LVJ" },
+        },
+      });
+      if (error) {
+        setMessage(friendlyError(error.message));
+      } else if (!data.session) {
+        setSuccess(true);
+        setMessage("Cuenta creada. Revisa tu correo y confirma el registro; después podrás iniciar sesión.");
+      }
+    } else {
+      const { error } = await bibleStudyAuth.auth.signInWithPassword({ email: normalizedEmail, password });
+      if (error) setMessage(friendlyError(error.message));
+    }
+    setLoading(false);
+  };
+
+  const resetPassword = async () => {
+    if (!isBibleStudyAuthConfigured()) {
+      setMessage("El acceso de usuarios no está configurado en este entorno. Faltan la URL o la clave pública de Supabase.");
+      return;
+    }
+    if (!email.trim()) {
+      setMessage("Escribe primero el correo de tu cuenta.");
       return;
     }
     setLoading(true);
     setMessage("");
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim().toLowerCase(),
-      options: { emailRedirectTo: callbackUrl, shouldCreateUser: true },
+    const { error } = await bibleStudyAuth.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: callbackUrl,
     });
+    setSuccess(!error);
+    setMessage(error ? friendlyError(error.message) : "Te enviamos un enlace para restablecer tu contraseña.");
     setLoading(false);
-    setMessage(error ? error.message : "Te enviamos un enlace seguro. Abre tu correo y pulsa ese enlace para completar el acceso.");
-  };
-
-  const google = async () => {
-    setLoading(true);
-    setMessage("");
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: callbackUrl },
-    });
-    if (error) {
-      setMessage(error.message);
-      setLoading(false);
-    }
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] px-4 py-10 text-[#F8F5EA]">
-      <div className="mx-auto max-w-sm rounded-[1.75rem] border border-[#D4AF37]/30 bg-[#0B0B0B] p-6 shadow-2xl">
-        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#F2D27A] to-[#D4AF37]">
-          <BookOpen className="text-black" />
-        </span>
-        <h1 className="mt-4 text-center font-display text-2xl">Profundiza en la Palabra</h1>
-        <p className="mt-2 text-center text-sm text-[#C9C3B3]">
-          Crea una cuenta gratuita para acceder al estudio teológico, palabras clave y Lectio Divina.
-        </p>
-        <button type="button" disabled={loading} onClick={google} className="mt-6 w-full rounded-xl bg-[#F8F5EA] px-4 py-3 font-semibold text-black disabled:opacity-50">
-          Continuar con Google
-        </button>
-        <div className="my-4 flex items-center gap-3 text-xs text-[#C9C3B3]">
-          <span className="h-px flex-1 bg-[#D4AF37]/20" />o por correo<span className="h-px flex-1 bg-[#D4AF37]/20" />
-        </div>
-        <form onSubmit={magic}>
-          <label className="text-xs uppercase tracking-wider text-[#D4AF37]">Correo electrónico</label>
-          <div className="mt-1 flex rounded-xl border border-[#D4AF37]/25 bg-[#111] px-3">
-            <Mail className="my-auto h-4 w-4 text-[#D4AF37]" />
-            <input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="w-full bg-transparent px-3 py-3 outline-none" placeholder="tu@correo.com" />
+    <main className="min-h-screen bg-[#050505] px-4 py-8 text-[#F8F5EA]">
+      <div className="mx-auto max-w-sm">
+        <section className="mb-4 rounded-[1.5rem] border border-[#D4AF37]/25 bg-[#0B0B0B] p-5 text-center">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#F2D27A] to-[#D4AF37]">
+            <BookOpen className="text-black" aria-hidden="true" />
+          </span>
+          <h1 className="mt-4 font-display text-2xl">Acceso al estudio bíblico</h1>
+          <p className="mt-2 text-sm leading-relaxed text-[#C9C3B3]">
+            La cuenta gratuita permite proteger el servicio, aplicar tu cupo mensual y conservar el historial de estudios en todos tus dispositivos.
+          </p>
+          <p className="mt-2 text-xs leading-relaxed text-[#8F897C]">
+            Puedes seguir leyendo y comparando la Biblia sin registrarte. Tus datos de acceso se usan únicamente para identificar tu cuenta.
+          </p>
+        </section>
+
+        <section className="rounded-[1.75rem] border border-[#D4AF37]/30 bg-[#0B0B0B] p-5 shadow-2xl">
+          <div className="grid grid-cols-2 rounded-xl border border-[#D4AF37]/20 bg-[#111] p-1">
+            {(["login", "register"] as const).map((item) => (
+              <button key={item} type="button" onClick={() => { setMode(item); setMessage(""); }} className={`min-h-11 rounded-lg px-3 text-sm font-bold ${mode === item ? "bg-[#D4AF37] text-black" : "text-[#C9C3B3]"}`}>
+                {item === "login" ? "Iniciar sesión" : "Registrarme"}
+              </button>
+            ))}
           </div>
-          <button disabled={loading} className="mt-3 w-full rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#F2D27A] px-4 py-3 font-bold text-black disabled:opacity-50">
-            Enviar enlace de acceso
-          </button>
-        </form>
-        {message ? <p className="mt-3 text-center text-sm text-[#C9C3B3]">{message}</p> : null}
-        <Link to="/biblia" className="mt-5 block text-center text-sm text-[#D4AF37]">Seguir como invitado</Link>
+
+          <form onSubmit={submit} className="mt-5 space-y-4">
+            {mode === "register" ? <Field icon={UserRound} label="Nombre" type="text" value={name} onChange={setName} autoComplete="name" placeholder="Tu nombre" /> : null}
+            <Field icon={Mail} label="Correo electrónico" type="email" value={email} onChange={setEmail} autoComplete="email" placeholder="tu@correo.com" required />
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-wider text-[#D4AF37]">Contraseña</label>
+              <div className="mt-1 flex rounded-xl border border-[#D4AF37]/25 bg-[#111] px-3 focus-within:border-[#D4AF37]/60">
+                <LockKeyhole className="my-auto h-4 w-4 shrink-0 text-[#D4AF37]" />
+                <input required minLength={8} type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === "login" ? "current-password" : "new-password"} className="min-w-0 flex-1 bg-transparent px-3 py-3 outline-none" placeholder="Mínimo 8 caracteres" />
+                <button type="button" onClick={() => setShowPassword((value) => !value)} className="min-h-11 px-1 text-[#C9C3B3]" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
+              </div>
+            </div>
+            {mode === "register" ? <Field icon={LockKeyhole} label="Confirmar contraseña" type={showPassword ? "text" : "password"} value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" placeholder="Repite tu contraseña" required /> : null}
+
+            <label className="flex min-h-11 items-start gap-3 text-sm text-[#C9C3B3]">
+              <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} className="mt-1 h-4 w-4 accent-[#D4AF37]" />
+              <span><strong className="text-[#F8F5EA]">Recordar mi sesión</strong><span className="block text-xs text-[#8F897C]">Desmárcalo si este dispositivo es compartido. La contraseña nunca se guarda en LVJ.</span></span>
+            </label>
+
+            <button disabled={loading} className="min-h-12 w-full rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#F2D27A] px-4 py-3 font-bold text-black disabled:opacity-50">
+              {loading ? "Procesando..." : mode === "login" ? "Iniciar sesión" : "Crear mi cuenta"}
+            </button>
+          </form>
+
+          {mode === "login" ? <button type="button" disabled={loading} onClick={resetPassword} className="mt-3 min-h-11 w-full text-sm text-[#D4AF37]">Olvidé mi contraseña</button> : null}
+          {message ? <p role={success ? "status" : "alert"} className={`mt-3 rounded-xl border p-3 text-center text-sm ${success ? "border-emerald-400/25 bg-emerald-950/20 text-emerald-200" : "border-[#D4AF37]/25 bg-[#D4AF37]/10 text-[#F2D27A]"}`}>{message}</p> : null}
+          <Link to="/biblia" className="mt-4 block min-h-11 pt-3 text-center text-sm text-[#C9C3B3]">Continuar sin registrarme</Link>
+        </section>
       </div>
-    </div>
+    </main>
   );
+}
+
+function Field({ icon: Icon, label, value, onChange, ...input }: { icon: typeof Mail; label: string; value: string; onChange: (value: string) => void } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange">) {
+  return <div><label className="text-xs font-semibold uppercase tracking-wider text-[#D4AF37]">{label}</label><div className="mt-1 flex rounded-xl border border-[#D4AF37]/25 bg-[#111] px-3 focus-within:border-[#D4AF37]/60"><Icon className="my-auto h-4 w-4 shrink-0 text-[#D4AF37]"/><input {...input} value={value} onChange={(event) => onChange(event.target.value)} className="min-w-0 flex-1 bg-transparent px-3 py-3 outline-none"/></div></div>;
 }

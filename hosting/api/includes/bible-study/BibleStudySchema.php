@@ -364,7 +364,13 @@ final class BibleStudySchema
       $verses[$n] = true;
       $local = [];
       $last = 0;
-      $verseSource = $source[$n] ?? self::normalizeText((string) ($verse['texto_fuente'] ?? ''));
+      // La proposición ya está normalizada antes de compararse. El texto
+      // fuente debe pasar por la misma normalización; de lo contrario una
+      // mayúscula, una coma o una tilde tipográfica produce un falso negativo
+      // y rechaza proposiciones literales válidas como v1_p1.
+      $verseSource = self::normalizeText((string) (
+        $source[$n] ?? ($verse['texto_fuente'] ?? '')
+      ));
       foreach (($verse['proposiciones'] ?? []) as $p) {
         $id = trim((string) ($p['id'] ?? ''));
         $order = (int) ($p['orden'] ?? 0);
