@@ -318,12 +318,30 @@ function content_editable_columns(array $columns, string $table = ''): array
   return array_values(array_filter($columns, function ($column) use ($table) {
     $field = (string) $column['Field'];
 
+    if ($table === 'lvj_com_usuarios' && in_array($field, [
+      'auth_provider', 'auth_subject', 'email_verificado', 'ultimo_acceso_at',
+    ], true)) {
+      return false;
+    }
+
     return !content_is_auto_column($column) && !content_is_derived_column($table, $field);
   }));
 }
 
 function content_list_columns(array $columns, string $table = ''): array
 {
+  if ($table === 'lvj_com_usuarios') {
+    $map = content_column_map($columns);
+    $preferred = ['id', 'nombre', 'correo', 'email', 'email_verificado', 'estado', 'ia_autorizado', 'ultimo_acceso_at'];
+    $ordered = [];
+    foreach ($preferred as $field) {
+      if (isset($map[$field])) {
+        $ordered[] = $map[$field];
+      }
+    }
+    return $ordered;
+  }
+
   if ($table === 'lvj_capillas') {
     $map = content_column_map($columns);
     $preferred = ['id', 'nombre', 'ciudad', 'pais', 'estado', 'es_principal', 'es_respaldo', 'prioridad', 'updated_at'];
@@ -346,6 +364,11 @@ function content_list_columns(array $columns, string $table = ''): array
 
 function content_search_columns(array $columns, string $table): array
 {
+  if ($table === 'lvj_com_usuarios') {
+    $map = content_column_map($columns);
+    return array_values(array_filter([$map['nombre'] ?? null, $map['correo'] ?? null, $map['email'] ?? null]));
+  }
+
   if ($table === 'lvj_capillas') {
     $map = content_column_map($columns);
     return array_values(array_filter([
@@ -831,6 +854,14 @@ function content_status_label($value): array
 
 function content_cell_html(string $table, string $field, $value): string
 {
+  if ($table === 'lvj_com_usuarios' && in_array($field, ['email_verificado', 'ia_autorizado'], true)) {
+    $active = (int) $value === 1;
+    $label = $field === 'email_verificado'
+      ? ($active ? 'Confirmado' : 'Pendiente')
+      : ($active ? 'Autorizada' : 'Sin acceso');
+    return '<span class="status-pill status-' . ($active ? 'active' : 'inactive') . '">' . e($label) . '</span>';
+  }
+
   if (content_is_status_field($field)) {
     [$label, $state] = content_status_label($value);
     return '<span class="status-pill status-' . e($state) . '">' . e($label) . '</span>';
@@ -1144,6 +1175,10 @@ function content_inactive_filter(array $columns, string $table = ''): string
 {
   $map = content_column_map($columns);
 
+  if ($table === 'lvj_com_usuarios') {
+    return '';
+  }
+
   if ($table === 'lvj_capillas' && isset($map['deleted_at'])) {
     return 'deleted_at IS NULL';
   }
@@ -1191,12 +1226,109 @@ function content_delete_statement(PDO $pdo, string $table, string $primaryColumn
   return $pdo->prepare("DELETE FROM {$table} WHERE {$primaryColumn} = :id LIMIT 1");
 }
 
+function content_supabase_admin_config(): array
+{
+  $config = lvj_files_config();
+  return [
+    'url' => rtrim(trim((string) ($config['supabase_url'] ?? lvj_files_env('SUPABASE_URL'))), '/'),
+    'key' => trim((string) ($config['supabase_service_role_key'] ?? lvj_files_env('SUPABASE_SERVICE_ROLE_KEY'))),
+  ];
+}
+
+function content_sync_supabase_users(PDO $pdo, array $columns): int
+{
+  $supabase = content_supabase_admin_config();
+  if ($supabase['url'] === '' || $supabase['key'] === '') {
+    throw new RuntimeException('Configura SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY en el servidor para sincronizar las cuentas.');
+  }
+  if (!function_exists('curl_init')) {
+    throw new RuntimeException('El servidor PHP no tiene habilitada la extension cURL.');
+  }
+
+  $map = content_column_map($columns);
+  $emailColumn = isset($map['correo']) ? 'correo' : (isset($map['email']) ? 'email' : '');
+  if ($emailColumn === '') {
+    throw new RuntimeException('La tabla de usuarios no tiene una columna de correo compatible.');
+  }
+
+  $synced = 0;
+  for ($page = 1; $page <= 100; $page++) {
+    $handle = curl_init($supabase['url'] . '/auth/v1/admin/users?page=' . $page . '&per_page=100');
+    curl_setopt_array($handle, [
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_TIMEOUT => 20,
+      CURLOPT_HTTPHEADER => [
+        'apikey: ' . $supabase['key'],
+        'Authorization: Bearer ' . $supabase['key'],
+        'Accept: application/json',
+      ],
+    ]);
+    $body = curl_exec($handle);
+    $status = (int) curl_getinfo($handle, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($handle);
+    curl_close($handle);
+    if ($body === false || $status < 200 || $status >= 300) {
+      throw new RuntimeException($curlError !== '' ? 'No se pudo conectar con Supabase.' : 'Supabase rechazo la sincronizacion administrativa.');
+    }
+
+    $payload = json_decode((string) $body, true);
+    $users = is_array($payload['users'] ?? null) ? $payload['users'] : [];
+    foreach ($users as $remoteUser) {
+      $subject = trim((string) ($remoteUser['id'] ?? ''));
+      $email = strtolower(trim((string) ($remoteUser['email'] ?? '')));
+      if ($subject === '' || $email === '') {
+        continue;
+      }
+      $name = trim((string) ($remoteUser['user_metadata']['nombre'] ?? $remoteUser['user_metadata']['name'] ?? ''));
+      $verified = !empty($remoteUser['email_confirmed_at']) || !empty($remoteUser['confirmed_at']);
+
+      $lookup = isset($map['auth_subject'])
+        ? "SELECT id FROM lvj_com_usuarios WHERE auth_subject = :subject OR {$emailColumn} = :email LIMIT 1"
+        : "SELECT id FROM lvj_com_usuarios WHERE {$emailColumn} = :email LIMIT 1";
+      $lookupStmt = $pdo->prepare($lookup);
+      $lookupParams = ['email' => $email];
+      if (isset($map['auth_subject'])) {
+        $lookupParams['subject'] = $subject;
+      }
+      $lookupStmt->execute($lookupParams);
+      $id = (int) $lookupStmt->fetchColumn();
+
+      $values = [$emailColumn => $email];
+      if (isset($map['nombre']) && $name !== '') $values['nombre'] = $name;
+      if (isset($map['auth_provider'])) $values['auth_provider'] = 'supabase';
+      if (isset($map['auth_subject'])) $values['auth_subject'] = $subject;
+      if (isset($map['email_verificado'])) $values['email_verificado'] = $verified ? 1 : 0;
+      if (isset($map['updated_at'])) $values['updated_at'] = date('Y-m-d H:i:s');
+
+      if ($id > 0) {
+        $assignments = [];
+        $params = ['id' => $id];
+        foreach ($values as $field => $value) {
+          $assignments[] = "{$field} = :{$field}";
+          $params[$field] = $value;
+        }
+        $pdo->prepare('UPDATE lvj_com_usuarios SET ' . implode(', ', $assignments) . ' WHERE id = :id LIMIT 1')->execute($params);
+      } else {
+        if (isset($map['estado'])) $values['estado'] = 1;
+        if (isset($map['ia_autorizado'])) $values['ia_autorizado'] = 1;
+        $fields = array_keys($values);
+        $placeholders = array_map(static fn($field) => ':' . $field, $fields);
+        $pdo->prepare('INSERT INTO lvj_com_usuarios (`' . implode('`,`', $fields) . '`) VALUES (' . implode(',', $placeholders) . ')')->execute($values);
+      }
+      $synced++;
+    }
+
+    if (count($users) < 100) break;
+  }
+  return $synced;
+}
+
 $moduleKey = (string) ($_GET['module'] ?? 'configuracion');
 if (!isset($modules[$moduleKey])) {
   $moduleKey = 'configuracion';
 }
 
-if ($moduleKey === 'inteligencia-artificial') {
+if (in_array($moduleKey, ['inteligencia-artificial', 'usuarios'], true)) {
   require_technical_admin();
 }
 
@@ -1341,6 +1473,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           : 'No se pudo actualizar la capilla. Revisa los datos e intenta nuevamente.';
       }
     }
+  } elseif ($table === 'lvj_com_usuarios' && $action === 'sync_supabase') {
+    try {
+      $synced = content_sync_supabase_users($pdo, $columns);
+      log_activity('sync', $table, null, "Sincronizacion de {$synced} cuentas de Supabase");
+      header('Location: content.php?module=' . urlencode($moduleKey) . '&table=' . urlencode($table) . '&synced=' . $synced);
+      exit;
+    } catch (Throwable $syncError) {
+      $error = $syncError->getMessage();
+    }
+  } elseif ($table === 'lvj_com_usuarios' && in_array($action, ['toggle_user_status', 'toggle_user_ai'], true)) {
+    $id = (int) ($_POST['id'] ?? 0);
+    $field = $action === 'toggle_user_ai' ? 'ia_autorizado' : 'estado';
+    if ($id <= 0 || !isset(content_column_map($columns)[$field])) {
+      $error = 'No se puede actualizar este usuario.';
+    } else {
+      $value = (int) ($_POST['value'] ?? 0) === 1 ? 1 : 0;
+      $stmt = $pdo->prepare("UPDATE lvj_com_usuarios SET {$field} = :value WHERE id = :id LIMIT 1");
+      $stmt->execute(['value' => $value, 'id' => $id]);
+      log_activity('update_access', $table, $id, $field . '=' . $value);
+      header('Location: content.php?module=' . urlencode($moduleKey) . '&table=' . urlencode($table) . '&saved=updated');
+      exit;
+    }
   } elseif ($action === 'save') {
     $id = (int) ($_POST['id'] ?? 0);
     $data = [];
@@ -1441,6 +1595,9 @@ if (isset($_GET['saved'])) {
     ? 'La capilla y su stream principal están activos en la aplicación.'
     : ($_GET['saved'] === 'updated' ? 'Registro actualizado.' : 'Registro creado.');
 }
+if (isset($_GET['synced'])) {
+  $message = 'Sincronizacion completada: ' . max(0, (int) $_GET['synced']) . ' cuentas revisadas.';
+}
 
 if ($editId > 0 && $columns) {
   try {
@@ -1468,7 +1625,7 @@ if ($editId > 0 && $columns) {
 }
 
 $formMode = (string) ($_GET['action'] ?? '');
-$showForm = !$readOnly && ($formMode === 'new' || ($editId > 0 && $editRow));
+$showForm = !$readOnly && (($formMode === 'new' && $table !== 'lvj_com_usuarios') || ($editId > 0 && $editRow));
 $search = trim((string) ($_GET['q'] ?? ''));
 $page = max(1, (int) ($_GET['page'] ?? 1));
 $perPage = 20;
@@ -1531,7 +1688,7 @@ try {
 
 $shownFrom = $totalRows > 0 ? (($page - 1) * $perPage) + 1 : 0;
 $shownTo = $totalRows > 0 ? min($totalRows, $page * $perPage) : 0;
-$visibleListColumns = $table === 'lvj_capillas' ? $listColumns : array_slice($listColumns, 0, 6);
+$visibleListColumns = in_array($table, ['lvj_capillas', 'lvj_com_usuarios'], true) ? $listColumns : array_slice($listColumns, 0, 6);
 
 $pageTitle = $module['title'];
 $pageSubtitle = $module['subtitle'];
@@ -1564,10 +1721,19 @@ require __DIR__ . '/includes/header.php';
   <div class="content-overview">
     <div>
       <h2><?php echo e($module['tables'][$table]); ?></h2>
-      <p class="muted">Gestiona el contenido que luego consumira la app. La vista principal muestra registros; los formularios se abren solo para crear o editar.</p>
+      <p class="muted"><?php echo $table === 'lvj_com_usuarios'
+        ? 'Consulta las cuentas registradas, su confirmacion de correo y controla el acceso al estudio biblico con IA.'
+        : 'Gestiona el contenido que luego consumira la app. La vista principal muestra registros; los formularios se abren solo para crear o editar.'; ?></p>
     </div>
     <div class="content-actions-bar">
-      <?php if ($columns && !$readOnly): ?>
+      <?php if ($table === 'lvj_com_usuarios' && $columns): ?>
+        <form method="post">
+          <?php echo csrf_field(); ?>
+          <input type="hidden" name="action" value="sync_supabase">
+          <input type="hidden" name="table" value="lvj_com_usuarios">
+          <button class="btn btn-gold" type="submit">Sincronizar registros</button>
+        </form>
+      <?php elseif ($columns && !$readOnly): ?>
         <a class="btn btn-gold add-record-button" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&action=new"><span>+</span> Agregar registro</a>
       <?php endif; ?>
     </div>
@@ -1675,6 +1841,30 @@ require __DIR__ . '/includes/header.php';
             <?php endforeach; ?>
             <?php if (!$readOnly): ?><td class="actions grid-actions">
               <a class="action-button action-edit" title="Editar registro" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&edit=<?php echo (int) $row['id']; ?>">Editar</a>
+              <?php if ($table === 'lvj_com_usuarios'): ?>
+                <?php if (isset($row['estado'])): ?>
+                  <?php $userActive = (int) $row['estado'] === 1; ?>
+                  <form method="post">
+                    <?php echo csrf_field(); ?>
+                    <input type="hidden" name="action" value="toggle_user_status">
+                    <input type="hidden" name="table" value="lvj_com_usuarios">
+                    <input type="hidden" name="id" value="<?php echo (int) $row['id']; ?>">
+                    <input type="hidden" name="value" value="<?php echo $userActive ? 0 : 1; ?>">
+                    <button class="action-button action-edit" type="submit"><?php echo $userActive ? 'Suspender' : 'Activar'; ?></button>
+                  </form>
+                <?php endif; ?>
+                <?php if (isset($row['ia_autorizado'])): ?>
+                  <?php $aiEnabled = (int) $row['ia_autorizado'] === 1; ?>
+                  <form method="post">
+                    <?php echo csrf_field(); ?>
+                    <input type="hidden" name="action" value="toggle_user_ai">
+                    <input type="hidden" name="table" value="lvj_com_usuarios">
+                    <input type="hidden" name="id" value="<?php echo (int) $row['id']; ?>">
+                    <input type="hidden" name="value" value="<?php echo $aiEnabled ? 0 : 1; ?>">
+                    <button class="action-button action-edit" type="submit"><?php echo $aiEnabled ? 'Quitar IA' : 'Autorizar IA'; ?></button>
+                  </form>
+                <?php endif; ?>
+              <?php endif; ?>
               <?php if ($table === 'lvj_capillas'): ?>
                 <?php
                   $isActiveCapilla = content_is_active_status($columns, $row['estado'] ?? null);
@@ -1715,13 +1905,13 @@ require __DIR__ . '/includes/header.php';
                   <button class="action-button action-edit" type="submit" title="<?php echo $isBackup ? 'Quitar respaldo' : 'Marcar respaldo'; ?>"><?php echo $isBackup ? 'Quitar respaldo' : 'Respaldo'; ?></button>
                 </form>
               <?php endif; ?>
-              <form method="post" onsubmit="return confirm('Eliminar o desactivar este registro?');">
+              <?php if ($table !== 'lvj_com_usuarios'): ?><form method="post" onsubmit="return confirm('Eliminar o desactivar este registro?');">
                 <?php echo csrf_field(); ?>
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="table" value="<?php echo e($table); ?>">
                 <input type="hidden" name="id" value="<?php echo (int) $row['id']; ?>">
                 <button class="action-button action-delete danger-action" type="submit" title="Eliminar registro">Eliminar</button>
-              </form>
+              </form><?php endif; ?>
             </td><?php endif; ?>
           </tr>
         <?php endforeach; ?>
