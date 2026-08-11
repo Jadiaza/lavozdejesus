@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 final class BibleStudyService
 {
-  public const BUILD = '2026-08-10-v6';
+  public const BUILD = '2026-08-11-v7';
   public const EQUIVALENCES_PENDING_MESSAGE = 'El estudio con inteligencia artificial estará disponible cuando finalice la revisión de equivalencias bíblicas.';
   public const LEVELS_PENDING_MESSAGE = 'La estructura por niveles de estudio todavía no está disponible en la base de datos.';
   private const LANGUAGE = 'es';
