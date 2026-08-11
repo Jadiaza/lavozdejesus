@@ -24,6 +24,8 @@ function friendlyError(message: string): string {
   if (normalized.includes("user already registered")) return "Este correo ya está registrado. Inicia sesión o recupera tu contraseña.";
   if (normalized.includes("password should be")) return "La contraseña debe tener al menos 8 caracteres.";
   if (normalized.includes("rate limit")) return "Has realizado varios intentos. Espera unos minutos y vuelve a intentarlo.";
+  if (normalized.includes("email rate limit")) return "Se alcanzó el límite temporal de correos. Espera unos minutos antes de solicitar otro.";
+  if (normalized.includes("failed to fetch")) return "No fue posible comunicarse con el servicio de acceso. Revisa tu conexión e inténtalo nuevamente.";
   return message || "No fue posible completar el acceso.";
 }
 
@@ -38,11 +40,18 @@ export default function Auth() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
+  const [registrationSubmitted, setRegistrationSubmitted] = useState(false);
+  const [recovering, setRecovering] = useState(() => window.location.pathname === "/acceso/recuperar");
   const navigate = useNavigate();
   const location = useLocation();
   const next = useMemo(() => safeDestination(location.search), [location.search]);
   const callbackUrl = useMemo(() => {
     const url = new URL("/acceso", window.location.origin);
+    url.searchParams.set("next", next);
+    return url.toString();
+  }, [next]);
+  const recoveryCallbackUrl = useMemo(() => {
+    const url = new URL("/acceso/recuperar", window.location.origin);
     url.searchParams.set("next", next);
     return url.toString();
   }, [next]);
@@ -61,6 +70,10 @@ export default function Auth() {
         setLoading(false);
         return;
       }
+      if (recovering) {
+        setLoading(false);
+        return;
+      }
       try {
         await getRecentBibleStudies();
         if (active) navigate(next, { replace: true });
@@ -72,18 +85,25 @@ export default function Auth() {
     };
     void completeAccess();
     const { data } = bibleStudyAuth.auth.onAuthStateChange((event, session) => {
-      if (active && session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) void completeAccess();
+      if (!active) return;
+      if (event === "PASSWORD_RECOVERY") {
+        setRecovering(true);
+        setLoading(false);
+        return;
+      }
+      if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) void completeAccess();
     });
     return () => {
       active = false;
       data.subscription.unsubscribe();
     };
-  }, [navigate, next]);
+  }, [navigate, next, recovering]);
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setMessage("");
     setSuccess(false);
+    setRegistrationSubmitted(false);
     if (!isBibleStudyAuthConfigured()) {
       setMessage("El acceso de usuarios no está configurado en este entorno. Faltan la URL o la clave pública de Supabase.");
       return;
@@ -93,12 +113,29 @@ export default function Auth() {
       setMessage("La contraseña debe tener al menos 8 caracteres.");
       return;
     }
-    if (mode === "register" && password !== confirmPassword) {
+    if ((mode === "register" || recovering) && password !== confirmPassword) {
       setMessage("Las contraseñas no coinciden.");
       return;
     }
     setLoading(true);
     setBibleStudyRememberSession(remember);
+    if (recovering) {
+      const { error } = await bibleStudyAuth.auth.updateUser({ password });
+      if (error) {
+        setMessage(friendlyError(error.message));
+      } else {
+        await bibleStudyAuth.auth.signOut({ scope: "local" });
+        setRecovering(false);
+        setMode("login");
+        setPassword("");
+        setConfirmPassword("");
+        setSuccess(true);
+        setMessage("Contraseña establecida correctamente. Ya puedes iniciar sesión.");
+        navigate(`/acceso?next=${encodeURIComponent(next)}`, { replace: true });
+      }
+      setLoading(false);
+      return;
+    }
     if (mode === "register") {
       const { data, error } = await bibleStudyAuth.auth.signUp({
         email: normalizedEmail,
@@ -112,7 +149,8 @@ export default function Auth() {
         setMessage(friendlyError(error.message));
       } else if (!data.session) {
         setSuccess(true);
-        setMessage("Cuenta creada. Revisa tu correo y confirma el registro; después podrás iniciar sesión.");
+        setRegistrationSubmitted(true);
+        setMessage("Solicitud recibida. Si el correo es nuevo, recibirás un enlace de confirmación. Si ya lo habías usado antes, inicia sesión o establece una contraseña.");
       }
     } else {
       const { error } = await bibleStudyAuth.auth.signInWithPassword({ email: normalizedEmail, password });
@@ -133,10 +171,24 @@ export default function Auth() {
     setLoading(true);
     setMessage("");
     const { error } = await bibleStudyAuth.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-      redirectTo: callbackUrl,
+      redirectTo: recoveryCallbackUrl,
     });
     setSuccess(!error);
     setMessage(error ? friendlyError(error.message) : "Te enviamos un enlace para restablecer tu contraseña.");
+    setLoading(false);
+  };
+
+  const resendConfirmation = async () => {
+    if (!email.trim()) return;
+    setLoading(true);
+    setMessage("");
+    const { error } = await bibleStudyAuth.auth.resend({
+      type: "signup",
+      email: email.trim().toLowerCase(),
+      options: { emailRedirectTo: callbackUrl },
+    });
+    setSuccess(!error);
+    setMessage(error ? friendlyError(error.message) : "Si la cuenta está pendiente de confirmación, enviamos un nuevo enlace. Revisa también correo no deseado.");
     setLoading(false);
   };
 
@@ -157,40 +209,41 @@ export default function Auth() {
         </section>
 
         <section className="rounded-[1.75rem] border border-[#D4AF37]/30 bg-[#0B0B0B] p-5 shadow-2xl">
-          <div className="grid grid-cols-2 rounded-xl border border-[#D4AF37]/20 bg-[#111] p-1">
+          {!recovering ? <div className="grid grid-cols-2 rounded-xl border border-[#D4AF37]/20 bg-[#111] p-1">
             {(["login", "register"] as const).map((item) => (
               <button key={item} type="button" onClick={() => { setMode(item); setMessage(""); }} className={`min-h-11 rounded-lg px-3 text-sm font-bold ${mode === item ? "bg-[#D4AF37] text-black" : "text-[#C9C3B3]"}`}>
                 {item === "login" ? "Iniciar sesión" : "Registrarme"}
               </button>
             ))}
-          </div>
+          </div> : <div className="rounded-xl border border-[#D4AF37]/25 bg-[#D4AF37]/10 p-3 text-center"><h2 className="font-display text-lg text-[#F8F5EA]">Establece tu contraseña</h2><p className="mt-1 text-xs text-[#C9C3B3]">Escribe una nueva contraseña segura para terminar de recuperar tu cuenta.</p></div>}
 
           <form onSubmit={submit} className="mt-5 space-y-4">
-            {mode === "register" ? <Field icon={UserRound} label="Nombre" type="text" value={name} onChange={setName} autoComplete="name" placeholder="Tu nombre" /> : null}
-            <Field icon={Mail} label="Correo electrónico" type="email" value={email} onChange={setEmail} autoComplete="email" placeholder="tu@correo.com" required />
+            {!recovering && mode === "register" ? <Field icon={UserRound} label="Nombre" type="text" value={name} onChange={setName} autoComplete="name" placeholder="Tu nombre" /> : null}
+            {!recovering ? <Field icon={Mail} label="Correo electrónico" type="email" value={email} onChange={setEmail} autoComplete="email" placeholder="tu@correo.com" required /> : null}
             <div>
               <label className="text-xs font-semibold uppercase tracking-wider text-[#D4AF37]">Contraseña</label>
               <div className="mt-1 flex rounded-xl border border-[#D4AF37]/25 bg-[#111] px-3 focus-within:border-[#D4AF37]/60">
                 <LockKeyhole className="my-auto h-4 w-4 shrink-0 text-[#D4AF37]" />
-                <input required minLength={8} type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === "login" ? "current-password" : "new-password"} className="min-w-0 flex-1 bg-transparent px-3 py-3 outline-none" placeholder="Mínimo 8 caracteres" />
+                <input required minLength={8} type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === "login" && !recovering ? "current-password" : "new-password"} className="min-w-0 flex-1 bg-transparent px-3 py-3 outline-none" placeholder="Mínimo 8 caracteres" />
                 <button type="button" onClick={() => setShowPassword((value) => !value)} className="min-h-11 px-1 text-[#C9C3B3]" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
               </div>
             </div>
-            {mode === "register" ? <Field icon={LockKeyhole} label="Confirmar contraseña" type={showPassword ? "text" : "password"} value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" placeholder="Repite tu contraseña" required /> : null}
+            {mode === "register" || recovering ? <Field icon={LockKeyhole} label="Confirmar contraseña" type={showPassword ? "text" : "password"} value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" placeholder="Repite tu contraseña" required /> : null}
 
-            <label className="flex min-h-11 items-start gap-3 text-sm text-[#C9C3B3]">
+            {!recovering ? <label className="flex min-h-11 items-start gap-3 text-sm text-[#C9C3B3]">
               <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} className="mt-1 h-4 w-4 accent-[#D4AF37]" />
               <span><strong className="text-[#F8F5EA]">Recordar mi sesión</strong><span className="block text-xs text-[#8F897C]">Desmárcalo si este dispositivo es compartido. La contraseña nunca se guarda en LVJ.</span></span>
-            </label>
+            </label> : null}
 
             <button disabled={loading} className="min-h-12 w-full rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#F2D27A] px-4 py-3 font-bold text-black disabled:opacity-50">
-              {loading ? "Procesando..." : mode === "login" ? "Iniciar sesión" : "Crear mi cuenta"}
+              {loading ? "Procesando..." : recovering ? "Guardar nueva contraseña" : mode === "login" ? "Iniciar sesión" : "Crear mi cuenta"}
             </button>
           </form>
 
-          {mode === "login" ? <button type="button" disabled={loading} onClick={resetPassword} className="mt-3 min-h-11 w-full text-sm text-[#D4AF37]">Olvidé mi contraseña</button> : null}
+          {!recovering && mode === "login" ? <button type="button" disabled={loading} onClick={resetPassword} className="mt-3 min-h-11 w-full text-sm text-[#D4AF37]">Olvidé mi contraseña</button> : null}
           {message ? <p role={success ? "status" : "alert"} className={`mt-3 rounded-xl border p-3 text-center text-sm ${success ? "border-emerald-400/25 bg-emerald-950/20 text-emerald-200" : "border-[#D4AF37]/25 bg-[#D4AF37]/10 text-[#F2D27A]"}`}>{message}</p> : null}
-          <Link to="/biblia" className="mt-4 block min-h-11 pt-3 text-center text-sm text-[#C9C3B3]">Continuar sin registrarme</Link>
+          {registrationSubmitted ? <div className="mt-3 grid gap-2"><button type="button" disabled={loading} onClick={resendConfirmation} className="min-h-11 rounded-xl border border-[#D4AF37]/30 px-3 text-sm font-semibold text-[#D4AF37]">Reenviar confirmación</button><button type="button" disabled={loading} onClick={resetPassword} className="min-h-11 rounded-xl border border-white/10 px-3 text-sm text-[#C9C3B3]">Ya tenía acceso: establecer contraseña</button></div> : null}
+          {!recovering ? <Link to="/biblia" className="mt-4 block min-h-11 pt-3 text-center text-sm text-[#C9C3B3]">Continuar sin registrarme</Link> : null}
         </section>
       </div>
     </main>
