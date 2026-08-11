@@ -8,8 +8,13 @@ final class OpenAIProvider implements BibleStudyAiProviderInterface
 
   public function generateStudy(array $context): array
   {
+    $clientRequestId = 'lvj-study-' . substr(hash(
+      'sha256',
+      json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+    ), 0, 32);
     $response = HttpJsonClient::post('https://api.openai.com/v1/responses', [
       'Authorization: Bearer ' . $this->key, 'Content-Type: application/json',
+      'X-Client-Request-Id: ' . $clientRequestId,
     ], [
       'model' => $this->model,
       'instructions' => BibleStudyPrompt::system((string)($context['metodo'] ?? BibleStudyMethod::DEFAULT), (string)($context['nivel'] ?? BibleStudyLevel::DEFAULT)),

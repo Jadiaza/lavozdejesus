@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { BookOpen, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { getRecentBibleStudies } from "@/services/bibleStudyService";
 
 const DEFAULT_DESTINATION = "/biblia/estudio";
 const ALLOWED_EMAIL_DOMAINS = new Set([
@@ -36,13 +37,65 @@ export default function Auth() {
 
   useEffect(() => {
     let active = true;
+    let verifying = false;
 
-    void supabase.auth.getSession().then(({ data }) => {
-      if (active && data.session) navigate(next, { replace: true });
-    });
+    const finishAccess = async () => {
+      if (!active || verifying) return;
+      verifying = true;
+      setLoading(true);
+
+      const callback = new URL(window.location.href);
+      const code = callback.searchParams.get("code");
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        callback.searchParams.delete("code");
+        window.history.replaceState({}, "", callback.pathname + callback.search + callback.hash);
+        if (error) {
+          if (active) {
+            setMessage("El enlace de acceso no pudo validarse o ya expiró. Solicita uno nuevo.");
+            setLoading(false);
+          }
+          verifying = false;
+          return;
+        }
+      }
+
+      const { data, error } = await supabase.auth.getSession();
+      if (!active) return;
+      if (error) {
+        setMessage("No fue posible recuperar la sesión. Solicita un nuevo enlace.");
+        setLoading(false);
+        verifying = false;
+        return;
+      }
+      if (!data.session) {
+        const callbackError = callback.searchParams.get("error_description");
+        if (callbackError) setMessage("El enlace de acceso no es válido o ya expiró.");
+        setLoading(false);
+        verifying = false;
+        return;
+      }
+
+      try {
+        await getRecentBibleStudies();
+        if (active) navigate(next, { replace: true });
+      } catch (accessError) {
+        if (active) {
+          const detail = accessError instanceof Error ? accessError.message : "";
+          setMessage(detail === "AUTH_REQUIRED"
+            ? "La sesión no pudo ser confirmada por el servidor. Solicita un nuevo enlace."
+            : detail || "No fue posible validar el acceso al estudio bíblico.");
+          setLoading(false);
+        }
+      } finally {
+        verifying = false;
+      }
+    };
+
+    void finishAccess();
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (active && session) navigate(next, { replace: true });
+      if (active && session) void finishAccess();
     });
 
     return () => {
@@ -64,7 +117,7 @@ export default function Auth() {
       options: { emailRedirectTo: callbackUrl },
     });
     setLoading(false);
-    setMessage(error ? error.message : "Te enviamos un enlace seguro a tu correo.");
+    setMessage(error ? error.message : "Te enviamos un enlace seguro. Abre tu correo y pulsa ese enlace para completar el acceso.");
   };
 
   const google = async () => {

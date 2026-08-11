@@ -7,7 +7,11 @@ final class HttpJsonClient
   {
     $payload = json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
     $lastStatus = 0; $lastRaw = ''; $lastError = '';
-    for ($attempt = 1; $attempt <= 3; $attempt++) {
+    /*
+     * Una generación puede seguir ejecutándose en el proveedor aunque cURL
+     * pierda la respuesta. No se reenvían POST costosos automáticamente.
+     */
+    for ($attempt = 1; $attempt <= 1; $attempt++) {
       $curl = curl_init($url);
       curl_setopt_array($curl, [CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true,
         CURLOPT_HTTPHEADER => $headers, CURLOPT_POSTFIELDS => $payload,
@@ -19,8 +23,7 @@ final class HttpJsonClient
       if ($raw !== false && $error === '' && $status >= 200 && $status < 300 && is_array($decoded)) return $decoded;
       $transient = $raw === false || $error !== '' || $status === 429 || in_array($status, [500,502,503,504], true);
       error_log('LVJ AI HTTP attempt ' . $attempt . ' status ' . $status . ': ' . mb_substr($lastRaw !== '' ? $lastRaw : $error, 0, 1000));
-      if (!$transient || $attempt === 3) break;
-      usleep($attempt === 1 ? 500000 : 1500000);
+      if (!$transient || $attempt === 1) break;
     }
     if ($lastRaw === '' && $lastError !== '') throw new RuntimeException('No fue posible contactar al proveedor de IA.');
     $decoded = json_decode($lastRaw, true);

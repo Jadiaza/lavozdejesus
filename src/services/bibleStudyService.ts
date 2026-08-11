@@ -14,12 +14,31 @@ interface StudyResponse { success: boolean; source?: "cache" | "generated"; stud
 
 const baseUrl = ((import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "https://lavozdejesus.co").trim().replace(/\/+$/, "");
 const apiUrl = (import.meta.env.VITE_BIBLE_STUDY_API_URL as string | undefined)?.trim() || `${baseUrl}/api/biblia-estudios.php`;
-async function token(): Promise<string | null> {
+async function token(forceRefresh = false): Promise<string | null> {
+  if (forceRefresh) {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error) return null;
+    return data.session?.access_token ?? null;
+  }
   const { data } = await supabase.auth.getSession(); return data.session?.access_token ?? null;
 }
 function authHeaders(accessToken: string): Record<string, string> {
   const bearer = `Bearer ${accessToken}`;
   return { Authorization: bearer, "X-LVJ-Authorization": bearer };
+}
+async function authenticatedFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  let accessToken = await token();
+  if (!accessToken) throw new Error("AUTH_REQUIRED");
+  const request = (value: string) => fetchWithNetworkRetry(input, {
+    ...init,
+    headers: { ...Object.fromEntries(new Headers(init?.headers).entries()), ...authHeaders(value) },
+  });
+  let response = await request(accessToken);
+  if (response.status !== 401) return response;
+  accessToken = await token(true);
+  if (!accessToken) throw new Error("AUTH_REQUIRED");
+  response = await request(accessToken);
+  return response;
 }
 async function fetchWithNetworkRetry(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   let lastError: unknown;
@@ -41,11 +60,9 @@ async function parse(response: Response): Promise<StudyResponse> {
 }
 export async function getStudyStatus() { return parse(await fetchWithNetworkRetry(apiUrl, { headers: { Accept: "application/json" } })); }
 export async function getRecentBibleStudies() {
-  const accessToken = await token();
-  if (!accessToken) return [];
   const url = new URL(apiUrl, window.location.origin);
   url.searchParams.set("recent", "1");
-  const payload = await parse(await fetchWithNetworkRetry(url, { headers: { Accept: "application/json", ...authHeaders(accessToken) } }));
+  const payload = await parse(await authenticatedFetch(url, { headers: { Accept: "application/json" } }));
   return payload.studies ?? [];
 }
 export async function getBibleStudy(id: number) {
@@ -54,8 +71,7 @@ export async function getBibleStudy(id: number) {
   if (!payload.study) throw new Error("El estudio no está disponible."); return payload.study;
 }
 export async function createBibleStudy(input: { libro_codigo: string; capitulo_inicio: number; versiculo_inicio: number; capitulo_fin: number; versiculo_fin: number; nivel: StudyLevel; }) {
-  const accessToken = await token();
-  const response = await fetchWithNetworkRetry(apiUrl, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json", ...(accessToken ? authHeaders(accessToken) : {}) }, body: JSON.stringify(input) });
+  const response = await authenticatedFetch(apiUrl, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(input) });
   if (response.status === 401) throw new Error("AUTH_REQUIRED");
   const payload = await parse(response);
   if (!payload.study) throw new Error("El estudio no está disponible."); return payload.study;

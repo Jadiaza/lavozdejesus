@@ -9,8 +9,8 @@ final class BibleStudyProviderFactory
     $provider = strtolower(trim((string) lvj_setting('BIBLE_AI_PROVIDER')));
     $key = trim((string) lvj_setting('BIBLE_AI_API_KEY'));
     $model = trim((string) lvj_setting('BIBLE_AI_MODEL'));
-    $timeout = max(10, (int) lvj_setting('BIBLE_AI_TIMEOUT', 90));
-    $tokens = max(1000, (int) lvj_setting('BIBLE_AI_MAX_TOKENS', 8000));
+    $timeout = max(180, (int) lvj_setting('BIBLE_AI_TIMEOUT', 180));
+    $tokens = max(16000, (int) lvj_setting('BIBLE_AI_MAX_TOKENS', 16000));
     if ($provider === '' || $key === '') throw new RuntimeException('Servicio de estudio no configurado.');
     if ($provider === 'openai') return new OpenAIProvider($key, $model ?: 'gpt-5.4-mini', $timeout, $tokens);
     if ($provider === 'gemini') return new GeminiProvider($key, $model ?: 'gemini-2.5-flash', $timeout, $tokens);
