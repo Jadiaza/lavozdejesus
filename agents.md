@@ -12937,6 +12937,11 @@ La generación requiere una cuenta autenticada mediante Supabase Auth. La identi
 con el usuario interno de `lvj_com_usuarios`; los roles y permisos seguirán administrándose en MySQL. La
 lectura bíblica, las notas y la comparación básica permanecerán disponibles para invitados.
 
+El módulo administrativo existente `Usuarios y Comunidad > Usuarios app` es la interfaz oficial para
+consultar y mantener estas cuentas. Solo un `super_admin` puede sincronizar identidades desde Supabase,
+activar o suspender el acceso y autorizar el uso de IA. La sincronización utiliza
+`SUPABASE_SERVICE_ROLE_KEY` exclusivamente desde PHP; esta clave nunca se expondrá al frontend.
+
 `lvj_com_usuarios` almacenará el correo confirmado, `auth_provider`, `auth_subject`, `email_verificado`,
 `ia_autorizado` y `ultimo_acceso_at`. Cada operación de IA deberá validar nuevamente el token de Supabase,
 el estado del usuario y su autorización para IA antes de aplicar la cuota por `usuario_id`. El acceso por
