@@ -10,7 +10,7 @@ export interface BibleStudy {
 export type StudyLevel = "pastoral" | "teologico" | "doctrinal" | "formativo";
 export type StudyMethod = "metodo_salmo" | "integral_lvj";
 export type RecentBibleStudy = BibleStudy;
-interface StudyResponse { success: boolean; source?: "cache" | "generated"; study?: BibleStudy; studies?: BibleStudy[]; configured?: boolean; ready?: boolean; message?: string; }
+interface StudyResponse { success: boolean; source?: "cache" | "generated"; study?: BibleStudy; studies?: BibleStudy[]; configured?: boolean; ready?: boolean; message?: string; error_id?: string; }
 
 const baseUrl = ((import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "https://lavozdejesus.co").trim().replace(/\/+$/, "");
 const apiUrl = (import.meta.env.VITE_BIBLE_STUDY_API_URL as string | undefined)?.trim() || `${baseUrl}/api/biblia-estudios.php`;
@@ -55,7 +55,11 @@ async function fetchWithNetworkRetry(input: RequestInfo | URL, init?: RequestIni
 }
 async function parse(response: Response): Promise<StudyResponse> {
   const payload = (await response.json().catch(() => null)) as StudyResponse | null;
-  if (!response.ok || !payload?.success) throw new Error(payload?.message || "No fue posible generar el estudio en este momento.");
+  if (!response.ok || !payload?.success) {
+    const message = payload?.message || "No fue posible generar el estudio en este momento.";
+    const trace = payload?.error_id ? ` Código de seguimiento: ${payload.error_id}.` : "";
+    throw new Error(message + trace);
+  }
   return payload;
 }
 export async function getStudyStatus() { return parse(await fetchWithNetworkRetry(apiUrl, { headers: { Accept: "application/json" } })); }

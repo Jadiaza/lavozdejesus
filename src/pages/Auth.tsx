@@ -113,8 +113,8 @@ export default function Auth() {
     setLoading(true);
     setMessage("");
     const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: callbackUrl },
+      email: email.trim().toLowerCase(),
+      options: { emailRedirectTo: callbackUrl, shouldCreateUser: true },
     });
     setLoading(false);
     setMessage(error ? error.message : "Te enviamos un enlace seguro. Abre tu correo y pulsa ese enlace para completar el acceso.");
