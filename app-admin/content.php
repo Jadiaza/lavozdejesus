@@ -318,9 +318,10 @@ function content_editable_columns(array $columns, string $table = ''): array
   return array_values(array_filter($columns, function ($column) use ($table) {
     $field = (string) $column['Field'];
 
-    if ($table === 'lvj_com_usuarios' && in_array($field, [
-      'auth_provider', 'auth_subject', 'email_verificado', 'ultimo_acceso_at',
-    ], true)) {
+    if ($table === 'lvj_com_usuarios' && (
+      in_array($field, ['auth_provider', 'auth_subject', 'email_verificado', 'ultimo_acceso_at'], true)
+      || preg_match('/password|contrasena|contraseña|clave|secret/i', $field)
+    )) {
       return false;
     }
 
@@ -1279,7 +1280,7 @@ function content_sync_supabase_users(PDO $pdo, array $columns): int
       if ($subject === '' || $email === '') {
         continue;
       }
-      $name = trim((string) ($remoteUser['user_metadata']['nombre'] ?? $remoteUser['user_metadata']['name'] ?? ''));
+      $name = trim((string) ($remoteUser['user_metadata']['full_name'] ?? $remoteUser['user_metadata']['nombre'] ?? $remoteUser['user_metadata']['name'] ?? ''));
       $verified = !empty($remoteUser['email_confirmed_at']) || !empty($remoteUser['confirmed_at']);
 
       $lookup = isset($map['auth_subject'])
@@ -1753,6 +1754,10 @@ require __DIR__ . '/includes/header.php';
       </div>
       <a class="btn btn-soft" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>">Volver al listado</a>
     </div>
+
+    <?php if ($table === 'lvj_com_usuarios'): ?>
+      <div class="alert alert-success">La contraseña se administra de forma segura en Supabase Auth. Este panel no la muestra, no la recibe y no la almacena en MySQL.</div>
+    <?php endif; ?>
 
     <form method="post" class="content-form">
       <?php echo csrf_field(); ?>
