@@ -42,16 +42,20 @@ async function authenticatedFetch(input: RequestInfo | URL, init?: RequestInit):
 }
 async function fetchWithNetworkRetry(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   let lastError: unknown;
-  for (let attempt = 0; attempt < 2; attempt += 1) {
+  const method = (init?.method ?? "GET").toUpperCase();
+  const maxAttempts = method === "GET" || method === "HEAD" ? 2 : 1;
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     try {
       return await fetch(input, init);
     } catch (error) {
       lastError = error;
-      if (attempt === 0) await new Promise(resolve => window.setTimeout(resolve, 800));
+      if (attempt + 1 < maxAttempts) await new Promise(resolve => window.setTimeout(resolve, 800));
     }
   }
   void lastError;
-  throw new Error("No se pudo conectar con el servidor. Verifica tu conexión a internet e intenta nuevamente.");
+  throw new Error(method === "POST"
+    ? "El servidor interrumpió la generación antes de responder. No vuelvas a enviarla inmediatamente: revisa tus estudios recientes en unos momentos."
+    : "No se pudo conectar con el servidor. Verifica tu conexión a internet e intenta nuevamente.");
 }
 async function parse(response: Response): Promise<StudyResponse> {
   const payload = (await response.json().catch(() => null)) as StudyResponse | null;
