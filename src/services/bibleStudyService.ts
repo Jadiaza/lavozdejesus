@@ -12,6 +12,13 @@ export type StudyMethod = "metodo_salmo" | "integral_lvj";
 export type RecentBibleStudy = BibleStudy;
 interface StudyResponse { success: boolean; source?: "cache" | "generated"; study?: BibleStudy; studies?: BibleStudy[]; configured?: boolean; ready?: boolean; message?: string; error_id?: string; }
 
+export interface BibleStudyRequest {
+  libro_codigo: string; capitulo_inicio: number; versiculo_inicio: number;
+  capitulo_fin: number; versiculo_fin: number; nivel: StudyLevel;
+}
+
+const GENERATION_INTERRUPTED = "BIBLE_STUDY_GENERATION_INTERRUPTED";
+
 const baseUrl = ((import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "https://lavozdejesus.co").trim().replace(/\/+$/, "");
 const apiUrl = (import.meta.env.VITE_BIBLE_STUDY_API_URL as string | undefined)?.trim() || `${baseUrl}/api/biblia-estudios.php`;
 async function token(forceRefresh = false): Promise<string | null> {
@@ -54,8 +61,47 @@ async function fetchWithNetworkRetry(input: RequestInfo | URL, init?: RequestIni
   }
   void lastError;
   throw new Error(method === "POST"
-    ? "El servidor interrumpió la generación antes de responder. No vuelvas a enviarla inmediatamente: revisa tus estudios recientes en unos momentos."
+    ? GENERATION_INTERRUPTED
     : "No se pudo conectar con el servidor. Verifica tu conexión a internet e intenta nuevamente.");
+}
+
+export function isInterruptedBibleStudyGeneration(error: unknown): boolean {
+  return error instanceof Error && error.message === GENERATION_INTERRUPTED;
+}
+
+export function matchesBibleStudyRequest(study: BibleStudy, input: BibleStudyRequest): boolean {
+  return study.libro_codigo?.toUpperCase() === input.libro_codigo.toUpperCase()
+    && study.capitulo_inicio === input.capitulo_inicio
+    && study.versiculo_inicio === input.versiculo_inicio
+    && study.capitulo_fin === input.capitulo_fin
+    && study.versiculo_fin === input.versiculo_fin
+    && study.nivel === input.nivel
+    && study.estado !== "error"
+    && Object.keys(study.contenido ?? {}).length > 0;
+}
+
+const wait = (milliseconds: number, signal?: AbortSignal) => new Promise<void>((resolve, reject) => {
+  const timer = window.setTimeout(resolve, milliseconds);
+  signal?.addEventListener("abort", () => {
+    window.clearTimeout(timer);
+    reject(new DOMException("Operación cancelada", "AbortError"));
+  }, { once: true });
+});
+
+export async function recoverGeneratedBibleStudy(
+  input: BibleStudyRequest,
+  options: { signal?: AbortSignal; attempts?: number; intervalMs?: number } = {},
+): Promise<BibleStudy | null> {
+  const attempts = Math.max(1, options.attempts ?? 24);
+  const intervalMs = Math.max(1_000, options.intervalMs ?? 5_000);
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    if (options.signal?.aborted) throw new DOMException("Operación cancelada", "AbortError");
+    if (attempt > 0) await wait(intervalMs, options.signal);
+    const studies = await getRecentBibleStudies().catch(() => []);
+    const recovered = studies.find(study => matchesBibleStudyRequest(study, input));
+    if (recovered) return recovered;
+  }
+  return null;
 }
 async function parse(response: Response): Promise<StudyResponse> {
   const payload = (await response.json().catch(() => null)) as StudyResponse | null;
@@ -78,7 +124,7 @@ export async function getBibleStudy(id: number) {
   const payload = await parse(await fetchWithNetworkRetry(url, { headers: { Accept: "application/json", ...(accessToken ? authHeaders(accessToken) : {}) } }));
   if (!payload.study) throw new Error("El estudio no está disponible."); return payload.study;
 }
-export async function createBibleStudy(input: { libro_codigo: string; capitulo_inicio: number; versiculo_inicio: number; capitulo_fin: number; versiculo_fin: number; nivel: StudyLevel; }) {
+export async function createBibleStudy(input: BibleStudyRequest) {
   const response = await authenticatedFetch(apiUrl, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(input) });
   if (response.status === 401) throw new Error("AUTH_REQUIRED");
   const payload = await parse(response);
