@@ -102,7 +102,10 @@ final class BibleStudyMethod
       . "no inventes arcos ni escalas para completar el JSON. Cada relación "
       . "debe conectar unidades de su misma escala, "
       . "usar un tipo permitido, explicar su fundamento textual y declarar "
-      . "confianza y revisión. Arcing no es un método independiente.";
+      . "confianza y revisión. Arcing no es un método independiente. Redacta "
+      . "cada explicación con máxima concisión: una o dos frases suficientes, "
+      . "sin repetir en varias secciones la misma conclusión. Completa todos "
+      . "los campos obligatorios, pero prioriza cobertura y precisión sobre extensión.";
   }
 
   private static function lower(string $value): string

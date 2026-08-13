@@ -8,20 +8,46 @@ final class OpenAIProvider implements BibleStudyAiProviderInterface
 
   public function generateStudy(array $context): array
   {
+    $method = (string) ($context['metodo'] ?? BibleStudyMethod::DEFAULT);
+    $isIntegral = $method === 'integral_lvj';
+    $verseCount = count($context['versiones']['platense']['versiculos'] ?? []);
+    $outputTokens = $this->maxTokens;
+    if ($isIntegral && $verseCount > 0) {
+      $proportionalLimit = $verseCount <= 3
+        ? 16000
+        : ($verseCount <= 10 ? 28000 : 48000);
+      $outputTokens = min($this->maxTokens, $proportionalLimit);
+    }
     $clientRequestId = 'lvj-study-' . substr(hash(
       'sha256',
       json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
     ), 0, 32);
+    $textConfiguration = [
+      'format' => [
+        'type' => 'json_schema',
+        'name' => 'bible_study',
+        'strict' => true,
+        'schema' => BibleStudySchema::jsonSchema($method, $context),
+      ],
+    ];
+    if ($isIntegral) $textConfiguration['verbosity'] = 'low';
+
+    $body = [
+      'model' => $this->model,
+      'instructions' => BibleStudyPrompt::system(
+        $method,
+        (string) ($context['nivel'] ?? BibleStudyLevel::DEFAULT)
+      ),
+      'input' => json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+      'max_output_tokens' => $outputTokens,
+      'text' => $textConfiguration,
+    ];
+    if ($isIntegral) $body['reasoning'] = ['effort' => 'none'];
+
     $response = HttpJsonClient::post('https://api.openai.com/v1/responses', [
       'Authorization: Bearer ' . $this->key, 'Content-Type: application/json',
       'X-Client-Request-Id: ' . $clientRequestId,
-    ], [
-      'model' => $this->model,
-      'instructions' => BibleStudyPrompt::system((string)($context['metodo'] ?? BibleStudyMethod::DEFAULT), (string)($context['nivel'] ?? BibleStudyLevel::DEFAULT)),
-      'input' => json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-      'max_output_tokens' => $this->maxTokens,
-      'text' => ['format' => ['type' => 'json_schema', 'name' => 'bible_study', 'strict' => true, 'schema' => BibleStudySchema::jsonSchema((string)($context['metodo'] ?? BibleStudyMethod::DEFAULT), $context)]],
-    ], $this->timeout);
+    ], $body, $this->timeout);
     self::assertCompleteResponse($response);
     $text = self::extractOpenAIText($response);
     $study = json_decode(self::normalizeJsonText($text), true);
