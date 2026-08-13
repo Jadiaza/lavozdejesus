@@ -99,6 +99,7 @@ export async function recoverGeneratedBibleStudy(
 ): Promise<BibleStudy | null> {
   const attempts = Math.max(1, options.attempts ?? 42);
   const intervalMs = Math.max(1_000, options.intervalMs ?? 10_000);
+  let consecutiveFailedChecks = 0;
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     if (options.signal?.aborted) throw new DOMException("Operación cancelada", "AbortError");
     if (attempt > 0) await wait(intervalMs, options.signal);
@@ -108,8 +109,17 @@ export async function recoverGeneratedBibleStudy(
     const generation = await getBibleStudyGenerationStatus(input).catch(() => null);
     if (generation?.state === "completed" && generation.study) return generation.study;
     if (generation?.state === "failed") {
-      throw new Error(generation.message || "La generación no pudo completarse. Puedes intentarlo nuevamente.");
+      // Al comenzar una regeneración puede aparecer fugazmente el registro
+      // fallido anterior, mientras la nueva solicitud todavía no ha quedado
+      // asociada a su estudio. Confirmar el fallo evita mostrar un error justo
+      // antes de que el nuevo resultado termine y quede disponible.
+      consecutiveFailedChecks += 1;
+      if (consecutiveFailedChecks >= 3) {
+        throw new Error(generation.message || "La generación no pudo completarse. Puedes intentarlo nuevamente.");
+      }
+      continue;
     }
+    consecutiveFailedChecks = 0;
   }
   return null;
 }
