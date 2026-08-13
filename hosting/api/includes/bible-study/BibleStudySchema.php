@@ -120,6 +120,7 @@ final class BibleStudySchema
     $idMap = [];
     $positionMap = [];
     $seenPps = [];
+    $lastPp = '';
     foreach ($analysis['versiculos'] as $verseIndex => &$verse) {
       $number = (int) ($verse['numero'] ?? 0);
       if (!isset($verse['proposiciones']) || !is_array($verse['proposiciones'])) {
@@ -155,16 +156,18 @@ final class BibleStudySchema
           $proposition['depende_de'] = null;
           if ($canonicalId !== '') {
             $seenPps[$canonicalId] = true;
+            $lastPp = $canonicalId;
           }
           continue;
         }
         $dependency = self::normalizeIdValue($proposition['depende_de'] ?? '');
         $resolvedDependency = $idMap[$dependency] ?? $dependency;
-        $proposition['depende_de'] = $resolvedDependency ?: null;
-        if ($proposition['depende_de'] === null || !isset($seenPps[$resolvedDependency])) {
+        if ($resolvedDependency === '' || !isset($seenPps[$resolvedDependency])) {
+          $resolvedDependency = $lastPp;
           $proposition['requiere_revision'] = true;
           $proposition['nivel_confianza'] = 'baja';
         }
+        $proposition['depende_de'] = $resolvedDependency ?: null;
       }
       unset($proposition);
     }

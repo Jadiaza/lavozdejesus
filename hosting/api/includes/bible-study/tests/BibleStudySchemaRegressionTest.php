@@ -104,6 +104,32 @@ expectFailure('totales inconsistentes', 'no coincide con las PP', static functio
   invokePrivate('validatePropositions', [$analysis, $context]);
 });
 
+expectSuccess('dependencia PS reparable', static function (): void {
+  $context = ['versiones' => ['platense' => ['versiculos' => [[
+    'versiculo' => 2,
+    'texto' => 'Texto principal y texto secundario',
+  ]]]]];
+  $study = [
+    'analisis_proposiciones' => [
+      'etapas' => [['id' => 'e1']],
+      'versiculos' => [[
+        'numero' => 2,
+        'etapa_id' => 'e1',
+        'proposiciones' => [
+          ['id'=>'original_pp','tipo'=>'PP','texto'=>'Texto principal','requiere_revision'=>false],
+          ['id'=>'original_ps','tipo'=>'PS','texto'=>'texto secundario','depende_de'=>'id_inexistente','requiere_revision'=>false,'nivel_confianza'=>'alta'],
+        ],
+      ]],
+      'resumen' => [],
+    ],
+  ];
+  $prepared = BibleStudySchema::prepareGenerated($study, $context);
+  $ps = $prepared['analisis_proposiciones']['versiculos'][0]['proposiciones'][1];
+  if (($ps['depende_de'] ?? null) !== 'v2_p1' || !($ps['requiere_revision'] ?? false)) {
+    throw new RuntimeException('La PS no fue asociada a la PP precedente para revisión.');
+  }
+});
+
 $analysis = propositionAnalysis([18, 19, 20]);
 
 expectSuccess('Arcing mínimo adaptativo', static function () use ($analysis): void {
