@@ -9,13 +9,20 @@ final class BibleStudyProviderFactory
     $provider = strtolower(trim((string) lvj_setting('BIBLE_AI_PROVIDER')));
     $key = trim((string) lvj_setting('BIBLE_AI_API_KEY'));
     $model = trim((string) lvj_setting('BIBLE_AI_MODEL'));
-    // Respeta la configuracion del hosting. Los mínimos anteriores (180 s y
-    // 16.000 tokens) duplicaban la espera y anulaban config.local.php.
-    $timeout = max(60, min(180, (int) lvj_setting('BIBLE_AI_TIMEOUT', 90)));
-    $tokens = max(2000, min(8000, (int) lvj_setting('BIBLE_AI_MAX_TOKENS', 8000)));
+    $timeout = max(180, (int) lvj_setting('BIBLE_AI_TIMEOUT', 180));
     if ($provider === '' || $key === '') throw new RuntimeException('Servicio de estudio no configurado.');
-    if ($provider === 'openai') return new OpenAIProvider($key, $model ?: 'gpt-5.4-mini', $timeout, $tokens);
-    if ($provider === 'gemini') return new GeminiProvider($key, $model ?: 'gemini-2.5-flash', $timeout, $tokens);
+    $configuredTokens = (int) lvj_setting('BIBLE_AI_MAX_TOKENS', 0);
+    // El JSON maestro incluye análisis proposicional por versículo. Un capítulo
+    // de 20-30 versículos puede superar con facilidad el límite histórico de
+    // 16K antes de que el modelo alcance a cerrar el objeto JSON estricto.
+    if ($provider === 'openai') {
+      $tokens = max(48000, $configuredTokens);
+      return new OpenAIProvider($key, $model ?: 'gpt-5.4-mini', $timeout, $tokens);
+    }
+    if ($provider === 'gemini') {
+      $tokens = max(16000, $configuredTokens);
+      return new GeminiProvider($key, $model ?: 'gemini-2.5-flash', $timeout, $tokens);
+    }
     throw new RuntimeException('Proveedor de estudio no compatible.');
   }
 }

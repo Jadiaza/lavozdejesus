@@ -109,10 +109,9 @@ final class BibleStudySchema
 
     $idMap = [];
     $positionMap = [];
-    $firstProposition = '';
+    $seenPps = [];
     foreach ($analysis['versiculos'] as $verseIndex => &$verse) {
       $number = (int) ($verse['numero'] ?? 0);
-      $firstPp = '';
       if (!isset($verse['proposiciones']) || !is_array($verse['proposiciones'])) {
         continue;
       }
@@ -124,11 +123,6 @@ final class BibleStudySchema
         $positionMap[$number.':'.$order] = $canonicalId;
         $proposition['id'] = $canonicalId;
         $proposition['orden'] = $order;
-        if ($firstProposition === '') $firstProposition = $canonicalId;
-        if (($proposition['tipo'] ?? '') === 'PP' && $firstPp === '') {
-          $firstPp = $canonicalId;
-        }
-
         $fragment = self::normalizeText((string) ($proposition['texto'] ?? ''));
         if (
           isset($source[$number])
@@ -146,14 +140,18 @@ final class BibleStudySchema
       unset($proposition);
 
       foreach ($verse['proposiciones'] as &$proposition) {
+        $canonicalId = self::normalizeIdValue($proposition['id'] ?? '');
         if (($proposition['tipo'] ?? '') !== 'PS') {
           $proposition['depende_de'] = null;
+          if ($canonicalId !== '') {
+            $seenPps[$canonicalId] = true;
+          }
           continue;
         }
         $dependency = self::normalizeIdValue($proposition['depende_de'] ?? '');
-        $proposition['depende_de'] =
-          ($idMap[$dependency] ?? $firstPp) ?: null;
-        if ($proposition['depende_de'] === null) {
+        $resolvedDependency = $idMap[$dependency] ?? $dependency;
+        $proposition['depende_de'] = $resolvedDependency ?: null;
+        if ($proposition['depende_de'] === null || !isset($seenPps[$resolvedDependency])) {
           $proposition['requiere_revision'] = true;
           $proposition['nivel_confianza'] = 'baja';
         }
@@ -161,6 +159,28 @@ final class BibleStudySchema
       unset($proposition);
     }
     unset($verse);
+
+    // Los totales son datos derivados del contenido normalizado. Recalcularlos
+    // evita rechazar un estudio correcto cuando el proveedor se equivoca al
+    // contar proposiciones en su resumen.
+    $totalPp = 0;
+    $totalPs = 0;
+    foreach ($analysis['versiculos'] as $verse) {
+      foreach (($verse['proposiciones'] ?? []) as $proposition) {
+        if (($proposition['tipo'] ?? '') === 'PP') {
+          $totalPp++;
+        } elseif (($proposition['tipo'] ?? '') === 'PS') {
+          $totalPs++;
+        }
+      }
+    }
+    if (!isset($analysis['resumen']) || !is_array($analysis['resumen'])) {
+      $analysis['resumen'] = [];
+    }
+    $analysis['resumen']['total_versiculos'] = count($analysis['versiculos']);
+    $analysis['resumen']['total_pp'] = $totalPp;
+    $analysis['resumen']['total_ps'] = $totalPs;
+    $analysis['resumen']['total_etapas'] = count($analysis['etapas'] ?? []);
     $study['analisis_proposiciones'] = $analysis;
 
     if ($method !== 'integral_lvj' || !is_array($study['arcing'] ?? null)) {
@@ -175,8 +195,7 @@ final class BibleStudySchema
 
     $resolveProposition = static function ($raw) use (
       $idMap,
-      $positionMap,
-      $firstProposition
+      $positionMap
     ): string {
       $raw = self::normalizeIdValue($raw);
       if (isset($idMap[$raw])) return $idMap[$raw];
@@ -187,16 +206,14 @@ final class BibleStudySchema
         $key = ((int) $numbers[0]).':'.((int) end($numbers));
         if (isset($positionMap[$key])) return $positionMap[$key];
       }
-      return $firstProposition;
+      return $raw;
     };
 
     $unitMap = [];
-    $unitIds = [];
     foreach ($study['arcing']['unidades'] as $index => &$unit) {
       $oldId = self::normalizeIdValue($unit['id'] ?? '');
       $canonicalUnitId = 'a'.($index + 1);
       $unit['id'] = $canonicalUnitId;
-      $unitIds[] = $canonicalUnitId;
       $unitMap[$canonicalUnitId] = $canonicalUnitId;
       if ($oldId !== '') $unitMap[$oldId] = $canonicalUnitId;
       $resolved = [];
@@ -204,41 +221,22 @@ final class BibleStudySchema
         $resolvedId = $resolveProposition($rawId);
         if ($resolvedId !== '') $resolved[$resolvedId] = true;
       }
-      if (!$resolved && $firstProposition !== '') {
-        $resolved[$firstProposition] = true;
-      }
       $unit['proposiciones'] = array_keys($resolved);
     }
     unset($unit);
 
-    $resolveUnit = static function ($raw, int $fallbackIndex) use (
-      $unitMap,
-      $unitIds
-    ): string {
-      if (!$unitIds) return '';
+    $resolveUnit = static function ($raw) use ($unitMap): string {
       $raw = self::normalizeIdValue($raw);
       if ($raw !== '' && isset($unitMap[$raw])) return $unitMap[$raw];
-      if ($raw !== '' && preg_match('/\d+/', $raw, $match)) {
-        $position = max(1, min(count($unitIds), (int) $match[0]));
-        return $unitIds[$position - 1];
-      }
-      $position = max(0, min(count($unitIds) - 1, $fallbackIndex));
-      return $unitIds[$position];
+      return $raw;
     };
 
     foreach ($study['arcing']['relaciones'] as $index => &$relation) {
       $relation['id'] = 'r'.($index + 1);
       $fromRaw = self::normalizeIdValue($relation['desde'] ?? '');
       $toRaw = self::normalizeIdValue($relation['hasta'] ?? '');
-      $relation['desde'] = $resolveUnit($fromRaw, $index);
-      $relation['hasta'] = $resolveUnit($toRaw, $index + 1);
-      $uncertain =
-        !isset($unitMap[$fromRaw])
-        || !isset($unitMap[$toRaw]);
-      if ($uncertain) {
-        $relation['nivel_confianza'] = 'baja';
-        $relation['requiere_revision'] = true;
-      }
+      $relation['desde'] = $resolveUnit($fromRaw);
+      $relation['hasta'] = $resolveUnit($toRaw);
     }
     unset($relation);
 
@@ -253,8 +251,8 @@ final class BibleStudySchema
     }
     if (($study['metodo'] ?? '') !== $method) throw new RuntimeException('El método devuelto no coincide con el método solicitado.');
     if ($method === 'metodo_salmo' && ($study['modelo_referencia'] ?? null) !== 'salmo8-1.0') throw new RuntimeException('El Método Salmo no conserva su modelo de referencia.');
-    if ($method === 'integral_lvj') self::validateArcing($study['arcing'] ?? null, $study['analisis_proposiciones'] ?? null);
     self::validatePropositions($study['analisis_proposiciones'] ?? null, $context);
+    if ($method === 'integral_lvj') self::validateArcing($study['arcing'] ?? null, $study['analisis_proposiciones'] ?? null);
     if (!is_array($study['textos']) || !is_array($study['lectio_divina'])) {
       throw new RuntimeException('El estudio generado no respeta el esquema requerido.');
     }
@@ -326,9 +324,75 @@ final class BibleStudySchema
     return ['type'=>'object','additionalProperties'=>false,'required'=>['unidades','relaciones','proposicion_dominante','centro'],'properties'=>['unidades'=>['type'=>'array','minItems'=>1,'items'=>$unit],'relaciones'=>['type'=>'array','items'=>$relation],'proposicion_dominante'=>$s,'centro'=>$s]];
   }
 
-  private static function validateArcing($arcing,$analysis)
+  private static function validateArcing($arcing, $analysis)
   {
-    if(!is_array($arcing))throw new RuntimeException('El Método Integral no contiene Arcing válido.');$propositions=[];foreach(($analysis['versiculos']??[]) as $verse)foreach(($verse['proposiciones']??[]) as $proposition)$propositions[self::normalizeIdValue($proposition['id'] ?? '')]=true;$units=[];foreach(($arcing['unidades']??[]) as $unit){$id=self::normalizeIdValue($unit['id'] ?? '');if($id===''||isset($units[$id]))throw new RuntimeException('El Arcing contiene unidades inválidas o duplicadas.');foreach(($unit['proposiciones']??[]) as $propositionId){$propId = self::normalizeIdValue($propositionId);if($propId === '' || !isset($propositions[$propId]))throw new RuntimeException('Una unidad Arcing referencia una proposición inexistente.');}$units[$id]=true;}$relations=[];foreach(($arcing['relaciones']??[]) as $relation){$id=self::normalizeIdValue($relation['id'] ?? '');$desde=self::normalizeIdValue($relation['desde'] ?? '');$hasta=self::normalizeIdValue($relation['hasta'] ?? '');if($id===''||isset($relations[$id])||!isset($units[$desde])||!isset($units[$hasta]))throw new RuntimeException('El Arcing contiene una relación inválida.');if(trim((string)($relation['explicacion']??''))==='')throw new RuntimeException('Una relación Arcing no contiene justificación textual.');$relations[$id]=true;}
+    if (!is_array($arcing)) {
+      throw new RuntimeException('El Método Integral no contiene Arcing válido.');
+    }
+
+    $propositionVerseMap = [];
+    foreach (($analysis['versiculos'] ?? []) as $verse) {
+      $verseNumber = (int) ($verse['numero'] ?? 0);
+      foreach (($verse['proposiciones'] ?? []) as $proposition) {
+        $id = self::normalizeIdValue($proposition['id'] ?? '');
+        if ($id !== '') $propositionVerseMap[$id] = $verseNumber;
+      }
+    }
+
+    $units = [];
+    foreach (($arcing['unidades'] ?? []) as $unit) {
+      $id = self::normalizeIdValue($unit['id'] ?? '');
+      $scale = (string) ($unit['escala'] ?? '');
+      $reference = trim((string) ($unit['referencia'] ?? ''));
+      if ($id === '' || isset($units[$id])) {
+        throw new RuntimeException('El Arcing contiene unidades inválidas o duplicadas.');
+      }
+      if (!in_array($scale, ['micro', 'meso', 'macro'], true)) {
+        throw new RuntimeException("La unidad Arcing \"{$id}\" utiliza una escala inválida.");
+      }
+      $range = self::referenceVerseRange($reference);
+      if ($range === null) {
+        throw new RuntimeException("La unidad Arcing \"{$id}\" no declara un rango bíblico válido.");
+      }
+      $propositionIds = $unit['proposiciones'] ?? null;
+      if (!is_array($propositionIds) || count($propositionIds) < 1) {
+        throw new RuntimeException("La unidad Arcing \"{$id}\" no contiene proposiciones.");
+      }
+      foreach ($propositionIds as $propositionId) {
+        $propId = self::normalizeIdValue($propositionId);
+        if ($propId === '' || !isset($propositionVerseMap[$propId])) {
+          throw new RuntimeException("La unidad Arcing \"{$id}\" referencia la proposición inexistente \"{$propId}\".");
+        }
+        $verseNumber = $propositionVerseMap[$propId];
+        if ($verseNumber < $range[0] || $verseNumber > $range[1]) {
+          throw new RuntimeException(
+            "La unidad Arcing \"{$id}\" declara {$reference}, pero utiliza \"{$propId}\", que pertenece al versículo {$verseNumber}."
+          );
+        }
+      }
+      $units[$id] = ['escala' => $scale];
+    }
+
+    $relations = [];
+    foreach (($arcing['relaciones'] ?? []) as $relation) {
+      $id = self::normalizeIdValue($relation['id'] ?? '');
+      $from = self::normalizeIdValue($relation['desde'] ?? '');
+      $to = self::normalizeIdValue($relation['hasta'] ?? '');
+      $scale = (string) ($relation['escala'] ?? '');
+      if ($id === '' || isset($relations[$id]) || !isset($units[$from]) || !isset($units[$to])) {
+        throw new RuntimeException('El Arcing contiene una relación inválida.');
+      }
+      if ($from === $to) {
+        throw new RuntimeException("La relación Arcing \"{$id}\" conecta una unidad consigo misma.");
+      }
+      if ($units[$from]['escala'] !== $scale || $units[$to]['escala'] !== $scale) {
+        throw new RuntimeException("La relación Arcing \"{$id}\" no coincide con la escala de sus unidades.");
+      }
+      if (trim((string) ($relation['explicacion'] ?? '')) === '') {
+        throw new RuntimeException('Una relación Arcing no contiene justificación textual.');
+      }
+      $relations[$id] = true;
+    }
   }
 
   private static function validatePropositions($analysis,array $context)
@@ -412,19 +476,41 @@ final class BibleStudySchema
     if (count($verses) < 1) {
       throw new RuntimeException('El análisis proposicional no contiene versículos válidos.');
     }
+    if ($source) {
+      $missing = array_values(array_diff(array_keys($source), array_keys($verses)));
+      $unexpected = array_values(array_diff(array_keys($verses), array_keys($source)));
+      sort($missing);
+      sort($unexpected);
+      if ($missing) {
+        throw new RuntimeException('El análisis proposicional no cubre los versículos: '.implode(', ', $missing).'.');
+      }
+      if ($unexpected) {
+        throw new RuntimeException('El análisis proposicional contiene versículos fuera del rango: '.implode(', ', $unexpected).'.');
+      }
+    }
     $r = $analysis['resumen'] ?? [];
-    if (isset($r['total_versiculos']) && (int) ($r['total_versiculos'] ?? 0) < count($verses)) {
-      throw new RuntimeException('El resumen de proposiciones no cubre los versículos analizados.');
+    if (isset($r['total_versiculos']) && (int) ($r['total_versiculos'] ?? 0) !== count($verses)) {
+      throw new RuntimeException('El resumen de proposiciones no coincide con los versículos analizados.');
     }
-    if (isset($r['total_pp']) && (int) ($r['total_pp'] ?? 0) < $pp) {
-      throw new RuntimeException('El resumen de proposiciones no cubre todas las PP analizadas.');
+    if (isset($r['total_pp']) && (int) ($r['total_pp'] ?? 0) !== $pp) {
+      throw new RuntimeException('El resumen de proposiciones no coincide con las PP analizadas.');
     }
-    if (isset($r['total_ps']) && (int) ($r['total_ps'] ?? 0) < $ps) {
-      throw new RuntimeException('El resumen de proposiciones no cubre todas las PS analizadas.');
+    if (isset($r['total_ps']) && (int) ($r['total_ps'] ?? 0) !== $ps) {
+      throw new RuntimeException('El resumen de proposiciones no coincide con las PS analizadas.');
     }
-    if (isset($r['total_etapas']) && (int) ($r['total_etapas'] ?? 0) < count($stages)) {
-      throw new RuntimeException('El resumen de proposiciones no cubre todas las etapas analizadas.');
+    if (isset($r['total_etapas']) && (int) ($r['total_etapas'] ?? 0) !== count($stages)) {
+      throw new RuntimeException('El resumen de proposiciones no coincide con las etapas analizadas.');
     }
+  }
+
+  private static function referenceVerseRange(string $reference): ?array
+  {
+    if (!preg_match('/[,:]\s*(\d+)(?:\s*[-–—]\s*(\d+))?\s*$/u', $reference, $matches)) {
+      return null;
+    }
+    $start = (int) $matches[1];
+    $end = isset($matches[2]) && $matches[2] !== '' ? (int) $matches[2] : $start;
+    return $start > 0 && $end >= $start ? [$start, $end] : null;
   }
 
   private static function normalizeText(string $text)

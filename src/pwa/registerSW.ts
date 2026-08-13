@@ -52,7 +52,17 @@ export async function registerSW() {
     return;
   }
   try {
+    let reloadingForUpdate = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloadingForUpdate) return;
+      reloadingForUpdate = true;
+      window.location.reload();
+    });
+
     await navigator.serviceWorker.register(SW_URL, { scope: "/" });
+    const registration = await navigator.serviceWorker.getRegistration('/');
+    // Comprueba el sw.js contra la red en cada entrada a la aplicación.
+    await registration?.update();
   } catch {
     /* registration failed — silent */
   }

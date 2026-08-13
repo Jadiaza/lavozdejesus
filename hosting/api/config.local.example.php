@@ -18,7 +18,8 @@ return [
   'bible_ai_model' => 'gpt-5.4-mini',
   'bible_ai_api_key' => '',
   'bible_ai_timeout' => 90,
-  'bible_ai_max_tokens' => 8000,
+  // El formato maestro puede requerir decenas de miles de tokens en capítulos completos.
+  'bible_ai_max_tokens' => 48000,
   'bible_ai_free_requests_per_month' => 3,
   'bible_ai_unlimited_emails' => 'lavozdejesusco@gmail.com,lavozdejesus.co@gmail.com,lenis4842@gmail.com,llenis4842@gmail.com',
   'bible_version_platense' => 'SPAPLATENSE',

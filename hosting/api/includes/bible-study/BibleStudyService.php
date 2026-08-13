@@ -55,6 +55,8 @@ final class BibleStudyService
     try {
       $insert->execute(['libro'=>$context['libro_id'],'ci'=>$range['capitulo_inicio'],'vi'=>$range['versiculo_inicio'],'cf'=>$range['capitulo_fin'],'vf'=>$range['versiculo_fin'],'ref'=>$context['referencia'],'study_method'=>$range['metodo'],'level'=>$range['nivel'],'language'=>self::LANGUAGE,'method'=>BibleStudyPrompt::METHOD,'schema'=>$methodConfig['schema'],'model_reference'=>$methodConfig['model_reference'],'structural_technique'=>$range['metodo']==='integral_lvj'?'arcing':null,'text_version'=>$context['metadata']['texto_version'],'notes_version'=>$context['metadata']['notas_version'],'hash'=>$hash]);
       $studyId = (int) $this->pdo->lastInsertId();
+      $this->pdo->prepare('UPDATE lvj_bib_estudios_ia_solicitudes SET estudio_id=:study WHERE id=:id')
+        ->execute(['study'=>$studyId, 'id'=>$requestId]);
     } catch (PDOException $error) {
       if ((string) $error->getCode() !== '23000') throw $error;
       $existing = lvj_first($this->pdo, "SELECT * FROM lvj_bib_estudios_ia WHERE hash_contexto=:hash AND metodo_version=:method AND deleted_at IS NULL LIMIT 1", ['hash'=>$hash,'method'=>BibleStudyPrompt::METHOD]);
@@ -142,6 +144,46 @@ final class BibleStudyService
       $study['viewed_at'] = $row['viewed_at'] ?? null;
       return $study;
     }, $statement->fetchAll());
+  }
+
+  public function generationStatusForUser(array $input, int $userId): array
+  {
+    $range = $this->normalize($input);
+    $row = lvj_first($this->pdo, "SELECT estudio.*,
+        (estudio.updated_at < (UTC_TIMESTAMP() - INTERVAL 6 MINUTE)) AS generation_expired
+      FROM lvj_bib_estudios_ia estudio
+      INNER JOIN lvj_bib_libros libro ON libro.id=estudio.libro_id
+      INNER JOIN lvj_bib_estudios_ia_solicitudes solicitud
+        ON solicitud.estudio_id=estudio.id AND solicitud.usuario_id=:user
+      WHERE UPPER(libro.codigo)=:book
+        AND estudio.capitulo_inicio=:ci AND estudio.versiculo_inicio=:vi
+        AND estudio.capitulo_fin=:cf AND estudio.versiculo_fin=:vf
+        AND estudio.nivel=:level AND estudio.metodo=:study_method
+        AND estudio.deleted_at IS NULL
+      ORDER BY solicitud.id DESC, estudio.id DESC
+      LIMIT 1", [
+        'user'=>$userId,
+        'book'=>$range['libro_codigo'],
+        'ci'=>$range['capitulo_inicio'],
+        'vi'=>$range['versiculo_inicio'],
+        'cf'=>$range['capitulo_fin'],
+        'vf'=>$range['versiculo_fin'],
+        'level'=>$range['nivel'],
+        'study_method'=>$range['metodo'],
+      ]);
+
+    if (!$row) return ['state'=>'not_found'];
+    $state = (string) ($row['estado'] ?? '');
+    if (in_array($state, ['revision', 'publicado'], true)) {
+      return ['state'=>'completed', 'study'=>$this->present($row)];
+    }
+    if ($state === 'error') {
+      return ['state'=>'failed', 'message'=>'La generación no pudo completarse. Puedes intentarlo nuevamente.'];
+    }
+    if ($state === 'generando' && (int) ($row['generation_expired'] ?? 0) === 1) {
+      return ['state'=>'failed', 'message'=>'La generación superó el tiempo disponible. Ya puedes intentarlo nuevamente.'];
+    }
+    return ['state'=>'processing'];
   }
   private function normalize(array $input): array
   {

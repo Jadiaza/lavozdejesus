@@ -111,6 +111,23 @@ try {
       ]);
     }
 
+    if (filter_var($_GET['generation_status'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+      $user = SupabaseAuth::requireUser($pdo);
+      $statusInput = [
+        'libro_codigo' => $_GET['libro_codigo'] ?? '',
+        'capitulo_inicio' => $_GET['capitulo_inicio'] ?? 0,
+        'versiculo_inicio' => $_GET['versiculo_inicio'] ?? 0,
+        'capitulo_fin' => $_GET['capitulo_fin'] ?? 0,
+        'versiculo_fin' => $_GET['versiculo_fin'] ?? 0,
+        'nivel' => $_GET['nivel'] ?? '',
+      ];
+      lvj_json_response([
+        'success' => true,
+        'api_build' => LVJ_BIBLE_API_BUILD,
+        'generation' => $service->generationStatusForUser($statusInput, (int) $user['id']),
+      ]);
+    }
+
     $id = filter_var($_GET['id'] ?? null, FILTER_VALIDATE_INT);
 
     if (!$id) {

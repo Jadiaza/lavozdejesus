@@ -1,4 +1,24 @@
 {
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/index.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/manifest.webmanifest",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, must-revalidate" }
+      ]
+    }
+  ],
   "rewrites": [
     {
       "source": "/((?!api/|assets/|icons/|favicon.ico|favicon.png|apple-touch-icon.png|logo.png|logo2.png|manifest.webmanifest|robots.txt|sitemap.xml|ads.txt|pwa-192.png|pwa-512.png|placeholder.svg|mobile-monstrance.png|splash.mp4).*)",

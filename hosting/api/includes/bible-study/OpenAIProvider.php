@@ -22,6 +22,7 @@ final class OpenAIProvider implements BibleStudyAiProviderInterface
       'max_output_tokens' => $this->maxTokens,
       'text' => ['format' => ['type' => 'json_schema', 'name' => 'bible_study', 'strict' => true, 'schema' => BibleStudySchema::jsonSchema((string)($context['metodo'] ?? BibleStudyMethod::DEFAULT))]],
     ], $this->timeout);
+    self::assertCompleteResponse($response);
     $text = self::extractOpenAIText($response);
     $study = json_decode(self::normalizeJsonText($text), true);
     if (!is_array($study)) throw new RuntimeException('OpenAI no devolvió JSON válido.');
@@ -29,6 +30,18 @@ final class OpenAIProvider implements BibleStudyAiProviderInterface
     BibleStudySchema::validate($study, $context);
     return ['study' => $study, 'input_tokens' => $response['usage']['input_tokens'] ?? null,
       'output_tokens' => $response['usage']['output_tokens'] ?? null, 'model' => $this->model];
+  }
+
+  private static function assertCompleteResponse(array $response): void
+  {
+    if (($response['status'] ?? '') !== 'incomplete') {
+      return;
+    }
+    $reason = (string) ($response['incomplete_details']['reason'] ?? 'desconocida');
+    if ($reason === 'max_output_tokens') {
+      throw new RuntimeException('OpenAI interrumpio el estudio al alcanzar el limite de tokens de salida.');
+    }
+    throw new RuntimeException('OpenAI devolvio un estudio incompleto. Motivo: ' . $reason . '.');
   }
 
   private static function extractOpenAIText(array $response): string

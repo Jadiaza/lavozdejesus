@@ -10,7 +10,12 @@ export interface BibleStudy {
 export type StudyLevel = "pastoral" | "teologico" | "doctrinal" | "formativo";
 export type StudyMethod = "metodo_salmo" | "integral_lvj";
 export type RecentBibleStudy = BibleStudy;
-interface StudyResponse { success: boolean; source?: "cache" | "generated"; study?: BibleStudy; studies?: BibleStudy[]; configured?: boolean; ready?: boolean; message?: string; error_id?: string; }
+interface BibleStudyGenerationStatus {
+  state: "not_found" | "processing" | "completed" | "failed";
+  study?: BibleStudy;
+  message?: string;
+}
+interface StudyResponse { success: boolean; source?: "cache" | "generated"; study?: BibleStudy; studies?: BibleStudy[]; generation?: BibleStudyGenerationStatus; configured?: boolean; ready?: boolean; message?: string; error_id?: string; }
 
 export interface BibleStudyRequest {
   libro_codigo: string; capitulo_inicio: number; versiculo_inicio: number;
@@ -92,14 +97,19 @@ export async function recoverGeneratedBibleStudy(
   input: BibleStudyRequest,
   options: { signal?: AbortSignal; attempts?: number; intervalMs?: number } = {},
 ): Promise<BibleStudy | null> {
-  const attempts = Math.max(1, options.attempts ?? 24);
-  const intervalMs = Math.max(1_000, options.intervalMs ?? 5_000);
+  const attempts = Math.max(1, options.attempts ?? 42);
+  const intervalMs = Math.max(1_000, options.intervalMs ?? 10_000);
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     if (options.signal?.aborted) throw new DOMException("Operación cancelada", "AbortError");
     if (attempt > 0) await wait(intervalMs, options.signal);
     const studies = await getRecentBibleStudies().catch(() => []);
     const recovered = studies.find(study => matchesBibleStudyRequest(study, input));
     if (recovered) return recovered;
+    const generation = await getBibleStudyGenerationStatus(input).catch(() => null);
+    if (generation?.state === "completed" && generation.study) return generation.study;
+    if (generation?.state === "failed") {
+      throw new Error(generation.message || "La generación no pudo completarse. Puedes intentarlo nuevamente.");
+    }
   }
   return null;
 }
@@ -118,6 +128,13 @@ export async function getRecentBibleStudies() {
   url.searchParams.set("recent", "1");
   const payload = await parse(await authenticatedFetch(url, { headers: { Accept: "application/json" } }));
   return payload.studies ?? [];
+}
+export async function getBibleStudyGenerationStatus(input: BibleStudyRequest): Promise<BibleStudyGenerationStatus> {
+  const url = new URL(apiUrl, window.location.origin);
+  url.searchParams.set("generation_status", "1");
+  Object.entries(input).forEach(([key, value]) => url.searchParams.set(key, String(value)));
+  const payload = await parse(await authenticatedFetch(url, { headers: { Accept: "application/json" } }));
+  return payload.generation ?? { state: "not_found" };
 }
 export async function getBibleStudy(id: number) {
   const accessToken = await token(); const url = new URL(apiUrl, window.location.origin); url.searchParams.set("id", String(id));

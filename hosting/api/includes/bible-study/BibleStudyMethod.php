@@ -95,8 +95,12 @@ final class BibleStudyMethod
 
     return "\n\nMÉTODO INTEGRAL LVJ\n"
       . "Aplica el núcleo estructural común adaptado al género. "
-      . "Integra Arcing como técnica interna en tres escalas: micro, "
-      . "meso y macro. Cada relación debe conectar unidades existentes, "
+      . "Integra Arcing como técnica interna de forma adaptativa. Usa micro "
+      . "para relaciones proposicionales próximas, meso para bloques reales "
+      . "y macro únicamente en unidades extensas que lo justifiquen. Un texto "
+      . "con una sola proposición puede conservar una unidad sin relaciones; "
+      . "no inventes arcos ni escalas para completar el JSON. Cada relación "
+      . "debe conectar unidades de su misma escala, "
       . "usar un tipo permitido, explicar su fundamento textual y declarar "
       . "confianza y revisión. Arcing no es un método independiente.";
   }
