@@ -253,6 +253,37 @@ final class BibleStudySchema
     }
     unset($relation);
 
+    $unitScales = [];
+    foreach ($study['arcing']['unidades'] as $unit) {
+      $unitId = self::normalizeIdValue($unit['id'] ?? '');
+      if ($unitId !== '') $unitScales[$unitId] = (string) ($unit['escala'] ?? '');
+    }
+    $normalizedRelations = [];
+    foreach ($study['arcing']['relaciones'] as $relation) {
+      $from = self::normalizeIdValue($relation['desde'] ?? '');
+      $to = self::normalizeIdValue($relation['hasta'] ?? '');
+      $fromScale = $unitScales[$from] ?? '';
+      $toScale = $unitScales[$to] ?? '';
+      if ($fromScale !== '' && $fromScale === $toScale) {
+        if (($relation['escala'] ?? '') !== $fromScale) {
+          $relation['escala'] = $fromScale;
+          $relation['nivel_confianza'] = 'baja';
+          $relation['requiere_revision'] = true;
+        }
+        $normalizedRelations[] = $relation;
+        continue;
+      }
+      // Una relación no puede cruzar escalas en el esquema Arcing actual. La
+      // unidad conserva su análisis y la relación dudosa se omite para revisión
+      // editorial, sin desechar el estudio bíblico completo.
+      $study['analisis_proposiciones']['resumen']['requiere_revision'] = true;
+    }
+    foreach ($normalizedRelations as $index => &$relation) {
+      $relation['id'] = 'r'.($index + 1);
+    }
+    unset($relation);
+    $study['arcing']['relaciones'] = $normalizedRelations;
+
     return $study;
   }
 

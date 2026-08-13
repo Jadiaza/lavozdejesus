@@ -130,6 +130,34 @@ expectSuccess('dependencia PS reparable', static function (): void {
   }
 });
 
+expectSuccess('escala Arcing reparable', static function (): void {
+  $study = [
+    'analisis_proposiciones' => [
+      'etapas' => [['id'=>'e1']],
+      'versiculos' => [[
+        'numero'=>1,
+        'proposiciones'=>[['id'=>'p1','tipo'=>'PP','texto'=>'Texto','requiere_revision'=>false]],
+      ]],
+      'resumen' => ['requiere_revision'=>false],
+    ],
+    'arcing' => [
+      'unidades' => [
+        ['id'=>'u1','escala'=>'micro','proposiciones'=>['p1']],
+        ['id'=>'u2','escala'=>'micro','proposiciones'=>['p1']],
+      ],
+      'relaciones' => [[
+        'id'=>'r-original','escala'=>'meso','desde'=>'u1','hasta'=>'u2',
+        'nivel_confianza'=>'alta','requiere_revision'=>false,
+      ]],
+    ],
+  ];
+  $prepared = BibleStudySchema::prepareGenerated($study, []);
+  $relation = $prepared['arcing']['relaciones'][0] ?? [];
+  if (($relation['escala'] ?? '') !== 'micro' || !($relation['requiere_revision'] ?? false)) {
+    throw new RuntimeException('La relación no adoptó la escala común de sus unidades.');
+  }
+});
+
 $analysis = propositionAnalysis([18, 19, 20]);
 
 expectSuccess('Arcing mínimo adaptativo', static function () use ($analysis): void {
