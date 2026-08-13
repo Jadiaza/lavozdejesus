@@ -3,9 +3,15 @@ declare(strict_types=1);
 
 final class BibleStudySchema
 {
-  public static function jsonSchema(string $method = BibleStudyMethod::DEFAULT)
+  public static function jsonSchema(
+    string $method = BibleStudyMethod::DEFAULT,
+    array $context = []
+  )
   {
     $method = BibleStudyMethod::normalize($method);
+    $requiredVerseCount = count(
+      $context['versiones']['platense']['versiculos'] ?? []
+    );
     $textVersion = ['anyOf' => [
       ['type'=>'object','additionalProperties'=>false,'required'=>['disponible','texto'],'properties'=>[
         'disponible'=>['type'=>'boolean','enum'=>[true]],'texto'=>['type'=>'string'],
@@ -52,7 +58,11 @@ final class BibleStudySchema
       'genero_literario' => self::stringObject(['tipo','explicacion']),
       'estructura' => self::objectArray(['versiculos','titulo','explicacion']),
       'proposiciones' => self::objectArray(['texto','tipo','explicacion']),
-      'analisis_proposiciones' => self::propositionAnalysis(),
+      'analisis_proposiciones' => self::propositionAnalysis(
+        $method === 'integral_lvj' && $requiredVerseCount > 0
+          ? $requiredVerseCount
+          : null
+      ),
       'articulacion' => self::objectArray(['orden','versiculos','etapa','pregunta_guia','sujeto','verbo_central','desarrollo']),
       'palabras_clave' => self::objectArray(['termino','significado','funcion_en_el_texto']),
       'semantica_texto' => self::objectArray(['termino','versiculos','sentido_contextual','funcion_en_unidad']),
@@ -276,7 +286,7 @@ final class BibleStudySchema
     return ['type' => 'array', 'items' => self::stringObject($keys)];
   }
 
-  private static function propositionAnalysis()
+  private static function propositionAnalysis(?int $requiredVerseCount = null)
   {
     $s = ['type'=>'string'];
     $sn = ['type'=>['string','null']];
@@ -309,10 +319,18 @@ final class BibleStudySchema
       'total_ps'=>['type'=>'integer','minimum'=>0],'total_etapas'=>['type'=>'integer','minimum'=>1],
       'requiere_revision'=>['type'=>'boolean'],
     ]];
+    $verses = ['type'=>'array','minItems'=>1,'items'=>$verse];
+    if ($requiredVerseCount !== null && $requiredVerseCount > 0) {
+      // La instrucción escrita no basta: el contrato estructurado debe impedir
+      // que el proveedor cierre un JSON válido después de analizar solo una
+      // parte del pasaje solicitado.
+      $verses['minItems'] = $requiredVerseCount;
+      $verses['maxItems'] = $requiredVerseCount;
+    }
     return ['type'=>'object','additionalProperties'=>false,'required'=>['schema_version','referencia','version_biblica','titulo','subtitulo','metodo','resumen','etapas','versiculos'],'properties'=>[
       'schema_version'=>['type'=>'string','enum'=>['proposiciones-2.1']],'referencia'=>$s,'version_biblica'=>$s,
       'titulo'=>$s,'subtitulo'=>$s,'metodo'=>['type'=>'string','enum'=>['PP_PS']],'resumen'=>$summary,
-      'etapas'=>['type'=>'array','minItems'=>1,'items'=>$stage],'versiculos'=>['type'=>'array','minItems'=>1,'items'=>$verse],
+      'etapas'=>['type'=>'array','minItems'=>1,'items'=>$stage],'versiculos'=>$verses,
     ]];
   }
 

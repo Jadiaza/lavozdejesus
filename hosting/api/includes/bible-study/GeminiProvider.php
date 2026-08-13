@@ -11,7 +11,7 @@ final class GeminiProvider implements BibleStudyAiProviderInterface
     $response = HttpJsonClient::post($url, ['Content-Type: application/json'], [
       'systemInstruction' => ['parts' => [['text' => BibleStudyPrompt::system((string)($context['metodo'] ?? BibleStudyMethod::DEFAULT), (string)($context['nivel'] ?? BibleStudyLevel::DEFAULT))]]],
       'contents' => [['role' => 'user', 'parts' => [['text' => json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]]]],
-      'generationConfig' => ['responseMimeType' => 'application/json', 'responseJsonSchema' => BibleStudySchema::jsonSchema((string)($context['metodo'] ?? BibleStudyMethod::DEFAULT)), 'maxOutputTokens' => $this->maxTokens],
+      'generationConfig' => ['responseMimeType' => 'application/json', 'responseJsonSchema' => BibleStudySchema::jsonSchema((string)($context['metodo'] ?? BibleStudyMethod::DEFAULT), $context), 'maxOutputTokens' => $this->maxTokens],
     ], $this->timeout);
     $text = self::extractGeminiText($response);
     $study = json_decode(self::normalizeJsonText($text), true);

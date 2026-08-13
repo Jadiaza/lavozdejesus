@@ -74,6 +74,22 @@ $context = ['versiones' => ['platense' => ['versiculos' => [
   ['versiculo' => 20, 'texto' => 'Texto 20'],
 ]]]];
 
+expectSuccess('esquema exige todos los versículos', static function () use ($context): void {
+  $schema = BibleStudySchema::jsonSchema(BibleStudyMethod::DEFAULT, $context);
+  $verses = $schema['properties']['analisis_proposiciones']['properties']['versiculos'];
+  if (($verses['minItems'] ?? null) !== 3 || ($verses['maxItems'] ?? null) !== 3) {
+    throw new RuntimeException('El esquema no exige exactamente los tres versículos fuente.');
+  }
+});
+
+expectSuccess('Método Salmo conserva su esquema funcional', static function () use ($context): void {
+  $schema = BibleStudySchema::jsonSchema('metodo_salmo', $context);
+  $verses = $schema['properties']['analisis_proposiciones']['properties']['versiculos'];
+  if (isset($verses['maxItems']) || ($verses['minItems'] ?? null) !== 1) {
+    throw new RuntimeException('El esquema del Método Salmo fue alterado.');
+  }
+});
+
 expectSuccess('cobertura exacta', static function () use ($context): void {
   invokePrivate('validatePropositions', [propositionAnalysis([18, 19, 20]), $context]);
 });
