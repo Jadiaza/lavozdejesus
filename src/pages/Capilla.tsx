@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { BottomNav } from "@/components/lvdj/BottomNav";
 import { CapillaHeader } from "@/components/lvdj/capilla/CapillaHeader";
 import { CapillaVideo } from "@/components/lvdj/capilla/CapillaVideo";
+import { preloadCapillaHls } from "@/components/lvdj/capilla/capillaHls";
 import { PrayerForm } from "@/components/lvdj/capilla/PrayerForm";
 import { PrayerWall } from "@/components/lvdj/capilla/PrayerWall";
 import {
@@ -25,6 +26,10 @@ const Capilla = () => {
 
   useEffect(() => {
     let active = true;
+    const requestStartedAt = performance.now();
+
+    // Se descarga en paralelo con la API, antes de que el reproductor necesite HLS.js.
+    void preloadCapillaHls();
 
     const cargarCapilla = async () => {
       try {
@@ -32,6 +37,12 @@ const Capilla = () => {
         setError("");
 
         const data = await getCapillaPublica();
+
+        if (import.meta.env.DEV) {
+          console.debug("[Capilla] stream recibido desde API", {
+            ms: Math.round(performance.now() - requestStartedAt),
+          });
+        }
 
         if (!active) return;
 

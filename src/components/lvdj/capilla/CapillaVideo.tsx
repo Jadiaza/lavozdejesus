@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Minimize2, Volume2, VolumeX } from "lucide-react";
+import type Hls from "hls.js";
+import { preloadCapillaHls } from "@/components/lvdj/capilla/capillaHls";
 import type { CapillaStreamPublico } from "@/services/sheetsService";
-
-const HLS_JS_URL = "https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js";
 
 type CapillaVideoProps = {
   nombre?: string;
@@ -14,39 +14,29 @@ type CapillaVideoProps = {
   stream?: CapillaStreamPublico | null;
 };
 
-type HlsInstance = {
-  loadSource: (url: string) => void;
-  attachMedia: (element: HTMLMediaElement) => void;
-  destroy: () => void;
-};
+const addStreamConnectionHints = (streamUrl: string) => {
+  try {
+    const url = new URL(streamUrl);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return () => undefined;
 
-type HlsConstructor = {
-  new (): HlsInstance;
-  isSupported: () => boolean;
-};
+    const links = (["preconnect", "dns-prefetch"] as const).map((rel) => {
+      const selector = `link[rel="${rel}"][data-capilla-origin="${CSS.escape(url.origin)}"]`;
+      const existing = document.head.querySelector<HTMLLinkElement>(selector);
+      if (existing) return { element: existing, created: false };
 
-declare global {
-  interface Window {
-    Hls?: HlsConstructor;
+      const element = document.createElement("link");
+      element.rel = rel;
+      element.href = url.origin;
+      element.dataset.capillaOrigin = url.origin;
+      if (rel === "preconnect") element.crossOrigin = "anonymous";
+      document.head.appendChild(element);
+      return { element, created: true };
+    });
+
+    return () => links.forEach(({ element, created }) => created && element.remove());
+  } catch {
+    return () => undefined;
   }
-}
-
-let hlsScriptPromise: Promise<void> | null = null;
-
-const loadHlsScript = () => {
-  if (window.Hls) return Promise.resolve();
-  if (hlsScriptPromise) return hlsScriptPromise;
-
-  hlsScriptPromise = new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = HLS_JS_URL;
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("No se pudo cargar HLS.js"));
-    document.head.appendChild(script);
-  });
-
-  return hlsScriptPromise;
 };
 
 const youtubeEmbedUrl = (url: string) => {
@@ -81,6 +71,7 @@ export const CapillaVideo = ({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const volumePanelTimerRef = useRef<number | null>(null);
   const [streamError, setStreamError] = useState("");
+  const [isConnecting, setIsConnecting] = useState(false);
   const [muted, setMuted] = useState(true);
   const [volume, setVolume] = useState(1);
   const [isVolumePanelOpen, setIsVolumePanelOpen] = useState(false);
@@ -217,12 +208,24 @@ export const CapillaVideo = ({
     if (!useMediaElement || !videoRef.current || !streamUrl) return undefined;
 
     const video = videoRef.current;
-    let hls: HlsInstance | null = null;
+    let hls: Hls | null = null;
     let cancelled = false;
+    let fatalRecoveryAttempts = 0;
+    const startedAt = performance.now();
+    const metrics: Record<string, number> = {};
+    const removeConnectionHints = addStreamConnectionHints(streamUrl);
     setStreamError("");
+    setIsConnecting(true);
+
+    const recordMetric = (name: string) => {
+      if (!import.meta.env.DEV || metrics[name] !== undefined) return;
+      metrics[name] = Math.round(performance.now() - startedAt);
+      console.debug("[CapillaVideo] inicio HLS", { evento: name, ms: metrics[name], ...metrics });
+    };
 
     const handlePlaybackError = () => {
       if (!cancelled) {
+        setIsConnecting(false);
         setStreamError(
           "La transmisión no está disponible en este momento. Permanece en oración; Jesús sigue presente.",
         );
@@ -230,36 +233,81 @@ export const CapillaVideo = ({
     };
     const startPlayback = () => {
       if (!cancelled) {
-        void video.play().catch(handlePlaybackError);
+        void video.play().catch((error: unknown) => {
+          if (error instanceof DOMException && error.name === "NotAllowedError") {
+            setIsConnecting(false);
+            setStreamError("El navegador bloqueó la reproducción automática. Pulsa Reproducir para continuar.");
+            return;
+          }
+          handlePlaybackError();
+        });
       }
     };
 
+    const handleLoadedData = () => recordMetric("loadeddata");
+    const handleCanPlay = () => {
+      recordMetric("canplay");
+      startPlayback();
+    };
+    const handlePlaying = () => {
+      recordMetric("playing");
+      setIsConnecting(false);
+      setStreamError("");
+    };
+
     video.addEventListener("error", handlePlaybackError);
-    video.addEventListener("canplay", startPlayback);
+    video.addEventListener("loadeddata", handleLoadedData);
+    video.addEventListener("canplay", handleCanPlay);
+    video.addEventListener("playing", handlePlaying);
 
     if (isHlsStream(stream)) {
       if (video.canPlayType("application/vnd.apple.mpegurl")) {
         video.src = streamUrl;
+        recordMetric("native_source_assigned");
         video.load();
         return () => {
           cancelled = true;
           video.removeEventListener("error", handlePlaybackError);
-          video.removeEventListener("canplay", startPlayback);
+          video.removeEventListener("loadeddata", handleLoadedData);
+          video.removeEventListener("canplay", handleCanPlay);
+          video.removeEventListener("playing", handlePlaying);
+          removeConnectionHints();
           video.removeAttribute("src");
           video.load();
         };
       }
 
-      loadHlsScript()
-        .then(() => {
-          if (cancelled || !window.Hls?.isSupported()) {
+      preloadCapillaHls()
+        .then(({ default: HlsController, Events, ErrorTypes }) => {
+          if (cancelled || !HlsController.isSupported()) {
             handlePlaybackError();
             return;
           }
 
-          hls = new window.Hls();
-          hls.loadSource(streamUrl);
+          hls = new HlsController({
+            autoStartLoad: true,
+            startPosition: -1,
+            initialLiveManifestSize: 1,
+            enableWorker: true,
+            capLevelToPlayerSize: true,
+          });
+          hls.on(Events.MANIFEST_LOADING, () => recordMetric("manifest_loading"));
+          hls.on(Events.MANIFEST_PARSED, () => recordMetric("manifest_parsed"));
+          hls.on(Events.FRAG_LOADING, () => recordMetric("first_fragment_loading"));
+          hls.on(Events.FRAG_LOADED, () => recordMetric("first_fragment_loaded"));
+          hls.on(Events.ERROR, (_event, data) => {
+            if (cancelled || !data.fatal || !hls) return;
+            if (fatalRecoveryAttempts >= 1) {
+              handlePlaybackError();
+              return;
+            }
+            fatalRecoveryAttempts += 1;
+            if (data.type === ErrorTypes.NETWORK_ERROR) hls.startLoad();
+            else if (data.type === ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
+            else handlePlaybackError();
+          });
           hls.attachMedia(video);
+          hls.loadSource(streamUrl);
         })
         .catch(() => {
           handlePlaybackError();
@@ -268,7 +316,10 @@ export const CapillaVideo = ({
       return () => {
         cancelled = true;
         video.removeEventListener("error", handlePlaybackError);
-        video.removeEventListener("canplay", startPlayback);
+        video.removeEventListener("loadeddata", handleLoadedData);
+        video.removeEventListener("canplay", handleCanPlay);
+        video.removeEventListener("playing", handlePlaying);
+        removeConnectionHints();
         hls?.destroy();
         video.removeAttribute("src");
         video.load();
@@ -280,7 +331,10 @@ export const CapillaVideo = ({
     return () => {
       cancelled = true;
       video.removeEventListener("error", handlePlaybackError);
-      video.removeEventListener("canplay", startPlayback);
+      video.removeEventListener("loadeddata", handleLoadedData);
+      video.removeEventListener("canplay", handleCanPlay);
+      video.removeEventListener("playing", handlePlaying);
+      removeConnectionHints();
       video.removeAttribute("src");
       video.load();
     };
@@ -317,6 +371,12 @@ export const CapillaVideo = ({
               La transmisión no está disponible en este momento. Permanece en oración; Jesús sigue presente.
             </div>
           )}
+
+          {isConnecting && useMediaElement ? (
+            <div className="pointer-events-none absolute inset-0 grid place-items-center bg-black/25 px-6 text-center text-sm text-white/85">
+              Conectando con la capilla…
+            </div>
+          ) : null}
 
           {isFullscreen ? (
             <button
