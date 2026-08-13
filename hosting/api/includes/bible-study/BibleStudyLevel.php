@@ -37,9 +37,9 @@ final class BibleStudyLevel
         'instruction'=>'Relaciona el pasaje con la doctrina católica. Prioriza Escritura, concilios, Catecismo, Magisterio y después Padres y comentarios. No presentes opiniones académicas como enseñanza oficial ni inventes numerales.',
       ],
       'formativo' => [
-        'label'=>'Formativo','depth'=>'complete','style'=>'academic-pastoral',
+        'label'=>'Formativo','depth'=>'complete-concise','style'=>'academic-pastoral',
         'focus'=>array_keys(BibleStudySchema::jsonSchema($method)['properties']),
-        'instruction'=>'Desarrolla el formato maestro completo con profundidad académica y aplicación pastoral, de modo que sirva para preparar catequesis, clases, predicaciones y encuentros.',
+        'instruction'=>'Completa el formato maestro con precisión académica y aplicación pastoral, de modo que sirva para preparar catequesis, clases, predicaciones y encuentros. Mantén cada sección concentrada en una idea útil, evita repetir argumentos y no conviertas profundidad en extensión.',
       ],
     ];
     return ['level'=>$level] + $configs[$level];
@@ -48,6 +48,9 @@ final class BibleStudyLevel
   public static function prompt(string $level, string $method = BibleStudyMethod::DEFAULT): string
   {
     $config = self::config($level, $method);
-    return "\n\nNIVEL DE ESTUDIO\nNivel: {$config['label']}. Profundidad: {$config['depth']}. Estilo: {$config['style']}.\n{$config['instruction']}\nEl JSON conserva siempre todas las claves del formato maestro de Salmo 8 para mantener compatibilidad. Desarrolla ampliamente las claves prioritarias de este nivel. En las demás usa una síntesis breve o una colección vacía cuando no corresponda; nunca inventes contenido para completarlas.\nClaves prioritarias: ".implode(', ', $config['focus']).'.';
+    $development = $level === 'formativo'
+      ? 'Desarrolla todas las claves prioritarias de forma completa pero concisa: una idea no debe repetirse en otra sección.'
+      : 'Desarrolla ampliamente las claves prioritarias de este nivel.';
+    return "\n\nNIVEL DE ESTUDIO\nNivel: {$config['label']}. Profundidad: {$config['depth']}. Estilo: {$config['style']}.\n{$config['instruction']}\nEl JSON conserva siempre todas las claves del formato maestro de Salmo 8 para mantener compatibilidad. {$development} En las demás usa una síntesis breve o una colección vacía cuando no corresponda; nunca inventes contenido para completarlas.\nClaves prioritarias: ".implode(', ', $config['focus']).'.';
   }
 }
