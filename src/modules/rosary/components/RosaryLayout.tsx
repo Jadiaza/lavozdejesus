@@ -29,7 +29,11 @@ export const RosaryLayout = ({
       : "max-w-4xl";
 
   return (
-    <div className="relative flex min-h-dvh w-full flex-col overflow-x-hidden bg-navy-deep text-foreground">
+    <div
+      className={`relative flex w-full flex-col overflow-x-hidden bg-navy-deep text-foreground ${
+        fullScreen ? "h-dvh overflow-y-hidden" : "min-h-dvh"
+      }`}
+    >
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-radial-gold opacity-20"
         aria-hidden="true"
