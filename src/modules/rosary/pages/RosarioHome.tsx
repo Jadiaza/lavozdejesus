@@ -177,8 +177,9 @@ export const RosarioHome = () => {
                     relative flex min-h-[3.75rem] w-full
                     items-center justify-center
                     overflow-hidden rounded-[1.15rem] border border-gold-bright/55 bg-gradient-gold
-                    px-12 font-display text-[1.05rem] font-semibold uppercase
-                    tracking-[0.09em] text-navy-deep
+                    whitespace-nowrap px-9 font-display
+                    text-[clamp(0.78rem,3.7vw,1.05rem)] font-semibold uppercase
+                    tracking-[0.045em] text-navy-deep min-[390px]:tracking-[0.09em]
                     shadow-[0_14px_40px_-12px_hsl(var(--gold)/0.65)]
                     transition duration-300
                     hover:-translate-y-0.5 hover:brightness-105
@@ -209,8 +210,9 @@ export const RosarioHome = () => {
                   relative flex min-h-[3.75rem] w-full
                   items-center justify-center
                   overflow-hidden rounded-[1.15rem] border border-gold-bright/55 bg-gradient-gold
-                  px-12 font-display text-[1.05rem] font-semibold uppercase
-                  tracking-[0.09em] text-navy-deep
+                  whitespace-nowrap px-9 font-display
+                  text-[clamp(0.78rem,3.7vw,1.05rem)] font-semibold uppercase
+                  tracking-[0.045em] text-navy-deep min-[390px]:tracking-[0.09em]
                   shadow-[0_14px_40px_-12px_hsl(var(--gold)/0.65)]
                   transition duration-300
                   hover:-translate-y-0.5 hover:brightness-105
