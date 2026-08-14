@@ -83,7 +83,7 @@ export const RosaryLayout = ({
           ${maxWidth}
           ${
             fullScreen
-              ? "min-h-0 flex-1 overflow-hidden px-0 pb-[calc(5.25rem+env(safe-area-inset-bottom))] pt-0"
+              ? "h-0 min-h-0 flex-1 overflow-hidden px-0 pb-[calc(5.25rem+env(safe-area-inset-bottom))] pt-0"
               : "px-4 pb-32 pt-4"
           }
         `}
