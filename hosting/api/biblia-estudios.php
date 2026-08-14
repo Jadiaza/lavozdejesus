@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-const LVJ_BIBLE_API_BUILD = '2026-08-11-v10';
+const LVJ_BIBLE_API_BUILD = '2026-08-13-v11';
 
 function lvj_bible_api_fallback_response(array $payload, int $status): void
 {
@@ -190,6 +190,10 @@ try {
       'study' => $published,
     ]);
   }
+
+  $providerTimeout = max(180, (int) lvj_setting('BIBLE_AI_TIMEOUT', 180));
+  @set_time_limit($providerTimeout + 30);
+  ignore_user_abort(true);
 
   $result = $service->create($input, $user);
 

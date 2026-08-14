@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 final class BibleStudyService
 {
-  public const BUILD = '2026-08-11-v7';
+  public const BUILD = '2026-08-13-v8';
   public const EQUIVALENCES_PENDING_MESSAGE = 'El estudio con inteligencia artificial estará disponible cuando finalice la revisión de equivalencias bíblicas.';
   public const LEVELS_PENDING_MESSAGE = 'La estructura por niveles de estudio todavía no está disponible en la base de datos.';
   private const LANGUAGE = 'es';
@@ -44,10 +44,11 @@ final class BibleStudyService
       $this->logRequest((int) $user['id'], (int) $cached['id'], $context['referencia'], 'completada', false);
       return ['source' => 'cache', 'study' => $this->present($cached)];
     }
-    $failed = lvj_first($this->pdo, "SELECT id FROM lvj_bib_estudios_ia WHERE hash_contexto=:hash AND metodo_version=:method AND deleted_at IS NULL AND (estado='error' OR (estado='generando' AND updated_at < (UTC_TIMESTAMP() - INTERVAL 5 MINUTE))) LIMIT 1", ['hash' => $hash, 'method' => BibleStudyPrompt::METHOD]);
+    $staleBefore = $this->generationStaleBefore();
+    $failed = lvj_first($this->pdo, "SELECT id FROM lvj_bib_estudios_ia WHERE hash_contexto=:hash AND metodo_version=:method AND deleted_at IS NULL AND (estado='error' OR (estado='generando' AND updated_at < :stale_before)) LIMIT 1", ['hash' => $hash, 'method' => BibleStudyPrompt::METHOD, 'stale_before' => $staleBefore]);
     if ($failed) {
-      $this->pdo->prepare("UPDATE lvj_bib_estudios_ia SET hash_contexto=SHA2(CONCAT(hash_contexto,'|retry|',id,'|',UTC_TIMESTAMP(6)),256),estado='archivado',es_publico=0,deleted_at=NOW(),updated_at=NOW() WHERE id=:id AND (estado='error' OR (estado='generando' AND updated_at < (UTC_TIMESTAMP() - INTERVAL 5 MINUTE))) AND deleted_at IS NULL")
-        ->execute(['id' => (int) $failed['id']]);
+      $this->pdo->prepare("UPDATE lvj_bib_estudios_ia SET hash_contexto=SHA2(CONCAT(hash_contexto,'|retry|',id,'|',UTC_TIMESTAMP(6)),256),estado='archivado',es_publico=0,deleted_at=NOW(),updated_at=NOW() WHERE id=:id AND (estado='error' OR (estado='generando' AND updated_at < :stale_before)) AND deleted_at IS NULL")
+        ->execute(['id' => (int) $failed['id'], 'stale_before' => $staleBefore]);
     }
     $this->enforceQuota($user);
     $requestId = $this->logRequest((int) $user['id'], null, $context['referencia'], 'procesando', true);
@@ -150,7 +151,7 @@ final class BibleStudyService
   {
     $range = $this->normalize($input);
     $row = lvj_first($this->pdo, "SELECT estudio.*,
-        (estudio.updated_at < (UTC_TIMESTAMP() - INTERVAL 6 MINUTE)) AS generation_expired
+        (estudio.updated_at < :stale_before) AS generation_expired
       FROM lvj_bib_estudios_ia estudio
       INNER JOIN lvj_bib_libros libro ON libro.id=estudio.libro_id
       INNER JOIN lvj_bib_estudios_ia_solicitudes solicitud
@@ -170,6 +171,7 @@ final class BibleStudyService
         'vf'=>$range['versiculo_fin'],
         'level'=>$range['nivel'],
         'study_method'=>$range['metodo'],
+        'stale_before'=>$this->generationStaleBefore(),
       ]);
 
     if (!$row) return ['state'=>'not_found'];
@@ -181,6 +183,7 @@ final class BibleStudyService
       return ['state'=>'failed', 'message'=>'La generación no pudo completarse. Puedes intentarlo nuevamente.'];
     }
     if ($state === 'generando' && (int) ($row['generation_expired'] ?? 0) === 1) {
+      $this->failExpiredGeneration((int) $row['id']);
       return ['state'=>'failed', 'message'=>'La generación superó el tiempo disponible. Ya puedes intentarlo nuevamente.'];
     }
     return ['state'=>'processing'];
@@ -269,6 +272,30 @@ final class BibleStudyService
     return ['referencia'=>$ref,'libro_id'=>(int)$mainBook['id'],'rango'=>$range,'metodo'=>$range['metodo'],'configuracion_metodo'=>$methodConfig,'nivel'=>$range['nivel'],'configuracion_nivel'=>BibleStudyLevel::config($range['nivel'], $range['metodo']),'versiones'=>$versions,'contenido_tematico'=>$themeRows,'metadata'=>['idioma'=>self::LANGUAGE,'esquema_version'=>$methodConfig['schema'],'modelo_referencia'=>$methodConfig['model_reference'],'tecnicas'=>$methodConfig['techniques'],'texto_version'=>$textVersion,'notas_version'=>$notesVersion],'metodo_version'=>BibleStudyPrompt::METHOD];
   }
 
+  private function generationStaleBefore(): string
+  {
+    $providerTimeout = max(180, (int) lvj_setting('BIBLE_AI_TIMEOUT', 180));
+    $staleAfterSeconds = max(240, $providerTimeout + 60);
+    return gmdate('Y-m-d H:i:s', time() - $staleAfterSeconds);
+  }
+
+  private function failExpiredGeneration(int $studyId): void
+  {
+    $message = 'La generación superó el tiempo disponible.';
+    $this->pdo->beginTransaction();
+    try {
+      $study = $this->pdo->prepare("UPDATE lvj_bib_estudios_ia SET estado='error',error_mensaje=:error,updated_at=NOW() WHERE id=:id AND estado='generando'");
+      $study->execute(['error'=>$message, 'id'=>$studyId]);
+      if ($study->rowCount() > 0) {
+        $request = $this->pdo->prepare("UPDATE lvj_bib_estudios_ia_solicitudes SET estado='error',consume_cupo=0,error_mensaje=:error,completed_at=NOW() WHERE estudio_id=:study AND estado='procesando'");
+        $request->execute(['error'=>$message, 'study'=>$studyId]);
+      }
+      $this->pdo->commit();
+    } catch (Throwable $error) {
+      if ($this->pdo->inTransaction()) $this->pdo->rollBack();
+      throw $error;
+    }
+  }
   private function enforceQuota(array $user): void { $email=mb_strtolower(trim((string)($user['correo']??$user['email']??''))); $unlimited=array_filter(array_map(static function($value) {
     return mb_strtolower(trim($value));
   },explode(',',(string)lvj_setting('BIBLE_AI_UNLIMITED_EMAILS','lavozdejesusco@gmail.com,lavozdejesus.co@gmail.com,lenis4842@gmail.com')))); if($email!==''&&in_array($email,$unlimited,true))return; $limit=max(1,(int) lvj_setting('BIBLE_AI_FREE_REQUESTS_PER_MONTH',3)); $s=$this->pdo->prepare("SELECT COUNT(*) FROM lvj_bib_estudios_ia_solicitudes WHERE usuario_id=:user AND consume_cupo=1 AND estado='completada' AND created_at>=DATE_FORMAT(UTC_TIMESTAMP(),'%Y-%m-01')"); $s->execute(['user'=>(int)$user['id']]); if((int)$s->fetchColumn()>=$limit) throw new RuntimeException('Has utilizado tus estudios nuevos disponibles para este mes.'); }

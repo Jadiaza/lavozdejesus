@@ -24,6 +24,13 @@ export interface BibleStudyRequest {
 
 const GENERATION_INTERRUPTED = "BIBLE_STUDY_GENERATION_INTERRUPTED";
 
+class BibleStudyApiError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+    this.name = "BibleStudyApiError";
+  }
+}
+
 const baseUrl = ((import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "https://lavozdejesus.co").trim().replace(/\/+$/, "");
 const apiUrl = (import.meta.env.VITE_BIBLE_STUDY_API_URL as string | undefined)?.trim() || `${baseUrl}/api/biblia-estudios.php`;
 async function token(forceRefresh = false): Promise<string | null> {
@@ -70,8 +77,16 @@ async function fetchWithNetworkRetry(input: RequestInfo | URL, init?: RequestIni
     : "No se pudo conectar con el servidor. Verifica tu conexión a internet e intenta nuevamente.");
 }
 
+export function isRecoverableBibleStudyStatus(status: number): boolean {
+  return [409, 500, 502, 503, 504, 522, 524].includes(status);
+}
+
 export function isInterruptedBibleStudyGeneration(error: unknown): boolean {
-  return error instanceof Error && error.message === GENERATION_INTERRUPTED;
+  return error instanceof Error && (
+    error.message === GENERATION_INTERRUPTED
+    || (error instanceof BibleStudyApiError
+      && isRecoverableBibleStudyStatus(error.status))
+  );
 }
 
 export function matchesBibleStudyRequest(study: BibleStudy, input: BibleStudyRequest): boolean {
@@ -100,6 +115,7 @@ export async function recoverGeneratedBibleStudy(
   const attempts = Math.max(1, options.attempts ?? 42);
   const intervalMs = Math.max(1_000, options.intervalMs ?? 10_000);
   let consecutiveFailedChecks = 0;
+  let consecutiveNotFoundChecks = 0;
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     if (options.signal?.aborted) throw new DOMException("Operación cancelada", "AbortError");
     if (attempt > 0) await wait(intervalMs, options.signal);
@@ -119,7 +135,15 @@ export async function recoverGeneratedBibleStudy(
       }
       continue;
     }
+    if (generation?.state === "not_found") {
+      consecutiveNotFoundChecks += 1;
+      if (consecutiveNotFoundChecks >= 3) {
+        throw new Error("El servidor no llegó a registrar la generación. Ya puedes intentarlo nuevamente.");
+      }
+      continue;
+    }
     consecutiveFailedChecks = 0;
+    consecutiveNotFoundChecks = 0;
   }
   return null;
 }
@@ -128,7 +152,7 @@ async function parse(response: Response): Promise<StudyResponse> {
   if (!response.ok || !payload?.success) {
     const message = payload?.message || "No fue posible generar el estudio en este momento.";
     const trace = payload?.error_id ? ` Código de seguimiento: ${payload.error_id}.` : "";
-    throw new Error(message + trace);
+    throw new BibleStudyApiError(message + trace, response.status);
   }
   return payload;
 }
