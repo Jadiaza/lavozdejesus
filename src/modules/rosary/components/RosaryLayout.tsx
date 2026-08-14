@@ -42,7 +42,7 @@ export const RosaryLayout = ({
           <Link
             to={back}
             aria-label="Volver"
-            className={`flex shrink-0 items-center justify-center rounded-full text-gold transition hover:bg-gold/10 hover:text-gold-bright active:scale-95 ${fullScreen ? "h-11 w-11 border border-gold/20 bg-white/[0.025] shadow-[0_10px_30px_rgba(0,0,0,0.24)]" : "h-14 w-14 border border-gold bg-navy-deep"}`}
+            className={`flex shrink-0 items-center justify-center rounded-full text-gold transition hover:bg-gold/10 hover:text-gold-bright active:scale-95 ${fullScreen ? "h-11 w-11 border border-transparent bg-transparent" : "h-14 w-14 border border-gold bg-navy-deep"}`}
           >
             <ArrowLeft
               className="h-6 w-6"
@@ -83,7 +83,7 @@ export const RosaryLayout = ({
           ${maxWidth}
           ${
             fullScreen
-              ? "min-h-0 flex-1 overflow-hidden px-0 pb-[max(1rem,env(safe-area-inset-bottom))] pt-0"
+              ? "min-h-0 flex-1 overflow-hidden px-0 pb-[calc(5.25rem+env(safe-area-inset-bottom))] pt-0"
               : "px-4 pb-32 pt-4"
           }
         `}

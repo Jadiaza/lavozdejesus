@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { CalendarDays, ChevronRight } from "lucide-react";
+import { BookOpen, CalendarDays, ChevronRight, CircleDotDashed, Home, Radio, Settings, UserRound } from "lucide-react";
 
 import { RosaryLayout } from "../components/RosaryLayout";
 import { RosaryLoading } from "../components/RosaryStateViews";
@@ -92,6 +92,15 @@ export const RosarioHome = () => {
       title="Oración Mariana"
       subtitle={season}
       back="/"
+      actions={
+        <Link
+          to="/rosario/configuracion"
+          aria-label="Configuración del Rosario"
+          className="flex h-11 w-11 items-center justify-center text-gold transition hover:text-gold-bright active:scale-95"
+        >
+          <Settings className="h-7 w-7" strokeWidth={1.55} aria-hidden="true" />
+        </Link>
+      }
       fullScreen
     >
       {today.status === "loading" ? (
@@ -107,10 +116,10 @@ export const RosarioHome = () => {
           aria-labelledby="rosary-today-title"
         >
           {/* Información del día */}
-          <div className="relative z-20 shrink-0 px-6 pb-4 pt-3 text-center">
-            <p className="flex items-center justify-center gap-2 text-[11px] font-medium tracking-[0.06em] text-foreground/60">
+          <div className="relative z-20 shrink-0 px-6 pb-3 pt-4 text-center">
+            <p className="flex items-center justify-center gap-3 font-display text-[1.05rem] text-foreground/80">
               <CalendarDays
-                className="h-4 w-4 text-gold/80"
+                className="h-5 w-5 text-gold"
                 strokeWidth={1.7}
                 aria-hidden="true"
               />
@@ -121,8 +130,8 @@ export const RosarioHome = () => {
             <h2
               id="rosary-today-title"
               className="
-                mt-3 font-display text-[2.35rem] font-semibold
-                leading-[0.92] tracking-[-0.035em]
+                mt-4 font-display text-[2.55rem] font-semibold
+                leading-[0.9] tracking-[-0.04em]
                 text-gold-bright
                 drop-shadow-[0_4px_18px_rgba(212,175,55,0.18)]
                 sm:text-[2.75rem]
@@ -132,7 +141,7 @@ export const RosarioHome = () => {
             </h2>
 
             <div
-              className="mx-auto mt-4 flex max-w-[14rem] items-center gap-3"
+              className="mx-auto mt-5 flex max-w-[14rem] items-center gap-3"
               aria-hidden="true"
             >
               <span className="h-px flex-1 bg-gradient-to-r from-transparent to-gold/70" />
@@ -140,19 +149,19 @@ export const RosarioHome = () => {
               <span className="h-px flex-1 bg-gradient-to-l from-transparent to-gold/70" />
             </div>
 
-            <p className="mx-auto mt-3 max-w-[21rem] font-display text-[1.05rem] leading-6 text-foreground/80">
+            <p className="mx-auto mt-4 max-w-[21rem] font-display text-[1.15rem] leading-6 text-foreground/90">
               {groupData.description}
             </p>
           </div>
 
           {/* Imagen que ocupa el espacio disponible */}
-          <div className="relative min-h-[14rem] flex-1 overflow-hidden">
+          <div className="relative min-h-[16rem] flex-1 overflow-hidden">
             <img
               src={mysteryArt[group]}
               alt={`Representación artística de los ${groupData.name}`}
               width={1024}
               height={800}
-              className="h-full min-h-[14rem] w-full scale-[1.02] object-cover object-center opacity-95"
+              className="h-full min-h-[16rem] w-full scale-[1.03] object-cover object-center opacity-95"
             />
 
             <div
@@ -168,19 +177,28 @@ export const RosarioHome = () => {
               className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,transparent_20%,hsl(var(--navy-deep)/0.12)_58%,hsl(var(--navy-deep)/0.72)_100%)]"
               aria-hidden="true"
             />
+
+            <blockquote className="absolute inset-x-6 bottom-3 z-10 text-center font-display">
+              <p className="text-[1.15rem] italic leading-6 text-foreground drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                <span className="mr-2 text-3xl not-italic leading-none text-gold/75">“</span>
+                He aquí la esclava del Señor; hágase en mí según tu palabra.
+                <span className="ml-0.5">”</span>
+              </p>
+              <cite className="mt-1 block text-sm not-italic text-gold-bright">Lucas 1,38</cite>
+            </blockquote>
           </div>
 
           {/* Acciones */}
-          <div className="relative z-20 shrink-0 bg-gradient-to-b from-transparent via-navy-deep/85 to-navy-deep px-6 pb-5 pt-2">
+          <div className="relative z-20 shrink-0 bg-gradient-to-b from-transparent via-navy-deep/90 to-navy-deep px-6 pb-3 pt-3">
             {hasPendingSession && resume ? (
               <>
                 <Link
                   to={`${routeForMode(resume.mode)}?grupo=${resume.group}`}
                   className="
-                    relative flex min-h-14 w-full
+                    relative flex min-h-[3.75rem] w-full
                     items-center justify-center
                     overflow-hidden rounded-[1.15rem] border border-gold-bright/55 bg-gradient-gold
-                    px-12 text-sm font-semibold uppercase
+                    px-12 font-display text-[1.05rem] font-semibold uppercase
                     tracking-[0.09em] text-navy-deep
                     shadow-[0_14px_40px_-12px_hsl(var(--gold)/0.65)]
                     transition duration-300
@@ -216,10 +234,10 @@ export const RosarioHome = () => {
                 type="button"
                 onClick={startFlow}
                 className="
-                  relative flex min-h-14 w-full
+                  relative flex min-h-[3.75rem] w-full
                   items-center justify-center
                   overflow-hidden rounded-[1.15rem] border border-gold-bright/55 bg-gradient-gold
-                  px-12 text-sm font-semibold uppercase
+                  px-12 font-display text-[1.05rem] font-semibold uppercase
                   tracking-[0.09em] text-navy-deep
                   shadow-[0_14px_40px_-12px_hsl(var(--gold)/0.65)]
                   transition duration-300
@@ -257,6 +275,33 @@ export const RosarioHome = () => {
           </div>
         </section>
       )}
+
+      <nav
+        aria-label="Navegación principal"
+        className="fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-[430px] border-t border-gold/25 bg-navy-deep/95 pb-[max(0.45rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl"
+      >
+        <div className="flex items-end justify-around px-2">
+          {[
+            { label: "Inicio", to: "/", icon: Home },
+            { label: "Radio", to: "/radio", icon: Radio },
+            { label: "Biblia", to: "/biblia", icon: BookOpen },
+            { label: "Rosario", to: "/rosario", icon: CircleDotDashed, active: true },
+            { label: "Perfil", to: "/acceso", icon: UserRound },
+          ].map((item) => (
+            <Link
+              key={item.label}
+              to={item.to}
+              className={`relative flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-1 font-display ${item.active ? "text-gold-bright" : "text-foreground/55"}`}
+            >
+              {item.active ? (
+                <span className="absolute -top-2 h-1 w-10 rounded-full bg-gold-bright shadow-[0_0_16px_hsl(var(--gold)/0.6)]" />
+              ) : null}
+              <item.icon className="h-6 w-6" strokeWidth={item.active ? 2 : 1.55} aria-hidden="true" />
+              <span className="text-[11px]">{item.label}</span>
+            </Link>
+          ))}
+        </div>
+      </nav>
     </RosaryLayout>
   );
 };
