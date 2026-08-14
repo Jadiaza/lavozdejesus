@@ -93,15 +93,14 @@ export const RosarioHome = () => {
       ) : (
         <section
           className="
-            relative flex h-full min-h-0 flex-col overflow-hidden
-            bg-[linear-gradient(180deg,hsl(var(--navy-deep))_0%,hsl(var(--navy))_54%,hsl(var(--navy-deep))_100%)]
+            relative h-full min-h-0 overflow-hidden bg-navy-deep
           "
           aria-labelledby="rosary-today-title"
         >
-          <div className="relative z-20 shrink-0 px-6 pb-3 pt-4 text-center">
-            <p className="flex items-center justify-center gap-3 font-display text-[1.05rem] text-foreground/80">
+          <div className="absolute inset-x-0 top-0 z-20 px-6 pb-6 pt-5 text-center">
+            <p className="flex items-center justify-center gap-2.5 font-display text-[0.95rem] text-foreground/80 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
               <CalendarDays
-                className="h-5 w-5 text-gold"
+                className="h-4 w-4 text-gold"
                 strokeWidth={1.7}
                 aria-hidden="true"
               />
@@ -111,7 +110,7 @@ export const RosarioHome = () => {
             <h2
               id="rosary-today-title"
               className="
-                mt-4 font-display text-[2.55rem] font-semibold
+                mt-3 font-display text-[2.35rem] font-semibold
                 leading-[0.9] tracking-[-0.04em]
                 text-gold-bright
                 drop-shadow-[0_4px_18px_rgba(212,175,55,0.18)]
@@ -122,7 +121,7 @@ export const RosarioHome = () => {
             </h2>
 
             <div
-              className="mx-auto mt-5 flex max-w-[14rem] items-center gap-3"
+              className="mx-auto mt-3.5 flex max-w-[13rem] items-center gap-3"
               aria-hidden="true"
             >
               <span className="h-px flex-1 bg-gradient-to-r from-transparent to-gold/70" />
@@ -130,26 +129,26 @@ export const RosarioHome = () => {
               <span className="h-px flex-1 bg-gradient-to-l from-transparent to-gold/70" />
             </div>
 
-            <p className="mx-auto mt-4 max-w-[21rem] font-display text-[1.15rem] leading-6 text-foreground/90">
+            <p className="mx-auto mt-3 max-w-[20rem] font-display text-[1rem] leading-5 text-foreground/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
               {groupData.description}
             </p>
           </div>
 
-          <div className="relative min-h-[16rem] flex-1 overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden">
             <img
               src={mysteryArt[group]}
               alt={`Representación artística de los ${groupData.name}`}
               width={1024}
               height={800}
-              className="h-full min-h-[16rem] w-full scale-[1.03] object-cover object-center opacity-95"
+              className="h-full w-full scale-[1.03] object-cover object-center opacity-95"
             />
 
             <div
-              className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-navy-deep via-navy-deep/50 to-transparent"
+              className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-navy-deep via-navy-deep/70 to-transparent"
               aria-hidden="true"
             />
             <div
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-navy-deep via-navy-deep/65 to-transparent"
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-80 bg-gradient-to-t from-navy-deep via-navy-deep/70 to-transparent"
               aria-hidden="true"
             />
             <div
@@ -157,19 +156,19 @@ export const RosarioHome = () => {
               aria-hidden="true"
             />
 
-            <blockquote className="absolute inset-x-6 bottom-3 z-10 text-center font-display">
-              <p className="text-[1.15rem] italic leading-6 text-foreground drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-                <span className="mr-2 text-3xl not-italic leading-none text-gold/75">“</span>
+            <blockquote className="absolute inset-x-7 bottom-[9.25rem] z-10 text-center font-display">
+              <p className="text-[clamp(0.95rem,4vw,1.15rem)] italic leading-5 text-foreground drop-shadow-[0_2px_9px_rgba(0,0,0,0.95)]">
+                <span className="mr-1.5 text-2xl not-italic leading-none text-gold/75">“</span>
                 {representativeVerse.text}
                 <span className="ml-0.5">”</span>
               </p>
-              <cite className="mt-1 block text-sm not-italic text-gold-bright">
+              <cite className="mt-1.5 block text-[13px] not-italic text-gold-bright">
                 {representativeVerse.reference}
               </cite>
             </blockquote>
           </div>
 
-          <div className="relative z-20 shrink-0 bg-gradient-to-b from-transparent via-navy-deep/90 to-navy-deep px-6 pb-3 pt-3">
+          <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-b from-transparent via-navy-deep/85 to-navy-deep px-6 pb-3 pt-8">
             {hasPendingSession && resume ? (
               <>
                 <Link
