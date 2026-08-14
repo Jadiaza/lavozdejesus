@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-const LVJ_BIBLE_API_BUILD = '2026-08-13-v11';
+const LVJ_BIBLE_API_BUILD = '2026-08-14-v12';
 
 function lvj_bible_api_fallback_response(array $payload, int $status): void
 {
@@ -197,12 +197,14 @@ try {
 
   $result = $service->create($input, $user);
 
+  $processing = $result['source'] === 'processing';
   lvj_json_response([
     'success' => true,
     'api_build' => LVJ_BIBLE_API_BUILD,
     'source' => $result['source'],
     'study' => $result['study'],
-  ], $result['source'] === 'generated' ? 201 : 200);
+    'generation' => $processing ? ['state'=>'processing'] : null,
+  ], $processing ? 202 : ($result['source'] === 'generated' ? 201 : 200));
 } catch (LengthException | InvalidArgumentException $error) {
   lvj_bible_api_log($error, $errorId);
 

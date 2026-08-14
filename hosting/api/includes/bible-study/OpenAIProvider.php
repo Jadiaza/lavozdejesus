@@ -8,21 +8,79 @@ final class OpenAIProvider implements BibleStudyAiProviderInterface
 
   public function generateStudy(array $context): array
   {
+    $response = HttpJsonClient::post(
+      'https://api.openai.com/v1/responses',
+      $this->headers($context),
+      $this->requestBody($context, false),
+      $this->timeout
+    );
+    return $this->complete($response, $context);
+  }
+
+  public function startBackgroundStudy(array $context): array
+  {
+    $response = HttpJsonClient::post(
+      'https://api.openai.com/v1/responses',
+      $this->headers($context),
+      $this->requestBody($context, true),
+      min(60, $this->timeout)
+    );
+    $responseId = trim((string) ($response['id'] ?? ''));
+    if (!preg_match('/^resp_[A-Za-z0-9_-]+$/', $responseId)) {
+      throw new RuntimeException('OpenAI no devolvió un identificador de generación válido.');
+    }
+    return [
+      'response_id' => $responseId,
+      'status' => (string) ($response['status'] ?? 'queued'),
+      'model' => (string) ($response['model'] ?? $this->model),
+    ];
+  }
+
+  public function retrieveBackgroundStudy(string $responseId, array $context): array
+  {
+    if (!preg_match('/^resp_[A-Za-z0-9_-]+$/', $responseId)) {
+      throw new InvalidArgumentException('Identificador de generación no válido.');
+    }
+    $response = HttpJsonClient::get(
+      'https://api.openai.com/v1/responses/' . rawurlencode($responseId),
+      ['Authorization: Bearer ' . $this->key, 'Content-Type: application/json'],
+      min(60, $this->timeout)
+    );
+    $status = (string) ($response['status'] ?? '');
+    if (in_array($status, ['queued', 'in_progress'], true)) {
+      return ['state' => 'processing', 'status' => $status];
+    }
+    if ($status !== 'completed') {
+      $reason = (string) (
+        $response['incomplete_details']['reason']
+        ?? $response['error']['message']
+        ?? $status
+        ?: 'desconocido'
+      );
+      return ['state' => 'failed', 'message' => 'OpenAI no pudo completar el estudio. Motivo: ' . mb_substr($reason, 0, 700) . '.'];
+    }
+    return ['state' => 'completed', 'result' => $this->complete($response, $context)];
+  }
+
+  private function headers(array $context): array
+  {
+    return [
+      'Authorization: Bearer ' . $this->key,
+      'Content-Type: application/json',
+      'X-Client-Request-Id: lvj-study-' . substr(hash('sha256', json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)), 0, 32),
+    ];
+  }
+
+  private function requestBody(array $context, bool $background): array
+  {
     $method = (string) ($context['metodo'] ?? BibleStudyMethod::DEFAULT);
     $isIntegral = $method === 'integral_lvj';
     $verseCount = count($context['versiones']['platense']['versiculos'] ?? []);
     $outputTokens = $this->maxTokens;
     if ($isIntegral && $verseCount > 0) {
-      $proportionalLimit = $verseCount <= 3
-        ? 16000
-        : ($verseCount <= 10 ? 28000 : 48000);
-      $outputTokens = min($this->maxTokens, $proportionalLimit);
+      $outputTokens = min($this->maxTokens, $verseCount <= 3 ? 16000 : ($verseCount <= 10 ? 28000 : 48000));
     }
-    $clientRequestId = 'lvj-study-' . substr(hash(
-      'sha256',
-      json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
-    ), 0, 32);
-    $textConfiguration = [
+    $text = [
       'format' => [
         'type' => 'json_schema',
         'name' => 'bible_study',
@@ -30,34 +88,34 @@ final class OpenAIProvider implements BibleStudyAiProviderInterface
         'schema' => BibleStudySchema::jsonSchema($method, $context),
       ],
     ];
-    if ($isIntegral) $textConfiguration['verbosity'] = 'low';
-
+    if ($isIntegral) $text['verbosity'] = 'low';
     $body = [
       'model' => $this->model,
-      'instructions' => BibleStudyPrompt::system(
-        $method,
-        (string) ($context['nivel'] ?? BibleStudyLevel::DEFAULT)
-      ),
+      'instructions' => BibleStudyPrompt::system($method, (string) ($context['nivel'] ?? BibleStudyLevel::DEFAULT)),
       'input' => json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
       'max_output_tokens' => $outputTokens,
-      'text' => $textConfiguration,
+      'text' => $text,
     ];
     if ($isIntegral) $body['reasoning'] = ['effort' => 'none'];
+    if ($background) $body['background'] = true;
+    return $body;
+  }
 
-    $response = HttpJsonClient::post('https://api.openai.com/v1/responses', [
-      'Authorization: Bearer ' . $this->key, 'Content-Type: application/json',
-      'X-Client-Request-Id: ' . $clientRequestId,
-    ], $body, $this->timeout);
+  private function complete(array $response, array $context): array
+  {
     self::assertCompleteResponse($response);
     $text = self::extractOpenAIText($response);
     $study = json_decode(self::normalizeJsonText($text), true);
     if (!is_array($study)) throw new RuntimeException('OpenAI no devolvió JSON válido.');
     $study = BibleStudySchema::prepareGenerated($study, $context);
     BibleStudySchema::validate($study, $context);
-    return ['study' => $study, 'input_tokens' => $response['usage']['input_tokens'] ?? null,
-      'output_tokens' => $response['usage']['output_tokens'] ?? null, 'model' => $this->model];
+    return [
+      'study' => $study,
+      'input_tokens' => $response['usage']['input_tokens'] ?? null,
+      'output_tokens' => $response['usage']['output_tokens'] ?? null,
+      'model' => (string) ($response['model'] ?? $this->model),
+    ];
   }
-
   private static function assertCompleteResponse(array $response): void
   {
     if (($response['status'] ?? '') !== 'incomplete') {

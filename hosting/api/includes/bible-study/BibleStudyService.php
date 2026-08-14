@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 final class BibleStudyService
 {
-  public const BUILD = '2026-08-13-v8';
+  public const BUILD = '2026-08-14-v9';
   public const EQUIVALENCES_PENDING_MESSAGE = 'El estudio con inteligencia artificial estará disponible cuando finalice la revisión de equivalencias bíblicas.';
   public const LEVELS_PENDING_MESSAGE = 'La estructura por niveles de estudio todavía no está disponible en la base de datos.';
   private const LANGUAGE = 'es';
@@ -73,6 +73,14 @@ final class BibleStudyService
     }
     try {
       $provider = BibleStudyProviderFactory::make();
+      if ($provider instanceof OpenAIProvider) {
+        $started = $provider->startBackgroundStudy($context);
+        $pendingJson = json_encode(['_generation'=>['provider'=>'openai','response_id'=>$started['response_id'],'status'=>$started['status'],'started_at'=>gmdate('c')]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        $this->refreshConnection();
+        $this->pdo->prepare("UPDATE lvj_bib_estudios_ia SET proveedor_ia='openai',modelo_ia=:model,contenido_json=:json,error_mensaje=NULL,updated_at=NOW() WHERE id=:id AND estado='generando'")
+          ->execute(['model'=>$started['model'], 'json'=>$pendingJson, 'id'=>$studyId]);
+        return ['source'=>'processing', 'study'=>null];
+      }
       $generated = $provider->generateStudy($context);
       $this->refreshConnection();
       $json = json_encode($generated['study'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
@@ -182,6 +190,10 @@ final class BibleStudyService
     if ($state === 'error') {
       return ['state'=>'failed', 'message'=>'La generación no pudo completarse. Puedes intentarlo nuevamente.'];
     }
+    if ($state === 'generando') {
+      $refreshed = $this->refreshBackgroundGeneration($row, $range);
+      if ($refreshed !== null) return $refreshed;
+    }
     if ($state === 'generando' && (int) ($row['generation_expired'] ?? 0) === 1) {
       $this->failExpiredGeneration((int) $row['id']);
       return ['state'=>'failed', 'message'=>'La generación superó el tiempo disponible. Ya puedes intentarlo nuevamente.'];
@@ -272,10 +284,58 @@ final class BibleStudyService
     return ['referencia'=>$ref,'libro_id'=>(int)$mainBook['id'],'rango'=>$range,'metodo'=>$range['metodo'],'configuracion_metodo'=>$methodConfig,'nivel'=>$range['nivel'],'configuracion_nivel'=>BibleStudyLevel::config($range['nivel'], $range['metodo']),'versiones'=>$versions,'contenido_tematico'=>$themeRows,'metadata'=>['idioma'=>self::LANGUAGE,'esquema_version'=>$methodConfig['schema'],'modelo_referencia'=>$methodConfig['model_reference'],'tecnicas'=>$methodConfig['techniques'],'texto_version'=>$textVersion,'notas_version'=>$notesVersion],'metodo_version'=>BibleStudyPrompt::METHOD];
   }
 
+  private function refreshBackgroundGeneration(array $row, array $range): ?array
+  {
+    $pending = json_decode((string) ($row['contenido_json'] ?? '{}'), true);
+    $generation = is_array($pending) && is_array($pending['_generation'] ?? null) ? $pending['_generation'] : null;
+    $responseId = trim((string) ($generation['response_id'] ?? ''));
+    if (($generation['provider'] ?? '') !== 'openai' || $responseId === '') return null;
+    $provider = BibleStudyProviderFactory::make();
+    if (!$provider instanceof OpenAIProvider) return null;
+    $result = $provider->retrieveBackgroundStudy($responseId, $this->context($range));
+    if (($result['state'] ?? '') === 'processing') return ['state'=>'processing'];
+    if (($result['state'] ?? '') === 'failed') {
+      $this->failGeneration((int) $row['id'], mb_substr((string) ($result['message'] ?? 'La generación no pudo completarse.'), 0, 1000));
+      return ['state'=>'failed', 'message'=>'La generación no pudo completarse. Puedes intentarlo nuevamente.'];
+    }
+    $generated = $result['result'] ?? null;
+    if (!is_array($generated) || !is_array($generated['study'] ?? null)) throw new RuntimeException('OpenAI devolvió una generación completada sin contenido válido.');
+    $json = json_encode($generated['study'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+    $this->pdo->beginTransaction();
+    try {
+      $update = $this->pdo->prepare("UPDATE lvj_bib_estudios_ia SET titulo=:titulo,proveedor_ia='openai',modelo_ia=:model,contenido_json=:json,estado='revision',tokens_entrada=:tin,tokens_salida=:tout,error_mensaje=NULL,updated_at=NOW() WHERE id=:id AND estado='generando'");
+      $update->execute(['titulo'=>$generated['study']['titulo'],'model'=>$generated['model'],'json'=>$json,'tin'=>$generated['input_tokens'],'tout'=>$generated['output_tokens'],'id'=>(int) $row['id']]);
+      if ($update->rowCount() > 0) {
+        $this->pdo->prepare("UPDATE lvj_bib_estudios_ia_solicitudes SET estado='completada',error_mensaje=NULL,completed_at=NOW() WHERE estudio_id=:study AND estado='procesando'")->execute(['study'=>(int) $row['id']]);
+      }
+      $this->pdo->commit();
+    } catch (Throwable $error) {
+      if ($this->pdo->inTransaction()) $this->pdo->rollBack();
+      throw $error;
+    }
+    $completed = lvj_first($this->pdo, 'SELECT * FROM lvj_bib_estudios_ia WHERE id=:id AND deleted_at IS NULL', ['id'=>(int) $row['id']]);
+    return $completed && in_array((string) $completed['estado'], ['revision','publicado'], true) ? ['state'=>'completed', 'study'=>$this->present($completed)] : ['state'=>'processing'];
+  }
+
+  private function failGeneration(int $studyId, string $message): void
+  {
+    $this->pdo->beginTransaction();
+    try {
+      $study = $this->pdo->prepare("UPDATE lvj_bib_estudios_ia SET estado='error',error_mensaje=:error,updated_at=NOW() WHERE id=:id AND estado='generando'");
+      $study->execute(['error'=>$message, 'id'=>$studyId]);
+      if ($study->rowCount() > 0) {
+        $this->pdo->prepare("UPDATE lvj_bib_estudios_ia_solicitudes SET estado='error',consume_cupo=0,error_mensaje=:error,completed_at=NOW() WHERE estudio_id=:study AND estado='procesando'")->execute(['error'=>$message, 'study'=>$studyId]);
+      }
+      $this->pdo->commit();
+    } catch (Throwable $error) {
+      if ($this->pdo->inTransaction()) $this->pdo->rollBack();
+      throw $error;
+    }
+  }
   private function generationStaleBefore(): string
   {
     $providerTimeout = max(180, (int) lvj_setting('BIBLE_AI_TIMEOUT', 180));
-    $staleAfterSeconds = max(240, $providerTimeout + 60);
+    $staleAfterSeconds = max(600, $providerTimeout + 120);
     return gmdate('Y-m-d H:i:s', time() - $staleAfterSeconds);
   }
 

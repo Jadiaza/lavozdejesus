@@ -15,7 +15,7 @@ interface BibleStudyGenerationStatus {
   study?: BibleStudy;
   message?: string;
 }
-interface StudyResponse { success: boolean; source?: "cache" | "generated"; study?: BibleStudy; studies?: BibleStudy[]; generation?: BibleStudyGenerationStatus; configured?: boolean; ready?: boolean; message?: string; error_id?: string; }
+interface StudyResponse { success: boolean; source?: "cache" | "generated" | "processing"; study?: BibleStudy; studies?: BibleStudy[]; generation?: BibleStudyGenerationStatus; configured?: boolean; ready?: boolean; message?: string; error_id?: string; }
 
 export interface BibleStudyRequest {
   libro_codigo: string; capitulo_inicio: number; versiculo_inicio: number;
@@ -112,7 +112,7 @@ export async function recoverGeneratedBibleStudy(
   input: BibleStudyRequest,
   options: { signal?: AbortSignal; attempts?: number; intervalMs?: number } = {},
 ): Promise<BibleStudy | null> {
-  const attempts = Math.max(1, options.attempts ?? 42);
+  const attempts = Math.max(1, options.attempts ?? 60);
   const intervalMs = Math.max(1_000, options.intervalMs ?? 10_000);
   let consecutiveFailedChecks = 0;
   let consecutiveNotFoundChecks = 0;
@@ -179,5 +179,8 @@ export async function createBibleStudy(input: BibleStudyRequest) {
   const response = await authenticatedFetch(apiUrl, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(input) });
   if (response.status === 401) throw new Error("AUTH_REQUIRED");
   const payload = await parse(response);
+  if (payload.generation?.state === "processing" || payload.source === "processing") {
+    throw new Error(GENERATION_INTERRUPTED);
+  }
   if (!payload.study) throw new Error("El estudio no está disponible."); return payload.study;
 }
