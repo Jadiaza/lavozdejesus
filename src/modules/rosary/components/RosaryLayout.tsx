@@ -35,14 +35,14 @@ export const RosaryLayout = ({
         aria-hidden="true"
       />
 
-      <header className="sticky top-0 z-40 shrink-0 border-b border-gold/15 bg-navy-deep/95 backdrop-blur-xl">
+      <header className={`sticky top-0 z-40 shrink-0 backdrop-blur-xl ${fullScreen ? "bg-gradient-to-b from-navy-deep via-navy-deep/95 to-navy-deep/80" : "border-b border-gold/15 bg-navy-deep/95"}`}>
         <div
-          className={`mx-auto flex min-h-[88px] w-full items-center gap-4 px-4 py-3 ${maxWidth}`}
+          className={`mx-auto flex w-full items-center gap-3 px-5 ${fullScreen ? "min-h-[104px] pb-3 pt-5" : "min-h-[88px] py-3"} ${maxWidth}`}
         >
           <Link
             to={back}
             aria-label="Volver"
-            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-gold bg-navy-deep text-foreground transition hover:bg-gold/10 hover:text-gold active:scale-95"
+            className={`flex shrink-0 items-center justify-center rounded-full text-gold transition hover:bg-gold/10 hover:text-gold-bright active:scale-95 ${fullScreen ? "h-11 w-11 border border-gold/20 bg-white/[0.025] shadow-[0_10px_30px_rgba(0,0,0,0.24)]" : "h-14 w-14 border border-gold bg-navy-deep"}`}
           >
             <ArrowLeft
               className="h-6 w-6"
@@ -52,16 +52,16 @@ export const RosaryLayout = ({
           </Link>
 
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[11px] font-semibold uppercase tracking-[0.25em] text-gold">
+            <p className={`truncate font-semibold uppercase text-gold ${fullScreen ? "text-[10px] tracking-[0.34em]" : "text-[11px] tracking-[0.25em]"}`}>
               Santo Rosario
             </p>
 
-            <h1 className="mt-1 truncate font-display text-2xl font-semibold leading-none text-foreground">
+            <h1 className={`mt-1 truncate font-display font-semibold leading-none text-foreground ${fullScreen ? "text-[1.7rem] tracking-[-0.02em]" : "text-2xl"}`}>
               {title}
             </h1>
 
             {subtitle ? (
-              <p className="mt-1 truncate text-xs font-medium text-gold/80">
+              <p className={`mt-1 truncate font-medium text-gold/80 ${fullScreen ? "text-[11px] tracking-wide" : "text-xs"}`}>
                 {subtitle}
               </p>
             ) : null}
@@ -71,6 +71,8 @@ export const RosaryLayout = ({
             <div className="ml-auto flex shrink-0 items-center gap-2">
               {actions}
             </div>
+          ) : fullScreen ? (
+            <span className="h-11 w-11 shrink-0" aria-hidden="true" />
           ) : null}
         </div>
       </header>
@@ -81,7 +83,7 @@ export const RosaryLayout = ({
           ${maxWidth}
           ${
             fullScreen
-              ? "min-h-0 flex-1 overflow-hidden px-3.5 py-3"
+              ? "min-h-0 flex-1 overflow-hidden px-0 pb-[max(1rem,env(safe-area-inset-bottom))] pt-0"
               : "px-4 pb-32 pt-4"
           }
         `}
