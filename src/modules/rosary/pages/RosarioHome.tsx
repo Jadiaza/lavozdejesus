@@ -6,33 +6,19 @@ import { RosaryLayout } from "../components/RosaryLayout";
 import { RosaryLoading } from "../components/RosaryStateViews";
 import { useRosaryToday } from "../hooks/useRosaryToday";
 import { useRosaryFlow } from "../hooks/useRosaryFlow";
-import { mysteryGroups } from "../mocks/mysteries";
+import { mysteryGroups, mysteryRepresentativeVerses } from "../mocks/mysteries";
 import { mysteryArt } from "../mocks/mysteryArt";
 import { rosarySessionService } from "../services/rosarySessionService";
 import { rosaryTodayService } from "../services/rosaryTodayService";
 import { routeForMode } from "../utils/routes";
 
-import type {
-  MysteryGroupId,
-  RosarySession,
-} from "../types";
+import type { MysteryGroupId, RosarySession } from "../types";
 
-/**
- * Portada del Santo Rosario.
- *
- * Muestra únicamente:
- * - Misterios recomendados del día.
- * - Imagen contemplativa.
- * - Inicio o continuación del Rosario.
- * - Cambio manual de misterios.
- *
- * La selección de modalidad se realiza en la pantalla siguiente.
- */
+/** Portada del Santo Rosario. */
 export const RosarioHome = () => {
   const today = useRosaryToday();
   const navigate = useNavigate();
   const { update } = useRosaryFlow();
-
   const [resume, setResume] = useState<RosarySession | null>(null);
 
   useEffect(() => {
@@ -44,12 +30,9 @@ export const RosarioHome = () => {
       ? today.data.recommendedGroup
       : rosaryTodayService.groupForDate();
 
-  /*
-   * La portada siempre presenta los misterios recomendados del día.
-   * Una selección diferente se realiza desde “Elegir otros misterios”.
-   */
   const group = suggested;
   const groupData = mysteryGroups[group];
+  const representativeVerse = mysteryRepresentativeVerses[group];
 
   const longDate = useMemo(
     () => rosaryTodayService.longDate(),
@@ -115,7 +98,6 @@ export const RosarioHome = () => {
           "
           aria-labelledby="rosary-today-title"
         >
-          {/* Información del día */}
           <div className="relative z-20 shrink-0 px-6 pb-3 pt-4 text-center">
             <p className="flex items-center justify-center gap-3 font-display text-[1.05rem] text-foreground/80">
               <CalendarDays
@@ -123,7 +105,6 @@ export const RosarioHome = () => {
                 strokeWidth={1.7}
                 aria-hidden="true"
               />
-
               <span>{longDate}</span>
             </p>
 
@@ -154,7 +135,6 @@ export const RosarioHome = () => {
             </p>
           </div>
 
-          {/* Imagen que ocupa el espacio disponible */}
           <div className="relative min-h-[16rem] flex-1 overflow-hidden">
             <img
               src={mysteryArt[group]}
@@ -168,7 +148,6 @@ export const RosarioHome = () => {
               className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-navy-deep via-navy-deep/50 to-transparent"
               aria-hidden="true"
             />
-
             <div
               className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-navy-deep via-navy-deep/65 to-transparent"
               aria-hidden="true"
@@ -181,14 +160,15 @@ export const RosarioHome = () => {
             <blockquote className="absolute inset-x-6 bottom-3 z-10 text-center font-display">
               <p className="text-[1.15rem] italic leading-6 text-foreground drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                 <span className="mr-2 text-3xl not-italic leading-none text-gold/75">“</span>
-                He aquí la esclava del Señor; hágase en mí según tu palabra.
+                {representativeVerse.text}
                 <span className="ml-0.5">”</span>
               </p>
-              <cite className="mt-1 block text-sm not-italic text-gold-bright">Lucas 1,38</cite>
+              <cite className="mt-1 block text-sm not-italic text-gold-bright">
+                {representativeVerse.reference}
+              </cite>
             </blockquote>
           </div>
 
-          {/* Acciones */}
           <div className="relative z-20 shrink-0 bg-gradient-to-b from-transparent via-navy-deep/90 to-navy-deep px-6 pb-3 pt-3">
             {hasPendingSession && resume ? (
               <>
@@ -207,23 +187,16 @@ export const RosarioHome = () => {
                   "
                 >
                   Continuar Rosario
-
-                  <ChevronRight
-                    className="absolute right-5 h-5 w-5"
-                    aria-hidden="true"
-                  />
+                  <ChevronRight className="absolute right-5 h-5 w-5" aria-hidden="true" />
                 </Link>
 
                 <button
                   type="button"
                   onClick={startTodayRosary}
                   className="
-                    mx-auto mt-2.5 flex min-h-9
-                    items-center justify-center
-                    rounded-xl px-3
-                    text-[11px] font-medium tracking-wide text-gold/85
-                    transition
-                    hover:bg-gold/5
+                    mx-auto mt-2.5 flex min-h-9 items-center justify-center
+                    rounded-xl px-3 text-[11px] font-medium tracking-wide
+                    text-gold/85 transition hover:bg-gold/5
                   "
                 >
                   Comenzar el Rosario de hoy
@@ -246,31 +219,20 @@ export const RosarioHome = () => {
                 "
               >
                 Comenzar el Rosario
-
-                <ChevronRight
-                  className="absolute right-5 h-5 w-5"
-                  aria-hidden="true"
-                />
+                <ChevronRight className="absolute right-5 h-5 w-5" aria-hidden="true" />
               </button>
             )}
 
             <Link
               to="/rosario/seleccionar-misterios"
               className="
-                mx-auto mt-2.5 flex min-h-9 w-fit
-                items-center justify-center gap-1
-                rounded-xl px-3
-                text-[11px] font-medium tracking-[0.04em] text-gold/90
-                transition
-                hover:bg-gold/5
+                mx-auto mt-2.5 flex min-h-9 w-fit items-center justify-center gap-1
+                rounded-xl px-3 text-[11px] font-medium tracking-[0.04em]
+                text-gold/90 transition hover:bg-gold/5
               "
             >
               Elegir otros misterios
-
-              <ChevronRight
-                className="h-4 w-4"
-                aria-hidden="true"
-              />
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </div>
         </section>

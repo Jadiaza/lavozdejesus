@@ -34,6 +34,27 @@ const m = (
   provisional: true,
 });
 
+export const mysteryRepresentativeVerses: Record<
+  MysteryGroupId,
+  { reference: string; text: string }
+> = {
+  gozosos: {
+    reference: "Lucas 1,38",
+    text: "He aquí la esclava del Señor; hágase en mí según tu palabra.",
+  },
+  luminosos: {
+    reference: "Mateo 3,17",
+    text: "Este es mi Hijo amado, en quien me complazco.",
+  },
+  dolorosos: {
+    reference: "Mateo 26,39",
+    text: "Padre mío, si es posible, que pase de mí esta copa; pero no sea como yo quiero, sino como quieras tú.",
+  },
+  gloriosos: {
+    reference: "Mateo 28,6",
+    text: "No está aquí, pues ha resucitado, como había dicho.",
+  },
+};
 export const mysteryGroups: Record<MysteryGroupId, MysteryGroup> = {
   gozosos: {
     id: "gozosos",
