@@ -469,6 +469,113 @@
     color: #292a25 !important;
   }
 
+  @media (max-width: 767px) {
+    .biblia-layout-shell:has(.study-reading-page) main {
+      width: 100% !important;
+      max-width: none !important;
+      padding: 0 !important;
+      padding-bottom: calc(110px + env(safe-area-inset-bottom)) !important;
+    }
+
+    .study-reader-host,
+    .study-reader-host > section {
+      width: 100%;
+      margin: 0 !important;
+    }
+
+    .study-reader-host article.study-reading-page {
+      width: 100% !important;
+      max-width: none !important;
+      min-height: calc(100dvh - 4rem);
+      margin: 0 !important;
+      padding: 1.125rem 1.25rem calc(110px + env(safe-area-inset-bottom)) !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      background: var(--study-surface) !important;
+      box-shadow: none !important;
+      font-size: 17px !important;
+      line-height: 1.7 !important;
+      text-align: left !important;
+    }
+
+    .study-reader-host article.study-reading-page *,
+    .study-reader-host article.study-reading-page p,
+    .study-reader-host article.study-reading-page li,
+    .study-reader-host article.study-reading-page dd {
+      text-align: left !important;
+      overflow-wrap: break-word;
+      word-break: normal;
+      word-spacing: normal;
+      letter-spacing: normal;
+      white-space: normal;
+    }
+
+    .study-reader-host article.study-reading-page .study-mobile-shell {
+      min-height: calc(100dvh - 4rem);
+    }
+
+    .study-reader-host article.study-reading-page .study-mobile-kicker {
+      font-family: ui-sans-serif, system-ui, sans-serif !important;
+      font-size: 15px !important;
+      line-height: 1.3 !important;
+      letter-spacing: .12em !important;
+    }
+
+    .study-reader-host article.study-reading-page .study-mobile-meta,
+    .study-reader-host article.study-reading-page .study-mobile-meta span {
+      font-family: ui-sans-serif, system-ui, sans-serif !important;
+      font-size: 13px !important;
+      line-height: 1.3 !important;
+    }
+
+    .study-reader-host article.study-reading-page .study-mobile-meta span {
+      padding: .35rem .6rem;
+      border: 1px solid var(--study-border);
+      border-radius: 999px;
+      color: var(--study-muted) !important;
+    }
+
+    .study-reader-host article.study-reading-page .study-mobile-title {
+      font-size: 26px !important;
+      line-height: 1.2 !important;
+      text-wrap: balance;
+    }
+
+    .study-reader-host article.study-reading-page .study-mobile-section-title {
+      font-size: 21px !important;
+      line-height: 1.3 !important;
+    }
+
+    .study-reader-host article.study-reading-page .study-mobile-prose,
+    .study-reader-host article.study-reading-page .study-mobile-prose p {
+      font-size: 17px !important;
+      line-height: 1.7 !important;
+    }
+
+    .study-reader-host article.study-reading-page .study-center-note {
+      padding: .75rem 1rem;
+      border-left: 3px solid #D4AF37 !important;
+      border-radius: 0 .5rem .5rem 0;
+      background: color-mix(in srgb, var(--study-card) 55%, transparent) !important;
+    }
+
+    .study-reader-host article.study-reading-page button,
+    .study-reader-host article.study-reading-page button span,
+    .study-reader-host article.study-reading-page nav span,
+    .study-reader-host article.study-reading-page header p {
+      font-family: ui-sans-serif, system-ui, sans-serif !important;
+      font-size: 13px !important;
+      line-height: 1.35 !important;
+    }
+
+    .study-reader-host article.study-reading-page .study-mobile-content p,
+    .study-reader-host article.study-reading-page .study-mobile-content li,
+    .study-reader-host article.study-reading-page .study-mobile-content dd {
+      font-size: 17px !important;
+      line-height: 1.7 !important;
+    }
+  }
+
   /* La tabla de versiones forma parte permanente del estudio guardado. */
   .study-integrated-comparison #bible-comparison-view {
     position: static !important;
