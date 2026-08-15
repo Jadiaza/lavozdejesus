@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BookOpen, CalendarDays, ChevronRight, CircleDotDashed, Home, Radio, Settings, UserRound } from "lucide-react";
+import { BookOpen, ChevronRight, CircleDotDashed, Home, Radio, Settings, UserRound } from "lucide-react";
 
 import { RosaryLayout } from "../components/RosaryLayout";
 import { RosaryLoading } from "../components/RosaryStateViews";
@@ -39,11 +39,6 @@ export const RosarioHome = () => {
     [],
   );
 
-  const season =
-    today.status === "ready"
-      ? today.data.season?.nombre ?? "Tiempo Ordinario"
-      : undefined;
-
   const hasPendingSession =
     resume !== null && resume.status !== "terminado";
 
@@ -73,7 +68,7 @@ export const RosarioHome = () => {
   return (
     <RosaryLayout
       title="Oración Mariana"
-      subtitle={season}
+      subtitle={longDate}
       back="/"
       actions={
         <Link
@@ -97,31 +92,22 @@ export const RosarioHome = () => {
           "
           aria-labelledby="rosary-today-title"
         >
-          <div className="absolute inset-x-0 top-0 z-20 px-6 pb-6 pt-5 text-center">
-            <p className="flex items-center justify-center gap-2.5 font-display text-[0.95rem] text-foreground/80 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-              <CalendarDays
-                className="h-4 w-4 text-gold"
-                strokeWidth={1.7}
-                aria-hidden="true"
-              />
-              <span>{longDate}</span>
-            </p>
-
+          <div className="absolute inset-x-0 top-0 z-20 px-5 pb-5 pt-3 text-center min-[390px]:px-6 min-[390px]:pt-4">
             <h2
               id="rosary-today-title"
               className="
-                mt-3 font-display text-[2.35rem] font-semibold
-                leading-[0.9] tracking-[-0.04em]
+                mx-auto max-w-[22rem] text-balance font-display
+                text-[clamp(1.9rem,8.5vw,2.75rem)] font-semibold
+                leading-[0.95] tracking-[-0.04em]
                 text-gold-bright
                 drop-shadow-[0_4px_18px_rgba(212,175,55,0.18)]
-                sm:text-[2.75rem]
               "
             >
               {groupData.name}
             </h2>
 
             <div
-              className="mx-auto mt-3.5 flex max-w-[13rem] items-center gap-3"
+              className="mx-auto mt-3 flex max-w-[13rem] items-center gap-3"
               aria-hidden="true"
             >
               <span className="h-px flex-1 bg-gradient-to-r from-transparent to-gold/70" />
@@ -129,9 +115,6 @@ export const RosarioHome = () => {
               <span className="h-px flex-1 bg-gradient-to-l from-transparent to-gold/70" />
             </div>
 
-            <p className="mx-auto mt-3 max-w-[20rem] font-display text-[1rem] leading-5 text-foreground/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-              {groupData.description}
-            </p>
           </div>
 
           <div className="absolute inset-0 overflow-hidden">
@@ -140,7 +123,7 @@ export const RosarioHome = () => {
               alt={`Representación artística de los ${groupData.name}`}
               width={1024}
               height={800}
-              className="h-full w-full scale-[1.03] object-cover object-center opacity-95"
+              className="h-full w-full scale-[1.02] object-cover object-center opacity-95"
             />
 
             <div
@@ -156,25 +139,25 @@ export const RosarioHome = () => {
               aria-hidden="true"
             />
 
-            <blockquote className="absolute inset-x-7 bottom-[9.25rem] z-10 text-center font-display">
-              <p className="text-[clamp(0.95rem,4vw,1.15rem)] italic leading-5 text-foreground drop-shadow-[0_2px_9px_rgba(0,0,0,0.95)]">
+            <blockquote className="absolute inset-x-6 bottom-[9.6rem] z-10 mx-auto max-w-[24rem] text-center font-display min-[390px]:inset-x-8">
+              <p className="text-balance text-[clamp(0.9rem,4vw,1.12rem)] italic leading-[1.35] text-foreground drop-shadow-[0_2px_9px_rgba(0,0,0,0.95)]">
                 <span className="mr-1.5 text-2xl not-italic leading-none text-gold/75">“</span>
                 {representativeVerse.text}
                 <span className="ml-0.5">”</span>
               </p>
-              <cite className="mt-1.5 block text-[13px] not-italic text-gold-bright">
+              <cite className="mt-2 block text-[12px] not-italic tracking-wide text-gold-bright min-[390px]:text-[13px]">
                 {representativeVerse.reference}
               </cite>
             </blockquote>
           </div>
 
-          <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-b from-transparent via-navy-deep/85 to-navy-deep px-6 pb-3 pt-8">
+          <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-b from-transparent via-navy-deep/85 to-navy-deep px-5 pb-3 pt-9 min-[390px]:px-6">
             {hasPendingSession && resume ? (
               <>
                 <Link
                   to={`${routeForMode(resume.mode)}?grupo=${resume.group}`}
                   className="
-                    relative flex min-h-[3.75rem] w-full
+                    relative flex min-h-16 w-full
                     items-center justify-center
                     overflow-hidden rounded-[1.15rem] border border-gold-bright/55 bg-gradient-gold
                     whitespace-nowrap px-9 font-display
@@ -207,7 +190,7 @@ export const RosarioHome = () => {
                 type="button"
                 onClick={startFlow}
                 className="
-                  relative flex min-h-[3.75rem] w-full
+                  relative flex min-h-16 w-full
                   items-center justify-center
                   overflow-hidden rounded-[1.15rem] border border-gold-bright/55 bg-gradient-gold
                   whitespace-nowrap px-9 font-display
@@ -227,8 +210,8 @@ export const RosarioHome = () => {
             <Link
               to="/rosario/seleccionar-misterios"
               className="
-                mx-auto mt-2.5 flex min-h-9 w-fit items-center justify-center gap-1
-                rounded-xl px-3 text-[11px] font-medium tracking-[0.04em]
+                mx-auto mt-2 flex min-h-9 w-fit items-center justify-center gap-1.5
+                rounded-xl px-3 text-[11px] font-medium tracking-[0.04em] min-[390px]:text-xs
                 text-gold/90 transition hover:bg-gold/5
               "
             >
