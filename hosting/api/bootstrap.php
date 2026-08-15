@@ -59,7 +59,25 @@ function lvj_json_response(array $payload, int $status = 200): void
   http_response_code($status);
   header('Content-Type: application/json; charset=utf-8');
   $requestMethod = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
-  header($requestMethod === 'GET'
+  $hasAuthorization = false;
+  foreach (['HTTP_AUTHORIZATION','REDIRECT_HTTP_AUTHORIZATION','HTTP_X_LVJ_AUTHORIZATION'] as $key) {
+    if (trim((string)($_SERVER[$key]??'')) !== '') {
+      $hasAuthorization = true;
+      break;
+    }
+  }
+  if (!$hasAuthorization && function_exists('getallheaders')) {
+    $requestHeaders = getallheaders();
+    if (is_array($requestHeaders)) {
+      foreach (['Authorization','authorization','X-LVJ-Authorization','x-lvj-authorization'] as $key) {
+        if (trim((string)($requestHeaders[$key]??'')) !== '') {
+          $hasAuthorization = true;
+          break;
+        }
+      }
+    }
+  }
+  header($requestMethod === 'GET' && !$hasAuthorization
     ? 'Cache-Control: public, max-age=300, stale-while-revalidate=3600'
     : 'Cache-Control: no-store');
 
