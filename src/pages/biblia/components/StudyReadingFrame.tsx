@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AlignJustify, AlignLeft, Check, ChevronRight } from "lucide-react";
 import { getMeta, setMeta } from "@/features/biblia/db";
+import { StudyReadingThemeContext } from "./StudyReadingTheme";
 
 type Theme = "claro" | "oscuro" | "sepia";
 type Font = "literata" | "georgia" | "garamond" | "atkinson" | "sans";
@@ -153,7 +154,9 @@ export function StudyReadingFrame({ children }: { children: ReactNode }) {
         </div>
       )}
 
-      <article style={{ ...width, fontFamily: font.family, fontSize: prefs.tam, lineHeight: prefs.interlineado, fontWeight: prefs.pesoFuente, textAlign: prefs.alineacion === "justificada" ? "justify" : "left" }} className={"mx-auto rounded-[1.5rem] border p-3 transition-all sm:p-5 " + themeClass}>{children}</article>
+      <StudyReadingThemeContext.Provider value={prefs.tema}>
+        <article style={{ ...width, fontFamily: font.family, fontSize: prefs.tam, lineHeight: prefs.interlineado, fontWeight: prefs.pesoFuente, textAlign: prefs.alineacion === "justificada" ? "justify" : "left" }} className={"mx-auto rounded-[1.5rem] border p-[clamp(1rem,5vw,1.5rem)] transition-all " + themeClass}>{children}</article>
+      </StudyReadingThemeContext.Provider>
     </section>
   );
 }

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, ChevronRight, X } from "lucide-react";
+import { useStudyReadingTheme } from "./StudyReadingTheme";
 
 export interface VerseComparison {
   referencia: string;
@@ -36,8 +37,10 @@ const stateLabel: Record<VerseComparison["estado_validacion"], string> = {
 
 export function VerseComparisonTable({ rows, onClose }: { rows?: VerseComparison[]; onClose?: () => void }) {
   const [open, setOpen] = useState<number | null>(null);
+  const theme = useStudyReadingTheme();
   if (!rows?.length) return null;
-  return createPortal(<section role="dialog" aria-modal="true" aria-labelledby="verse-comparison-title" className="fixed inset-0 z-[100] flex h-[100dvh] flex-col overflow-hidden bg-[#0B0B0B] p-4 text-[#F8F5EA] sm:p-5">
+  const themeClass = theme === "claro" ? "study-comparison-light bg-[#fffdf8] text-[#24211a]" : theme === "sepia" ? "study-comparison-ink bg-[#eee9d9] text-[#302f29]" : "study-comparison-dark bg-[#0B0B0B] text-[#F8F5EA]";
+  return createPortal(<section role="dialog" aria-modal="true" aria-labelledby="verse-comparison-title" data-study-theme={theme} className={`study-comparison-dialog fixed inset-0 z-[100] flex h-[100dvh] flex-col overflow-hidden p-4 sm:p-5 ${themeClass}`}>
     <header className="relative mb-3 shrink-0 pr-12"><p className="text-xs uppercase tracking-[0.2em] text-[#D4AF37]">Capa textual verificable</p><h2 id="verse-comparison-title" className="font-display text-xl">Comparación versículo por versículo</h2><p className="mt-1 text-sm opacity-75">Cada registro corresponde exclusivamente al mismo versículo en las tres versiones.</p>{onClose && <button type="button" onClick={onClose} aria-label="Cerrar comparación y volver a orientación vertical" className="absolute right-0 top-0 flex h-10 w-10 items-center justify-center rounded-full border border-[#D4AF37]/35 text-[#D4AF37]"><X className="h-5 w-5" /></button>}</header>
     <div className="min-h-0 flex-1 touch-pan-y space-y-2 overflow-y-auto overscroll-contain pb-[calc(5rem+env(safe-area-inset-bottom))] pr-1 [-webkit-overflow-scrolling:touch]">{rows.map((row) => {
       const expanded = open === row.versiculo;
@@ -48,7 +51,7 @@ export function VerseComparisonTable({ rows, onClose }: { rows?: VerseComparison
           <span className="text-[0.72em] uppercase tracking-wide opacity-70">{stateLabel[row.estado_validacion]}</span>
           {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </button>
-        {expanded && <div className="grid gap-4 border-t border-[#D4AF37]/15 py-4 md:grid-cols-3">
+        {expanded && <div className="grid min-w-0 gap-4 border-t border-[#D4AF37]/15 py-4 md:grid-cols-3">
           <VersionText title="Biblia Platense" text={row.platense} />
           <VersionText title="Torres Amat" text={row.torres_amat} />
           <VersionText title="Scío de San Miguel" text={row.scio} />
@@ -93,9 +96,9 @@ export function TextStructureView({ rows }: { rows?: StructureRow[] }) {
         const color = tone[index % tone.length];
         return <li key={row.orden + row.versiculos} className="grid grid-cols-[0.7rem_minmax(0,1fr)] gap-3">
           <svg aria-hidden="true" className="h-full min-h-24 w-3" viewBox="0 0 12 100" preserveAspectRatio="none"><path d="M11 1H3v98h8" fill="none" stroke={color} strokeWidth="1.5" /></svg>
-          <article className="py-2">
+          <article className="min-w-0 rounded-xl border border-[#D4AF37]/20 p-4">
             <button type="button" onClick={() => setOpen(expanded ? null : row.orden)} aria-expanded={expanded} className="flex w-full items-start gap-2 text-left">
-              <strong style={{ color }}>{row.orden}.</strong><span className="min-w-0 flex-1"><strong className="block uppercase">{row.verbo_central}</strong><em className="block opacity-70">{row.pregunta_guia}</em></span><span className="shrink-0 opacity-70">{row.versiculos}</span>{expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              <strong style={{ color }}>{row.orden}.</strong><span className="min-w-0 flex-1"><strong className="block break-words uppercase">{row.verbo_central}</strong>{row.pregunta_guia && <em className="mt-1 block break-words opacity-70">{row.pregunta_guia}</em>}<span className="mt-1 block text-xs opacity-70 sm:hidden">{row.versiculos}</span></span><span className="hidden shrink-0 opacity-70 sm:block">{row.versiculos}</span>{expanded ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />}
             </button>
             <div className="mt-2 pl-6"><p className="font-semibold" style={{color}}>{row.sujeto}</p><p>{row.desarrollo}</p>{expanded&&<p className="mt-2 text-xs italic opacity-70">{row.etapa}</p>}</div>
           </article>

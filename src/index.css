@@ -438,6 +438,42 @@
     display: none;
   }
 
+  /* La comparación se monta en document.body; estas clases reciben el tema
+     explícito del lector para no depender de :has() ni del árbol del artículo. */
+  .study-comparison-dialog {
+    color-scheme: dark;
+  }
+
+  .study-comparison-dialog:is(.study-comparison-light, .study-comparison-ink) {
+    color-scheme: light;
+  }
+
+  .study-comparison-dialog:is(.study-comparison-light, .study-comparison-ink) article,
+  .study-comparison-dialog:is(.study-comparison-light, .study-comparison-ink) header,
+  .study-comparison-dialog:is(.study-comparison-light, .study-comparison-ink) div {
+    border-color: rgb(91 78 43 / 0.22) !important;
+  }
+
+  .study-comparison-dialog:is(.study-comparison-light, .study-comparison-ink) p,
+  .study-comparison-dialog:is(.study-comparison-light, .study-comparison-ink) strong,
+  .study-comparison-dialog:is(.study-comparison-light, .study-comparison-ink) span,
+  .study-comparison-dialog:is(.study-comparison-light, .study-comparison-ink) svg {
+    color: inherit;
+  }
+
+  .study-comparison-dialog:is(.study-comparison-light, .study-comparison-ink) h3,
+  .study-comparison-dialog:is(.study-comparison-light, .study-comparison-ink) header > p:first-child,
+  .study-comparison-dialog:is(.study-comparison-light, .study-comparison-ink) button svg {
+    color: #8b6c14;
+  }
+
+  .study-comparison-ink {
+    background:
+      radial-gradient(circle at 18% 12%, rgb(255 255 255 / 0.22), transparent 24rem),
+      linear-gradient(100deg, rgb(65 65 57 / 0.025), transparent 35%, rgb(65 65 57 / 0.018)),
+      #eee9d9;
+  }
+
   .lvj-sacred-page {
     position: relative;
     min-height: 100dvh;
