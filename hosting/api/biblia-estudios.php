@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-const LVJ_BIBLE_API_BUILD = '2026-08-15-v13';
+const LVJ_BIBLE_API_BUILD = '2026-08-15-v14';
 
 function lvj_bible_api_fallback_response(array $payload, int $status): void
 {
@@ -52,6 +52,31 @@ function lvj_bible_api_log(Throwable $error, string $errorId): void
   );
 }
 
+function lvj_bible_api_has_authorization(): bool
+{
+  foreach (['HTTP_AUTHORIZATION','REDIRECT_HTTP_AUTHORIZATION','HTTP_X_LVJ_AUTHORIZATION'] as $key) {
+    if (trim((string)($_SERVER[$key]??'')) !== '') return true;
+  }
+  if (!function_exists('getallheaders')) return false;
+  $headers = getallheaders();
+  if (!is_array($headers)) return false;
+  foreach (['Authorization','authorization','X-LVJ-Authorization','x-lvj-authorization'] as $key) {
+    if (trim((string)($headers[$key]??'')) !== '') return true;
+  }
+  return false;
+}
+
+function lvj_bible_api_action(string $requestMethod): string
+{
+  if (filter_var($_GET['recent']??false, FILTER_VALIDATE_BOOLEAN)) return 'recent';
+  if (filter_var($_GET['generation_status']??false, FILTER_VALIDATE_BOOLEAN)) return 'generation_status';
+  if (filter_var($_GET['id']??null, FILTER_VALIDATE_INT)) return 'study';
+  $requestedMethod = $requestMethod === 'OPTIONS'
+    ? strtoupper((string)($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']??''))
+    : $requestMethod;
+  return $requestedMethod === 'POST' ? 'create' : 'availability';
+}
+
 $requestStartedAt = microtime(true);
 $errorId = lvj_bible_api_error_id();
 
@@ -86,15 +111,30 @@ try {
     require_once $path;
   }
 
-  BibleStudyTelemetry::begin($errorId, $requestStartedAt);
+  $requestMethod = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+  $requestAction = lvj_bible_api_action($requestMethod);
+  $hasAuthorization = lvj_bible_api_has_authorization();
+  BibleStudyTelemetry::begin($errorId, $requestStartedAt, [
+    'request_method'=>$requestMethod,
+    'action'=>$requestAction,
+    'has_authorization'=>$hasAuthorization,
+  ]);
+
+  if ($requestMethod === 'OPTIONS') {
+    header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-LVJ-Authorization');
+    BibleStudyTelemetry::log('preflight_completed', [
+      'request_method'=>$requestMethod,
+      'action'=>$requestAction,
+      'has_authorization'=>$hasAuthorization,
+      'http_status'=>200,
+      'reason'=>'options_preflight',
+    ]);
+    lvj_json_response(['success'=>true]);
+  }
 
   $pdo = lvj_db();
   $service = new BibleStudyService($pdo);
-  $requestMethod = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
-
-  if ($requestMethod === 'OPTIONS') {
-    lvj_require_method('POST');
-  }
 
   if ($requestMethod === 'GET') {
     $configured = BibleStudyProviderFactory::configured();

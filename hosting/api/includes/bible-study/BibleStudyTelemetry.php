@@ -6,11 +6,11 @@ final class BibleStudyTelemetry
   private static string $requestId = '';
   private static float $requestStartedAt = 0.0;
 
-  public static function begin(string $requestId, ?float $requestStartedAt = null): void
+  public static function begin(string $requestId, ?float $requestStartedAt = null, array $metadata = []): void
   {
     self::$requestId = $requestId;
     self::$requestStartedAt = $requestStartedAt ?? microtime(true);
-    self::log('request_start');
+    self::log('request_start', $metadata);
   }
 
   public static function elapsedMs(float $startedAt): int
@@ -34,6 +34,7 @@ final class BibleStudyTelemetry
         'response_id_hash','http_status','response_status','input_tokens',
         'output_tokens','total_tokens','max_output_tokens','context_bytes',
         'schema_bytes','json_bytes','source','result',
+        'request_method','action','has_authorization','reason',
       ];
       foreach ($allowed as $key) {
         if (!array_key_exists($key, $metadata) || $metadata[$key] === null) continue;
