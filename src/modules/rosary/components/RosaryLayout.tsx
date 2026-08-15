@@ -41,7 +41,7 @@ export const RosaryLayout = ({
 
       <header className={`sticky top-0 z-40 shrink-0 backdrop-blur-xl ${fullScreen ? "bg-gradient-to-b from-navy-deep via-navy-deep/95 to-navy-deep/80" : "border-b border-gold/15 bg-navy-deep/95"}`}>
         <div
-          className={`mx-auto flex w-full items-center gap-3 px-5 ${fullScreen ? "min-h-[104px] pb-3 pt-5" : "min-h-[88px] py-3"} ${maxWidth}`}
+          className={`mx-auto flex w-full items-center gap-3 px-5 ${fullScreen ? "min-h-[96px] pb-2.5 pt-4" : "min-h-[88px] py-3"} ${maxWidth}`}
         >
           <Link
             to={back}
@@ -60,12 +60,12 @@ export const RosaryLayout = ({
               Santo Rosario
             </p>
 
-            <h1 className={`mt-1 truncate font-display font-semibold leading-none text-foreground ${fullScreen ? "text-[1.7rem] tracking-[-0.02em]" : "text-2xl"}`}>
+            <h1 className={`mt-1 truncate font-display font-semibold leading-none text-foreground ${fullScreen ? "text-[clamp(1.55rem,7vw,1.85rem)] tracking-[-0.025em]" : "text-2xl"}`}>
               {title}
             </h1>
 
             {subtitle ? (
-              <p className={`mt-1 truncate font-medium text-gold/80 ${fullScreen ? "text-[11px] tracking-wide" : "text-xs"}`}>
+              <p className={`mt-1.5 truncate font-medium text-gold ${fullScreen ? "text-[clamp(0.72rem,3.3vw,0.85rem)] tracking-wide" : "text-xs"}`}>
                 {subtitle}
               </p>
             ) : null}
