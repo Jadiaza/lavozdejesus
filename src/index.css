@@ -295,7 +295,7 @@
     border-bottom: 1px solid rgb(75 75 68 / 0.2) !important;
   }
 
-  .study-reader-host article:is(.biblia-eink-paper, .study-theme-light, .study-theme-dark) > div:nth-child(2) {
+  .study-reader-host article:is(.biblia-eink-paper, .study-theme-light, .study-theme-dark) .study-desktop-tabs {
     margin: 0 !important;
     gap: 0 !important;
     border-width: 1px 0 !important;
@@ -303,12 +303,12 @@
     padding: 0.35rem 0 !important;
   }
 
-  .study-reader-host article:is(.biblia-eink-paper, .study-theme-light, .study-theme-dark) > div:nth-child(2) button {
+  .study-reader-host article:is(.biblia-eink-paper, .study-theme-light, .study-theme-dark) .study-desktop-tabs button {
     border-radius: 0.35rem !important;
     color: #464740 !important;
   }
 
-  .study-reader-host article:is(.biblia-eink-paper, .study-theme-light, .study-theme-dark) > div:nth-child(2) button[aria-pressed="true"] {
+  .study-reader-host article:is(.biblia-eink-paper, .study-theme-light, .study-theme-dark) .study-desktop-tabs button[aria-pressed="true"] {
     background: #77786d !important;
     color: #f3f2ea !important;
   }
@@ -381,7 +381,7 @@
   .study-reader-host article.study-theme-ink .proposition-label-pp { color: #8f3440 !important; }
   .study-reader-host article.study-theme-ink .proposition-label-ps { color: #315f78 !important; }
 
-  .study-reader-host article.study-theme-light > div:nth-child(2) button[aria-pressed="true"] {
+  .study-reader-host article.study-theme-light .study-desktop-tabs button[aria-pressed="true"] {
     background: #D4AF37 !important;
     color: #15120b !important;
   }
@@ -406,7 +406,7 @@
     box-shadow: none !important;
   }
 
-  .study-reader-host article.study-theme-dark > div:nth-child(2) button[aria-pressed="true"] {
+  .study-reader-host article.study-theme-dark .study-desktop-tabs button[aria-pressed="true"] {
     background: #D4AF37 !important;
     color: #050505 !important;
   }
