@@ -19,6 +19,7 @@ final class OpenAIProvider implements BibleStudyAiProviderInterface
 
   public function startBackgroundStudy(array $context): array
   {
+    $startedAt = microtime(true);
     $response = HttpJsonClient::post(
       'https://api.openai.com/v1/responses',
       $this->headers($context),
@@ -29,6 +30,12 @@ final class OpenAIProvider implements BibleStudyAiProviderInterface
     if (!preg_match('/^resp_[A-Za-z0-9_-]+$/', $responseId)) {
       throw new RuntimeException('OpenAI no devolvió un identificador de generación válido.');
     }
+    $this->telemetry('openai_background_request_completed', [
+      'duration_ms'=>$this->elapsedMs($startedAt),
+      'response_status'=>(string)($response['status']??'queued'),
+      'response_id_hash'=>$this->responseIdHash($responseId),
+      'max_output_tokens'=>$this->effectiveOutputTokens($context),
+    ]);
     return [
       'response_id' => $responseId,
       'status' => (string) ($response['status'] ?? 'queued'),
@@ -36,17 +43,23 @@ final class OpenAIProvider implements BibleStudyAiProviderInterface
     ];
   }
 
-  public function retrieveBackgroundStudy(string $responseId, array $context): array
+  public function retrieveBackgroundStudy(string $responseId): array
   {
     if (!preg_match('/^resp_[A-Za-z0-9_-]+$/', $responseId)) {
       throw new InvalidArgumentException('Identificador de generación no válido.');
     }
+    $startedAt = microtime(true);
     $response = HttpJsonClient::get(
       'https://api.openai.com/v1/responses/' . rawurlencode($responseId),
       ['Authorization: Bearer ' . $this->key, 'Content-Type: application/json'],
       min(60, $this->timeout)
     );
     $status = (string) ($response['status'] ?? '');
+    $this->telemetry('openai_status_retrieved', [
+      'duration_ms'=>$this->elapsedMs($startedAt),
+      'response_status'=>$status,
+      'response_id_hash'=>$this->responseIdHash($responseId),
+    ]);
     if (in_array($status, ['queued', 'in_progress'], true)) {
       return ['state' => 'processing', 'status' => $status];
     }
@@ -59,7 +72,19 @@ final class OpenAIProvider implements BibleStudyAiProviderInterface
       );
       return ['state' => 'failed', 'message' => 'OpenAI no pudo completar el estudio. Motivo: ' . mb_substr($reason, 0, 700) . '.'];
     }
-    return ['state' => 'completed', 'result' => $this->complete($response, $context)];
+    $this->telemetry('openai_completed', [
+      'response_status'=>$status,
+      'response_id_hash'=>$this->responseIdHash($responseId),
+      'input_tokens'=>$response['usage']['input_tokens']??null,
+      'output_tokens'=>$response['usage']['output_tokens']??null,
+      'total_tokens'=>$response['usage']['total_tokens']??null,
+    ]);
+    return ['state' => 'completed', 'response' => $response];
+  }
+
+  public function completeBackgroundStudy(array $response, array $context): array
+  {
+    return $this->complete($response, $context);
   }
 
   private function headers(array $context): array
@@ -75,11 +100,7 @@ final class OpenAIProvider implements BibleStudyAiProviderInterface
   {
     $method = (string) ($context['metodo'] ?? BibleStudyMethod::DEFAULT);
     $isIntegral = $method === 'integral_lvj';
-    $verseCount = count($context['versiones']['platense']['versiculos'] ?? []);
-    $outputTokens = $this->maxTokens;
-    if ($isIntegral && $verseCount > 0) {
-      $outputTokens = min($this->maxTokens, $verseCount <= 3 ? 16000 : ($verseCount <= 10 ? 28000 : 48000));
-    }
+    $outputTokens = $this->effectiveOutputTokens($context);
     $text = [
       'format' => [
         'type' => 'json_schema',
@@ -98,24 +119,53 @@ final class OpenAIProvider implements BibleStudyAiProviderInterface
     ];
     if ($isIntegral) $body['reasoning'] = ['effort' => 'none'];
     if ($background) $body['background'] = true;
+    $schemaJson = json_encode($text['format']['schema'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    $this->telemetry('openai_request_prepared', [
+      'method'=>$method,
+      'level'=>(string)($context['nivel']??BibleStudyLevel::DEFAULT),
+      'verse_count'=>count($context['versiones']['platense']['versiculos']??[]),
+      'max_output_tokens'=>$outputTokens,
+      'context_bytes'=>strlen((string)$body['input']),
+      'schema_bytes'=>is_string($schemaJson)?strlen($schemaJson):0,
+    ]);
     return $body;
+  }
+
+  private function effectiveOutputTokens(array $context): int
+  {
+    $isIntegral = (string)($context['metodo']??BibleStudyMethod::DEFAULT) === 'integral_lvj';
+    $verseCount = count($context['versiones']['platense']['versiculos'] ?? []);
+    if ($isIntegral && $verseCount > 0) {
+      return min($this->maxTokens, $verseCount <= 3 ? 16000 : ($verseCount <= 10 ? 28000 : 48000));
+    }
+    return $this->maxTokens;
   }
 
   private function complete(array $response, array $context): array
   {
     self::assertCompleteResponse($response);
     $text = self::extractOpenAIText($response);
+    $decodedStartedAt = microtime(true);
     $study = json_decode(self::normalizeJsonText($text), true);
     if (!is_array($study)) throw new RuntimeException('OpenAI no devolvió JSON válido.');
+    $this->telemetry('json_decoded', ['duration_ms'=>$this->elapsedMs($decodedStartedAt),'json_bytes'=>strlen($text)]);
+    $preparedStartedAt = microtime(true);
     $study = BibleStudySchema::prepareGenerated($study, $context);
+    $this->telemetry('prepare_generated_completed', ['duration_ms'=>$this->elapsedMs($preparedStartedAt)]);
+    $validationStartedAt = microtime(true);
     BibleStudySchema::validate($study, $context);
+    $this->telemetry('validation_completed', ['duration_ms'=>$this->elapsedMs($validationStartedAt)]);
     return [
       'study' => $study,
       'input_tokens' => $response['usage']['input_tokens'] ?? null,
       'output_tokens' => $response['usage']['output_tokens'] ?? null,
+      'total_tokens' => $response['usage']['total_tokens'] ?? null,
       'model' => (string) ($response['model'] ?? $this->model),
     ];
   }
+  private function elapsedMs(float $startedAt): int { return (int)round((microtime(true)-$startedAt)*1000); }
+  private function responseIdHash(string $responseId): string { return $responseId===''?'':substr(hash('sha256',$responseId),0,16); }
+  private function telemetry(string $stage,array $metadata=[]): void { if(class_exists('BibleStudyTelemetry',false)) BibleStudyTelemetry::log($stage,$metadata); }
   private static function assertCompleteResponse(array $response): void
   {
     if (($response['status'] ?? '') !== 'incomplete') {

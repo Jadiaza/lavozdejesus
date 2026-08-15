@@ -32,6 +32,9 @@ final class HttpJsonClient
     $status = (int) curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
     $error = curl_error($curl);
     curl_close($curl);
+    if (class_exists('BibleStudyTelemetry', false)) {
+      BibleStudyTelemetry::log('provider_http_completed', ['http_status'=>$status]);
+    }
 
     $decoded = is_string($raw) ? json_decode($raw, true) : null;
     if ($raw !== false && $error === '' && $status >= 200 && $status < 300 && is_array($decoded)) {

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 final class BibleStudyService
 {
-  public const BUILD = '2026-08-14-v9';
+  public const BUILD = '2026-08-15-v10';
   public const EQUIVALENCES_PENDING_MESSAGE = 'El estudio con inteligencia artificial estará disponible cuando finalice la revisión de equivalencias bíblicas.';
   public const LEVELS_PENDING_MESSAGE = 'La estructura por niveles de estudio todavía no está disponible en la base de datos.';
   private const LANGUAGE = 'es';
@@ -14,10 +14,47 @@ final class BibleStudyService
 
   public function findPublishedForInput(array $input, ?array $user = null): ?array
   {
-    $range = $this->normalize($input); $context = $this->context($range); $methodConfig=BibleStudyMethod::config($range['metodo']);
+    return $this->findPublishedForPrepared($this->prepareInput($input), $user);
+  }
+
+  public function prepareInput(array $input): array
+  {
+    $startedAt = microtime(true);
+    $range = $this->normalize($input);
+    $this->telemetry('normalization_completed', [
+      'duration_ms'=>$this->elapsedMs($startedAt),
+      'method'=>$range['metodo'],
+      'level'=>$range['nivel'],
+    ]);
+
+    $startedAt = microtime(true);
+    $context = $this->context($range);
+    $contextJson = json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    $this->telemetry('context_completed', [
+      'duration_ms'=>$this->elapsedMs($startedAt),
+      'method'=>$range['metodo'],
+      'level'=>$range['nivel'],
+      'verse_count'=>count($context['versiones']['platense']['versiculos']??[]),
+      'context_bytes'=>is_string($contextJson)?strlen($contextJson):0,
+    ]);
+
+    $methodConfig = BibleStudyMethod::config($range['metodo']);
     $hash = hash('sha256', json_encode([$context, BibleStudyPrompt::METHOD], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    return ['range'=>$range,'context'=>$context,'method_config'=>$methodConfig,'hash'=>$hash];
+  }
+
+  public function findPublishedForPrepared(array $prepared, ?array $user = null): ?array
+  {
+    $range=$prepared['range']; $context=$prepared['context']; $methodConfig=$prepared['method_config']; $hash=$prepared['hash'];
+    $startedAt = microtime(true);
     if (!$this->columnExists('lvj_bib_estudios_ia','nivel') || !$this->columnExists('lvj_bib_estudios_ia','metodo')) return null;
     $row = lvj_first($this->pdo, "SELECT * FROM lvj_bib_estudios_ia WHERE metodo=:study_method AND ((hash_contexto=:hash AND metodo_version=:method) OR (libro_id=:book AND capitulo_inicio=:ci AND capitulo_fin=:cf AND versiculo_inicio<=:vi AND versiculo_fin>=:vf AND nivel=:level AND idioma=:language AND esquema_version=:schema AND texto_version=:text_version AND notas_version=:notes_version)) AND estado='publicado' AND revisado=1 AND es_publico=1 AND deleted_at IS NULL ORDER BY (versiculo_inicio=:exact_vi AND versiculo_fin=:exact_vf) DESC,(versiculo_fin-versiculo_inicio) ASC,updated_at DESC,id DESC LIMIT 1", ['study_method'=>$range['metodo'],'hash'=>$hash,'method'=>BibleStudyPrompt::METHOD,'book'=>$context['libro_id'],'ci'=>$range['capitulo_inicio'],'vi'=>$range['versiculo_inicio'],'cf'=>$range['capitulo_fin'],'vf'=>$range['versiculo_fin'],'level'=>$range['nivel'],'language'=>self::LANGUAGE,'schema'=>$methodConfig['schema'],'text_version'=>$context['metadata']['texto_version'],'notes_version'=>$context['metadata']['notas_version'],'exact_vi'=>$range['versiculo_inicio'],'exact_vf'=>$range['versiculo_fin']]);
+    $this->telemetry('published_cache_lookup_completed', [
+      'duration_ms'=>$this->elapsedMs($startedAt),
+      'method'=>$range['metodo'],
+      'level'=>$range['nivel'],
+      'result'=>$row?'hit':'miss',
+    ]);
     if (!$row) return null;
     if ($user) $this->logRequest((int)$user['id'], (int)$row['id'], $context['referencia'], 'completada', false);
     return $this->present($row);
@@ -25,7 +62,12 @@ final class BibleStudyService
 
   public function create(array $input, array $user): array
   {
-    $range = $this->normalize($input);
+    return $this->createPrepared($this->prepareInput($input), $user);
+  }
+
+  public function createPrepared(array $prepared, array $user): array
+  {
+    $range=$prepared['range']; $context=$prepared['context']; $methodConfig=$prepared['method_config']; $hash=$prepared['hash'];
 
     /*
      * Debe validarse el esquema antes de ejecutar consultas que utilicen las
@@ -36,9 +78,6 @@ final class BibleStudyService
       throw new RuntimeException($readiness['message']);
     }
 
-    $context = $this->context($range);
-    $methodConfig = BibleStudyMethod::config($range['metodo']);
-    $hash = hash('sha256', json_encode([$context, BibleStudyPrompt::METHOD], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     $cached = lvj_first($this->pdo, "SELECT * FROM lvj_bib_estudios_ia WHERE metodo=:study_method AND ((hash_contexto=:hash AND metodo_version=:method) OR (libro_id=:book AND capitulo_inicio=:ci AND capitulo_fin=:cf AND versiculo_inicio<=:vi AND versiculo_fin>=:vf AND nivel=:level AND idioma=:language AND esquema_version=:schema AND texto_version=:text_version AND notas_version=:notes_version)) AND estado IN ('revision','publicado') AND deleted_at IS NULL ORDER BY (versiculo_inicio=:exact_vi AND versiculo_fin=:exact_vf) DESC,(versiculo_fin-versiculo_inicio) ASC,updated_at DESC,id DESC LIMIT 1", ['study_method'=>$range['metodo'],'hash'=>$hash,'method'=>BibleStudyPrompt::METHOD,'book'=>$context['libro_id'],'ci'=>$range['capitulo_inicio'],'vi'=>$range['versiculo_inicio'],'cf'=>$range['capitulo_fin'],'vf'=>$range['versiculo_fin'],'level'=>$range['nivel'],'language'=>self::LANGUAGE,'schema'=>$methodConfig['schema'],'text_version'=>$context['metadata']['texto_version'],'notes_version'=>$context['metadata']['notas_version'],'exact_vi'=>$range['versiculo_inicio'],'exact_vf'=>$range['versiculo_fin']]);
     if ($cached) {
       $this->logRequest((int) $user['id'], (int) $cached['id'], $context['referencia'], 'completada', false);
@@ -58,6 +97,7 @@ final class BibleStudyService
       $studyId = (int) $this->pdo->lastInsertId();
       $this->pdo->prepare('UPDATE lvj_bib_estudios_ia_solicitudes SET estudio_id=:study WHERE id=:id')
         ->execute(['study'=>$studyId, 'id'=>$requestId]);
+      $this->telemetry('generation_record_created', ['study_id'=>$studyId,'generation_id'=>$requestId,'method'=>$range['metodo'],'level'=>$range['nivel']]);
     } catch (PDOException $error) {
       if ((string) $error->getCode() !== '23000') throw $error;
       $existing = lvj_first($this->pdo, "SELECT * FROM lvj_bib_estudios_ia WHERE hash_contexto=:hash AND metodo_version=:method AND deleted_at IS NULL LIMIT 1", ['hash'=>$hash,'method'=>BibleStudyPrompt::METHOD]);
@@ -75,6 +115,7 @@ final class BibleStudyService
       $provider = BibleStudyProviderFactory::make();
       if ($provider instanceof OpenAIProvider) {
         $started = $provider->startBackgroundStudy($context);
+        $this->telemetry('openai_background_started', ['study_id'=>$studyId,'generation_id'=>$requestId,'response_id_hash'=>$this->responseIdHash($started['response_id']),'response_status'=>$started['status']]);
         $pendingJson = json_encode(['_generation'=>['provider'=>'openai','response_id'=>$started['response_id'],'status'=>$started['status'],'started_at'=>gmdate('c')]], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
         $this->refreshConnection();
         $this->pdo->prepare("UPDATE lvj_bib_estudios_ia SET proveedor_ia='openai',modelo_ia=:model,contenido_json=:json,error_mensaje=NULL,updated_at=NOW() WHERE id=:id AND estado='generando'")
@@ -157,7 +198,13 @@ final class BibleStudyService
 
   public function generationStatusForUser(array $input, int $userId): array
   {
+    $normalizationStartedAt = microtime(true);
     $range = $this->normalize($input);
+    $this->telemetry('normalization_completed', [
+      'duration_ms'=>$this->elapsedMs($normalizationStartedAt),
+      'method'=>$range['metodo'],
+      'level'=>$range['nivel'],
+    ]);
     $row = lvj_first($this->pdo, "SELECT estudio.*,
         (estudio.updated_at < :stale_before) AS generation_expired
       FROM lvj_bib_estudios_ia estudio
@@ -292,15 +339,27 @@ final class BibleStudyService
     if (($generation['provider'] ?? '') !== 'openai' || $responseId === '') return null;
     $provider = BibleStudyProviderFactory::make();
     if (!$provider instanceof OpenAIProvider) return null;
-    $result = $provider->retrieveBackgroundStudy($responseId, $this->context($range));
+    $result = $provider->retrieveBackgroundStudy($responseId);
     if (($result['state'] ?? '') === 'processing') return ['state'=>'processing'];
     if (($result['state'] ?? '') === 'failed') {
       $this->failGeneration((int) $row['id'], mb_substr((string) ($result['message'] ?? 'La generación no pudo completarse.'), 0, 1000));
       return ['state'=>'failed', 'message'=>'La generación no pudo completarse. Puedes intentarlo nuevamente.'];
     }
-    $generated = $result['result'] ?? null;
+    $contextStartedAt = microtime(true);
+    $context = $this->context($range);
+    $contextJson = json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    $this->telemetry('context_completed', [
+      'duration_ms'=>$this->elapsedMs($contextStartedAt),
+      'study_id'=>(int)$row['id'],
+      'method'=>$range['metodo'],
+      'level'=>$range['nivel'],
+      'verse_count'=>count($context['versiones']['platense']['versiculos']??[]),
+      'context_bytes'=>is_string($contextJson)?strlen($contextJson):0,
+    ]);
+    $generated = $provider->completeBackgroundStudy($result['response'] ?? [], $context);
     if (!is_array($generated) || !is_array($generated['study'] ?? null)) throw new RuntimeException('OpenAI devolvió una generación completada sin contenido válido.');
     $json = json_encode($generated['study'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+    $persistenceStartedAt = microtime(true);
     $this->pdo->beginTransaction();
     try {
       $update = $this->pdo->prepare("UPDATE lvj_bib_estudios_ia SET titulo=:titulo,proveedor_ia='openai',modelo_ia=:model,contenido_json=:json,estado='revision',tokens_entrada=:tin,tokens_salida=:tout,error_mensaje=NULL,updated_at=NOW() WHERE id=:id AND estado='generando'");
@@ -309,6 +368,14 @@ final class BibleStudyService
         $this->pdo->prepare("UPDATE lvj_bib_estudios_ia_solicitudes SET estado='completada',error_mensaje=NULL,completed_at=NOW() WHERE estudio_id=:study AND estado='procesando'")->execute(['study'=>(int) $row['id']]);
       }
       $this->pdo->commit();
+      $this->telemetry('persistence_completed', [
+        'duration_ms'=>$this->elapsedMs($persistenceStartedAt),
+        'study_id'=>(int)$row['id'],
+        'input_tokens'=>$generated['input_tokens']??null,
+        'output_tokens'=>$generated['output_tokens']??null,
+        'total_tokens'=>$generated['total_tokens']??null,
+        'json_bytes'=>strlen($json),
+      ]);
     } catch (Throwable $error) {
       if ($this->pdo->inTransaction()) $this->pdo->rollBack();
       throw $error;
@@ -362,6 +429,9 @@ final class BibleStudyService
   private function loadSafeEquivalentRange(int $versionId,int $bookId,array $range): array { $chapter=$this->safeEquivalentChapter($range['libro_codigo'],(int)$range['capitulo_inicio']); if($chapter===null)return []; $s=$this->pdo->prepare('SELECT id,capitulo,versiculo,texto,titulo_seccion FROM lvj_bib_versiculos WHERE version_id=:version AND libro_id=:book AND capitulo=:chapter AND versiculo BETWEEN :start AND :end AND estado=1 AND deleted_at IS NULL ORDER BY versiculo,id'); $s->execute(['version'=>$versionId,'book'=>$bookId,'chapter'=>$chapter,'start'=>$range['versiculo_inicio'],'end'=>$range['versiculo_fin']]); return $s->fetchAll(); }
   private function safeEquivalentChapter(string $bookCode,int $chapter): ?int { $bookCode=strtoupper($bookCode); if(in_array($bookCode,['BAR','DAN','EST'],true))return null; if($bookCode!=='PSA')return $chapter; if(in_array($chapter,[9,113,114,115,146,147],true))return null; if(($chapter>=10&&$chapter<=112)||($chapter>=116&&$chapter<=145))return $chapter+1; return $chapter; }
   private function refreshConnection(): void { try { $this->pdo->query('SELECT 1'); } catch (PDOException $error) { $mysqlCode=(int)($error->errorInfo[1]??0); if(!in_array($mysqlCode,[2006,2013],true)&&!str_contains(mb_strtolower($error->getMessage()),'server has gone away'))throw $error; $this->pdo=lvj_db(); } }
+  private function elapsedMs(float $startedAt): int { return (int)round((microtime(true)-$startedAt)*1000); }
+  private function responseIdHash(string $responseId): string { return $responseId===''?'':substr(hash('sha256',$responseId),0,16); }
+  private function telemetry(string $stage,array $metadata=[]): void { if(class_exists('BibleStudyTelemetry',false)) BibleStudyTelemetry::log($stage,$metadata); }
   private function tableExists(string $table): bool
   {
     if (!preg_match('/^[A-Za-z0-9_]+$/', $table)) {

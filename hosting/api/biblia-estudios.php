@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-const LVJ_BIBLE_API_BUILD = '2026-08-14-v12';
+const LVJ_BIBLE_API_BUILD = '2026-08-15-v13';
 
 function lvj_bible_api_fallback_response(array $payload, int $status): void
 {
@@ -52,6 +52,7 @@ function lvj_bible_api_log(Throwable $error, string $errorId): void
   );
 }
 
+$requestStartedAt = microtime(true);
 $errorId = lvj_bible_api_error_id();
 
 try {
@@ -59,6 +60,7 @@ try {
 
   $base = __DIR__ . '/includes/bible-study/';
   $files = [
+    'BibleStudyTelemetry',
     'BibleStudyAiProviderInterface',
     'BibleStudyMethod',
     'BibleStudySchema',
@@ -83,6 +85,8 @@ try {
 
     require_once $path;
   }
+
+  BibleStudyTelemetry::begin($errorId, $requestStartedAt);
 
   $pdo = lvj_db();
   $service = new BibleStudyService($pdo);
@@ -113,6 +117,7 @@ try {
 
     if (filter_var($_GET['generation_status'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
       $user = SupabaseAuth::requireUser($pdo);
+      BibleStudyTelemetry::log('authentication_completed');
       $statusInput = [
         'libro_codigo' => $_GET['libro_codigo'] ?? '',
         'capitulo_inicio' => $_GET['capitulo_inicio'] ?? 0,
@@ -180,9 +185,12 @@ try {
 
   $input = lvj_json_input();
   $user = SupabaseAuth::requireUser($pdo);
-  $published = $service->findPublishedForInput($input, $user);
+  BibleStudyTelemetry::log('authentication_completed');
+  $prepared = $service->prepareInput($input);
+  $published = $service->findPublishedForPrepared($prepared, $user);
 
   if ($published) {
+    BibleStudyTelemetry::log('response_ready', ['source'=>'cache']);
     lvj_json_response([
       'success' => true,
       'api_build' => LVJ_BIBLE_API_BUILD,
@@ -195,9 +203,10 @@ try {
   @set_time_limit($providerTimeout + 30);
   ignore_user_abort(true);
 
-  $result = $service->create($input, $user);
+  $result = $service->createPrepared($prepared, $user);
 
   $processing = $result['source'] === 'processing';
+  BibleStudyTelemetry::log('response_ready', ['source'=>$result['source']]);
   lvj_json_response([
     'success' => true,
     'api_build' => LVJ_BIBLE_API_BUILD,

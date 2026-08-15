@@ -295,8 +295,24 @@ final class BibleStudySchema
     }
     if (($study['metodo'] ?? '') !== $method) throw new RuntimeException('El método devuelto no coincide con el método solicitado.');
     if ($method === 'metodo_salmo' && ($study['modelo_referencia'] ?? null) !== 'salmo8-1.0') throw new RuntimeException('El Método Salmo no conserva su modelo de referencia.');
+    $propositionsStartedAt = microtime(true);
     self::validatePropositions($study['analisis_proposiciones'] ?? null, $context);
-    if ($method === 'integral_lvj') self::validateArcing($study['arcing'] ?? null, $study['analisis_proposiciones'] ?? null);
+    if (class_exists('BibleStudyTelemetry', false)) {
+      BibleStudyTelemetry::log('validate_propositions_completed', [
+        'duration_ms'=>BibleStudyTelemetry::elapsedMs($propositionsStartedAt),
+        'method'=>$method,
+      ]);
+    }
+    if ($method === 'integral_lvj') {
+      $arcingStartedAt = microtime(true);
+      self::validateArcing($study['arcing'] ?? null, $study['analisis_proposiciones'] ?? null);
+      if (class_exists('BibleStudyTelemetry', false)) {
+        BibleStudyTelemetry::log('validate_arcing_completed', [
+          'duration_ms'=>BibleStudyTelemetry::elapsedMs($arcingStartedAt),
+          'method'=>$method,
+        ]);
+      }
+    }
     if (!is_array($study['textos']) || !is_array($study['lectio_divina'])) {
       throw new RuntimeException('El estudio generado no respeta el esquema requerido.');
     }
