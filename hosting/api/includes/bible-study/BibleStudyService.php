@@ -120,7 +120,12 @@ final class BibleStudyService
         $this->refreshConnection();
         $this->pdo->prepare("UPDATE lvj_bib_estudios_ia SET proveedor_ia='openai',modelo_ia=:model,contenido_json=:json,error_mensaje=NULL,updated_at=NOW() WHERE id=:id AND estado='generando'")
           ->execute(['model'=>$started['model'], 'json'=>$pendingJson, 'id'=>$studyId]);
-        return ['source'=>'processing', 'study'=>null];
+        return [
+          'source'=>'processing',
+          'study'=>null,
+          'study_id'=>$studyId,
+          'generation_id'=>$requestId,
+        ];
       }
       $generated = $provider->generateStudy($context);
       $this->refreshConnection();
@@ -205,7 +210,25 @@ final class BibleStudyService
       'method'=>$range['metodo'],
       'level'=>$range['nivel'],
     ]);
-    $row = lvj_first($this->pdo, "SELECT estudio.*,
+    $studyId = filter_var($input['study_id'] ?? null, FILTER_VALIDATE_INT);
+    $generationId = filter_var($input['generation_id'] ?? null, FILTER_VALIDATE_INT);
+    if ($studyId && $generationId) {
+      $row = lvj_first($this->pdo, "SELECT estudio.*, libro.codigo AS libro_codigo,
+          (estudio.updated_at < :stale_before) AS generation_expired
+        FROM lvj_bib_estudios_ia estudio
+        INNER JOIN lvj_bib_libros libro ON libro.id=estudio.libro_id
+        INNER JOIN lvj_bib_estudios_ia_solicitudes solicitud
+          ON solicitud.estudio_id=estudio.id
+        WHERE estudio.id=:study AND solicitud.id=:generation
+          AND solicitud.usuario_id=:user AND estudio.deleted_at IS NULL
+        LIMIT 1", [
+          'study'=>(int)$studyId,
+          'generation'=>(int)$generationId,
+          'user'=>$userId,
+          'stale_before'=>$this->generationStaleBefore(),
+        ]);
+    } else {
+      $row = lvj_first($this->pdo, "SELECT estudio.*,
         (estudio.updated_at < :stale_before) AS generation_expired
       FROM lvj_bib_estudios_ia estudio
       INNER JOIN lvj_bib_libros libro ON libro.id=estudio.libro_id
@@ -228,8 +251,20 @@ final class BibleStudyService
         'study_method'=>$range['metodo'],
         'stale_before'=>$this->generationStaleBefore(),
       ]);
+    }
 
     if (!$row) return ['state'=>'not_found'];
+    if ($studyId && $generationId) {
+      $range = [
+        'libro_codigo'=>(string)$row['libro_codigo'],
+        'capitulo_inicio'=>(int)$row['capitulo_inicio'],
+        'versiculo_inicio'=>(int)$row['versiculo_inicio'],
+        'capitulo_fin'=>(int)$row['capitulo_fin'],
+        'versiculo_fin'=>(int)$row['versiculo_fin'],
+        'metodo'=>(string)$row['metodo'],
+        'nivel'=>(string)$row['nivel'],
+      ];
+    }
     $state = (string) ($row['estado'] ?? '');
     if (in_array($state, ['revision', 'publicado'], true)) {
       return ['state'=>'completed', 'study'=>$this->present($row)];

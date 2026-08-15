@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-const LVJ_BIBLE_API_BUILD = '2026-08-15-v15';
+const LVJ_BIBLE_API_BUILD = '2026-08-15-v16';
 
 function lvj_bible_api_fallback_response(array $payload, int $status): void
 {
@@ -165,6 +165,8 @@ try {
         'capitulo_fin' => $_GET['capitulo_fin'] ?? 0,
         'versiculo_fin' => $_GET['versiculo_fin'] ?? 0,
         'nivel' => $_GET['nivel'] ?? '',
+        'study_id' => $_GET['study_id'] ?? null,
+        'generation_id' => $_GET['generation_id'] ?? null,
       ];
       lvj_json_response([
         'success' => true,
@@ -252,7 +254,13 @@ try {
     'api_build' => LVJ_BIBLE_API_BUILD,
     'source' => $result['source'],
     'study' => $result['study'],
-    'generation' => $processing ? ['state'=>'processing'] : null,
+    'study_id' => $processing ? ($result['study_id'] ?? null) : null,
+    'generation_id' => $processing ? ($result['generation_id'] ?? null) : null,
+    'generation' => $processing ? [
+      'state'=>'processing',
+      'study_id'=>$result['study_id'] ?? null,
+      'generation_id'=>$result['generation_id'] ?? null,
+    ] : null,
   ], $processing ? 202 : ($result['source'] === 'generated' ? 201 : 200));
 } catch (LengthException | InvalidArgumentException $error) {
   lvj_bible_api_log($error, $errorId);

@@ -13,9 +13,11 @@ export type RecentBibleStudy = BibleStudy;
 interface BibleStudyGenerationStatus {
   state: "not_found" | "processing" | "completed" | "failed";
   study?: BibleStudy;
+  study_id?: number;
+  generation_id?: number;
   message?: string;
 }
-interface StudyResponse { success: boolean; source?: "cache" | "generated" | "processing"; study?: BibleStudy; studies?: BibleStudy[]; generation?: BibleStudyGenerationStatus; configured?: boolean; ready?: boolean; message?: string; error_id?: string; }
+interface StudyResponse { success: boolean; source?: "cache" | "generated" | "processing"; study?: BibleStudy; study_id?: number; generation_id?: number; studies?: BibleStudy[]; generation?: BibleStudyGenerationStatus; configured?: boolean; ready?: boolean; message?: string; error_id?: string; }
 
 export interface BibleStudyRequest {
   libro_codigo: string; capitulo_inicio: number; versiculo_inicio: number;
@@ -23,6 +25,13 @@ export interface BibleStudyRequest {
 }
 
 const GENERATION_INTERRUPTED = "BIBLE_STUDY_GENERATION_INTERRUPTED";
+
+class BibleStudyGenerationInterruptedError extends Error {
+  constructor(readonly studyId?: number, readonly generationId?: number) {
+    super(GENERATION_INTERRUPTED);
+    this.name = "BibleStudyGenerationInterruptedError";
+  }
+}
 
 class BibleStudyApiError extends Error {
   constructor(message: string, readonly status: number) {
@@ -110,7 +119,7 @@ const wait = (milliseconds: number, signal?: AbortSignal) => new Promise<void>((
 
 export async function recoverGeneratedBibleStudy(
   input: BibleStudyRequest,
-  options: { signal?: AbortSignal; attempts?: number; intervalMs?: number } = {},
+  options: { signal?: AbortSignal; attempts?: number; intervalMs?: number; studyId?: number; generationId?: number } = {},
 ): Promise<BibleStudy | null> {
   const attempts = Math.max(1, options.attempts ?? 60);
   const intervalMs = Math.max(1_000, options.intervalMs ?? 10_000);
@@ -122,7 +131,10 @@ export async function recoverGeneratedBibleStudy(
     const studies = await getRecentBibleStudies().catch(() => []);
     const recovered = studies.find(study => matchesBibleStudyRequest(study, input));
     if (recovered) return recovered;
-    const generation = await getBibleStudyGenerationStatus(input).catch(() => null);
+    const generation = await getBibleStudyGenerationStatus(input, {
+      studyId: options.studyId,
+      generationId: options.generationId,
+    }).catch(() => null);
     if (generation?.state === "completed" && generation.study) return generation.study;
     if (generation?.state === "failed") {
       // Al comenzar una regeneración puede aparecer fugazmente el registro
@@ -163,10 +175,17 @@ export async function getRecentBibleStudies() {
   const payload = await parse(await authenticatedFetch(url, { headers: { Accept: "application/json" } }));
   return payload.studies ?? [];
 }
-export async function getBibleStudyGenerationStatus(input: BibleStudyRequest): Promise<BibleStudyGenerationStatus> {
+export async function getBibleStudyGenerationStatus(
+  input: BibleStudyRequest,
+  reference: { studyId?: number; generationId?: number } = {},
+): Promise<BibleStudyGenerationStatus> {
   const url = new URL(apiUrl, window.location.origin);
   url.searchParams.set("generation_status", "1");
   Object.entries(input).forEach(([key, value]) => url.searchParams.set(key, String(value)));
+  if (reference.studyId && reference.generationId) {
+    url.searchParams.set("study_id", String(reference.studyId));
+    url.searchParams.set("generation_id", String(reference.generationId));
+  }
   const payload = await parse(await authenticatedFetch(url, { headers: { Accept: "application/json" } }));
   return payload.generation ?? { state: "not_found" };
 }
@@ -180,7 +199,10 @@ export async function createBibleStudy(input: BibleStudyRequest) {
   if (response.status === 401) throw new Error("AUTH_REQUIRED");
   const payload = await parse(response);
   if (payload.generation?.state === "processing" || payload.source === "processing") {
-    throw new Error(GENERATION_INTERRUPTED);
+    throw new BibleStudyGenerationInterruptedError(
+      payload.study_id ?? payload.generation?.study_id,
+      payload.generation_id ?? payload.generation?.generation_id,
+    );
   }
   if (!payload.study) throw new Error("El estudio no está disponible."); return payload.study;
 }
