@@ -87,13 +87,9 @@ export function StudyReadingFrame({ children }: { children: ReactNode }) {
     : prefs.tema === "sepia"
       ? "study-theme-ink biblia-eink-paper border-[#5f5b4d]/30 text-[#20211d]"
       : "study-theme-dark border-[#D4AF37]/20 bg-[#0B0B0B] text-[#F8F5EA]";
-  const width = prefs.margenLectura === "estrecho"
-    ? { width: "100%", maxWidth: "56rem" }
-    : prefs.margenLectura === "amplio"
-      ? { width: "calc(100% - 1.5rem)", maxWidth: "40rem" }
-      : { width: "calc(100% - 0.5rem)", maxWidth: "48rem" };
   const readingStyle = {
-    ...width,
+    width: "100%",
+    maxWidth: "56rem",
     "--study-reader-font-size": `${prefs.tam}px`,
     "--study-reader-line-height": prefs.interlineado,
     "--study-reader-text-align": prefs.alineacion === "justificada" ? "justify" : "left",

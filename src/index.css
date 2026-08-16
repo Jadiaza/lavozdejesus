@@ -478,6 +478,21 @@
     text-align: var(--study-reader-text-align, left) !important;
   }
 
+  .study-reader-host article.study-reading-page[data-reading-margin="estrecho"] {
+    padding-right: 0.75rem !important;
+    padding-left: 0.75rem !important;
+  }
+
+  .study-reader-host article.study-reading-page[data-reading-margin="normal"] {
+    padding-right: 1.25rem !important;
+    padding-left: 1.25rem !important;
+  }
+
+  .study-reader-host article.study-reading-page[data-reading-margin="amplio"] {
+    padding-right: 2rem !important;
+    padding-left: 2rem !important;
+  }
+
   @media (max-width: 767px) {
     .biblia-layout-shell:has(.study-reading-page) main {
       width: 100% !important;
@@ -505,27 +520,6 @@
       font-size: var(--study-reader-font-size, 17px) !important;
       line-height: var(--study-reader-line-height, 1.9) !important;
       text-align: var(--study-reader-text-align, left) !important;
-    }
-
-    .study-reader-host article.study-reading-page[data-reading-margin="estrecho"] {
-      width: calc(100% - 0.5rem) !important;
-      max-width: none !important;
-      margin-right: auto !important;
-      margin-left: auto !important;
-    }
-
-    .study-reader-host article.study-reading-page[data-reading-margin="normal"] {
-      width: calc(100% - 2rem) !important;
-      max-width: none !important;
-      margin-right: auto !important;
-      margin-left: auto !important;
-    }
-
-    .study-reader-host article.study-reading-page[data-reading-margin="amplio"] {
-      width: calc(100% - 4rem) !important;
-      max-width: none !important;
-      margin-right: auto !important;
-      margin-left: auto !important;
     }
 
     .study-reader-host article.study-reading-page p,
