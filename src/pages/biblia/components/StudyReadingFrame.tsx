@@ -92,13 +92,11 @@ export function StudyReadingFrame({ children }: { children: ReactNode }) {
     : prefs.margenLectura === "amplio"
       ? { width: "calc(100% - 1.5rem)", maxWidth: "40rem" }
       : { width: "calc(100% - 0.5rem)", maxWidth: "48rem" };
-  const mobilePadding = prefs.margenLectura === "estrecho" ? "0.75rem" : prefs.margenLectura === "amplio" ? "2rem" : "1.25rem";
   const readingStyle = {
     ...width,
     "--study-reader-font-size": `${prefs.tam}px`,
     "--study-reader-line-height": prefs.interlineado,
     "--study-reader-text-align": prefs.alineacion === "justificada" ? "justify" : "left",
-    "--study-reader-padding-x": mobilePadding,
     fontFamily: font.family,
     fontSize: prefs.tam,
     lineHeight: prefs.interlineado,
@@ -168,7 +166,7 @@ export function StudyReadingFrame({ children }: { children: ReactNode }) {
       )}
 
       <StudyReadingThemeContext.Provider value={prefs.tema}>
-        <article style={readingStyle} className={"study-reading-page mx-auto rounded-[1.5rem] border p-[clamp(1rem,5vw,1.5rem)] transition-all " + themeClass}>{children}</article>
+        <article data-reading-margin={prefs.margenLectura} style={readingStyle} className={"study-reading-page mx-auto rounded-[1.5rem] border p-[clamp(1rem,5vw,1.5rem)] transition-all " + themeClass}>{children}</article>
       </StudyReadingThemeContext.Provider>
     </section>
   );

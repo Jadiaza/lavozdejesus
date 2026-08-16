@@ -497,7 +497,7 @@
       max-width: none !important;
       min-height: calc(100dvh - 4rem);
       margin: 0 !important;
-      padding: 1.125rem var(--study-reader-padding-x, 1.25rem) calc(110px + env(safe-area-inset-bottom)) !important;
+      padding: 1.125rem 0.75rem calc(110px + env(safe-area-inset-bottom)) !important;
       border: 0 !important;
       border-radius: 0 !important;
       background: var(--study-surface) !important;
@@ -505,6 +505,27 @@
       font-size: var(--study-reader-font-size, 17px) !important;
       line-height: var(--study-reader-line-height, 1.9) !important;
       text-align: var(--study-reader-text-align, left) !important;
+    }
+
+    .study-reader-host article.study-reading-page[data-reading-margin="estrecho"] {
+      width: calc(100% - 0.5rem) !important;
+      max-width: none !important;
+      margin-right: auto !important;
+      margin-left: auto !important;
+    }
+
+    .study-reader-host article.study-reading-page[data-reading-margin="normal"] {
+      width: calc(100% - 2rem) !important;
+      max-width: none !important;
+      margin-right: auto !important;
+      margin-left: auto !important;
+    }
+
+    .study-reader-host article.study-reading-page[data-reading-margin="amplio"] {
+      width: calc(100% - 4rem) !important;
+      max-width: none !important;
+      margin-right: auto !important;
+      margin-left: auto !important;
     }
 
     .study-reader-host article.study-reading-page p,
