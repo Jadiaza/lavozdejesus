@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { AlignJustify, AlignLeft, Check, ChevronRight } from "lucide-react";
 import { getMeta, setMeta } from "@/features/biblia/db";
 import { StudyReadingThemeContext } from "./StudyReadingTheme";
@@ -92,6 +92,19 @@ export function StudyReadingFrame({ children }: { children: ReactNode }) {
     : prefs.margenLectura === "amplio"
       ? { width: "calc(100% - 1.5rem)", maxWidth: "40rem" }
       : { width: "calc(100% - 0.5rem)", maxWidth: "48rem" };
+  const mobilePadding = prefs.margenLectura === "estrecho" ? "0.75rem" : prefs.margenLectura === "amplio" ? "2rem" : "1.25rem";
+  const readingStyle = {
+    ...width,
+    "--study-reader-font-size": `${prefs.tam}px`,
+    "--study-reader-line-height": prefs.interlineado,
+    "--study-reader-text-align": prefs.alineacion === "justificada" ? "justify" : "left",
+    "--study-reader-padding-x": mobilePadding,
+    fontFamily: font.family,
+    fontSize: prefs.tam,
+    lineHeight: prefs.interlineado,
+    fontWeight: prefs.pesoFuente,
+    textAlign: prefs.alineacion === "justificada" ? "justify" : "left",
+  } as CSSProperties;
 
   return (
     <section className="mb-4">
@@ -155,7 +168,7 @@ export function StudyReadingFrame({ children }: { children: ReactNode }) {
       )}
 
       <StudyReadingThemeContext.Provider value={prefs.tema}>
-        <article style={{ ...width, fontFamily: font.family, fontSize: prefs.tam, lineHeight: prefs.interlineado, fontWeight: prefs.pesoFuente, textAlign: prefs.alineacion === "justificada" ? "justify" : "left" }} className={"study-reading-page mx-auto rounded-[1.5rem] border p-[clamp(1rem,5vw,1.5rem)] transition-all " + themeClass}>{children}</article>
+        <article style={readingStyle} className={"study-reading-page mx-auto rounded-[1.5rem] border p-[clamp(1rem,5vw,1.5rem)] transition-all " + themeClass}>{children}</article>
       </StudyReadingThemeContext.Provider>
     </section>
   );

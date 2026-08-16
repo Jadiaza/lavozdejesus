@@ -469,6 +469,15 @@
     color: #292a25 !important;
   }
 
+  /* Las preferencias Aa gobiernan todo el contenido de lectura del estudio,
+     incluso cuando una secciÃ³n interna trae utilidades tipogrÃ¡ficas propias. */
+  .study-reader-host article.study-reading-page :is(p, li, dd, td, th, blockquote) {
+    font-family: inherit !important;
+    font-size: var(--study-reader-font-size, 17px) !important;
+    line-height: var(--study-reader-line-height, 1.9) !important;
+    text-align: var(--study-reader-text-align, left) !important;
+  }
+
   @media (max-width: 767px) {
     .biblia-layout-shell:has(.study-reading-page) main {
       width: 100% !important;
@@ -488,21 +497,26 @@
       max-width: none !important;
       min-height: calc(100dvh - 4rem);
       margin: 0 !important;
-      padding: 1.125rem 1.25rem calc(110px + env(safe-area-inset-bottom)) !important;
+      padding: 1.125rem var(--study-reader-padding-x, 1.25rem) calc(110px + env(safe-area-inset-bottom)) !important;
       border: 0 !important;
       border-radius: 0 !important;
       background: var(--study-surface) !important;
       box-shadow: none !important;
-      font-size: 17px !important;
-      line-height: 1.7 !important;
-      text-align: left !important;
+      font-size: var(--study-reader-font-size, 17px) !important;
+      line-height: var(--study-reader-line-height, 1.9) !important;
+      text-align: var(--study-reader-text-align, left) !important;
     }
 
-    .study-reader-host article.study-reading-page *,
     .study-reader-host article.study-reading-page p,
     .study-reader-host article.study-reading-page li,
-    .study-reader-host article.study-reading-page dd {
-      text-align: left !important;
+    .study-reader-host article.study-reading-page dd,
+    .study-reader-host article.study-reading-page td,
+    .study-reader-host article.study-reading-page th,
+    .study-reader-host article.study-reading-page blockquote {
+      font-family: inherit !important;
+      font-size: var(--study-reader-font-size, 17px) !important;
+      line-height: var(--study-reader-line-height, 1.9) !important;
+      text-align: var(--study-reader-text-align, left) !important;
       overflow-wrap: break-word;
       word-break: normal;
       word-spacing: normal;
@@ -548,8 +562,9 @@
 
     .study-reader-host article.study-reading-page .study-mobile-prose,
     .study-reader-host article.study-reading-page .study-mobile-prose p {
-      font-size: 17px !important;
-      line-height: 1.7 !important;
+      font-size: var(--study-reader-font-size, 17px) !important;
+      line-height: var(--study-reader-line-height, 1.9) !important;
+      text-align: var(--study-reader-text-align, left) !important;
     }
 
     .study-reader-host article.study-reading-page .study-center-note {
@@ -571,8 +586,9 @@
     .study-reader-host article.study-reading-page .study-mobile-content p,
     .study-reader-host article.study-reading-page .study-mobile-content li,
     .study-reader-host article.study-reading-page .study-mobile-content dd {
-      font-size: 17px !important;
-      line-height: 1.7 !important;
+      font-size: var(--study-reader-font-size, 17px) !important;
+      line-height: var(--study-reader-line-height, 1.9) !important;
+      text-align: var(--study-reader-text-align, left) !important;
     }
   }
 
