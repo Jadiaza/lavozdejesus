@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,10 +23,6 @@ const RosarioSeleccionMisterios = lazy(
   () => import("@/modules/rosary/pages/RosarioSeleccionMisterios")
 );
 
-const RosarioConfiguracion = lazy(
-  () => import("@/modules/rosary/pages/RosarioConfiguracion")
-);
-
 const RosarioDigital = lazy(
   () => import("@/modules/rosary/pages/RosarioDigital")
 );
@@ -37,22 +33,6 @@ const RosarioFisico = lazy(
 
 const RosarioAudio = lazy(
   () => import("@/modules/rosary/pages/RosarioAudio")
-);
-
-const RosarioMisterios = lazy(
-  () => import("@/modules/rosary/pages/RosarioMisterios")
-);
-
-const RosarioDescargas = lazy(
-  () => import("@/modules/rosary/pages/RosarioDescargas")
-);
-
-const RosarioDiario = lazy(
-  () => import("@/modules/rosary/pages/RosarioDiario")
-);
-
-const RosarioInfo = lazy(
-  () => import("@/modules/rosary/pages/RosarioInfo")
 );
 
 const Contacto = lazy(() => import("./pages/Contacto.tsx"));
@@ -150,7 +130,7 @@ const App = () => (
 
 <Route
   path="/rosario/configuracion"
-  element={<RosarioConfiguracion />}
+  element={<Navigate to="/rosario" replace />}
 />
 
 <Route
@@ -170,22 +150,22 @@ const App = () => (
 
 <Route
   path="/rosario/misterios"
-  element={<RosarioMisterios />}
+  element={<Navigate to="/rosario" replace />}
 />
 
 <Route
   path="/rosario/descargas"
-  element={<RosarioDescargas />}
+  element={<Navigate to="/rosario" replace />}
 />
 
 <Route
   path="/rosario/diario"
-  element={<RosarioDiario />}
+  element={<Navigate to="/rosario" replace />}
 />
 
 <Route
   path="/rosario/informacion"
-  element={<RosarioInfo />}
+  element={<Navigate to="/rosario" replace />}
 />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

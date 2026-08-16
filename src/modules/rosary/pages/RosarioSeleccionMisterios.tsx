@@ -1,13 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CircleDot, Sparkles } from "lucide-react";
 import { RosaryLayout } from "../components/RosaryLayout";
-import { RosaryRadioRow } from "../components/RosaryRows";
 import { useRosaryFlow } from "../hooks/useRosaryFlow";
 import { mysteryGroups } from "../mocks/mysteries";
 import { mysteryArt, mysteryDays } from "../mocks/mysteryArt";
 import { rosaryTodayService } from "../services/rosaryTodayService";
-import type { MysteryGroupId, RosaryScope } from "../types";
+import type { MysteryGroupId } from "../types";
 
 const GROUPS: MysteryGroupId[] = ["gozosos", "luminosos", "dolorosos", "gloriosos"];
 
@@ -16,18 +14,16 @@ export const RosarioSeleccionMisterios = () => {
   const navigate = useNavigate();
   const { flow, update } = useRosaryFlow();
   const [group, setGroup] = useState<MysteryGroupId>(flow.group ?? rosaryTodayService.groupForDate());
-  const [scope, setScope] = useState<RosaryScope>(flow.scope);
-
   const submit = () => {
-    update({ group, scope });
-    navigate("/rosario/configuracion");
+    update({ group, scope: "completo" });
+    navigate("/rosario/modalidad");
   };
 
   return (
     <RosaryLayout
       title="Seleccionar misterios"
       subtitle="Puedes cambiar los misterios del día si lo deseas"
-      back="/rosario/intencion"
+      back="/rosario"
     >
       <div role="radiogroup" aria-label="Grupo de misterios" className="space-y-2">
         {GROUPS.map((g) => (
@@ -62,23 +58,6 @@ export const RosarioSeleccionMisterios = () => {
             />
           </button>
         ))}
-      </div>
-
-      <div role="radiogroup" aria-label="Alcance del rezo" className="mt-4 space-y-2">
-        <RosaryRadioRow
-          icon={<Sparkles className="h-4 w-4" aria-hidden="true" />}
-          label="Rosario completo (20 misterios)"
-          hint="Recorre los cuatro grupos de misterios"
-          selected={scope === "completo"}
-          onSelect={() => setScope("completo")}
-        />
-        <RosaryRadioRow
-          icon={<CircleDot className="h-4 w-4" aria-hidden="true" />}
-          label="Una sola decena"
-          hint="Ideal para rezar en poco tiempo"
-          selected={scope === "decena"}
-          onSelect={() => setScope("decena")}
-        />
       </div>
 
       <button

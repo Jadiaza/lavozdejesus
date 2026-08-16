@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BookOpen, ChevronRight, CircleDotDashed, Home, Radio, Settings, UserRound } from "lucide-react";
+import { BookOpen, ChevronRight, CircleDotDashed, Home, Radio, UserRound } from "lucide-react";
 
 import { RosaryLayout } from "../components/RosaryLayout";
 import { RosaryLoading } from "../components/RosaryStateViews";
@@ -70,15 +70,6 @@ export const RosarioHome = () => {
       title="Oración Mariana"
       subtitle={longDate}
       back="/"
-      actions={
-        <Link
-          to="/rosario/configuracion"
-          aria-label="Configuración del Rosario"
-          className="flex h-11 w-11 items-center justify-center text-gold transition hover:text-gold-bright active:scale-95"
-        >
-          <Settings className="h-7 w-7" strokeWidth={1.55} aria-hidden="true" />
-        </Link>
-      }
       fullScreen
     >
       {today.status === "loading" ? (

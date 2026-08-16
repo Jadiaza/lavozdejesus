@@ -9,19 +9,19 @@ import type { RosaryModeId } from "../types";
 const MODES: Array<{ id: RosaryModeId; title: string; description: string; icon: typeof CircleDot }> = [
   {
     id: "digital",
-    title: "Cuentas digitales",
+    title: "Interactivo",
     description: "La aplicación lleva el conteo y te acompaña oración por oración.",
     icon: Sparkles,
   },
   {
     id: "physical",
-    title: "Con mi rosario",
+    title: "Con mi Rosario",
     description: "Usa tus cuentas físicas mientras sigues las oraciones y meditaciones.",
     icon: CircleDot,
   },
   {
     id: "audio",
-    title: "Rosario por audio",
+    title: "Audio",
     description: "Escucha la guía, responde y contempla cada misterio.",
     icon: Headphones,
   },
@@ -40,7 +40,7 @@ export const RosarioModalidad = () => {
   };
 
   return (
-    <RosaryLayout title="¿Cómo deseas rezar?" subtitle="Elige tu modalidad" back="/rosario">
+    <RosaryLayout title="Modalidad" subtitle="Elige cómo deseas rezar el Santo Rosario" back="/rosario/seleccionar-misterios">
       <ul className="space-y-3">
         {MODES.map((m) => (
           <li key={m.id}>
@@ -53,13 +53,6 @@ export const RosarioModalidad = () => {
           </li>
         ))}
       </ul>
-      <button
-        type="button"
-        onClick={() => navigate("/rosario/misterios")}
-        className="mt-5 w-full min-h-11 text-sm text-gold underline decoration-[hsl(var(--gold)/0.4)]"
-      >
-        Ver solamente los misterios
-      </button>
     </RosaryLayout>
   );
 };

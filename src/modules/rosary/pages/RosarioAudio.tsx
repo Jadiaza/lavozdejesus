@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { List, Pause, Play, RotateCcw, RotateCw, SkipForward, WifiOff } from "lucide-react";
+import { List, Play, RotateCcw, RotateCw, SkipForward, WifiOff } from "lucide-react";
 import { RosaryLayout } from "../components/RosaryLayout";
 import { RosaryLoading } from "../components/RosaryStateViews";
 import { RosaryPrayerScene } from "../components/RosaryPrayerScene";
@@ -23,7 +23,6 @@ export const RosarioAudio = () => {
   const group = isGroup(params.get("grupo")) ? (params.get("grupo") as MysteryGroupId) : rosaryTodayService.groupForDate();
   const { prefs, update } = useRosaryPreferences();
   const { flow } = useRosaryFlow();
-  const [playing, setPlaying] = useState(false);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
 
   const s = useRosarySession({
@@ -104,11 +103,11 @@ export const RosarioAudio = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setPlaying((v) => !v)}
-                aria-label={playing ? "Pausar" : "Reproducir"}
-                className="h-16 w-16 rounded-full bg-gradient-gold text-navy-deep flex items-center justify-center"
+                disabled
+                aria-label="Audio no disponible"
+                className="flex h-16 w-16 cursor-not-allowed items-center justify-center rounded-full bg-gradient-gold text-navy-deep opacity-45"
               >
-                {playing ? <Pause className="h-6 w-6" aria-hidden="true" /> : <Play className="h-6 w-6" aria-hidden="true" />}
+                <Play className="h-6 w-6" aria-hidden="true" />
               </button>
               <button type="button" onClick={s.next} aria-label="Avanzar" className="h-12 w-12 rounded-full gold-border flex items-center justify-center">
                 <RotateCw className="h-4 w-4" aria-hidden="true" />

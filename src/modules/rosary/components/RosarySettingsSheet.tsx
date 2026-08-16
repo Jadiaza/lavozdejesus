@@ -1,4 +1,5 @@
 import type { RosaryPreferences, TextSize } from "../types";
+import { X } from "lucide-react";
 
 interface Props {
   prefs: RosaryPreferences;
@@ -33,11 +34,13 @@ const Toggle = ({
 );
 
 export const RosarySettingsSheet = ({ prefs, update, onClose }: Props) => (
-  <section className="glass gold-border rounded-3xl p-5 space-y-3" aria-label="Ajustes del rosario">
+  <div className="fixed inset-0 z-[70] flex items-end justify-center" role="presentation">
+    <button type="button" onClick={onClose} className="absolute inset-0 bg-black/70 backdrop-blur-sm" aria-label="Cerrar ajustes" />
+  <section className="relative z-10 max-h-[82dvh] w-full max-w-lg overflow-y-auto rounded-t-[2rem] border border-b-0 border-gold/35 bg-navy-deep p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-[0_-18px_60px_rgba(0,0,0,0.65)] space-y-3" role="dialog" aria-modal="true" aria-label="Ajustes del rosario">
     <div className="flex items-center justify-between">
       <h2 className="font-display text-xl">Ajustes</h2>
-      <button type="button" onClick={onClose} className="min-h-11 px-3 text-sm text-gold">
-        Cerrar
+      <button type="button" onClick={onClose} className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/25 text-gold" aria-label="Cerrar ajustes">
+        <X className="h-5 w-5" aria-hidden="true" />
       </button>
     </div>
 
@@ -82,4 +85,5 @@ export const RosarySettingsSheet = ({ prefs, update, onClose }: Props) => (
       />
     </div>
   </section>
+  </div>
 );

@@ -51,8 +51,8 @@ export const RosaryCompletion = ({ onRestart, intentionLabel, group = "gozosos" 
           <button type="button" onClick={onRestart} className="min-h-11 text-sm text-gold">
             Rezar nuevamente
           </button>
-          <Link to="/rosario/diario" className="min-h-11 flex items-center justify-center text-sm text-muted-foreground">
-            Escribir en mi diario espiritual
+          <Link to="/capilla" className="min-h-11 flex items-center justify-center rounded-xl border border-gold/35 text-sm text-gold">
+            Entrar a la Capilla
           </Link>
         </div>
       </div>

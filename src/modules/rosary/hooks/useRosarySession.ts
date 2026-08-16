@@ -208,6 +208,20 @@ export const useRosarySession = ({
     [goTo, section, session],
   );
 
+  const jumpToOrder = useCallback(
+    (order: number) => {
+      if (!definition) return;
+      for (let sectionIndex = 0; sectionIndex < definition.sections.length; sectionIndex += 1) {
+        const beadIndex = definition.sections[sectionIndex].beads.findIndex((item) => item.order === order);
+        if (beadIndex >= 0) {
+          goTo(sectionIndex, beadIndex);
+          return;
+        }
+      }
+    },
+    [definition, goTo],
+  );
+
   const next = useCallback(() => {
     if (!definition || !session) {
       return;
@@ -368,6 +382,7 @@ export const useRosarySession = ({
     resume,
     togglePause,
     jumpToBead,
+    jumpToOrder,
     jumpToSection,
     restart,
     setIntention,

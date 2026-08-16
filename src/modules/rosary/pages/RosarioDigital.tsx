@@ -6,9 +6,12 @@ import {
 } from "react-router-dom";
 import {
   Bookmark,
+  ArrowLeft,
   ChevronLeft,
   ChevronRight,
   CircleDot,
+  Eye,
+  HandHeart,
   RefreshCcw,
   Settings,
   Volume2,
@@ -21,7 +24,6 @@ import { RosaryProgress } from "../components/RosaryProgress";
 import { RosaryBeadRing } from "../components/RosaryBeadRing";
 import {
   RosaryFullRing,
-  RosaryRingLegend,
 } from "../components/RosaryFullRing";
 import { RosaryPrayerScene } from "../components/RosaryPrayerScene";
 import { RosaryCompletion } from "../components/RosaryCompletion";
@@ -142,34 +144,34 @@ export const RosarioDigital = () => {
       : null;
   }, [session.section]);
 
-  const hailMaryBeads = useMemo(() => {
+  const aveMariaBeads = useMemo(() => {
     if (!session.section) {
       return [];
     }
 
     return session.section.beads.filter(
       (bead) =>
-        bead.prayerKey === "hailMary",
+        bead.prayerKey === "avemaria",
     );
   }, [session.section]);
 
-  const currentHailMaryIndex =
+  const currentAveMariaIndex =
     useMemo(() => {
       if (!session.bead) {
         return -1;
       }
 
-      return hailMaryBeads.findIndex(
+      return aveMariaBeads.findIndex(
         (bead) =>
           bead.id === session.bead?.id,
       );
-    }, [hailMaryBeads, session.bead]);
+    }, [aveMariaBeads, session.bead]);
 
   const prayerProgressLabel =
-    currentHailMaryIndex >= 0
+    currentAveMariaIndex >= 0
       ? `Avemaría ${
-          currentHailMaryIndex + 1
-        } de ${hailMaryBeads.length}`
+          currentAveMariaIndex + 1
+        } de ${aveMariaBeads.length}`
       : session.bead?.label ??
         "Oración actual";
 
@@ -305,7 +307,27 @@ export const RosarioDigital = () => {
           </div>
 
           {fullRing ? (
-            <div className="space-y-6 pb-6">
+            <div className="fixed inset-0 z-[65] overflow-y-auto bg-[#020c16] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] text-[#fff7e8] before:pointer-events-none before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_50%_32%,rgba(22,72,105,0.22),transparent_48%)]">
+              <div className="relative mx-auto w-full max-w-md">
+                <header className="grid grid-cols-[3rem_1fr_3rem] items-start">
+                  <button type="button" onClick={() => setFullRing(false)} className="flex h-12 w-12 items-center justify-center text-[#f5c65a]" aria-label="Volver a la oración">
+                    <ArrowLeft className="h-8 w-8" strokeWidth={1.5} aria-hidden="true" />
+                  </button>
+                  <div className="pt-1 text-center">
+                    <h2 className="font-display text-[1.8rem] leading-none">Rosario completo</h2>
+                    <p className="mt-2 font-display text-xl text-[#f5c65a]">{mysteryGroups[group].name}</p>
+                  </div>
+                  <button type="button" onClick={() => { setFullRing(false); setShowSettings(true); }} className="flex h-12 w-12 items-center justify-center text-[#f5c65a]" aria-label="Ajustes del Rosario">
+                    <Settings className="h-8 w-8" strokeWidth={1.5} aria-hidden="true" />
+                  </button>
+                </header>
+
+                <div className="mx-auto mt-5 flex min-h-12 w-fit items-center gap-3 rounded-full border border-[#c9892e] px-6 font-display text-lg text-[#f5c65a]">
+                  <Eye className="h-6 w-6" strokeWidth={1.5} aria-hidden="true" />
+                  Vista general del Rosario
+                </div>
+
+                <div className="mt-6">
               <RosaryFullRing
                 definition={
                   session.definition
@@ -313,12 +335,34 @@ export const RosarioDigital = () => {
                 currentOrder={
                   session.bead.order
                 }
-                centerImage={
-                  mysteryArt[group]
-                }
+                centerImage={mysteryArt[group]}
+                onSelectOrder={session.jumpToOrder}
               />
+                </div>
 
-              <RosaryRingLegend />
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center rounded-2xl border border-[#9f6928] bg-[#071522]/90 px-4 py-4 shadow-[0_12px_35px_rgba(0,0,0,0.35)]">
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#9f6928]">
+                    <CircleDot className="h-7 w-7 text-[#f5c65a]" aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0"><strong className="block truncate font-display text-lg">{mysteryNumber ? `Misterio ${mysteryNumber} de 5` : "Oraciones iniciales"}</strong><span className="block truncate text-xs text-[#c9bca8]">{mysteryGroups[group].name}</span></span>
+                </div>
+                <span className="mx-3 h-12 w-px bg-[#9f6928]/55" aria-hidden="true" />
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="h-5 w-5 shrink-0 rounded-full border border-[#f5c65a] bg-[#f5c65a] shadow-[0_0_14px_rgba(245,198,90,0.65)]" />
+                  <span className="min-w-0"><strong className="block truncate font-display text-lg">{prayerProgressLabel}</strong><span className="block truncate text-xs text-[#c9bca8]">Cuenta actual resaltada</span></span>
+                </div>
+              </div>
+
+              <button type="button" onClick={() => setFullRing(false)} className="mt-6 flex min-h-16 w-full items-center justify-center gap-4 rounded-full border border-[#ffe18a] bg-gradient-to-r from-[#f1bd46] via-[#ffd96c] to-[#d99a28] px-6 font-display text-xl font-semibold uppercase tracking-[0.06em] text-[#11100b] shadow-[0_0_30px_rgba(231,174,55,0.32)]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#4a310c] text-[#ffe186]"><HandHeart className="h-6 w-6" aria-hidden="true" /></span>
+                Volver a la oración
+              </button>
+              <button type="button" onClick={changeMystery} className="mx-auto mt-4 flex min-h-12 items-center justify-center gap-3 px-5 font-display text-lg text-[#f5c65a]">
+                <RefreshCcw className="h-5 w-5" aria-hidden="true" />
+                Cambiar de misterio
+              </button>
+              </div>
             </div>
           ) : (
             <>
@@ -352,14 +396,7 @@ export const RosarioDigital = () => {
                 currentBeadId={
                   session.bead.id
                 }
-                onSelect={() => {
-                  /*
-                   * Por ahora las cuentas son
-                   * indicadores visuales.
-                   * El avance se realiza con
-                   * los botones.
-                   */
-                }}
+                onSelect={session.jumpToBead}
               />
             </>
           )}
