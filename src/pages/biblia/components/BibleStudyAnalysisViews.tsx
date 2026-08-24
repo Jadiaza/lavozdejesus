@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, ChevronRight, X } from "lucide-react";
 import { useStudyReadingTheme } from "./StudyReadingTheme";
+import { StudySectionHeading } from "./StudySectionHeading";
 
 export interface VerseComparison {
   referencia: string;
@@ -90,7 +91,7 @@ export function TextStructureView({ rows }: { rows?: StructureRow[] }) {
   }, [rows]);
   if (!rows?.length) return null;
   return <section aria-labelledby="text-structure-title" className="mt-5">
-    <header className="mb-4 text-center"><p className="text-xs uppercase tracking-[0.22em] text-[#D4AF37]">Análisis literario dinámico</p><h2 id="text-structure-title" className="font-display text-xl uppercase">Estructura del texto</h2></header>
+    <StudySectionHeading number={6} title="Análisis literario y estructural" subtitle="Estructura del texto" subtitleId="text-structure-title" />
     <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_9rem]">
       <ol className="space-y-3">{rows.map((row, index) => {
         const expanded = open === row.orden;
