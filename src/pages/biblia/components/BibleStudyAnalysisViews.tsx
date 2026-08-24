@@ -91,7 +91,7 @@ export function TextStructureView({ rows }: { rows?: StructureRow[] }) {
   }, [rows]);
   if (!rows?.length) return null;
   return <section aria-labelledby="text-structure-title" className="mt-5">
-    <StudySectionHeading number={6} title="Análisis literario y estructural" subtitle="Estructura del texto" subtitleId="text-structure-title" />
+    <StudySectionHeading number={6} title="Análisis literario y estructural" subtitle="Estructura del texto" headingId="text-structure-title" />
     <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_9rem]">
       <ol className="space-y-3">{rows.map((row, index) => {
         const expanded = open === row.orden;

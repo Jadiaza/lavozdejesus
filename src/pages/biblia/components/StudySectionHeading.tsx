@@ -2,12 +2,12 @@ type StudySectionHeadingProps = {
   number: number;
   title: string;
   subtitle: string;
-  subtitleId: string;
+  headingId: string;
 };
 
-export function StudySectionHeading({ number, title, subtitle, subtitleId }: StudySectionHeadingProps) {
+export function StudySectionHeading({ number, title, subtitle, headingId }: StudySectionHeadingProps) {
   return <header className="mb-4">
-    <p className="text-xs uppercase tracking-[.18em] text-[#D4AF37]">{number}. {title}</p>
-    <h2 id={subtitleId} className="font-display text-xl">{subtitle}</h2>
+    <h2 id={headingId} className="font-display text-lg text-[#D4AF37]">{number}. {title}</h2>
+    <h3 className="mt-1 font-display text-xl">{subtitle}</h3>
   </header>;
 }
