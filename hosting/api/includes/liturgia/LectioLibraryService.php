@@ -43,38 +43,21 @@ final class LectioLibraryService
       ];
     }
 
-    // Protege el contenido ya elaborado manualmente para esa fecha.
+    // Protección de compatibilidad: una Lectio histórica/manual por fecha no se
+    // modifica ni se transforma automáticamente en un recurso reutilizable.
     $existingDate = lvj_optional_first(
       $this->pdo,
       'SELECT * FROM lvj_lit_lectio_divina WHERE fecha = ? AND deleted_at IS NULL ORDER BY id DESC LIMIT 1',
       [$date],
     );
     if ($existingDate) {
-      // Si el registro es antiguo y todavía no tiene clave canónica, se enlaza
-      // a la cita solo cuando esa clave no está ocupada por otra Lectio.
-      if (trim((string) ($existingDate['cita_clave'] ?? '')) === '' && !$this->findByKey($key)) {
-        try {
-          $statement = $this->pdo->prepare(
-            'UPDATE lvj_lit_lectio_divina SET cita = :cita, cita_clave = :key WHERE id = :id AND (cita_clave IS NULL OR cita_clave = \'\')'
-          );
-          $statement->execute([
-            'cita' => $citation,
-            'key' => $key,
-            'id' => (int) $existingDate['id'],
-          ]);
-          $existingDate['cita'] = $citation;
-          $existingDate['cita_clave'] = $key;
-        } catch (Throwable $error) {
-          error_log('LVJ Lectio backfill citation: ' . $error->getMessage());
-        }
-      }
-
       return [
         'status' => 'reused_existing_date',
         'id' => (string) ($existingDate['id'] ?? ''),
         'estado' => (string) ($existingDate['estado'] ?? ''),
         'cita' => $citation,
-        'cita_clave' => $key,
+        'cita_clave' => trim((string) ($existingDate['cita_clave'] ?? '')),
+        'message' => 'Se conserva la Lectio ya existente para esta fecha sin modificarla.',
       ];
     }
 
@@ -137,7 +120,7 @@ final class LectioLibraryService
             'id' => (string) ($existing['id'] ?? ''),
             'estado' => (string) ($existing['estado'] ?? ''),
             'cita' => $citation,
-            'cita_clave' => $key,
+            'cita_clave' => trim((string) ($existing['cita_clave'] ?? $key)),
           ];
         }
       }
