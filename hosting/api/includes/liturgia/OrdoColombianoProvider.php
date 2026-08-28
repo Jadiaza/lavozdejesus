@@ -4,46 +4,62 @@ declare(strict_types=1);
 
 final class OrdoColombianoProvider
 {
-  private const DEFAULT_API_URL = 'https://74j2tngwfd.execute-api.us-east-1.amazonaws.com/api-app/ediciones/obtener-contenido-principal';
-
   private string $apiUrl;
-  private string $apiName;
-  private string $apiKey;
   private string $apiToken;
   private int $timeout;
 
   public function __construct()
   {
-    $this->apiUrl = trim((string) lvj_setting('ORDO_COLOMBIANO_API_URL', self::DEFAULT_API_URL));
-    $this->apiName = trim((string) lvj_setting('ORDO_COLOMBIANO_API_NAME', ''));
-    $this->apiKey = trim((string) lvj_setting('ORDO_COLOMBIANO_API_KEY', ''));
+    $this->apiUrl = trim((string) lvj_setting('ORDO_COLOMBIANO_API_URL', ''));
     $this->apiToken = trim((string) lvj_setting('ORDO_COLOMBIANO_API_TOKEN', ''));
-    $this->timeout = max(3, min(60, (int) lvj_setting('ORDO_COLOMBIANO_TIMEOUT', '20')));
+    $this->timeout = max(3, min(30, (int) lvj_setting('ORDO_COLOMBIANO_TIMEOUT', '12')));
   }
 
+  public function isConfigured(): bool
+  {
+    return $this->apiUrl !== '';
+  }
+
+  /**
+   * Recupera exclusivamente los datos de Lectura del Día.
+   * No procesa santoral, reflexiones, imágenes, audios ni otros módulos LVJ.
+   *
+   * @return array<string,mixed>
+   */
   public function fetchDate(string $date): array
   {
+    if (!$this->isConfigured()) {
+      throw new RuntimeException('Ordo Colombiano no está configurado en el servidor.');
+    }
+
     if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) !== 1) {
       throw new InvalidArgumentException('La fecha debe usar el formato YYYY-MM-DD.');
     }
 
-    $parts = parse_url($this->apiUrl);
+    $url = $this->buildUrl($date);
+    $parts = parse_url($url);
     if (!is_array($parts) || strtolower((string) ($parts['scheme'] ?? '')) !== 'https' || trim((string) ($parts['host'] ?? '')) === '') {
       throw new RuntimeException('ORDO_COLOMBIANO_API_URL debe ser una URL HTTPS válida.');
     }
 
-    $headers = ['Accept: application/json, text/plain, */*', 'User-Agent: LVJPRAYER-Liturgia/1.0'];
-    if ($this->apiName !== '') $headers[] = 'api-name: ' . $this->apiName;
-    if ($this->apiKey !== '') $headers[] = 'api-key: ' . $this->apiKey;
-    if ($this->apiToken !== '') $headers[] = 'api-token: ' . $this->apiToken;
+    $headers = [
+      'Accept: application/json',
+      'User-Agent: LVJPRAYER-Liturgia/1.0',
+    ];
 
-    $curl = curl_init($this->apiUrl);
-    if ($curl === false) throw new RuntimeException('No fue posible inicializar la conexión con Ordo Colombiano.');
+    if ($this->apiToken !== '') {
+      $headers[] = 'Authorization: Bearer ' . $this->apiToken;
+    }
+
+    $curl = curl_init($url);
+    if ($curl === false) {
+      throw new RuntimeException('No fue posible inicializar la conexión con Ordo Colombiano.');
+    }
 
     curl_setopt_array($curl, [
       CURLOPT_RETURNTRANSFER => true,
       CURLOPT_HTTPHEADER => $headers,
-      CURLOPT_CONNECTTIMEOUT => min(10, $this->timeout),
+      CURLOPT_CONNECTTIMEOUT => min(8, $this->timeout),
       CURLOPT_TIMEOUT => $this->timeout,
       CURLOPT_FOLLOWLOCATION => false,
       CURLOPT_MAXREDIRS => 0,
@@ -53,14 +69,22 @@ final class OrdoColombianoProvider
 
     $raw = curl_exec($curl);
     $status = (int) curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+    $contentType = strtolower((string) curl_getinfo($curl, CURLINFO_CONTENT_TYPE));
     $error = curl_error($curl);
     curl_close($curl);
 
-    if ($raw === false || $error !== '') throw new RuntimeException('No fue posible contactar el Ordo Colombiano.');
-    if ($status < 200 || $status >= 300) throw new RuntimeException('Ordo Colombiano respondió HTTP ' . $status . '.');
+    if ($raw === false || $error !== '') {
+      throw new RuntimeException('No fue posible contactar la fuente autorizada del Ordo Colombiano.');
+    }
 
-    $trimmed = ltrim((string) $raw);
-    if ($trimmed === '' || str_starts_with($trimmed, '<')) throw new RuntimeException('El Ordo no devolvió el JSON esperado.');
+    if ($status < 200 || $status >= 300) {
+      throw new RuntimeException('Ordo Colombiano respondió HTTP ' . $status . '.');
+    }
+
+    // Evita convertir accidentalmente una página web/login del Ordo en una fuente de datos.
+    if ($contentType !== '' && !str_contains($contentType, 'json')) {
+      throw new RuntimeException('La fuente configurada del Ordo no respondió JSON.');
+    }
 
     try {
       $decoded = json_decode((string) $raw, true, 512, JSON_THROW_ON_ERROR);
@@ -68,177 +92,136 @@ final class OrdoColombianoProvider
       throw new RuntimeException('La respuesta del Ordo no contiene JSON válido.', 0, $error);
     }
 
-    if (!is_array($decoded) || ($decoded['success'] ?? true) === false) throw new RuntimeException('El Ordo devolvió una respuesta sin éxito.');
+    if (!is_array($decoded)) {
+      throw new RuntimeException('La respuesta del Ordo no tiene una estructura válida.');
+    }
 
-    $row = $this->findDateRow($decoded, $date);
-    if (!$row) throw new RuntimeException('El Ordo no contiene información para la fecha ' . $date . '.');
+    $row = $this->extractRow($decoded);
+    $normalized = $this->normalizeRow($row, $date);
 
-    $first = $this->extractReading((string) ($row['primera_lectura'] ?? ''));
-    $second = $this->extractReading((string) ($row['segunda_lectura'] ?? ''));
-    $psalm = $this->extractReading((string) ($row['salmo'] ?? ''));
-    $gospel = $this->extractReading((string) ($row['evangelio'] ?? ''));
+    $hasReading = false;
+    foreach (['primera_lectura_cita', 'salmo_cita', 'segunda_lectura_cita', 'evangelio_cita'] as $field) {
+      if (array_key_exists($field, $normalized) && trim((string) $normalized[$field]) !== '') {
+        $hasReading = true;
+        break;
+      }
+    }
 
-    if ($gospel['cita'] === '' || $gospel['texto'] === '') throw new RuntimeException('El Ordo no devolvió el Evangelio completo para ' . $date . '.');
+    if (!$hasReading) {
+      throw new RuntimeException('La respuesta del Ordo no contiene citas de las lecturas del día.');
+    }
 
-    $prelude = $this->plain((string) ($row['preludio'] ?? ''));
-    $lectionary = $this->plain((string) ($row['misa'] ?? ''));
-    $cycles = $this->extractCycles($lectionary);
-    $contentForHash = [$first['cita'],$first['texto'],$psalm['cita'],$psalm['texto'],$second['cita'],$second['texto'],$gospel['cita'],$gospel['texto']];
-    $contentHash = hash('sha256', implode("\n--LVJ--\n", array_map([$this, 'hashText'], $contentForHash)));
-    $keyParts = array_filter([
-      'CO','romano',$cycles['ciclo_dominical'] ? 'D-' . $cycles['ciclo_dominical'] : '',
-      $cycles['ciclo_ferial'] ? 'F-' . $cycles['ciclo_ferial'] : '',
-      $first['cita'],$psalm['cita'],$second['cita'],$gospel['cita'],
-    ]);
-    $liturgicalKey = substr(hash('sha256', implode('|', array_map([$this, 'hashText'], $keyParts))), 0, 48);
+    return $normalized;
+  }
 
-    return [
-      'fecha' => $date,
-      'pais' => 'CO',
-      'rito' => 'romano',
-      'ciclo_dominical' => $cycles['ciclo_dominical'],
-      'ciclo_ferial' => $cycles['ciclo_ferial'],
-      'clave_liturgica' => $liturgicalKey,
-      'hash_contenido' => $contentHash,
-      'tiempo_liturgico' => $this->plain((string) ($row['tiempo_liturgico'] ?? '')),
-      'celebracion' => $this->extractCelebration($row),
-      'grado_celebracion' => $this->plain((string) ($row['celebracion'] ?? $row['nombre_celebracion'] ?? '')),
-      'color_liturgico' => $this->plain((string) ($row['colores_dia'] ?? '')),
-      'primera_lectura_cita' => $first['cita'],
-      'primera_lectura_texto' => $first['texto'],
-      'salmo_cita' => $psalm['cita'],
-      'salmo_respuesta' => $this->extractPsalmResponse($psalm['texto']),
-      'salmo_texto' => $psalm['texto'],
-      'segunda_lectura_cita' => $second['cita'],
-      'segunda_lectura_texto' => $second['texto'],
-      'evangelio_cita' => $gospel['cita'],
-      'evangelio_texto' => $gospel['texto'],
-      'preludio_ordo' => $prelude,
-      'santos_ordo' => $this->extractSaints($row, $prelude),
-      'fuente' => 'Ordo Colombiano',
+  private function buildUrl(string $date): string
+  {
+    if (str_contains($this->apiUrl, '{fecha}') || str_contains($this->apiUrl, '{date}')) {
+      return strtr($this->apiUrl, [
+        '{fecha}' => rawurlencode($date),
+        '{date}' => rawurlencode($date),
+      ]);
+    }
+
+    $separator = str_contains($this->apiUrl, '?') ? '&' : '?';
+    return $this->apiUrl . $separator . 'fecha=' . rawurlencode($date);
+  }
+
+  /** @return array<string,mixed> */
+  private function extractRow(array $decoded): array
+  {
+    foreach (['data', 'liturgia', 'lectura', 'lecturas', 'result', 'resultado'] as $key) {
+      if (!array_key_exists($key, $decoded)) {
+        continue;
+      }
+
+      $candidate = $decoded[$key];
+      if (is_array($candidate) && array_is_list($candidate)) {
+        $candidate = $candidate[0] ?? null;
+      }
+
+      if (is_array($candidate)) {
+        return $candidate;
+      }
+    }
+
+    if (array_is_list($decoded)) {
+      $first = $decoded[0] ?? null;
+      return is_array($first) ? $first : [];
+    }
+
+    return $decoded;
+  }
+
+  /** @return array<string,mixed> */
+  private function normalizeRow(array $row, string $requestedDate): array
+  {
+    $normalized = ['fecha' => $requestedDate];
+
+    $map = [
+      'fecha' => ['fecha', 'date', 'fecha_liturgia'],
+      'tiempo_liturgico' => ['tiempo_liturgico', 'tiempoLiturgico', 'tiempo', 'liturgical_season', 'season'],
+      'celebracion' => ['celebracion', 'celebración', 'nombre_celebracion', 'nombreCelebracion', 'celebration', 'title', 'titulo'],
+      'color_liturgico' => ['color_liturgico', 'colorLiturgico', 'color', 'liturgical_color'],
+      'grado_celebracion' => ['grado_celebracion', 'gradoCelebracion', 'grado', 'rank', 'grade'],
+      'primera_lectura_cita' => ['primera_lectura_cita', 'primeraLecturaCita', 'primera_lectura', 'first_reading_reference', 'firstReadingReference'],
+      'primera_lectura_texto' => ['primera_lectura_texto', 'primeraLecturaTexto', 'first_reading_text', 'firstReadingText'],
+      'salmo_cita' => ['salmo_cita', 'salmoCita', 'psalm_reference', 'psalmReference'],
+      'salmo_respuesta' => ['salmo_respuesta', 'salmoRespuesta', 'psalm_response', 'psalmResponse'],
+      'salmo_texto' => ['salmo_texto', 'salmoTexto', 'psalm_text', 'psalmText'],
+      'segunda_lectura_cita' => ['segunda_lectura_cita', 'segundaLecturaCita', 'segunda_lectura', 'second_reading_reference', 'secondReadingReference'],
+      'segunda_lectura_texto' => ['segunda_lectura_texto', 'segundaLecturaTexto', 'second_reading_text', 'secondReadingText'],
+      'evangelio_cita' => ['evangelio_cita', 'evangelioCita', 'evangelio', 'gospel_reference', 'gospelReference'],
+      'evangelio_texto' => ['evangelio_texto', 'evangelioTexto', 'gospel_text', 'gospelText'],
     ];
+
+    foreach ($map as $target => $aliases) {
+      [$found, $value] = $this->pickPresent($row, $aliases);
+      if (!$found) {
+        continue;
+      }
+
+      if ($target === 'fecha') {
+        $candidate = substr(trim((string) $value), 0, 10);
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $candidate) === 1 && $candidate !== $requestedDate) {
+          throw new RuntimeException('El Ordo devolvió una fecha distinta a la solicitada.');
+        }
+        continue;
+      }
+
+      $normalized[$target] = $this->stringValue($value);
+    }
+
+    $normalized['fuente'] = 'Ordo Colombiano';
+    return $normalized;
   }
 
-  private function extractCelebration(array $row): string
+  /** @return array{0:bool,1:mixed} */
+  private function pickPresent(array $row, array $keys): array
   {
-    foreach (['celebracion', 'nombre_celebracion', 'titulo'] as $field) {
-      $value = $this->plain((string) ($row[$field] ?? ''));
-      if ($value !== '' && strtolower($value) !== 'null') return $value;
+    foreach ($keys as $key) {
+      if (array_key_exists($key, $row)) {
+        return [true, $row[$key]];
+      }
     }
-    $heading = $this->plain((string) ($row['encabezado'] ?? ''));
-    $heading = preg_replace('/^\d{1,2}\s+\p{L}+,\s*/u', '', $heading) ?? $heading;
-    $heading = preg_replace('/,\s*(verde|blanco|rojo|morado|violeta|rosa)\s*$/iu', '', $heading) ?? $heading;
-    return trim($heading, " \t\n\r\0\x0B,.;");
+
+    return [false, null];
   }
 
-  private function findDateRow(array $decoded, string $date): ?array
+  private function stringValue(mixed $value): string
   {
-    $rows = $decoded['data'] ?? $decoded;
-    if (!is_array($rows)) return null;
-    if (!array_is_list($rows)) $rows = [$rows];
-    foreach ($rows as $row) {
-      if (!is_array($row)) continue;
-      if (substr(trim((string) ($row['fecha'] ?? '')), 0, 10) === $date) return $row;
+    if (is_string($value) || is_numeric($value)) {
+      return trim((string) $value);
     }
-    return null;
-  }
 
-  private function extractSaints(array $row, string $prelude): array
-  {
-    $raw = $row['celebracion_santo'] ?? [];
-    if (is_string($raw)) {
-      $raw = trim($raw);
-      if ($raw === '' || strtolower($raw) === 'null') return [];
-      try { $raw = json_decode($raw, true, 64, JSON_THROW_ON_ERROR); } catch (JsonException $error) { return []; }
+    if (is_array($value)) {
+      foreach (['cita', 'reference', 'texto', 'text', 'nombre', 'name', 'value'] as $key) {
+        if (array_key_exists($key, $value) && (is_string($value[$key]) || is_numeric($value[$key]))) {
+          return trim((string) $value[$key]);
+        }
+      }
     }
-    if (!is_array($raw)) return [];
-    if (!array_is_list($raw)) $raw = [$raw];
 
-    $saints = [];
-    foreach ($raw as $index => $item) {
-      if (!is_array($item)) continue;
-      $name = $this->plain((string) ($item['nombresanto'] ?? ''));
-      if ($name === '') continue;
-      $saints[] = [
-        'ordo_santo_id' => trim((string) ($item['idsanto'] ?? '')),
-        'nombre' => $name,
-        'titulo' => $this->extractSaintTitle($prelude, $name),
-        'orden' => (int) $index,
-      ];
-    }
-    return $saints;
-  }
-
-  private function extractSaintTitle(string $prelude, string $name): string
-  {
-    if ($prelude === '' || $name === '') return '';
-    foreach (preg_split('/\s*;\s*/u', $prelude) ?: [] as $segment) {
-      $segment = trim((string) $segment);
-      $position = mb_stripos($segment, $name, 0, 'UTF-8');
-      if ($position === false) continue;
-      $suffix = mb_substr($segment, $position + mb_strlen($name, 'UTF-8'), null, 'UTF-8');
-      $suffix = trim($suffix, " \t\n\r\0\x0B,.;:-–—");
-      return $suffix;
-    }
     return '';
-  }
-
-  private function extractReading(string $raw): array
-  {
-    $text = $this->cleanFragment($raw);
-    if ($text === '') return ['cita' => '', 'texto' => ''];
-    $lines = preg_split('/\n+/u', $text) ?: [];
-    $lines = array_values(array_filter(array_map('trim', $lines), fn ($line) => $line !== ''));
-    if (!$lines) return ['cita' => '', 'texto' => ''];
-    $citation = trim((string) array_shift($lines));
-    $body = trim(implode("\n", $lines));
-    if (preg_match('/\d/u', $citation) !== 1) return ['cita' => '', 'texto' => $text];
-    return ['cita' => $citation, 'texto' => $body];
-  }
-
-  private function extractPsalmResponse(string $text): string
-  {
-    foreach (preg_split('/\n+/u', $text) ?: [] as $line) {
-      $line = trim($line);
-      if (preg_match('/^R\.?\s*(.+)$/iu', $line, $matches) === 1) return trim((string) $matches[1]);
-    }
-    return '';
-  }
-
-  private function cleanFragment(string $value): string
-  {
-    if ($value === '') return '';
-    $value = preg_replace('/<br\s*\/?\s*>/iu', "\n", $value) ?? $value;
-    $value = preg_replace('/<\/p\s*>/iu', "\n\n", $value) ?? $value;
-    $value = preg_replace('/<\/h[1-6]\s*>/iu', "\n", $value) ?? $value;
-    $value = html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8');
-    $value = str_replace("\u{00A0}", ' ', $value);
-    $value = preg_replace('/[ \t]+/u', ' ', $value) ?? $value;
-    $value = preg_replace('/\n[ \t]+/u', "\n", $value) ?? $value;
-    $value = preg_replace('/\n{3,}/u', "\n\n", $value) ?? $value;
-    return trim($value);
-  }
-
-  private function extractCycles(string $lectionary): array
-  {
-    $dominical = null;
-    $ferial = null;
-    if (preg_match('/Leccionario\s+Dominical\s+([ABC])/iu', $lectionary, $matches) === 1) $dominical = mb_strtoupper((string) $matches[1], 'UTF-8');
-    if ($dominical === null && preg_match('/(?:año|ciclo|ferial)\s+(I{1,2})(?:\b|\s)/iu', $lectionary, $matches) === 1) $ferial = mb_strtoupper((string) $matches[1], 'UTF-8');
-    return ['ciclo_dominical' => $dominical, 'ciclo_ferial' => $ferial];
-  }
-
-  private function hashText(string $value): string
-  {
-    $value = mb_strtolower(trim($value), 'UTF-8');
-    return preg_replace('/\s+/u', ' ', $value) ?? $value;
-  }
-
-  private function plain(string $value): string
-  {
-    $value = html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8');
-    $value = str_replace("\u{00A0}", ' ', $value);
-    $value = preg_replace('/\s+/u', ' ', $value) ?? $value;
-    return trim($value);
   }
 }
