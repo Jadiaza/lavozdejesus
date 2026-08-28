@@ -15,9 +15,8 @@ final class LectioLibraryService
   }
 
   /**
-   * Genera una sola vez por cita exacta. Si ya existe una Lectio para la misma
-   * fecha o la misma cita, no vuelve a consumir IA ni sobrescribe contenido.
-   * La IA siempre crea estado=borrador; solo una revisión humana publica.
+   * Genera una sola vez por cita exacta. Si ya existe en revision o publicado,
+   * no vuelve a consumir IA.
    *
    * @param array<string,mixed> $liturgia
    * @return array<string,mixed>
@@ -36,28 +35,10 @@ final class LectioLibraryService
     $gospelText = trim((string) ($liturgia['evangelio_texto'] ?? ''));
     $date = substr(trim((string) ($liturgia['fecha'] ?? '')), 0, 10);
 
-    if ($citation === '' || $key === '' || $gospelText === '' || preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) !== 1) {
+    if ($citation === '' || $key === '' || $gospelText === '') {
       return [
         'status' => 'skipped',
-        'message' => 'La Lectio requiere fecha, cita y texto completo del Evangelio.',
-      ];
-    }
-
-    // Protección de compatibilidad: una Lectio histórica/manual por fecha no se
-    // modifica ni se transforma automáticamente en un recurso reutilizable.
-    $existingDate = lvj_optional_first(
-      $this->pdo,
-      'SELECT * FROM lvj_lit_lectio_divina WHERE fecha = ? AND deleted_at IS NULL ORDER BY id DESC LIMIT 1',
-      [$date],
-    );
-    if ($existingDate) {
-      return [
-        'status' => 'reused_existing_date',
-        'id' => (string) ($existingDate['id'] ?? ''),
-        'estado' => (string) ($existingDate['estado'] ?? ''),
-        'cita' => $citation,
-        'cita_clave' => trim((string) ($existingDate['cita_clave'] ?? '')),
-        'message' => 'Se conserva la Lectio ya existente para esta fecha sin modificarla.',
+        'message' => 'La Lectio requiere cita y texto completo del Evangelio.',
       ];
     }
 
@@ -87,9 +68,9 @@ final class LectioLibraryService
 
     $statement = $this->pdo->prepare(
       "INSERT INTO lvj_lit_lectio_divina
-        (liturgia_id, fecha, cita, cita_clave, frase_destacada, cita_destacada, reflexion, pregunta_meditar, oracion, compromiso, mensaje_final, audio_url, generada_ia, modelo_ia, prompt_version, estado)
+        (liturgia_id, fecha, cita, cita_clave, frase_destacada, reflexion, pregunta_meditar, oracion, compromiso, mensaje_final, audio_url, generada_ia, modelo_ia, prompt_version, estado)
        VALUES
-        (NULL, :fecha, :cita, :cita_clave, :frase_destacada, :cita_destacada, :reflexion, :pregunta_meditar, :oracion, :compromiso, :mensaje_final, NULL, 1, :modelo_ia, :prompt_version, 'borrador')"
+        (NULL, :fecha, :cita, :cita_clave, :frase_destacada, :reflexion, :pregunta_meditar, :oracion, :compromiso, :mensaje_final, NULL, 1, :modelo_ia, :prompt_version, 'revision')"
     );
 
     try {
@@ -98,7 +79,6 @@ final class LectioLibraryService
         'cita' => $citation,
         'cita_clave' => $key,
         'frase_destacada' => $content['frase_destacada'],
-        'cita_destacada' => $content['cita_destacada'],
         'reflexion' => $content['reflexion'],
         'pregunta_meditar' => $content['pregunta_meditar'],
         'oracion' => $content['oracion'],
@@ -108,20 +88,16 @@ final class LectioLibraryService
         'prompt_version' => LectioAiService::PROMPT_VERSION,
       ]);
     } catch (PDOException $error) {
-      // Una ejecución concurrente puede haber creado la misma fecha o cita.
+      // Una ejecución concurrente puede haber creado la misma cita.
       if ((string) $error->getCode() === '23000') {
-        $existing = $this->findByKey($key) ?: lvj_optional_first(
-          $this->pdo,
-          'SELECT * FROM lvj_lit_lectio_divina WHERE fecha = ? AND deleted_at IS NULL ORDER BY id DESC LIMIT 1',
-          [$date],
-        );
+        $existing = $this->findByKey($key);
         if ($existing) {
           return [
             'status' => 'reused',
             'id' => (string) ($existing['id'] ?? ''),
             'estado' => (string) ($existing['estado'] ?? ''),
             'cita' => $citation,
-            'cita_clave' => trim((string) ($existing['cita_clave'] ?? $key)),
+            'cita_clave' => $key,
           ];
         }
       }
@@ -131,7 +107,7 @@ final class LectioLibraryService
     return [
       'status' => 'generated_for_review',
       'id' => (string) $this->pdo->lastInsertId(),
-      'estado' => 'borrador',
+      'estado' => 'revision',
       'cita' => $citation,
       'cita_clave' => $key,
       'prompt_version' => LectioAiService::PROMPT_VERSION,
@@ -196,7 +172,7 @@ final class LectioLibraryService
     $statement = $this->pdo->prepare(
       "SELECT * FROM lvj_lit_lectio_divina
        WHERE cita_clave = :key
-         AND estado IN ('borrador','publicado')
+         AND estado IN ('revision','publicado')
          AND deleted_at IS NULL
        ORDER BY CASE WHEN estado='publicado' THEN 0 ELSE 1 END, updated_at DESC, id DESC
        LIMIT 1"
@@ -209,7 +185,7 @@ final class LectioLibraryService
 
   private function schemaReady(): bool
   {
-    foreach (['cita', 'cita_clave', 'frase_destacada', 'cita_destacada', 'generada_ia', 'modelo_ia', 'prompt_version'] as $column) {
+    foreach (['cita', 'cita_clave', 'frase_destacada', 'generada_ia', 'modelo_ia', 'prompt_version'] as $column) {
       $statement = $this->pdo->prepare(
         'SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?'
       );
