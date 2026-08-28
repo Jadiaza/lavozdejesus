@@ -15,8 +15,8 @@ final class LectioLibraryService
   }
 
   /**
-   * Genera una sola vez por cita exacta. Si ya existe en revision o publicado,
-   * no vuelve a consumir IA.
+   * Genera una sola vez por cita exacta. Si ya existe una Lectio para la misma
+   * fecha o la misma cita, no vuelve a consumir IA ni sobrescribe contenido.
    *
    * @param array<string,mixed> $liturgia
    * @return array<string,mixed>
@@ -35,10 +35,45 @@ final class LectioLibraryService
     $gospelText = trim((string) ($liturgia['evangelio_texto'] ?? ''));
     $date = substr(trim((string) ($liturgia['fecha'] ?? '')), 0, 10);
 
-    if ($citation === '' || $key === '' || $gospelText === '') {
+    if ($citation === '' || $key === '' || $gospelText === '' || preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) !== 1) {
       return [
         'status' => 'skipped',
-        'message' => 'La Lectio requiere cita y texto completo del Evangelio.',
+        'message' => 'La Lectio requiere fecha, cita y texto completo del Evangelio.',
+      ];
+    }
+
+    // Protege el contenido ya elaborado manualmente para esa fecha.
+    $existingDate = lvj_optional_first(
+      $this->pdo,
+      'SELECT * FROM lvj_lit_lectio_divina WHERE fecha = ? AND deleted_at IS NULL ORDER BY id DESC LIMIT 1',
+      [$date],
+    );
+    if ($existingDate) {
+      // Si el registro es antiguo y todavía no tiene clave canónica, se enlaza
+      // a la cita solo cuando esa clave no está ocupada por otra Lectio.
+      if (trim((string) ($existingDate['cita_clave'] ?? '')) === '' && !$this->findByKey($key)) {
+        try {
+          $statement = $this->pdo->prepare(
+            'UPDATE lvj_lit_lectio_divina SET cita = :cita, cita_clave = :key WHERE id = :id AND (cita_clave IS NULL OR cita_clave = \'\')'
+          );
+          $statement->execute([
+            'cita' => $citation,
+            'key' => $key,
+            'id' => (int) $existingDate['id'],
+          ]);
+          $existingDate['cita'] = $citation;
+          $existingDate['cita_clave'] = $key;
+        } catch (Throwable $error) {
+          error_log('LVJ Lectio backfill citation: ' . $error->getMessage());
+        }
+      }
+
+      return [
+        'status' => 'reused_existing_date',
+        'id' => (string) ($existingDate['id'] ?? ''),
+        'estado' => (string) ($existingDate['estado'] ?? ''),
+        'cita' => $citation,
+        'cita_clave' => $key,
       ];
     }
 
@@ -88,9 +123,13 @@ final class LectioLibraryService
         'prompt_version' => LectioAiService::PROMPT_VERSION,
       ]);
     } catch (PDOException $error) {
-      // Una ejecución concurrente puede haber creado la misma cita.
+      // Una ejecución concurrente puede haber creado la misma fecha o cita.
       if ((string) $error->getCode() === '23000') {
-        $existing = $this->findByKey($key);
+        $existing = $this->findByKey($key) ?: lvj_optional_first(
+          $this->pdo,
+          'SELECT * FROM lvj_lit_lectio_divina WHERE fecha = ? AND deleted_at IS NULL ORDER BY id DESC LIMIT 1',
+          [$date],
+        );
         if ($existing) {
           return [
             'status' => 'reused',
