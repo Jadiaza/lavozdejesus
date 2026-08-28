@@ -52,6 +52,7 @@ final class LectioCitation
     $range = strtr($range, ['–' => '-', '—' => '-', '−' => '-']);
     $range = preg_replace('/\s+/u', '', $range) ?? $range;
     $range = preg_replace('/[^0-9,;\.\-]/u', '', $range) ?? '';
+    $range = trim($range, '.;');
 
     return preg_match('/\d/u', $range) === 1 ? $range : '';
   }
