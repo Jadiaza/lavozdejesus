@@ -1,0 +1,216 @@
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../bible-study/HttpJsonClient.php';
+
+final class LectioAiService
+{
+  public const PROMPT_VERSION = 'lectio-lvj-1.0';
+
+  private string $apiKey;
+  private string $model;
+  private int $timeout;
+  private int $maxTokens;
+
+  public function __construct()
+  {
+    $this->apiKey = trim((string) lvj_setting(
+      'LECTIO_AI_API_KEY',
+      lvj_setting('BIBLE_AI_API_KEY', ''),
+    ));
+    $this->model = trim((string) lvj_setting(
+      'LECTIO_AI_MODEL',
+      lvj_setting('BIBLE_AI_MODEL', 'gpt-5.4-mini'),
+    ));
+    $this->timeout = max(60, min(300, (int) lvj_setting('LECTIO_AI_TIMEOUT', '180')));
+    $this->maxTokens = max(2500, min(12000, (int) lvj_setting('LECTIO_AI_MAX_TOKENS', '6000')));
+  }
+
+  public function isConfigured(): bool
+  {
+    return $this->apiKey !== '' && $this->model !== '';
+  }
+
+  /**
+   * Genera solamente un borrador. La publicación siempre requiere revisión humana.
+   *
+   * @return array{content:array<string,string>,model:string,input_tokens:mixed,output_tokens:mixed}
+   */
+  public function generate(string $citation, string $gospelText, array $liturgicalContext = []): array
+  {
+    if (!$this->isConfigured()) {
+      throw new RuntimeException('El generador IA de Lectio no está configurado.');
+    }
+
+    $gospelText = trim($gospelText);
+    if ($citation === '' || $gospelText === '') {
+      throw new InvalidArgumentException('La Lectio requiere cita y texto completo del Evangelio.');
+    }
+
+    $schema = [
+      'type' => 'object',
+      'additionalProperties' => false,
+      'required' => [
+        'frase_destacada',
+        'reflexion',
+        'pregunta_meditar',
+        'oracion',
+        'compromiso',
+        'mensaje_final',
+      ],
+      'properties' => [
+        'frase_destacada' => ['type' => 'string', 'minLength' => 10],
+        'reflexion' => ['type' => 'string', 'minLength' => 300],
+        'pregunta_meditar' => ['type' => 'string', 'minLength' => 20],
+        'oracion' => ['type' => 'string', 'minLength' => 220],
+        'compromiso' => ['type' => 'string', 'minLength' => 20],
+        'mensaje_final' => ['type' => 'string', 'minLength' => 20],
+      ],
+    ];
+
+    $input = [
+      'cita' => $citation,
+      'evangelio' => $gospelText,
+      'contexto_liturgico' => [
+        'fecha' => trim((string) ($liturgicalContext['fecha'] ?? '')),
+        'tiempo_liturgico' => trim((string) ($liturgicalContext['tiempo_liturgico'] ?? '')),
+        'celebracion' => trim((string) ($liturgicalContext['celebracion'] ?? '')),
+      ],
+    ];
+
+    $response = HttpJsonClient::post(
+      'https://api.openai.com/v1/responses',
+      [
+        'Authorization: Bearer ' . $this->apiKey,
+        'Content-Type: application/json',
+      ],
+      [
+        'model' => $this->model,
+        'instructions' => $this->instructions(),
+        'input' => json_encode($input, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
+        'max_output_tokens' => $this->maxTokens,
+        'text' => [
+          'format' => [
+            'type' => 'json_schema',
+            'name' => 'lectio_divina_lvj',
+            'strict' => true,
+            'schema' => $schema,
+          ],
+        ],
+      ],
+      $this->timeout,
+    );
+
+    $decoded = json_decode($this->extractText($response), true);
+    if (!is_array($decoded)) {
+      throw new RuntimeException('La IA no devolvió una Lectio en JSON válido.');
+    }
+
+    $content = [];
+    foreach (array_keys($schema['properties']) as $field) {
+      $content[$field] = trim((string) ($decoded[$field] ?? ''));
+      if ($content[$field] === '') {
+        throw new RuntimeException('La IA omitió el campo obligatorio ' . $field . '.');
+      }
+    }
+
+    $this->validateContent($content, $gospelText);
+
+    return [
+      'content' => $content,
+      'model' => (string) ($response['model'] ?? $this->model),
+      'input_tokens' => $response['usage']['input_tokens'] ?? null,
+      'output_tokens' => $response['usage']['output_tokens'] ?? null,
+    ];
+  }
+
+  private function instructions(): string
+  {
+    return <<<'PROMPT'
+Eres el asistente editorial católico de La Voz de Jesús. Debes preparar una Lectio Divina pastoral a partir EXCLUSIVAMENTE del Evangelio suministrado. La salida será revisada por una persona antes de publicarse.
+
+La Lectio tiene exactamente seis componentes visibles y no debes agregar otros:
+1. frase_destacada
+2. reflexion
+3. pregunta_meditar
+4. oracion
+5. compromiso
+6. mensaje_final
+
+REGLAS OBLIGATORIAS:
+- Español latino neutro, tono cercano, sereno, espiritual, pastoral y cristocéntrico.
+- Fidelidad a la doctrina católica y al sentido real del texto bíblico.
+- No inventes hechos, versículos, citas, personajes, promesas ni enseñanzas que no estén justificadas por el Evangelio.
+- La frase destacada DEBE ser una cita textual tomada del Evangelio suministrado. No la parafrasees. Preséntala entre comillas angulares españolas « ».
+- La reflexión debe tener tres párrafos desarrollados. Primer párrafo: ilumina el mensaje del Evangelio. Segundo: confronta la vida concreta del creyente. Tercero: conduce a una respuesta personal a Jesucristo. Busca profundidad sin lenguaje académico.
+- La pregunta para meditar será una sola pregunta, personal, concreta y profunda.
+- La oración debe ser una respuesta directa a Jesús, normalmente en tres párrafos, relacionada con el Evangelio y terminada de forma natural con Amén.
+- El compromiso debe ser una acción concreta, realista y practicable.
+- El mensaje final debe ser breve, esperanzador y fácil de recordar.
+- Cuando el Evangelio hable del demonio, del mal, de enfermedad o de liberación, conserva el sentido bíblico y una prudencia pastoral equilibrada. No atribuyas automáticamente problemas humanos, emocionales o psicológicos a causas demoníacas.
+- No uses la reflexión del Ordo ni fuentes externas. Trabaja con el texto bíblico recibido.
+- No incluyas encabezados dentro de los valores. Devuelve únicamente el JSON solicitado.
+PROMPT;
+  }
+
+  /** @param array<string,string> $content */
+  private function validateContent(array $content, string $gospelText): void
+  {
+    $phrase = trim($content['frase_destacada'], " \t\n\r\0\x0B«»\"“”");
+    if (mb_strlen($phrase, 'UTF-8') < 10) {
+      throw new RuntimeException('La frase destacada generada es demasiado corta.');
+    }
+
+    $haystack = $this->normalizeForMatch($gospelText);
+    $needle = $this->normalizeForMatch($phrase);
+    if ($needle === '' || !str_contains($haystack, $needle)) {
+      throw new RuntimeException('La frase destacada no coincide literalmente con el Evangelio recibido.');
+    }
+
+    $reflectionParagraphs = preg_split('/\n\s*\n/u', trim($content['reflexion'])) ?: [];
+    if (count(array_filter($reflectionParagraphs, fn ($p) => trim((string) $p) !== '')) < 3) {
+      throw new RuntimeException('La reflexión debe contener al menos tres párrafos.');
+    }
+
+    $prayerParagraphs = preg_split('/\n\s*\n/u', trim($content['oracion'])) ?: [];
+    if (count(array_filter($prayerParagraphs, fn ($p) => trim((string) $p) !== '')) < 2) {
+      throw new RuntimeException('La oración debe contener al menos dos párrafos.');
+    }
+  }
+
+  private function normalizeForMatch(string $value): string
+  {
+    $value = html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $value = mb_strtolower($value, 'UTF-8');
+    $value = preg_replace('/[«»"“”‘’.,;:!?¿¡()\[\]{}]/u', ' ', $value) ?? $value;
+    $value = preg_replace('/\s+/u', ' ', $value) ?? $value;
+    return trim($value);
+  }
+
+  private function extractText(array $response): string
+  {
+    $text = trim((string) ($response['output_text'] ?? ''));
+    if ($text !== '') {
+      return $text;
+    }
+
+    foreach (($response['output'] ?? []) as $item) {
+      if (!is_array($item)) {
+        continue;
+      }
+      foreach (($item['content'] ?? []) as $part) {
+        if (is_array($part) && in_array((string) ($part['type'] ?? ''), ['output_text', 'text'], true)) {
+          $text .= (string) ($part['text'] ?? '');
+        }
+      }
+    }
+
+    $text = trim($text);
+    if ($text === '') {
+      throw new RuntimeException('La IA no devolvió contenido para la Lectio.');
+    }
+
+    return $text;
+  }
+}
