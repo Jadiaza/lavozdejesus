@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/bootstrap.php';
 require __DIR__ . '/includes/liturgia/OrdoColombianoProvider.php';
+require __DIR__ . '/includes/liturgia/LectioLibraryService.php';
 
 lvj_require_method('POST');
 
@@ -93,8 +94,8 @@ function lvj_liturgia_sync_upsert(PDO $pdo, array $data, array $columns): array
   unset($filtered['fecha']);
 
   if ($existing) {
-    // Actualiza únicamente campos litúrgicos/lecturas recibidos desde el Ordo.
-    // No toca reflexión, oración, imágenes, audio, tema, santo ni demás contenido editorial LVJ.
+    // Solo actualiza datos litúrgicos/lecturas recibidos desde Ordo.
+    // No toca reflexión, oración, imágenes, audio, tema, santo ni contenido editorial LVJ.
     $sets = [];
     $params = [];
     foreach ($filtered as $field => $value) {
@@ -145,12 +146,29 @@ try {
   $columns = lvj_liturgia_sync_columns($pdo);
   $result = lvj_liturgia_sync_upsert($pdo, $payload, $columns);
 
+  // La Liturgia es independiente de la IA. Si la generación de Lectio falla,
+  // la lectura del día permanece sincronizada y el error se informa por separado.
+  $lectioResult = ['status' => 'not_attempted'];
+  try {
+    $lectioLibrary = new LectioLibraryService($pdo);
+    $lectioResult = $lectioLibrary->ensureForLiturgia($payload);
+  } catch (Throwable $lectioError) {
+    error_log('LVJ Lectio generation: ' . $lectioError->getMessage());
+    $lectioResult = [
+      'status' => 'error',
+      'message' => $lectioError->getMessage(),
+    ];
+  }
+
   lvj_json_response([
     'success' => true,
     'fecha' => $date,
     'provider' => 'Ordo Colombiano',
-    'action' => $result['action'],
-    'id' => $result['id'],
+    'liturgia' => [
+      'action' => $result['action'],
+      'id' => $result['id'],
+    ],
+    'lectio' => $lectioResult,
   ]);
 } catch (Throwable $error) {
   error_log('LVJ liturgia Ordo sync: ' . $error->getMessage());
