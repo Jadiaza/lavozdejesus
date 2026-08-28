@@ -17,6 +17,7 @@ final class LectioLibraryService
   /**
    * Genera una sola vez por cita exacta. Si ya existe una Lectio para la misma
    * fecha o la misma cita, no vuelve a consumir IA ni sobrescribe contenido.
+   * La IA siempre crea estado=borrador; solo una revisión humana publica.
    *
    * @param array<string,mixed> $liturgia
    * @return array<string,mixed>
@@ -105,7 +106,7 @@ final class LectioLibraryService
       "INSERT INTO lvj_lit_lectio_divina
         (liturgia_id, fecha, cita, cita_clave, frase_destacada, reflexion, pregunta_meditar, oracion, compromiso, mensaje_final, audio_url, generada_ia, modelo_ia, prompt_version, estado)
        VALUES
-        (NULL, :fecha, :cita, :cita_clave, :frase_destacada, :reflexion, :pregunta_meditar, :oracion, :compromiso, :mensaje_final, NULL, 1, :modelo_ia, :prompt_version, 'revision')"
+        (NULL, :fecha, :cita, :cita_clave, :frase_destacada, :reflexion, :pregunta_meditar, :oracion, :compromiso, :mensaje_final, NULL, 1, :modelo_ia, :prompt_version, 'borrador')"
     );
 
     try {
@@ -146,7 +147,7 @@ final class LectioLibraryService
     return [
       'status' => 'generated_for_review',
       'id' => (string) $this->pdo->lastInsertId(),
-      'estado' => 'revision',
+      'estado' => 'borrador',
       'cita' => $citation,
       'cita_clave' => $key,
       'prompt_version' => LectioAiService::PROMPT_VERSION,
@@ -211,7 +212,7 @@ final class LectioLibraryService
     $statement = $this->pdo->prepare(
       "SELECT * FROM lvj_lit_lectio_divina
        WHERE cita_clave = :key
-         AND estado IN ('revision','publicado')
+         AND estado IN ('borrador','publicado')
          AND deleted_at IS NULL
        ORDER BY CASE WHEN estado='publicado' THEN 0 ELSE 1 END, updated_at DESC, id DESC
        LIMIT 1"
