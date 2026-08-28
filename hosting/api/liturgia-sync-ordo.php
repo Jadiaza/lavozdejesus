@@ -27,7 +27,7 @@ function lvj_liturgia_sync_require_key(): void
   }
 }
 
-/** @return array<string,bool> */
+/** @return array<string,array<string,mixed>> */
 function lvj_liturgia_sync_columns(PDO $pdo): array
 {
   $statement = $pdo->query('SHOW COLUMNS FROM lvj_lit_lectura_dia');
@@ -35,7 +35,7 @@ function lvj_liturgia_sync_columns(PDO $pdo): array
   foreach ($statement->fetchAll() as $row) {
     $field = trim((string) ($row['Field'] ?? ''));
     if ($field !== '') {
-      $columns[$field] = true;
+      $columns[$field] = $row;
     }
   }
   return $columns;
@@ -118,7 +118,10 @@ function lvj_liturgia_sync_upsert(PDO $pdo, array $data, array $columns): array
 
   $insert = ['fecha' => $date] + $filtered;
   if (isset($columns['estado']) && !array_key_exists('estado', $insert)) {
-    $insert['estado'] = 'publicado';
+    $estadoType = strtolower((string) ($columns['estado']['Type'] ?? ''));
+    $insert['estado'] = str_contains($estadoType, 'int') || str_contains($estadoType, 'bit')
+      ? 1
+      : 'publicado';
   }
 
   $fields = array_keys($insert);
