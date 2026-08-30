@@ -32,16 +32,36 @@ final class SantoralAiService
     return $this->apiKey !== '' && $this->model !== '';
   }
 
+  /**
+   * Genera únicamente un borrador editorial. Nunca publica automáticamente.
+   *
+   * @param array<string,mixed> $context
+   * @return array{content:array<string,string>,model:string,input_tokens:mixed,output_tokens:mixed}
+   */
   public function generate(string $name, string $title, array $context = []): array
   {
-    if (!$this->isConfigured()) throw new RuntimeException('El generador IA de Santoral no está configurado.');
+    if (!$this->isConfigured()) {
+      throw new RuntimeException('El generador IA de Santoral no está configurado.');
+    }
+
     $name = trim($name);
-    if ($name === '') throw new InvalidArgumentException('El Santoral requiere el nombre recibido desde Ordo.');
+    if ($name === '') {
+      throw new InvalidArgumentException('El Santoral requiere el nombre recibido desde Ordo.');
+    }
 
     $schema = [
       'type' => 'object',
       'additionalProperties' => false,
-      'required' => ['frase_destacada','quien_fue','lucha_que_enfrento','secreto_de_santidad','ensenanza_para_hoy','como_puedo_imitarlo','paso_concreto','oracion_intercesion'],
+      'required' => [
+        'frase_destacada',
+        'quien_fue',
+        'lucha_que_enfrento',
+        'secreto_de_santidad',
+        'ensenanza_para_hoy',
+        'como_puedo_imitarlo',
+        'paso_concreto',
+        'oracion_intercesion',
+      ],
       'properties' => [
         'frase_destacada' => ['type' => 'string', 'minLength' => 20],
         'quien_fue' => ['type' => 'string', 'minLength' => 180],
@@ -55,7 +75,10 @@ final class SantoralAiService
     ];
 
     $input = [
-      'santo' => ['nombre_ordo' => $name, 'titulo_ordo' => trim($title)],
+      'santo' => [
+        'nombre_ordo' => $name,
+        'titulo_ordo' => trim($title),
+      ],
       'contexto_ordo' => [
         'fecha' => trim((string) ($context['fecha'] ?? '')),
         'preludio' => trim((string) ($context['preludio'] ?? '')),
@@ -66,24 +89,38 @@ final class SantoralAiService
 
     $response = HttpJsonClient::post(
       'https://api.openai.com/v1/responses',
-      ['Authorization: Bearer ' . $this->apiKey, 'Content-Type: application/json'],
+      [
+        'Authorization: Bearer ' . $this->apiKey,
+        'Content-Type: application/json',
+      ],
       [
         'model' => $this->model,
         'instructions' => $this->instructions(),
         'input' => json_encode($input, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
         'max_output_tokens' => $this->maxTokens,
-        'text' => ['format' => ['type' => 'json_schema', 'name' => 'santoral_lvj', 'strict' => true, 'schema' => $schema]],
+        'text' => [
+          'format' => [
+            'type' => 'json_schema',
+            'name' => 'santoral_lvj',
+            'strict' => true,
+            'schema' => $schema,
+          ],
+        ],
       ],
       $this->timeout,
     );
 
     $decoded = json_decode($this->extractText($response), true);
-    if (!is_array($decoded)) throw new RuntimeException('La IA no devolvió el Santoral en JSON válido.');
+    if (!is_array($decoded)) {
+      throw new RuntimeException('La IA no devolvió el Santoral en JSON válido.');
+    }
 
     $content = [];
     foreach (array_keys($schema['properties']) as $field) {
       $content[$field] = trim((string) ($decoded[$field] ?? ''));
-      if ($content[$field] === '') throw new RuntimeException('La IA omitió el campo obligatorio ' . $field . '.');
+      if ($content[$field] === '') {
+        throw new RuntimeException('La IA omitió el campo obligatorio ' . $field . '.');
+      }
     }
 
     return [
@@ -134,10 +171,14 @@ PROMPT;
   private function extractText(array $response): string
   {
     $text = trim((string) ($response['output_text'] ?? ''));
-    if ($text !== '') return $text;
+    if ($text !== '') {
+      return $text;
+    }
 
     foreach (($response['output'] ?? []) as $item) {
-      if (!is_array($item)) continue;
+      if (!is_array($item)) {
+        continue;
+      }
       foreach (($item['content'] ?? []) as $part) {
         if (is_array($part) && in_array((string) ($part['type'] ?? ''), ['output_text', 'text'], true)) {
           $text .= (string) ($part['text'] ?? '');
@@ -146,7 +187,10 @@ PROMPT;
     }
 
     $text = trim($text);
-    if ($text === '') throw new RuntimeException('La IA no devolvió contenido para el Santoral.');
+    if ($text === '') {
+      throw new RuntimeException('La IA no devolvió contenido para el Santoral.');
+    }
+
     return $text;
   }
 }
