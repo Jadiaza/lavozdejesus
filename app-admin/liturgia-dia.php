@@ -79,6 +79,7 @@ function liturgia_admin_required_for_publish(array $data): string
     'salmo_texto' => 'Texto del salmo',
     'evangelio_cita' => 'Cita del Evangelio',
     'evangelio_texto' => 'Texto del Evangelio',
+    'frase_destacada' => 'Palabra para hoy',
   ];
 
   foreach ($required as $field => $label) {
@@ -90,6 +91,23 @@ function liturgia_admin_required_for_publish(array $data): string
   return '';
 }
 
+function liturgia_admin_display_citation(string $kind, string $citation, string $readingText = ''): string
+{
+  $citation = trim($citation);
+  if ($citation === '' || preg_match('/^(?:De(?:l| la| los| las)?|Lectura|Del santo evangelio|Santo evangelio)/iu', $citation) === 1) return $citation;
+  if ($kind === 'salmo') return preg_replace('/^Sal\s+/iu', 'Salmo ', $citation) ?? $citation;
+  if ($kind === 'evangelio' && preg_match('/^(Mt|Mc|Lc|Jn)\s+(.+)$/u', $citation, $matches) === 1) {
+    $names = ['Mt' => 'Mateo', 'Mc' => 'Marcos', 'Lc' => 'Lucas', 'Jn' => 'Juan'];
+    return 'Del santo evangelio según san ' . $names[$matches[1]] . ' ' . $matches[2];
+  }
+  foreach (array_slice(preg_split('/\R/u', $readingText) ?: [], 0, 4) as $line) {
+    $line = trim((string) $line);
+    if (preg_match('/^Lectura\s+((?:del|de la|de los|de las)\s+.+?)[.:;]*$/iu', $line, $matches) !== 1) continue;
+    $numbers = preg_replace('/^[^\d]+(?=\d)/u', '', $citation) ?? $citation;
+    return ucfirst($matches[1]) . ' ' . $numbers;
+  }
+  return $citation;
+}
 function liturgia_admin_json_payload(array $row): array
 {
   return [
@@ -417,7 +435,7 @@ require __DIR__ . '/includes/header.php';
       ?>
       <?php foreach ($readingSections as [$title, $citationField, $textField]): ?>
         <?php
-          $citation = liturgia_admin_text($editRow[$citationField] ?? '');
+          $citation = liturgia_admin_display_citation($title === 'Salmo' ? 'salmo' : ($title === 'Evangelio' ? 'evangelio' : 'lectura'), liturgia_admin_text($editRow[$citationField] ?? ''), liturgia_admin_text($editRow[$textField] ?? ''));
           $text = liturgia_admin_text($editRow[$textField] ?? '');
           if ($citation === '' && $text === '') {
             continue;
@@ -544,7 +562,7 @@ require __DIR__ . '/includes/header.php';
 
         <?php
           $editorialFields = [
-            'frase_destacada' => ['Frase destacada', 3],
+            'frase_destacada' => ['Palabra para hoy · frase destacada', 3],
             'reflexion' => ['Reflexión', 8],
             'pregunta_meditar' => ['Pregunta para meditar', 3],
             'oracion' => ['Oración', 8],
