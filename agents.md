@@ -3161,7 +3161,7 @@ Incluye:
 - Frase bíblica destacada.
 - Recursos gráficos y multimedia.
 
-El Santoral continuará como módulo independiente y no forma parte del alcance inicial de la sincronización automática de Liturgia.
+El Santoral conserva su administración independiente, pero la automatización aprobada puede tomar de la respuesta del Ordo `celebracion_santo`, `idsanto` y `nombresanto` para preparar borradores del Santo del Día sujetos a revisión humana.
 
 ---
 
@@ -4636,7 +4636,7 @@ Antes de crear o modificar restricciones, Codex deberá:
 
 No deberán alimentarse simultáneamente varias tablas con el mismo contenido litúrgico. La sincronización oficial de la CEC escribirá únicamente en la tabla canónica y en las estructuras hijas o derivadas expresamente documentadas.
 
-El Santoral conservará su independencia funcional. La relación `santo_id` será opcional y no autoriza a importar el catálogo de santos desde la misma integración litúrgica si dicho servicio se administra por otra fuente oficial del ecosistema.
+El Santoral conserva su independencia funcional y su tabla `lvj_san_santo_dia`. La relación opcional `santo_id` puede vincular el santo publicado y destacado con la Liturgia. La integración utiliza únicamente la identidad que Ordo entrega mediante `celebracion_santo`, `idsanto` y `nombresanto`; la IA no elige ni inventa el santo.
 
 ---
 
@@ -11348,7 +11348,7 @@ GET /fiestas-principales
 GET /oraciones/categorias
 ```
 
-El Santoral continuará siendo un módulo independiente alimentado mediante su propio concepto de servicio.
+Los endpoints generales de santos continúan fuera de este alcance. Sí forman parte de la automatización aprobada los datos estructurados `celebracion_santo`, `idsanto` y `nombresanto` incluidos por Ordo en el contenido principal: determinan la identidad del Santo del Día y permiten crear un borrador pastoral sin importar un catálogo paralelo.
 
 Los nombres, rutas y formato real de los servicios deberán encapsularse en el proveedor. Ningún componente público deberá depender directamente de la estructura externa.
 
@@ -11395,6 +11395,30 @@ PWA / Web / Radio / Podcast
 
 Usuario
 ```
+
+El flujo editorial aprobado es:
+
+```text
+Ordo Colombiano
+    → Liturgia del Día
+    → borrador
+    → revisión humana
+
+Evangelio
+    → Lectio Divina IA
+    → lvj_lit_lectio_divina
+    → borrador reutilizable
+    → revisión humana
+
+celebracion_santo / idsanto / nombresanto
+    → Santo del Día
+    → contenido pastoral IA
+    → lvj_san_santo_dia
+    → borrador
+    → revisión humana
+```
+
+Los tres paneles editoriales utilizan `Vista previa → Editar contenido → JSON`. La vista JSON es siempre de solo lectura. Una falla de IA en Lectio o Santoral nunca revierte una Liturgia ya sincronizada.
 
 La PWA nunca consultará directamente a la CEC, MySQL ni OpenAI.
 
@@ -11492,10 +11516,10 @@ lvj_lit_lectio_divina
     → Lectio Divina generada o editada
 
 lvj_lit_palabra_dia
-    → Resumen derivado para Home y notificaciones
+    → Compatibilidad legacy y resumen derivado para Home y notificaciones
 
 lvj_lit_dia
-    → Compatibilidad temporal; no utilizar en nuevos desarrollos
+    → Compatibilidad y calendario histórico; no utilizar en nuevos desarrollos
 ```
 
 No deberán escribirse simultáneamente las mismas lecturas en `lvj_lit_lectura_dia` y `lvj_lit_dia`.
@@ -11886,38 +11910,35 @@ Los umbrales de publicación serán configurables dentro del sistema de IA exist
 
 ---
 
-## 9.19 Publicación automática
+## 9.19 Publicación editorial humana
 
-Las lecturas oficiales podrán publicarse automáticamente después de superar validaciones técnicas y editoriales de origen.
+La Liturgia del Día, la Lectio Divina y el Santo del Día se almacenarán inicialmente como borradores y requerirán revisión humana antes de publicarse.
 
-La Reflexión y la Lectio Divina podrán publicarse automáticamente cuando:
+La IA únicamente podrá preparar borradores editoriales. Nunca publicará automáticamente, elegirá la identidad de un santo ni modificará las lecturas oficiales.
 
 ```text
-Liturgia oficial válida
+Contenido válido
 +
-Generación completa
+Borrador completo
 +
-Estructura correcta
+Revisión humana
 +
-Revisión doctrinal aprobada
-+
-Publicación automática habilitada
+Acción explícita de publicación
 =
 Contenido publicado
 ```
 
 Si la generación o la revisión fallan:
 
-- las lecturas oficiales permanecerán disponibles;
+- la Liturgia sincronizada permanecerá confirmada y no se revertirá;
 - el contenido generado quedará pendiente o en error;
 - no se publicará texto incompleto;
 - se registrará la incidencia;
-- podrá ejecutarse un reintento automático limitado o una acción administrativa.
+- podrá ejecutarse un reintento limitado o una acción administrativa.
 
-Las correcciones manuales deberán activar un bloqueo editorial para impedir que el cron las sobrescriba.
+Las correcciones manuales deberán quedar protegidas frente a sobrescrituras automáticas.
 
 ---
-
 ## 9.20 Estados editoriales y operativos
 
 La implementación reutilizará los estados existentes cuando sean compatibles.
@@ -11972,7 +11993,7 @@ Deberá mostrar:
 - estado de revisión doctrinal;
 - versión del perfil desplegado;
 - registros bloqueados;
-- estado de publicación automática.
+- estado de publicación y revisión humana.
 
 Acciones permitidas:
 
@@ -12108,7 +12129,7 @@ El módulo Liturgia podrá integrarse con:
 - Notificaciones: frase o invitación diaria;
 - Home: resumen derivado desde `lvj_lit_palabra_dia`.
 
-El Santoral conservará su servicio y administración independientes.
+El Santoral conserva su administración independiente en `lvj_san_santo_dia`, aunque recibe de Ordo la identidad del Santo del Día y puede enlazar el registro humano publicado y destacado con la Liturgia.
 
 Ninguna integración deberá duplicar el contenido fuente.
 
@@ -12238,7 +12259,7 @@ Confirmado:
 - `lvj_lit_lectura_dia` como tabla canónica;
 - Reflexión y Lectio Divina como contenidos propios de LVJPRAYER;
 - reutilización del Centro de Formación y Supervisión IA;
-- Santoral fuera del alcance inicial de esta integración.
+- automatización del Santo del Día desde la identidad suministrada por Ordo, con contenido IA en borrador y publicación humana.
 
 Pendiente:
 
@@ -12281,7 +12302,7 @@ Pendiente:
 - generación estructurada;
 - revisión doctrinal;
 - persistencia;
-- publicación automática configurable.
+- publicación exclusivamente después de revisión y acción humana.
 
 ### Fase 4 — Experiencia pública
 
@@ -12327,7 +12348,7 @@ Codex no deberá:
 - copiar secretos al código;
 - escribir en varias tablas diarias;
 - sustituir el Leccionario por una Biblia interna;
-- integrar Santoral dentro de esta tarea;
+- permitir que la IA elija, sustituya o invente la identidad del Santo del Día;
 - crear prompts fuera del Centro IA;
 - publicar versiones de instrucciones automáticamente;
 - publicar contenido que no supere la revisión configurada;
@@ -12373,7 +12394,7 @@ El Backend PHP será la única capa autorizada para consultar esa fuente, valida
 
 MySQL será la fuente consumida por la aplicación pública.
 
-La Reflexión y la Lectio Divina serán contenidos propios de LVJPRAYER, generados mediante perfiles aprobados del Centro de Formación y Supervisión IA y sometidos a revisión doctrinal antes de su publicación automática.
+La Reflexión, la Lectio Divina y el contenido pastoral del Santo del Día serán contenidos propios de LVJPRAYER. La IA preparará únicamente borradores; la identidad del santo será determinada por Ordo y toda publicación requerirá revisión y acción humana.
 
 El Panel Administrativo supervisará y corregirá excepciones; no realizará mantenimiento manual diario.
 
@@ -12865,7 +12886,7 @@ La versión 2.1 conserva la arquitectura base del sistema e incorpora como decis
 - Se incorpora la sincronización automática, idempotencia, caché persistente y conservación de la última versión válida.
 - Se incorporan perfiles IA separados para Reflexión, Lectio Divina y revisión doctrinal.
 - Se redefine el Panel de Liturgia como consola de supervisión y excepción, no como carga manual diaria.
-- Se mantiene el Santoral como servicio independiente fuera del alcance inicial.
+- Se incorpora el Santo del Día desde la identidad suministrada por Ordo, conservando administración independiente, borrador IA y publicación humana.
 - Se actualizan las reglas del Backend, Panel Administrativo, Modelo Relacional y Sistema de Contenidos.
 
 ---

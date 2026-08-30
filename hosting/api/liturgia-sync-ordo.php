@@ -93,79 +93,98 @@ function lvj_liturgia_sync_upsert(PDO $pdo, array $data, array $columns): array
     throw new RuntimeException('No se recibió fecha para sincronizar.');
   }
 
-  $existing = lvj_optional_first(
-    $pdo,
-    'SELECT * FROM lvj_lit_lectura_dia WHERE fecha = ? ORDER BY id ASC LIMIT 1',
-    [$date],
-  );
+  $ownsTransaction = !$pdo->inTransaction();
 
-  $filtered = lvj_liturgia_sync_filter_payload($data, $columns);
-  unset($filtered['fecha']);
-
-  if ($existing) {
-    // Solo se envía a revisión cuando Ordo trae un cambio real.
-    // Si no cambió nada, conserva el estado publicado/borrador existente.
-    $changes = [];
-    foreach ($filtered as $field => $value) {
-      if ((string) ($existing[$field] ?? '') !== (string) $value) {
-        $changes[$field] = $value;
-      }
+  try {
+    if ($ownsTransaction) {
+      $pdo->beginTransaction();
     }
 
-    if (!$changes) {
-      return [
-        'action' => 'unchanged',
-        'id' => (string) ($existing['id'] ?? ''),
-        'requires_review' => false,
+    $existing = lvj_optional_first(
+      $pdo,
+      'SELECT * FROM lvj_lit_lectura_dia WHERE fecha = ? ORDER BY id ASC LIMIT 1 FOR UPDATE',
+      [$date],
+    );
+
+    $filtered = lvj_liturgia_sync_filter_payload($data, $columns);
+    unset($filtered['fecha']);
+
+    if ($existing) {
+      // Solo se envía a revisión cuando Ordo trae un cambio real.
+      // Si no cambió nada, conserva el estado publicado/borrador existente.
+      $changes = [];
+      foreach ($filtered as $field => $value) {
+        if ((string) ($existing[$field] ?? '') !== (string) $value) {
+          $changes[$field] = $value;
+        }
+      }
+
+      if (!$changes) {
+        $result = [
+          'action' => 'unchanged',
+          'id' => (string) ($existing['id'] ?? ''),
+          'requires_review' => false,
+        ];
+      } else {
+        $sets = [];
+        $params = [];
+        foreach ($changes as $field => $value) {
+          $sets[] = "`{$field}` = ?";
+          $params[] = $value;
+        }
+
+        if (isset($columns['estado'])) {
+          $sets[] = '`estado` = ?';
+          $params[] = lvj_liturgia_sync_draft_value($columns);
+        }
+        if (isset($columns['updated_at'])) {
+          $sets[] = 'updated_at = NOW()';
+        }
+
+        $params[] = $date;
+        $statement = $pdo->prepare(
+          'UPDATE lvj_lit_lectura_dia SET ' . implode(', ', $sets) . ' WHERE fecha = ?'
+        );
+        $statement->execute($params);
+
+        $result = [
+          'action' => 'updated_for_review',
+          'id' => (string) ($existing['id'] ?? ''),
+          'requires_review' => true,
+          'changed_fields' => array_keys($changes),
+        ];
+      }
+    } else {
+      $insert = ['fecha' => $date] + $filtered;
+      if (isset($columns['estado']) && !array_key_exists('estado', $insert)) {
+        $insert['estado'] = lvj_liturgia_sync_draft_value($columns);
+      }
+
+      $fields = array_keys($insert);
+      $placeholders = array_fill(0, count($fields), '?');
+      $statement = $pdo->prepare(
+        'INSERT INTO lvj_lit_lectura_dia (`' . implode('`,`', $fields) . '`) VALUES (' . implode(',', $placeholders) . ')'
+      );
+      $statement->execute(array_values($insert));
+
+      $result = [
+        'action' => 'inserted_for_review',
+        'id' => (string) $pdo->lastInsertId(),
+        'requires_review' => true,
       ];
     }
 
-    $sets = [];
-    $params = [];
-    foreach ($changes as $field => $value) {
-      $sets[] = "`{$field}` = ?";
-      $params[] = $value;
+    if ($ownsTransaction) {
+      $pdo->commit();
     }
 
-    if (isset($columns['estado'])) {
-      $sets[] = '`estado` = ?';
-      $params[] = lvj_liturgia_sync_draft_value($columns);
+    return $result;
+  } catch (Throwable $error) {
+    if ($ownsTransaction && $pdo->inTransaction()) {
+      $pdo->rollBack();
     }
-    if (isset($columns['updated_at'])) {
-      $sets[] = 'updated_at = NOW()';
-    }
-
-    $params[] = $date;
-    $statement = $pdo->prepare(
-      'UPDATE lvj_lit_lectura_dia SET ' . implode(', ', $sets) . ' WHERE fecha = ?'
-    );
-    $statement->execute($params);
-
-    return [
-      'action' => 'updated_for_review',
-      'id' => (string) ($existing['id'] ?? ''),
-      'requires_review' => true,
-      'changed_fields' => array_keys($changes),
-    ];
+    throw $error;
   }
-
-  $insert = ['fecha' => $date] + $filtered;
-  if (isset($columns['estado']) && !array_key_exists('estado', $insert)) {
-    $insert['estado'] = lvj_liturgia_sync_draft_value($columns);
-  }
-
-  $fields = array_keys($insert);
-  $placeholders = array_fill(0, count($fields), '?');
-  $statement = $pdo->prepare(
-    'INSERT INTO lvj_lit_lectura_dia (`' . implode('`,`', $fields) . '`) VALUES (' . implode(',', $placeholders) . ')'
-  );
-  $statement->execute(array_values($insert));
-
-  return [
-    'action' => 'inserted_for_review',
-    'id' => (string) $pdo->lastInsertId(),
-    'requires_review' => true,
-  ];
 }
 
 try {
@@ -193,7 +212,7 @@ try {
     error_log('LVJ Lectio generation: ' . $lectioError->getMessage());
     $lectioResult = [
       'status' => 'error',
-      'message' => $lectioError->getMessage(),
+      'message' => 'No fue posible preparar la Lectio Divina.',
     ];
   }
 
@@ -213,7 +232,7 @@ try {
     error_log('LVJ Santoral generation: ' . $santoralError->getMessage());
     $santoralResult = [
       'status' => 'error',
-      'message' => $santoralError->getMessage(),
+      'message' => 'No fue posible preparar el Santo del Día.',
     ];
   }
 
@@ -235,6 +254,5 @@ try {
   lvj_json_response([
     'success' => false,
     'message' => 'No fue posible sincronizar la Lectura del Día desde Ordo Colombiano.',
-    'detail' => $error->getMessage(),
   ], 502);
 }
