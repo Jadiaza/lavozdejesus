@@ -22,8 +22,9 @@ final class OrdoColombianoProvider
   }
 
   /**
-   * Recupera exclusivamente la Lectura del Día. No importa reflexión del Ordo,
-   * santoral, audio ni otros módulos.
+   * Recupera la Liturgia del Día y expone, de manera desacoplada, los santos
+   * estructurados que el propio Ordo asocia a esa fecha. El consumidor decide
+   * qué subconjunto persiste; no se importa reflexión ni contenido pastoral.
    *
    * @return array<string,mixed>
    */
@@ -111,6 +112,8 @@ final class OrdoColombianoProvider
       throw new RuntimeException('El Ordo no devolvió el Evangelio completo para ' . $date . '.');
     }
 
+    $prelude = $this->plain((string) ($row['preludio'] ?? ''));
+
     return [
       'fecha' => $date,
       'tiempo_liturgico' => $this->plain((string) ($row['tiempo_liturgico'] ?? '')),
@@ -126,6 +129,8 @@ final class OrdoColombianoProvider
       'segunda_lectura_texto' => $second['texto'],
       'evangelio_cita' => $gospel['cita'],
       'evangelio_texto' => $gospel['texto'],
+      'preludio_ordo' => $prelude,
+      'santos_ordo' => $this->extractSaints($row, $prelude),
       'fuente' => 'Ordo Colombiano',
     ];
   }
@@ -152,6 +157,75 @@ final class OrdoColombianoProvider
     }
 
     return null;
+  }
+
+  /**
+   * @param array<string,mixed> $row
+   * @return array<int,array<string,mixed>>
+   */
+  private function extractSaints(array $row, string $prelude): array
+  {
+    $raw = $row['celebracion_santo'] ?? [];
+    if (is_string($raw)) {
+      $raw = trim($raw);
+      if ($raw === '' || strtolower($raw) === 'null') {
+        return [];
+      }
+      try {
+        $raw = json_decode($raw, true, 64, JSON_THROW_ON_ERROR);
+      } catch (JsonException $error) {
+        return [];
+      }
+    }
+
+    if (!is_array($raw)) {
+      return [];
+    }
+    if (!array_is_list($raw)) {
+      $raw = [$raw];
+    }
+
+    $saints = [];
+    foreach ($raw as $index => $item) {
+      if (!is_array($item)) {
+        continue;
+      }
+
+      $name = $this->plain((string) ($item['nombresanto'] ?? ''));
+      if ($name === '') {
+        continue;
+      }
+
+      $saints[] = [
+        'ordo_santo_id' => trim((string) ($item['idsanto'] ?? '')),
+        'nombre' => $name,
+        'titulo' => $this->extractSaintTitle($prelude, $name),
+        'orden' => (int) $index,
+      ];
+    }
+
+    return $saints;
+  }
+
+  private function extractSaintTitle(string $prelude, string $name): string
+  {
+    if ($prelude === '' || $name === '') {
+      return '';
+    }
+
+    foreach (preg_split('/\s*;\s*/u', $prelude) ?: [] as $segment) {
+      $segment = trim((string) $segment);
+      $position = mb_stripos($segment, $name, 0, 'UTF-8');
+      if ($position === false) {
+        continue;
+      }
+
+      $suffix = mb_substr($segment, $position + mb_strlen($name, 'UTF-8'), null, 'UTF-8');
+      $suffix = trim($suffix, " \t\n\r\0\x0B,.;:-–—");
+      return $suffix;
+    }
+
+    return '';
   }
 
   /** @return array{cita:string,texto:string} */
