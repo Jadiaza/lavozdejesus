@@ -79,7 +79,6 @@ function liturgia_admin_required_for_publish(array $data): string
     'salmo_texto' => 'Texto del salmo',
     'evangelio_cita' => 'Cita del Evangelio',
     'evangelio_texto' => 'Texto del Evangelio',
-    'frase_destacada' => 'Palabra para hoy',
   ];
 
   foreach ($required as $field => $label) {
@@ -126,13 +125,6 @@ function liturgia_admin_json_payload(array $row): array
       'segunda_lectura_texto' => liturgia_admin_text($row['segunda_lectura_texto'] ?? ''),
       'evangelio_cita' => liturgia_admin_text($row['evangelio_cita'] ?? ''),
       'evangelio_texto' => liturgia_admin_text($row['evangelio_texto'] ?? ''),
-      'palabra_hoy' => liturgia_admin_text($row['palabra_hoy'] ?? $row['frase_destacada'] ?? ''),
-      'reflexion' => liturgia_admin_text($row['reflexion'] ?? ''),
-      'pregunta_meditar' => liturgia_admin_text($row['pregunta_meditar'] ?? ''),
-      'oracion' => liturgia_admin_text($row['oracion'] ?? ''),
-      'compromiso' => liturgia_admin_text($row['compromiso'] ?? ''),
-      'mensaje_final' => liturgia_admin_text($row['mensaje_final'] ?? ''),
-      'audio_url' => liturgia_admin_text($row['audio_url'] ?? ''),
       'fuente' => liturgia_admin_text($row['fuente'] ?? ''),
       'estado' => liturgia_admin_is_published($row['estado'] ?? '') ? 'publicado' : 'borrador',
     ],
@@ -170,18 +162,6 @@ $editableFields = [
   'segunda_lectura_texto',
   'evangelio_cita',
   'evangelio_texto',
-  'frase_destacada',
-  'reflexion',
-  'pregunta_meditar',
-  'oracion',
-  'compromiso',
-  'mensaje_final',
-  'imagen_home',
-  'imagen_lectura',
-  'banner',
-  'logo_especial',
-  'audio_url',
-  'video_url',
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -456,30 +436,7 @@ require __DIR__ . '/includes/header.php';
         </article>
       <?php endforeach; ?>
 
-      <?php if (!empty($editRow['frase_destacada'])): ?>
-        <article class="panel content-field full">
-          <div class="panel-header"><div><span class="eyebrow">Palabra para hoy</span><h2>Frase destacada</h2></div></div>
-          <div class="alert alert-success">«<?php echo e(trim((string) $editRow['frase_destacada'], " \t\n\r\0\x0B«»\"“”")); ?>»</div>
-        </article>
-      <?php endif; ?>
 
-      <?php
-        $legacyEditorial = [
-          'Reflexión' => 'reflexion',
-          'Pregunta para meditar' => 'pregunta_meditar',
-          'Oración' => 'oracion',
-          'Compromiso' => 'compromiso',
-          'Mensaje final' => 'mensaje_final',
-        ];
-      ?>
-      <?php foreach ($legacyEditorial as $title => $field): ?>
-        <?php if (!empty($editRow[$field])): ?>
-          <article class="panel content-field full">
-            <div class="panel-header"><div><span class="eyebrow">Contenido editorial</span><h2><?php echo e($title); ?></h2></div></div>
-            <div style="white-space:pre-wrap;line-height:1.75;"><?php echo e((string) $editRow[$field]); ?></div>
-          </article>
-        <?php endif; ?>
-      <?php endforeach; ?>
     </div>
 
     <div class="form-actions">
@@ -506,7 +463,7 @@ require __DIR__ . '/includes/header.php';
       <div class="content-step-tabs" data-content-section-tabs>
         <button type="button" class="active" data-content-section-tab="general">General</button>
         <button type="button" data-content-section-tab="lecturas">Lecturas</button>
-        <button type="button" data-content-section-tab="editorial">Editorial y multimedia</button>
+
       </div>
 
       <div class="content-form-grid">
@@ -560,42 +517,7 @@ require __DIR__ . '/includes/header.php';
           <?php endif; ?>
         <?php endforeach; ?>
 
-        <?php
-          $editorialFields = [
-            'frase_destacada' => ['Palabra para hoy · frase destacada', 3],
-            'reflexion' => ['Reflexión', 8],
-            'pregunta_meditar' => ['Pregunta para meditar', 3],
-            'oracion' => ['Oración', 8],
-            'compromiso' => ['Compromiso', 3],
-            'mensaje_final' => ['Mensaje final', 3],
-          ];
-        ?>
-        <?php foreach ($editorialFields as $field => [$label, $rowsCount]): ?>
-          <?php if (isset($columns[$field])): ?>
-            <div class="content-section-shell" data-content-section="editorial" hidden>
-              <label class="content-field full"><?php echo e($label); ?>
-                <textarea name="<?php echo e($field); ?>" rows="<?php echo (int) $rowsCount; ?>"><?php echo e((string) ($editRow[$field] ?? '')); ?></textarea>
-              </label>
-            </div>
-          <?php endif; ?>
-        <?php endforeach; ?>
 
-        <?php foreach ([
-          'imagen_home' => 'Imagen home',
-          'imagen_lectura' => 'Imagen lectura',
-          'banner' => 'Banner',
-          'logo_especial' => 'Logo especial',
-          'audio_url' => 'Audio',
-          'video_url' => 'Video',
-        ] as $field => $label): ?>
-          <?php if (isset($columns[$field])): ?>
-            <div class="content-section-shell" data-content-section="editorial" hidden>
-              <label class="content-field"><?php echo e($label); ?>
-                <input type="url" name="<?php echo e($field); ?>" value="<?php echo e((string) ($editRow[$field] ?? '')); ?>" placeholder="https://...">
-              </label>
-            </div>
-          <?php endif; ?>
-        <?php endforeach; ?>
 
         <div class="content-section-shell" data-content-section="general">
           <label class="content-field status-field">Estado

@@ -38,7 +38,7 @@ interface LecturasCache {
   santos: SantoDelDia[];
 }
 
-const CACHE_KEY = "lvj_lecturas_publicadas_v14";
+const CACHE_KEY = "lvj_lecturas_publicadas_v15";
 
 const liturgicalStoleMap: Record<
   string,
@@ -857,7 +857,7 @@ const LecturasDelDia = () => {
   const weekDays = useMemo(() => getWeekSelector(selectedDate), [selectedDate]);
 
   const palabraHoy =
-    liturgia?.palabra_hoy?.trim() ||
+    lectio?.frase_destacada?.trim() ||
     "La Palabra para hoy estará disponible pronto.";
   const palabraHoyDisplay = loading
     ? "Cargando lecturas..."
