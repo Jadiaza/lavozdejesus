@@ -39,6 +39,7 @@ $lectioItems = table_count($pdo, 'lvj_lit_lectio_divina');
 $pendingLectios = table_count($pdo, 'lvj_lit_lectio_divina', "estado = 'borrador' AND deleted_at IS NULL");
 $palabraDia = table_count($pdo, 'lvj_lit_palabra_dia');
 $santoral = table_count($pdo, 'lvj_san_santo_dia');
+$pendingSantos = table_count($pdo, 'lvj_san_santo_dia', "estado = 'borrador' AND deleted_at IS NULL");
 $aiStudies = table_count($pdo, 'lvj_bib_estudios_ia', 'deleted_at IS NULL');
 $aiRequests = table_count($pdo, 'lvj_bib_estudios_ia_solicitudes');
 $pendingPrayerRequests = table_count($pdo, 'lvj_com_peticiones_oracion', "estado = 'pendiente' AND deleted_at IS NULL");
@@ -111,6 +112,7 @@ require __DIR__ . '/includes/header.php';
 <section class="stats-grid pending-stats">
   <a class="stat-card stat-card-link" href="intenciones.php?estado=pendiente"><div class="stat-icon pink">I</div><span>Intenciones</span><strong><?php echo $pendingPrayerRequests; ?></strong><small>Pendientes de moderacion</small></a>
   <a class="stat-card stat-card-link" href="lectio-divina.php?estado=borrador"><div class="stat-icon gold">LD</div><span>Lectio Divina</span><strong><?php echo $pendingLectios; ?></strong><small>Borradores pendientes de revisión</small></a>
+  <a class="stat-card stat-card-link" href="santoral-dia.php?estado=borrador"><div class="stat-icon gold">SA</div><span>Santo del Día</span><strong><?php echo $pendingSantos; ?></strong><small>Borradores pendientes de revisión</small></a>
   <a class="stat-card stat-card-link" href="biblia-estudios-ia.php?estado=revision"><div class="stat-icon purple">EB</div><span>Estudios biblicos</span><strong><?php echo $pendingAiStudies; ?></strong><small>Pendientes de revision</small></a>
   <article class="stat-card"><div class="stat-icon blue">SO</div><span>Solicitudes IA</span><strong><?php echo $processingAiRequests; ?></strong><small>Pendientes o procesando</small></article>
   <?php if (is_technical_admin()): ?>
@@ -127,6 +129,7 @@ require __DIR__ . '/includes/header.php';
     <a href="content.php?module=radio&amp;table=lvj_rad_programacion&amp;action=new"><span>Pr</span><strong>Nueva programacion</strong></a>
     <a href="content.php?module=liturgia&amp;table=lvj_lit_lectura_dia"><span>Li</span><strong>Editar liturgia</strong></a>
     <a href="lectio-divina.php?estado=borrador"><span>LD</span><strong>Revisar Lectio Divina</strong></a>
+    <a href="santoral-dia.php?estado=borrador"><span>SA</span><strong>Revisar Santo del Día</strong></a>
     <a href="intenciones.php?estado=pendiente"><span>In</span><strong>Revisar intenciones</strong></a>
     <a href="biblia-estudios-ia.php?estado=revision"><span>IA</span><strong>Revisar estudios</strong></a>
     <a href="biblia-importar.php"><span>Bi</span><strong>Importar / Subir Biblias</strong></a>
