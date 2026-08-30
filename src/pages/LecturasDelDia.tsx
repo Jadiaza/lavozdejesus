@@ -7,6 +7,7 @@ import {
   Home,
   MessageCircleQuestion,
   Music2,
+  RefreshCw,
   Sparkles,
   Star,
   UserRound,
@@ -667,10 +668,13 @@ const LecturasDelDia = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(false);
+  const [refreshNonce, setRefreshNonce] = useState(0);
 
   useEffect(() => {
     let mounted = true;
+    if (refreshNonce > 0) setRefreshing(true);
     const cached = readLecturasCache();
 
     if (cached?.liturgias.length) {
@@ -693,12 +697,12 @@ const LecturasDelDia = () => {
     }
 
     Promise.all([
-      getPublishedLiturgias(),
-      getPublishedLectios(),
-      getPublishedSantosDelDia(),
-      getTodayLiturgia(),
-      getTodayLectio(),
-      getTodaySantoDelDia(),
+      getPublishedLiturgias(true),
+      getPublishedLectios(true),
+      getPublishedSantosDelDia(true),
+      getTodayLiturgia(getTodayISO(), true),
+      getTodayLectio(getTodayISO(), true),
+      getTodaySantoDelDia(getTodayISO(), true),
     ])
       .then(
         ([
@@ -762,12 +766,26 @@ const LecturasDelDia = () => {
         if (mounted) setError(true);
       })
       .finally(() => {
-        if (mounted) setLoading(false);
+        if (mounted) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       });
 
     return () => {
       mounted = false;
     };
+  }, [refreshNonce]);
+
+  useEffect(() => {
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") {
+        setRefreshNonce((value) => value + 1);
+      }
+    };
+
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    return () => document.removeEventListener("visibilitychange", refreshWhenVisible);
   }, []);
 
   useEffect(() => {
@@ -846,10 +864,16 @@ const LecturasDelDia = () => {
             <header className="mx-auto max-w-[860px]">
               <div className="text-center md:text-left">
                 <div className="mb-4 flex justify-center md:hidden"><Logo size="md" /></div>
-                <h1 className="flex items-center justify-center gap-2 text-[13px] font-extrabold uppercase tracking-[0.18em] text-[#c69222] md:justify-start md:text-base md:tracking-[0.22em]">
-                  <BookOpen className="h-4 w-4 md:h-5 md:w-5" />
-                  <span>Liturgia del Día</span>
-                </h1>
+                <div className="flex items-center justify-center gap-3 md:justify-between">
+                  <h1 className="flex items-center justify-center gap-2 text-[13px] font-extrabold uppercase tracking-[0.18em] text-[#c69222] md:justify-start md:text-base md:tracking-[0.22em]">
+                    <BookOpen className="h-4 w-4 md:h-5 md:w-5" />
+                    <span>Liturgia del Día</span>
+                  </h1>
+                  <button type="button" onClick={() => setRefreshNonce((value) => value + 1)} disabled={refreshing} className="inline-flex items-center gap-1.5 rounded-full border border-[#d8c9ac] bg-white px-3 py-2 text-xs font-bold text-[#082347] shadow-sm transition hover:border-[#d4af37] disabled:opacity-60" aria-label="Actualizar contenido litúrgico">
+                    <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+                    <span>{refreshing ? "Actualizando" : "Actualizar"}</span>
+                  </button>
+                </div>
               </div>
 
               <div className="mt-7 border-y border-[#e7dcc8] bg-white/55 px-1 py-3">
