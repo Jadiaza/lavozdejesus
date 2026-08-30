@@ -333,6 +333,7 @@ require __DIR__ . '/includes/header.php';
     </div>
     <div class="content-actions-bar">
       <a class="btn btn-soft" href="content.php?module=santoral&amp;table=lvj_san_santo_dia">Administración general</a>
+      <a class="btn btn-soft" href="liturgia-ordo.php">Sincronizar Ordo</a>
       <a class="btn btn-soft" href="content.php?module=liturgia&amp;table=lvj_lit_lectura_dia">Lecturas del día</a>
     </div>
   </div>
