@@ -865,15 +865,31 @@ const LecturasDelDia = () => {
                 </h1>
               </div>
 
-              <div className="mt-5 rounded-xl border border-[#d7c39d] bg-[#fffdf8] px-1 py-3 shadow-sm">
+              <div className="mt-5 border-y border-[#d7c39d] bg-[#fffdf8]/80 px-1 py-2 shadow-[0_10px_28px_-26px_rgba(8,35,71,0.55)] md:rounded-xl md:border md:bg-[#fffdf8] md:py-3 md:shadow-sm">
                 <div className="grid grid-cols-7 gap-1">
                   {weekDays.map((day) => {
                     const active = day.fecha === selectedDate;
                     const available = liturgias.some((item) => item.fecha === day.fecha);
                     return (
-                      <button key={day.fecha} type="button" disabled={!available} onClick={() => selectDate(day.fecha)} className={`mx-auto flex min-h-[62px] w-full max-w-[48px] flex-col items-center justify-center rounded-lg border text-sm transition disabled:cursor-not-allowed disabled:opacity-100 ${active ? "border-[#a56f08] bg-[#d4af37] font-extrabold text-[#071a33] shadow-md" : available ? "border-[#d8c9ac] bg-white font-bold text-[#082347] hover:border-[#c89a2b] hover:bg-[#fff4d8]" : "border-[#e2d5bf] bg-[#eee5d7] font-semibold text-[#657084]"}`}>
-                        <span className="text-xs font-bold">{day.label}</span>
-                        <span className="mt-1 text-lg">{day.day}</span>
+                      <button
+                        key={day.fecha}
+                        type="button"
+                        disabled={!available}
+                        aria-pressed={active}
+                        aria-label={`${day.label} ${day.day}`}
+                        onClick={() => selectDate(day.fecha)}
+                        className={`mx-auto flex h-11 w-10 items-center justify-center rounded-md border text-[15px] transition md:h-auto md:min-h-[62px] md:w-full md:max-w-[48px] md:flex-col md:rounded-lg md:text-sm disabled:cursor-not-allowed disabled:opacity-100 ${
+                          active
+                            ? "border-[#a56f08] bg-[#d4af37] font-extrabold text-[#071a33] shadow-md"
+                            : available
+                              ? "border-transparent bg-transparent font-extrabold text-[#082347] hover:border-[#c89a2b] hover:bg-[#fff4d8] md:border-[#d8c9ac] md:bg-white md:font-bold"
+                              : "border-transparent bg-transparent font-semibold text-[#9aa1ad] md:border-[#e2d5bf] md:bg-[#eee5d7] md:text-[#657084]"
+                        }`}
+                      >
+                        <span className="text-[15px] font-extrabold md:text-xs md:font-bold">
+                          {day.label}
+                        </span>
+                        <span className="mt-1 hidden text-lg md:block">{day.day}</span>
                       </button>
                     );
                   })}
