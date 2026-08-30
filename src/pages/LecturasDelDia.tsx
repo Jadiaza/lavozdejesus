@@ -624,7 +624,8 @@ const LecturasDelDia = () => {
     [liturgias],
   );
   const palabraHoy =
-    liturgia?.palabra_hoy || "La Palabra para hoy estará disponible pronto.";
+    lectio?.frase_destacada?.trim() ||
+    "La Palabra para hoy estará disponible pronto.";
   const dateCard = formatDateCard(selectedDate);
   const sharedTheme = READING_THEME_PALETTES[readingPreferences.tema];
   const activeTheme = {
