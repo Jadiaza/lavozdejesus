@@ -73,6 +73,14 @@ function lvj_liturgia_sync_filter_payload(array $payload, array $columns): array
   return $filtered;
 }
 
+function lvj_liturgia_sync_draft_value(array $columns): mixed
+{
+  $type = strtolower((string) ($columns['estado']['Type'] ?? ''));
+  return str_contains($type, 'int') || str_contains($type, 'bit')
+    ? 0
+    : 'borrador';
+}
+
 /** @param array<string,mixed> $data */
 function lvj_liturgia_sync_upsert(PDO $pdo, array $data, array $columns): array
 {
@@ -95,17 +103,36 @@ function lvj_liturgia_sync_upsert(PDO $pdo, array $data, array $columns): array
   unset($filtered['fecha']);
 
   if ($existing) {
-    // Solo actualiza datos litúrgicos/lecturas recibidos desde Ordo.
-    // No toca reflexión, oración, imágenes, audio, tema, santo ni contenido editorial LVJ.
+    // Solo se envía a revisión cuando Ordo trae un cambio real.
+    // Si no cambió nada, conserva el estado publicado/borrador existente.
+    $changes = [];
+    foreach ($filtered as $field => $value) {
+      if ((string) ($existing[$field] ?? '') !== (string) $value) {
+        $changes[$field] = $value;
+      }
+    }
+
+    if (!$changes) {
+      return [
+        'action' => 'unchanged',
+        'id' => (string) ($existing['id'] ?? ''),
+        'requires_review' => false,
+      ];
+    }
+
     $sets = [];
     $params = [];
-    foreach ($filtered as $field => $value) {
+    foreach ($changes as $field => $value) {
       $sets[] = "`{$field}` = ?";
       $params[] = $value;
     }
 
-    if (!$sets) {
-      return ['action' => 'unchanged', 'id' => (string) ($existing['id'] ?? '')];
+    if (isset($columns['estado'])) {
+      $sets[] = '`estado` = ?';
+      $params[] = lvj_liturgia_sync_draft_value($columns);
+    }
+    if (isset($columns['updated_at'])) {
+      $sets[] = 'updated_at = NOW()';
     }
 
     $params[] = $date;
@@ -114,15 +141,17 @@ function lvj_liturgia_sync_upsert(PDO $pdo, array $data, array $columns): array
     );
     $statement->execute($params);
 
-    return ['action' => 'updated', 'id' => (string) ($existing['id'] ?? '')];
+    return [
+      'action' => 'updated_for_review',
+      'id' => (string) ($existing['id'] ?? ''),
+      'requires_review' => true,
+      'changed_fields' => array_keys($changes),
+    ];
   }
 
   $insert = ['fecha' => $date] + $filtered;
   if (isset($columns['estado']) && !array_key_exists('estado', $insert)) {
-    $estadoType = strtolower((string) ($columns['estado']['Type'] ?? ''));
-    $insert['estado'] = str_contains($estadoType, 'int') || str_contains($estadoType, 'bit')
-      ? 1
-      : 'publicado';
+    $insert['estado'] = lvj_liturgia_sync_draft_value($columns);
   }
 
   $fields = array_keys($insert);
@@ -132,7 +161,11 @@ function lvj_liturgia_sync_upsert(PDO $pdo, array $data, array $columns): array
   );
   $statement->execute(array_values($insert));
 
-  return ['action' => 'inserted', 'id' => (string) $pdo->lastInsertId()];
+  return [
+    'action' => 'inserted_for_review',
+    'id' => (string) $pdo->lastInsertId(),
+    'requires_review' => true,
+  ];
 }
 
 try {
@@ -150,8 +183,8 @@ try {
   $columns = lvj_liturgia_sync_columns($pdo);
   $result = lvj_liturgia_sync_upsert($pdo, $payload, $columns);
 
-  // La Liturgia es independiente de la IA. Si una generación editorial falla,
-  // la lectura del día permanece sincronizada y el error se informa por separado.
+  // La sincronización litúrgica es independiente de las generaciones editoriales.
+  // Lectio y Santoral también permanecen en borrador hasta revisión humana.
   $lectioResult = ['status' => 'not_attempted'];
   try {
     $lectioLibrary = new LectioLibraryService($pdo);
@@ -191,6 +224,8 @@ try {
     'liturgia' => [
       'action' => $result['action'],
       'id' => $result['id'],
+      'requires_review' => (bool) ($result['requires_review'] ?? false),
+      'changed_fields' => $result['changed_fields'] ?? [],
     ],
     'lectio' => $lectioResult,
     'santoral' => $santoralResult,
