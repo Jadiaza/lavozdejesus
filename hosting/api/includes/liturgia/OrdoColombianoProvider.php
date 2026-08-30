@@ -117,8 +117,8 @@ final class OrdoColombianoProvider
     return [
       'fecha' => $date,
       'tiempo_liturgico' => $this->plain((string) ($row['tiempo_liturgico'] ?? '')),
-      'celebracion' => $this->plain((string) ($row['celebracion'] ?? '')),
-      'grado_celebracion' => $this->plain((string) ($row['celebracion'] ?? '')),
+      'celebracion' => $this->extractCelebration($row),
+      'grado_celebracion' => $this->plain((string) ($row['celebracion'] ?? $row['nombre_celebracion'] ?? '')),
       'color_liturgico' => $this->plain((string) ($row['colores_dia'] ?? '')),
       'primera_lectura_cita' => $first['cita'],
       'primera_lectura_texto' => $first['texto'],
@@ -135,6 +135,19 @@ final class OrdoColombianoProvider
     ];
   }
 
+  /** @param array<string,mixed> $row */
+  private function extractCelebration(array $row): string
+  {
+    foreach (['celebracion', 'nombre_celebracion', 'titulo'] as $field) {
+      $value = $this->plain((string) ($row[$field] ?? ''));
+      if ($value !== '' && strtolower($value) !== 'null') return $value;
+    }
+
+    $heading = $this->plain((string) ($row['encabezado'] ?? ''));
+    $heading = preg_replace('/^\d{1,2}\s+\p{L}+,\s*/u', '', $heading) ?? $heading;
+    $heading = preg_replace('/,\s*(verde|blanco|rojo|morado|violeta|rosa)\s*$/iu', '', $heading) ?? $heading;
+    return trim($heading, " \t\n\r\0\x0B,.;");
+  }
   /** @return array<string,mixed>|null */
   private function findDateRow(array $decoded, string $date): ?array
   {
