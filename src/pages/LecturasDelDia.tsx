@@ -961,13 +961,13 @@ const LecturasDelDia = () => {
               <h2 className="mx-auto max-w-2xl text-[22px] font-extrabold leading-[1.18] text-[#082347] sm:text-[26px] md:text-[36px] md:leading-tight">
                 {palabraHoyDisplay}
               </h2>
+              {lectio?.cita_destacada && (
+                <p className="mt-3 w-full text-left text-xs font-medium tracking-wide text-[#a56f08] sm:text-sm">
+                  {lectio.cita_destacada}
+                </p>
+              )}
             </section>
 
-            {lectio?.cita_destacada && (
-              <p className="mx-auto mt-3 max-w-[860px] text-center text-sm font-extrabold tracking-wide text-[#a56f08] sm:text-base">
-                {lectio.cita_destacada}
-              </p>
-            )}
             <nav
               id="lecturas-tabs"
               className="sticky top-3 z-30 mx-auto mt-5 grid max-w-[860px] scroll-mt-4 grid-cols-3 gap-1 rounded-xl border border-[#d7c39d] bg-[#e9dcc6] p-1 shadow-[0_12px_32px_-26px_rgba(8,35,71,0.5)]"
