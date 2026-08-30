@@ -113,9 +113,28 @@ final class OrdoColombianoProvider
     }
 
     $prelude = $this->plain((string) ($row['preludio'] ?? ''));
+    $lectionary = $this->plain((string) ($row['misa'] ?? ''));
+    $cycles = $this->extractCycles($lectionary);
+    $contentForHash = [
+      $first['cita'], $first['texto'], $psalm['cita'], $psalm['texto'],
+      $second['cita'], $second['texto'], $gospel['cita'], $gospel['texto'],
+    ];
+    $contentHash = hash('sha256', implode("\n--LVJ--\n", array_map([$this, 'hashText'], $contentForHash)));
+    $keyParts = array_filter([
+      'CO', 'romano', $cycles['ciclo_dominical'] ? 'D-' . $cycles['ciclo_dominical'] : '',
+      $cycles['ciclo_ferial'] ? 'F-' . $cycles['ciclo_ferial'] : '',
+      $first['cita'], $psalm['cita'], $second['cita'], $gospel['cita'],
+    ]);
+    $liturgicalKey = substr(hash('sha256', implode('|', array_map([$this, 'hashText'], $keyParts))), 0, 48);
 
     return [
       'fecha' => $date,
+      'pais' => 'CO',
+      'rito' => 'romano',
+      'ciclo_dominical' => $cycles['ciclo_dominical'],
+      'ciclo_ferial' => $cycles['ciclo_ferial'],
+      'clave_liturgica' => $liturgicalKey,
+      'hash_contenido' => $contentHash,
       'tiempo_liturgico' => $this->plain((string) ($row['tiempo_liturgico'] ?? '')),
       'celebracion' => $this->extractCelebration($row),
       'grado_celebracion' => $this->plain((string) ($row['celebracion'] ?? $row['nombre_celebracion'] ?? '')),
@@ -296,6 +315,25 @@ final class OrdoColombianoProvider
     return trim($value);
   }
 
+  /** @return array{ciclo_dominical:?string,ciclo_ferial:?string} */
+  private function extractCycles(string $lectionary): array
+  {
+    $dominical = null;
+    $ferial = null;
+    if (preg_match('/Leccionario\s+Dominical\s+([ABC])/iu', $lectionary, $matches) === 1) {
+      $dominical = mb_strtoupper((string) $matches[1], 'UTF-8');
+    }
+    if ($dominical === null && preg_match('/(?:año|ciclo|ferial)\s+(I{1,2})(?:\b|\s)/iu', $lectionary, $matches) === 1) {
+      $ferial = mb_strtoupper((string) $matches[1], 'UTF-8');
+    }
+    return ['ciclo_dominical' => $dominical, 'ciclo_ferial' => $ferial];
+  }
+
+  private function hashText(string $value): string
+  {
+    $value = mb_strtolower(trim($value), 'UTF-8');
+    return preg_replace('/\s+/u', ' ', $value) ?? $value;
+  }
   private function plain(string $value): string
   {
     $value = html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8');

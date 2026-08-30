@@ -116,6 +116,10 @@ try {
     $pdo,
     'SELECT * FROM lvj_lit_lectura_dia ORDER BY fecha ASC, id ASC LIMIT 800',
   );
+  $lecturasBase = lvj_optional_rows(
+    $pdo,
+    'SELECT * FROM lvj_lit_lecturas_base ORDER BY id ASC LIMIT 1200',
+  );
   $dias = lvj_optional_rows(
     $pdo,
     'SELECT * FROM lvj_lit_dia ORDER BY fecha ASC, id ASC LIMIT 800',
@@ -145,6 +149,7 @@ try {
     'SELECT * FROM lvj_lit_tipos_celebracion ORDER BY prioridad ASC, id ASC LIMIT 100',
   );
 
+  $lecturasBaseById = lvj_rows_by_id($lecturasBase);
   $diasById = lvj_rows_by_id($dias);
   $diasByDate = lvj_rows_by_key($dias, fn ($row) => lvj_normalize_date($row['fecha'] ?? ''));
   $palabrasByLiturgiaId = lvj_rows_by_key($palabras, fn ($row) => lvj_text($row, 'liturgia_id'));
@@ -159,6 +164,10 @@ try {
   $data = [];
 
   foreach ($baseRows as $row) {
+    $baseReading = $lecturasBaseById[lvj_text($row, 'lectura_base_id')] ?? [];
+    foreach ($baseReading as $field => $value) {
+      if (lvj_text($row, (string) $field) === '') $row[$field] = $value;
+    }
     if (!lvj_visible_row($row)) {
       continue;
     }
