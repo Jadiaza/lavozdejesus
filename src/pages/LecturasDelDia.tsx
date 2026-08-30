@@ -140,6 +140,46 @@ const formatPsalmResponse = (value?: string) => {
   return response ? `R/. ${response}` : "";
 };
 
+const gospelBooks: Record<string, string> = {
+  Mt: "Mateo",
+  Mc: "Marcos",
+  Lc: "Lucas",
+  Jn: "Juan",
+};
+
+const citationNumbers = (citation?: string) =>
+  (citation ?? "").trim().replace(/^[^\d]+(?=\d)/u, "");
+
+const proclamationLine = (text?: string) =>
+  (text ?? "")
+    .split(/\r?\n/)
+    .slice(0, 4)
+    .map((line) => line.trim())
+    .find((line) => /^Lectura\s+(?:del|de la|de los|de las)\s+/iu.test(line));
+
+const formatLiturgicalCitation = (
+  kind: "reading" | "psalm" | "gospel",
+  citation?: string,
+  readingText?: string,
+) => {
+  const value = citation?.trim() ?? "";
+  if (!value) return "";
+  if (/^(?:De(?:l| la| los| las)?|Lectura|Del santo evangelio|Santo evangelio)/iu.test(value)) {
+    return value;
+  }
+  if (kind === "psalm") return value.replace(/^Sal\s+/iu, "Salmo ");
+  if (kind === "gospel") {
+    const match = value.match(/^([1-3]?\s*[A-Za-zÁÉÍÓÚÑáéíóúñ]+)\s+(.+)$/u);
+    const abbreviation = match?.[1]?.replace(/\s+/g, "") ?? "";
+    const evangelist = gospelBooks[abbreviation];
+    return evangelist && match ? `Del santo evangelio según san ${evangelist} ${match[2]}` : value;
+  }
+  const formula = proclamationLine(readingText);
+  if (!formula) return value;
+  const source = formula.replace(/^Lectura\s+/iu, "").replace(/[.:;]+$/u, "");
+  const normalizedSource = source.charAt(0).toUpperCase() + source.slice(1);
+  return `${normalizedSource} ${citationNumbers(value)}`.trim();
+};
 const findSantoForDate = (items: SantoDelDia[], fecha: string) =>
   items.find((item) => santoMatchesDate(item, fecha)) ?? null;
 
@@ -951,7 +991,7 @@ const LecturasDelDia = () => {
                   <ExpandableContentCard
                     id="primera-lectura"
                     title="Primera Lectura"
-                    subtitle={liturgia?.primera_lectura_cita}
+                    subtitle={formatLiturgicalCitation("reading", liturgia?.primera_lectura_cita, liturgia?.primera_lectura_texto)}
                     text={liturgia?.primera_lectura_texto}
                     icon={<BookOpen className="h-5 w-5" />}
                     expanded={expandedId === "primera-lectura"}
@@ -960,7 +1000,7 @@ const LecturasDelDia = () => {
                   <ExpandableContentCard
                     id="salmo-responsorial"
                     title="Salmo Responsorial"
-                    subtitle={liturgia?.salmo_cita}
+                    subtitle={formatLiturgicalCitation("psalm", liturgia?.salmo_cita)}
                     response={formatPsalmResponse(liturgia?.salmo_respuesta)}
                     text={liturgia?.salmo_texto}
                     icon={<Music2 className="h-5 w-5" />}
@@ -971,7 +1011,7 @@ const LecturasDelDia = () => {
                   <ExpandableContentCard
                     id="segunda-lectura"
                     title="Segunda Lectura"
-                    subtitle={liturgia?.segunda_lectura_cita}
+                    subtitle={formatLiturgicalCitation("reading", liturgia?.segunda_lectura_cita, liturgia?.segunda_lectura_texto)}
                     text={liturgia?.segunda_lectura_texto}
                     icon={<BookOpen className="h-5 w-5" />}
                     expanded={expandedId === "segunda-lectura"}
@@ -980,7 +1020,7 @@ const LecturasDelDia = () => {
                   <ExpandableContentCard
                     id="evangelio"
                     title="Evangelio"
-                    subtitle={liturgia?.evangelio_cita}
+                    subtitle={formatLiturgicalCitation("gospel", liturgia?.evangelio_cita)}
                     text={liturgia?.evangelio_texto}
                     icon={<Cross className="h-5 w-5" />}
                     expanded={expandedId === "evangelio"}

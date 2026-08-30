@@ -179,10 +179,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           evangelio_cita: text(row, "evangelio_cita"),
           evangelio_versiculo: text(row, "evangelio_versiculo", "versiculo"),
           evangelio_texto: text(row, "evangelio_texto"),
-          palabra_hoy:
-            text(row, "palabra_hoy", "frase_destacada") ||
-            text(day, "palabra_hoy", "frase_destacada") ||
-            text(word, "frase_destacada", "palabra_hoy", "texto"),
+          // Fuente editorial única: lvj_lit_lectura_dia (fila canónica).
+          palabra_hoy: text(row, "palabra_hoy", "frase_destacada"),
           reflexion: text(row, "reflexion"),
           pregunta_meditar: text(row, "pregunta_meditar"),
           oracion: text(row, "oracion"),
