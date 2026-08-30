@@ -5,6 +5,7 @@ declare(strict_types=1);
 require __DIR__ . '/bootstrap.php';
 require __DIR__ . '/includes/liturgia/OrdoColombianoProvider.php';
 require __DIR__ . '/includes/liturgia/LectioLibraryService.php';
+require __DIR__ . '/includes/santoral/SantoralLibraryService.php';
 
 lvj_require_method('POST');
 
@@ -149,7 +150,7 @@ try {
   $columns = lvj_liturgia_sync_columns($pdo);
   $result = lvj_liturgia_sync_upsert($pdo, $payload, $columns);
 
-  // La Liturgia es independiente de la IA. Si la generación de Lectio falla,
+  // La Liturgia es independiente de la IA. Si una generación editorial falla,
   // la lectura del día permanece sincronizada y el error se informa por separado.
   $lectioResult = ['status' => 'not_attempted'];
   try {
@@ -163,6 +164,26 @@ try {
     ];
   }
 
+  $santoralResult = ['status' => 'not_attempted'];
+  try {
+    $santoralLibrary = new SantoralLibraryService($pdo);
+    $santoralResult = $santoralLibrary->ensureForOrdo(
+      is_array($payload['santos_ordo'] ?? null) ? $payload['santos_ordo'] : [],
+      [
+        'fecha' => $date,
+        'preludio' => (string) ($payload['preludio_ordo'] ?? ''),
+        'celebracion' => (string) ($payload['celebracion'] ?? ''),
+        'tiempo_liturgico' => (string) ($payload['tiempo_liturgico'] ?? ''),
+      ],
+    );
+  } catch (Throwable $santoralError) {
+    error_log('LVJ Santoral generation: ' . $santoralError->getMessage());
+    $santoralResult = [
+      'status' => 'error',
+      'message' => $santoralError->getMessage(),
+    ];
+  }
+
   lvj_json_response([
     'success' => true,
     'fecha' => $date,
@@ -172,6 +193,7 @@ try {
       'id' => $result['id'],
     ],
     'lectio' => $lectioResult,
+    'santoral' => $santoralResult,
   ]);
 } catch (Throwable $error) {
   error_log('LVJ liturgia Ordo sync: ' . $error->getMessage());
