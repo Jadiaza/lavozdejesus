@@ -76,6 +76,47 @@ function santoral_admin_has_liturgia_link(PDO $pdo): bool
   }
 }
 
+/** @return array<string,mixed> */
+function santoral_admin_public_payload(array $row): array
+{
+  return [
+    'fecha' => santoral_admin_text($row['fecha'] ?? ''),
+    'mes' => santoral_admin_text($row['mes'] ?? ''),
+    'dia' => santoral_admin_text($row['dia'] ?? ''),
+    'nombre' => santoral_admin_text($row['nombre'] ?? ''),
+    'titulo' => santoral_admin_text($row['titulo'] ?? ''),
+    'resumen' => santoral_admin_text($row['quien_fue'] ?? ''),
+    'lucha_que_enfrento' => santoral_admin_text($row['lucha_que_enfrento'] ?? ''),
+    'secreto_de_santidad' => santoral_admin_text($row['secreto_de_santidad'] ?? ''),
+    'ensenanza_para_hoy' => santoral_admin_text($row['ensenanza_para_hoy'] ?? ''),
+    'como_puedo_imitarlo' => santoral_admin_text($row['como_puedo_imitarlo'] ?? ''),
+    'paso_concreto' => santoral_admin_text($row['paso_concreto'] ?? ''),
+    'oracion_intercesion' => santoral_admin_text($row['oracion_intercesion'] ?? ''),
+    'imagen_url' => santoral_admin_text($row['imagen_url'] ?? ''),
+    'frase_destacada' => santoral_admin_text($row['frase_destacada'] ?? ''),
+    'estado' => santoral_admin_status((string) ($row['estado'] ?? 'borrador')),
+  ];
+}
+
+/** @return array<string,mixed> */
+function santoral_admin_json_payload(array $row): array
+{
+  return [
+    'santo_del_dia' => santoral_admin_public_payload($row),
+    'revision_editorial' => [
+      'id' => (int) ($row['id'] ?? 0),
+      'ordo_santo_id' => santoral_admin_text($row['ordo_santo_id'] ?? ''),
+      'origen' => (int) ($row['generada_ia'] ?? 0) === 1 ? 'Ordo + IA' : 'Manual',
+      'generada_ia' => (int) ($row['generada_ia'] ?? 0) === 1,
+      'modelo_ia' => santoral_admin_text($row['modelo_ia'] ?? ''),
+      'prompt_version' => santoral_admin_text($row['prompt_version'] ?? ''),
+      'destacado' => (int) ($row['destacado'] ?? 0) === 1,
+      'orden' => (int) ($row['orden'] ?? 0),
+      'revisado_at' => santoral_admin_text($row['revisado_at'] ?? ''),
+    ],
+  ];
+}
+
 $columns = santoral_admin_columns($pdo);
 $requiredSchema = [
   'id', 'fecha', 'mes', 'dia', 'nombre', 'titulo', 'frase_destacada', 'quien_fue',
@@ -190,7 +231,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
           $pdo->commit();
           log_activity('update', $table, $id, $estado === 'publicado' ? 'Santo revisado y publicado' : 'Santo guardado como borrador');
-          header('Location: santoral-dia.php?saved=' . ($estado === 'publicado' ? 'published' : 'draft'));
+          header('Location: santoral-dia.php?edit=' . $id . '&vista=preview&saved=' . ($estado === 'publicado' ? 'published' : 'draft'));
           exit;
         } catch (Throwable $saveError) {
           if ($pdo->inTransaction()) {
@@ -218,6 +259,23 @@ if ($schemaReady && $editId > 0) {
     $editRow = $stmt->fetch() ?: [];
   } catch (Throwable $editError) {
     $editRow = [];
+  }
+}
+
+$reviewView = strtolower(trim((string) ($_GET['vista'] ?? 'preview')));
+if (!in_array($reviewView, ['preview', 'editar', 'json'], true)) {
+  $reviewView = 'preview';
+}
+
+$jsonPreview = '';
+if ($editRow) {
+  try {
+    $jsonPreview = json_encode(
+      santoral_admin_json_payload($editRow),
+      JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
+    );
+  } catch (Throwable $jsonError) {
+    $jsonPreview = '{"error":"No fue posible construir la vista JSON."}';
   }
 }
 
@@ -314,66 +372,146 @@ require __DIR__ . '/includes/header.php';
     </div>
   <?php endif; ?>
 
-  <form method="post" class="content-form">
-    <?php echo csrf_field(); ?>
-    <input type="hidden" name="action" value="save">
-    <input type="hidden" name="id" value="<?php echo (int) $editRow['id']; ?>">
+  <nav class="content-toolbar" aria-label="Vista de revisión del Santo del Día">
+    <div class="content-tabs">
+      <a class="<?php echo $reviewView === 'preview' ? 'active' : ''; ?>" href="santoral-dia.php?edit=<?php echo (int) $editRow['id']; ?>&amp;vista=preview">Vista previa</a>
+      <a class="<?php echo $reviewView === 'editar' ? 'active' : ''; ?>" href="santoral-dia.php?edit=<?php echo (int) $editRow['id']; ?>&amp;vista=editar">Editar contenido</a>
+      <a class="<?php echo $reviewView === 'json' ? 'active' : ''; ?>" href="santoral-dia.php?edit=<?php echo (int) $editRow['id']; ?>&amp;vista=json">JSON</a>
+    </div>
+  </nav>
+
+  <?php if ($reviewView === 'preview'): ?>
+    <?php
+      $previewImage = santoral_admin_text($editRow['imagen_url'] ?? '');
+      $hasPreviewImage = $previewImage !== '' && preg_match('/^https?:\/\//i', $previewImage) === 1;
+      $previewSections = [
+        'Quién fue' => santoral_admin_text($editRow['quien_fue'] ?? ''),
+        'La lucha que enfrentó' => santoral_admin_text($editRow['lucha_que_enfrento'] ?? ''),
+        'El secreto de su santidad' => santoral_admin_text($editRow['secreto_de_santidad'] ?? ''),
+        'Enseñanza para hoy' => santoral_admin_text($editRow['ensenanza_para_hoy'] ?? ''),
+        'Cómo puedo imitarlo' => santoral_admin_text($editRow['como_puedo_imitarlo'] ?? ''),
+        'Paso concreto para hoy' => santoral_admin_text($editRow['paso_concreto'] ?? ''),
+        'Oración de intercesión' => santoral_admin_text($editRow['oracion_intercesion'] ?? ''),
+      ];
+      $previewPublished = santoral_admin_status((string) ($editRow['estado'] ?? 'borrador')) === 'publicado';
+    ?>
 
     <div class="content-form-grid">
-      <label class="content-field">Fecha de origen
-        <input type="date" value="<?php echo e((string) ($editRow['fecha'] ?? '')); ?>" disabled>
-      </label>
-      <label class="content-field">Nombre según Ordo
-        <input type="text" value="<?php echo e((string) ($editRow['nombre'] ?? '')); ?>" disabled>
-      </label>
-      <label class="content-field">Título / condición
-        <input type="text" name="titulo" maxlength="180" value="<?php echo e((string) ($editRow['titulo'] ?? '')); ?>" placeholder="presbítero, mártir, obispo...">
-      </label>
-      <label class="content-field">Imagen
-        <input type="url" name="imagen_url" value="<?php echo e((string) ($editRow['imagen_url'] ?? '')); ?>" placeholder="https://...">
-      </label>
-      <label class="content-field full">Frase destacada
-        <textarea name="frase_destacada" rows="3"><?php echo e((string) ($editRow['frase_destacada'] ?? '')); ?></textarea>
-      </label>
-      <label class="content-field full">Quién fue
-        <textarea name="quien_fue" rows="7"><?php echo e((string) ($editRow['quien_fue'] ?? '')); ?></textarea>
-      </label>
-      <label class="content-field full">La lucha que enfrentó
-        <textarea name="lucha_que_enfrento" rows="5"><?php echo e((string) ($editRow['lucha_que_enfrento'] ?? '')); ?></textarea>
-      </label>
-      <label class="content-field full">El secreto de su santidad
-        <textarea name="secreto_de_santidad" rows="5"><?php echo e((string) ($editRow['secreto_de_santidad'] ?? '')); ?></textarea>
-      </label>
-      <label class="content-field full">Enseñanza para hoy
-        <textarea name="ensenanza_para_hoy" rows="5"><?php echo e((string) ($editRow['ensenanza_para_hoy'] ?? '')); ?></textarea>
-      </label>
-      <label class="content-field full">Cómo puedo imitarlo
-        <textarea name="como_puedo_imitarlo" rows="5"><?php echo e((string) ($editRow['como_puedo_imitarlo'] ?? '')); ?></textarea>
-      </label>
-      <label class="content-field full">Paso concreto para hoy
-        <textarea name="paso_concreto" rows="3"><?php echo e((string) ($editRow['paso_concreto'] ?? '')); ?></textarea>
-      </label>
-      <label class="content-field full">Oración de intercesión
-        <textarea name="oracion_intercesion" rows="7"><?php echo e((string) ($editRow['oracion_intercesion'] ?? '')); ?></textarea>
-      </label>
-      <label class="check-field content-field"><input type="checkbox" name="destacado" value="1" <?php echo (int) ($editRow['destacado'] ?? 0) === 1 ? 'checked' : ''; ?>> Mostrar como santo destacado del día</label>
-      <label class="content-field">Orden
-        <input type="number" name="orden" min="0" step="1" value="<?php echo (int) ($editRow['orden'] ?? 0); ?>">
-      </label>
-      <label class="content-field status-field">Estado
-        <?php $currentState = santoral_admin_status((string) ($editRow['estado'] ?? 'borrador')); ?>
-        <select name="estado" required>
-          <option value="borrador" <?php echo $currentState === 'borrador' ? 'selected' : ''; ?>>Borrador · pendiente de revisión</option>
-          <option value="publicado" <?php echo $currentState === 'publicado' ? 'selected' : ''; ?>>Publicado · visible en la PWA</option>
-        </select>
-      </label>
+      <article class="panel content-field full">
+        <div class="panel-header">
+          <div>
+            <span class="eyebrow">Vista como contenido</span>
+            <h2><?php echo e((string) ($editRow['nombre'] ?? '')); ?></h2>
+            <?php if (!empty($editRow['titulo'])): ?><p class="muted"><?php echo e((string) $editRow['titulo']); ?></p><?php endif; ?>
+          </div>
+          <span class="status-pill status-<?php echo $previewPublished ? 'active' : 'draft'; ?>"><?php echo $previewPublished ? 'Publicado' : 'Borrador'; ?></span>
+        </div>
+
+        <?php if ($hasPreviewImage): ?>
+          <div style="margin:1rem 0 1.25rem;display:flex;justify-content:center;">
+            <img src="<?php echo e($previewImage); ?>" alt="<?php echo e((string) ($editRow['nombre'] ?? 'Santo del Día')); ?>" style="width:170px;height:170px;object-fit:cover;border-radius:50%;border:4px solid #d4af37;">
+          </div>
+        <?php else: ?>
+          <p class="muted">Imagen pendiente de revisión o carga manual.</p>
+        <?php endif; ?>
+
+        <?php if (!empty($editRow['frase_destacada'])): ?>
+          <div class="alert alert-success">«<?php echo e(trim((string) $editRow['frase_destacada'], " \t\n\r\0\x0B«»\"“”")); ?>»</div>
+        <?php endif; ?>
+      </article>
+
+      <?php foreach ($previewSections as $sectionTitle => $sectionText): ?>
+        <article class="panel content-field full">
+          <div class="panel-header">
+            <div><span class="eyebrow">Santo del Día</span><h2><?php echo e($sectionTitle); ?></h2></div>
+          </div>
+          <?php if ($sectionText !== ''): ?>
+            <div style="white-space:pre-wrap;line-height:1.75;"><?php echo e($sectionText); ?></div>
+          <?php else: ?>
+            <p class="muted">Este campo todavía está vacío.</p>
+          <?php endif; ?>
+        </article>
+      <?php endforeach; ?>
     </div>
 
     <div class="form-actions">
-      <button class="btn btn-gold" type="submit">Guardar revisión</button>
-      <a class="btn btn-soft" href="santoral-dia.php">Cancelar</a>
+      <a class="btn btn-gold" href="santoral-dia.php?edit=<?php echo (int) $editRow['id']; ?>&amp;vista=editar">Editar contenido</a>
+      <a class="btn btn-soft" href="santoral-dia.php?edit=<?php echo (int) $editRow['id']; ?>&amp;vista=json">Ver JSON</a>
     </div>
-  </form>
+
+  <?php elseif ($reviewView === 'json'): ?>
+    <div class="alert alert-success">Vista JSON de solo lectura. Representa el contenido público y los metadatos editoriales de revisión; no permite guardar cambios para evitar saltarse las validaciones del formulario.</div>
+    <article class="panel">
+      <div class="panel-header">
+        <div><span class="eyebrow">Auditoría</span><h2>JSON del Santo del Día</h2></div>
+        <a class="btn btn-gold" href="santoral-dia.php?edit=<?php echo (int) $editRow['id']; ?>&amp;vista=editar">Editar</a>
+      </div>
+      <pre style="margin:0;max-height:720px;overflow:auto;white-space:pre-wrap;word-break:break-word;background:#071a33;color:#f8f5ea;border-radius:14px;padding:18px;line-height:1.55;"><code><?php echo e($jsonPreview); ?></code></pre>
+    </article>
+
+  <?php else: ?>
+    <form method="post" class="content-form">
+      <?php echo csrf_field(); ?>
+      <input type="hidden" name="action" value="save">
+      <input type="hidden" name="id" value="<?php echo (int) $editRow['id']; ?>">
+
+      <div class="content-form-grid">
+        <label class="content-field">Fecha de origen
+          <input type="date" value="<?php echo e((string) ($editRow['fecha'] ?? '')); ?>" disabled>
+        </label>
+        <label class="content-field">Nombre según Ordo
+          <input type="text" value="<?php echo e((string) ($editRow['nombre'] ?? '')); ?>" disabled>
+        </label>
+        <label class="content-field">Título / condición
+          <input type="text" name="titulo" maxlength="180" value="<?php echo e((string) ($editRow['titulo'] ?? '')); ?>" placeholder="presbítero, mártir, obispo...">
+        </label>
+        <label class="content-field">Imagen
+          <input type="url" name="imagen_url" value="<?php echo e((string) ($editRow['imagen_url'] ?? '')); ?>" placeholder="https://...">
+        </label>
+        <label class="content-field full">Frase destacada
+          <textarea name="frase_destacada" rows="3"><?php echo e((string) ($editRow['frase_destacada'] ?? '')); ?></textarea>
+        </label>
+        <label class="content-field full">Quién fue
+          <textarea name="quien_fue" rows="7"><?php echo e((string) ($editRow['quien_fue'] ?? '')); ?></textarea>
+        </label>
+        <label class="content-field full">La lucha que enfrentó
+          <textarea name="lucha_que_enfrento" rows="5"><?php echo e((string) ($editRow['lucha_que_enfrento'] ?? '')); ?></textarea>
+        </label>
+        <label class="content-field full">El secreto de su santidad
+          <textarea name="secreto_de_santidad" rows="5"><?php echo e((string) ($editRow['secreto_de_santidad'] ?? '')); ?></textarea>
+        </label>
+        <label class="content-field full">Enseñanza para hoy
+          <textarea name="ensenanza_para_hoy" rows="5"><?php echo e((string) ($editRow['ensenanza_para_hoy'] ?? '')); ?></textarea>
+        </label>
+        <label class="content-field full">Cómo puedo imitarlo
+          <textarea name="como_puedo_imitarlo" rows="5"><?php echo e((string) ($editRow['como_puedo_imitarlo'] ?? '')); ?></textarea>
+        </label>
+        <label class="content-field full">Paso concreto para hoy
+          <textarea name="paso_concreto" rows="3"><?php echo e((string) ($editRow['paso_concreto'] ?? '')); ?></textarea>
+        </label>
+        <label class="content-field full">Oración de intercesión
+          <textarea name="oracion_intercesion" rows="7"><?php echo e((string) ($editRow['oracion_intercesion'] ?? '')); ?></textarea>
+        </label>
+        <label class="check-field content-field"><input type="checkbox" name="destacado" value="1" <?php echo (int) ($editRow['destacado'] ?? 0) === 1 ? 'checked' : ''; ?>> Mostrar como santo destacado del día</label>
+        <label class="content-field">Orden
+          <input type="number" name="orden" min="0" step="1" value="<?php echo (int) ($editRow['orden'] ?? 0); ?>">
+        </label>
+        <label class="content-field status-field">Estado
+          <?php $currentState = santoral_admin_status((string) ($editRow['estado'] ?? 'borrador')); ?>
+          <select name="estado" required>
+            <option value="borrador" <?php echo $currentState === 'borrador' ? 'selected' : ''; ?>>Borrador · pendiente de revisión</option>
+            <option value="publicado" <?php echo $currentState === 'publicado' ? 'selected' : ''; ?>>Publicado · visible en la PWA</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-gold" type="submit">Guardar revisión</button>
+        <a class="btn btn-soft" href="santoral-dia.php?edit=<?php echo (int) $editRow['id']; ?>&amp;vista=preview">Vista previa</a>
+        <a class="btn btn-soft" href="santoral-dia.php?edit=<?php echo (int) $editRow['id']; ?>&amp;vista=json">Ver JSON</a>
+      </div>
+    </form>
+  <?php endif; ?>
 </section>
 <?php endif; ?>
 
@@ -408,7 +546,7 @@ require __DIR__ . '/includes/header.php';
           <td><?php echo (int) ($row['destacado'] ?? 0) === 1 ? 'Sí' : 'No'; ?></td>
           <td><span class="status-pill status-<?php echo $published ? 'active' : 'draft'; ?>"><?php echo $published ? 'Publicado' : 'Borrador'; ?></span></td>
           <td><?php echo e((string) ($row['revisado_at'] ?? '')); ?></td>
-          <td class="actions grid-actions"><a class="action-button action-edit" href="santoral-dia.php?edit=<?php echo (int) $row['id']; ?>">Revisar</a></td>
+          <td class="actions grid-actions"><a class="action-button action-edit" href="santoral-dia.php?edit=<?php echo (int) $row['id']; ?>&amp;vista=preview">Revisar</a></td>
         </tr>
       <?php endforeach; ?>
       <?php if (!$rows): ?><tr><td colspan="8" class="muted">No hay santos para este filtro.</td></tr><?php endif; ?>
