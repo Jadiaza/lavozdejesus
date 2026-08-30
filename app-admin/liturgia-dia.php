@@ -318,6 +318,7 @@ require __DIR__ . '/includes/header.php';
 <nav class="content-toolbar" aria-label="Revisión editorial de Liturgia">
   <div class="content-tabs">
     <a class="active" href="liturgia-dia.php">Liturgia del Día</a>
+    <a href="liturgia-ordo.php">Sincronizar Ordo</a>
     <a href="lectio-divina.php">Lectio Divina</a>
     <a href="santoral-dia.php">Santo del Día</a>
     <a href="content.php?module=liturgia&amp;table=lvj_lit_dia">Configuración litúrgica</a>

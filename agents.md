@@ -12011,6 +12011,8 @@ Acciones permitidas:
 
 El Panel no mostrará ni administrará las credenciales externas.
 
+La consola liturgia-ordo.php será el punto administrativo oficial para sincronizar una fecha. Requerirá rol super_admin, sesión, CSRF y ejecución PHP del lado del servidor. Mostrará únicamente estado de configuración y resultados sanitizados de Liturgia, Lectio y Santoral; la clave de sincronización nunca llegará al navegador.
+
 ---
 
 ## 9.22 API interna de LVJPRAYER
@@ -12098,6 +12100,8 @@ Liturgia del Día
 - pausas contemplativas en futuras versiones.
 
 La primera implementación no deberá bloquearse por la ausencia de audio.
+
+La ruta pública `/liturgia` reutilizará la pantalla canónica de Lecturas del Día. En móvil, el módulo conservará la barra inferior principal de LVJPRAYER. `Liturgia`, `Santo` y `Reflexión` permanecerán como pestañas internas visibles; el botón flotante de regreso no se utilizará. La cabecera utilizará selector semanal, fecha destacada, celebración y tiempo litúrgico, preservando la identidad visual azul, dorada y crema de LVJPRAYER.
 
 ---
 

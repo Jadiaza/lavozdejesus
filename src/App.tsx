@@ -58,7 +58,6 @@ const Devociones = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({
 const Donar = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Donar })));
 const Eventos = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Eventos })));
 const Formacion = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Formacion })));
-const Liturgia = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Liturgia })));
 const Podcast = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Podcast })));
 const PoliticaPrivacidad = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.PoliticaPrivacidad })));
 const TerminosCondiciones = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.TerminosCondiciones })));
@@ -99,7 +98,7 @@ const App = () => (
               <Route path="/acceso" element={<Auth />} />
               <Route path="/acceso/recuperar" element={<Auth />} />
               <Route path="/devociones" element={<Devociones />} />
-              <Route path="/liturgia" element={<Liturgia />} />
+              <Route path="/liturgia" element={<LecturasDelDia />} />
               <Route path="/formacion" element={<Formacion />} />
               <Route path="/testimonios" element={<Testimonios />} />
               <Route path="/podcast" element={<Podcast />} />

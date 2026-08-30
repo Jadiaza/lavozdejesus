@@ -1,9 +1,6 @@
 import {
-  ArrowLeft,
   BookOpen,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
   Cross,
   Heart,
   Headphones,
@@ -18,6 +15,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/lvdj/Logo";
+import { BottomNav } from "@/components/lvdj/BottomNav";
 import {
   LectioDivina,
   LiturgiaDia,
@@ -89,6 +87,23 @@ const formatDiaSelector = (fecha: string) => {
   };
 };
 
+const getWeekSelector = (fecha: string) => {
+  const selected = new Date(`${fecha}T12:00:00`);
+  if (Number.isNaN(selected.getTime())) return [];
+  const mondayOffset = (selected.getDay() + 6) % 7;
+  const monday = new Date(selected);
+  monday.setDate(selected.getDate() - mondayOffset);
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(monday);
+    date.setDate(monday.getDate() + index);
+    const iso = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    return {
+      fecha: iso,
+      label: ["L", "M", "X", "J", "V", "S", "D"][index],
+      day: String(date.getDate()).padStart(2, "0"),
+    };
+  });
+};
 const getLiturgicalStoleValue = (color?: string) => {
   const key = color?.trim().toLowerCase() ?? "";
   return liturgicalStoleMap[key] ?? liturgicalStoleMap.dorado;
@@ -781,24 +796,7 @@ const LecturasDelDia = () => {
     };
   }, []);
 
-  const selectedIndex = liturgias.findIndex(
-    (item) => item.fecha === selectedDate,
-  );
-
-  const visibleDays = useMemo(() => {
-    if (selectedIndex < 0) return liturgias.slice(-2);
-    return liturgias.slice(
-      Math.max(0, selectedIndex - 1),
-      Math.min(liturgias.length, selectedIndex + 2),
-    );
-  }, [liturgias, selectedIndex]);
-
-  const previousDate =
-    selectedIndex > 0 ? liturgias[selectedIndex - 1]?.fecha : undefined;
-  const nextDate =
-    selectedIndex >= 0 && selectedIndex < liturgias.length - 1
-      ? liturgias[selectedIndex + 1]?.fecha
-      : undefined;
+  const weekDays = useMemo(() => getWeekSelector(selectedDate), [selectedDate]);
 
   const palabraHoy =
     liturgia?.palabra_hoy || "La Palabra para hoy estará disponible pronto.";
@@ -837,22 +835,6 @@ const LecturasDelDia = () => {
         style={{ width: `${progress * 100}%` }}
       />
 
-      <Link
-        to="/"
-        className="fixed left-[max(20px,env(safe-area-inset-left))] top-1/2 z-[999] hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-[#d4af37]/50 bg-[#111111] text-[#f8f5ea] shadow-[0_6px_18px_rgba(0,0,0,0.22)] transition hover:scale-95 hover:bg-black active:scale-95 md:inline-flex"
-        aria-label="Volver al inicio"
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Link>
-
-      <Link
-        to="/"
-        className="fixed left-[max(18px,env(safe-area-inset-left))] top-[max(1.75rem,env(safe-area-inset-top))] z-[999] inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#d4af37]/50 bg-[#111111] text-[#f8f5ea] shadow-[0_6px_18px_rgba(0,0,0,0.22)] transition active:scale-95 md:hidden"
-        aria-label="Volver al inicio"
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Link>
-
       <div
         className="mx-auto w-full md:px-5 md:py-8"
         style={{ maxWidth: "1240px" }}
@@ -860,83 +842,42 @@ const LecturasDelDia = () => {
         <div className="md:flex md:overflow-hidden md:rounded-[28px] md:border md:border-[#e6d8bf] md:bg-white/70 md:shadow-[0_30px_90px_-70px_rgba(8,35,71,0.75)]">
           <DesktopSidebar activeTab={activeTab} onSelectTab={selectTab} />
 
-          <section className="min-w-0 flex-1 px-4 pb-14 pt-7 sm:px-6 md:px-8 md:py-8">
+          <section className="min-w-0 flex-1 px-4 pb-28 pt-5 sm:px-6 md:px-8 md:py-8">
             <header className="mx-auto max-w-[860px]">
-              <div className="grid grid-cols-[52px_minmax(0,1fr)] items-start gap-3 md:block">
-                <div className="h-12 w-12 md:hidden" aria-hidden="true" />
-                <div className="min-w-0 pt-0.5 text-right md:pt-0 md:text-left">
-                  <h1 className="flex w-full items-center justify-end gap-1.5 text-[13px] font-extrabold uppercase leading-tight tracking-[0.14em] text-[#c69222] md:justify-start md:text-left md:text-base md:tracking-[0.22em]">
-                    <BookOpen className="h-4 w-4 md:h-5 md:w-5" />
-                    <span>Evangelio del Día</span>
-                  </h1>
-                  <p className="mt-1 text-right text-[13px] font-semibold capitalize leading-tight text-[#4f5663] md:mt-2 md:text-left md:text-[15px]">
-                    {formatFecha(liturgia?.fecha)}
-                  </p>
+              <div className="text-center md:text-left">
+                <div className="mb-4 flex justify-center md:hidden"><Logo size="md" /></div>
+                <h1 className="flex items-center justify-center gap-2 text-[13px] font-extrabold uppercase tracking-[0.18em] text-[#c69222] md:justify-start md:text-base md:tracking-[0.22em]">
+                  <BookOpen className="h-4 w-4 md:h-5 md:w-5" />
+                  <span>Liturgia del Día</span>
+                </h1>
+              </div>
+
+              <div className="mt-7 border-y border-[#e7dcc8] bg-white/55 px-1 py-3">
+                <div className="grid grid-cols-7 gap-1">
+                  {weekDays.map((day) => {
+                    const active = day.fecha === selectedDate;
+                    const available = liturgias.some((item) => item.fecha === day.fecha);
+                    return (
+                      <button key={day.fecha} type="button" disabled={!available} onClick={() => selectDate(day.fecha)} className={`mx-auto flex min-h-[62px] w-full max-w-[48px] flex-col items-center justify-center rounded-lg text-sm transition ${active ? "bg-[#d4af37] font-extrabold text-[#071a33] shadow-md" : "text-[#526071]"} disabled:opacity-35`}>
+                        <span className="text-xs font-bold">{day.label}</span>
+                        <span className="mt-1 text-lg">{day.day}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              {liturgias.length > 0 && (
-                <div className="mt-12 flex items-center justify-center gap-3 md:mt-5">
-                  <button
-                    type="button"
-                    onClick={() => selectDate(previousDate)}
-                    disabled={!previousDate}
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-[#082347] disabled:opacity-35"
-                    aria-label="Día anterior"
-                  >
-                    <ChevronLeft className="h-6 w-6" />
-                  </button>
-
-                  <div className="flex items-center gap-2">
-                    {visibleDays.map((item) => {
-                      const date = formatDiaSelector(item.fecha);
-                      const active = item.fecha === selectedDate;
-
-                      return (
-                        <button
-                          key={item.fecha}
-                          type="button"
-                          onClick={() => selectDate(item.fecha)}
-                          className={`flex flex-col items-center justify-center text-sm font-bold transition ${
-                            active
-                              ? "h-[48px] w-[38px] rounded-[4px] border border-[#d4af37] bg-[#fff8ec] text-[#082347] shadow-[0_10px_26px_-22px_rgba(8,35,71,0.8)] ring-1 ring-[#f0dfbf]"
-                              : "h-[46px] w-[38px] rounded-md bg-transparent text-[#082347]"
-                          }`}
-                        >
-                          <span
-                            className={`text-xs capitalize leading-none ${
-                              active ? "font-extrabold text-[#9b6d16]" : ""
-                            }`}
-                          >
-                            {date.weekday}
-                          </span>
-                          <span
-                            className={`mt-1 text-xl leading-none ${
-                              active ? "font-extrabold text-[#c69222]" : ""
-                            }`}
-                          >
-                            {date.day}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => selectDate(nextDate)}
-                    disabled={!nextDate}
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-[#082347] disabled:opacity-35"
-                    aria-label="Día siguiente"
-                  >
-                    <ChevronRight className="h-6 w-6" />
-                  </button>
-                </div>
-              )}
-
-              <div className="mt-3 flex items-center justify-center gap-2 text-sm font-bold text-[#082347]">
+              <div className="mt-5 text-center">
+                <span className="inline-flex min-w-16 flex-col rounded-md bg-[#082347] px-3 py-2 text-white shadow-lg">
+                  <span className="text-xs font-bold capitalize">{formatDiaSelector(selectedDate).weekday}</span>
+                  <span className="text-2xl font-extrabold leading-none">{formatDiaSelector(selectedDate).day}</span>
+                </span>
+                <h2 className="mx-auto mt-5 max-w-3xl font-display text-[32px] leading-[1.08] text-[#082347] sm:text-[42px] md:text-[54px]">{liturgicalLabel}</h2>
+                <p className="mt-3 text-sm font-semibold text-[#526071]">Liturgia católica para Colombia · {formatFecha(selectedDate)}</p>
+              </div>
+              <div className="mt-4 flex items-center justify-center gap-2 text-sm font-bold text-[#082347]">
                 <LiturgicalStole color={liturgia?.color_liturgico} />
-                <span>{liturgicalLabel}</span>
+                <span>{liturgia?.tiempo_liturgico || "Tiempo litúrgico"}</span>
               </div>
             </header>
 
@@ -1030,56 +971,11 @@ const LecturasDelDia = () => {
                 />
               )}
 
-              {false && activeTab === "reflexion" && (
-                <div className="space-y-4">
-                  <ExpandableContentCard
-                    id="reflexion-lvj"
-                    title="Reflexión LVJ"
-                    subtitle="La Palabra de hoy para tu vida"
-                    text={lectio?.reflexion}
-                    icon={<Sparkles className="h-5 w-5" />}
-                    expanded={expandedId === "reflexion-lvj"}
-                    onToggle={toggleExpanded}
-                  />
-                  <ExpandableContentCard
-                    id="pregunta-meditar"
-                    title="Pregunta para Meditar"
-                    text={lectio?.pregunta_meditar}
-                    icon={<MessageCircleQuestion className="h-5 w-5" />}
-                    expanded={expandedId === "pregunta-meditar"}
-                    onToggle={toggleExpanded}
-                  />
-                  <ExpandableContentCard
-                    id="oracion-final"
-                    title="Oración"
-                    text={lectio?.oracion}
-                    icon={<Heart className="h-5 w-5" />}
-                    expanded={expandedId === "oracion-final"}
-                    onToggle={toggleExpanded}
-                  />
-                  <ExpandableContentCard
-                    id="compromiso"
-                    title="Compromiso"
-                    text={lectio?.compromiso}
-                    icon={<CheckCircle2 className="h-5 w-5" />}
-                    expanded={expandedId === "compromiso"}
-                    onToggle={toggleExpanded}
-                  />
-                  <ExpandableContentCard
-                    id="mensaje-final"
-                    title="Mensaje Final"
-                    text={lectio?.mensaje_final}
-                    icon={<Star className="h-5 w-5" />}
-                    expanded={expandedId === "mensaje-final"}
-                    onToggle={toggleExpanded}
-                  />
-                  <ReflectionAudioCard audioUrl={lectio?.audio_url} />
-                </div>
-              )}
             </div>
           </section>
         </div>
       </div>
+      <BottomNav activeLabel="Liturgia" />
     </main>
   );
 };
