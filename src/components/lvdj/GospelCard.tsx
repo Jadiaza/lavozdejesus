@@ -115,6 +115,11 @@ export const GospelCard = ({
             {palabraDisplay.frase}
           </p>
 
+          {lectio?.cita_destacada && !palabraHoy && (
+            <p className="mt-2 text-center text-sm font-extrabold tracking-wide text-gold">
+              {lectio.cita_destacada}
+            </p>
+          )}
           {palabraDisplay.referencia && (
             <p className="mt-3 text-left text-sm font-semibold leading-tight text-gold [text-shadow:0_2px_10px_rgba(0,0,0,0.9)]">
               {palabraDisplay.referencia}

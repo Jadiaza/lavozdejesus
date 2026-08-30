@@ -38,6 +38,7 @@ function lvj_lectio_present(array $row, ?string $requestedDate = null): array
     'fecha' => $requestedDate ?: lvj_lectio_normalize_date($row['fecha'] ?? ''),
     'cita' => lvj_text($row, 'cita'),
     'frase_destacada' => lvj_text($row, 'frase_destacada'),
+    'cita_destacada' => lvj_text($row, 'cita_destacada') ?: lvj_text($row, 'cita'),
     'reflexion' => lvj_text($row, 'reflexion'),
     'pregunta_meditar' => lvj_text($row, 'pregunta_meditar'),
     'oracion' => lvj_text($row, 'oracion'),

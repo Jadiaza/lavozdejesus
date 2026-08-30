@@ -6,7 +6,7 @@ require_once __DIR__ . '/../bible-study/HttpJsonClient.php';
 
 final class LectioAiService
 {
-  public const PROMPT_VERSION = 'lectio-lvj-1.0';
+  public const PROMPT_VERSION = 'lectio-lvj-1.1';
 
   private string $apiKey;
   private string $model;
@@ -61,6 +61,7 @@ final class LectioAiService
       ],
       'properties' => [
         'frase_destacada' => ['type' => 'string', 'minLength' => 10],
+        'cita_destacada' => ['type' => 'string', 'minLength' => 4, 'maxLength' => 80],
         'reflexion' => ['type' => 'string', 'minLength' => 300],
         'pregunta_meditar' => ['type' => 'string', 'minLength' => 20],
         'oracion' => ['type' => 'string', 'minLength' => 220],
@@ -115,7 +116,7 @@ final class LectioAiService
       }
     }
 
-    $this->validateContent($content, $gospelText);
+    $this->validateContent($content, $gospelText, $citation);
 
     return [
       'content' => $content,
@@ -130,7 +131,7 @@ final class LectioAiService
     return <<<'PROMPT'
 Eres el asistente editorial católico de La Voz de Jesús. Debes preparar una Lectio Divina pastoral a partir EXCLUSIVAMENTE del Evangelio suministrado. La salida será revisada por una persona antes de publicarse.
 
-La Lectio tiene exactamente seis componentes visibles y no debes agregar otros:
+La Lectio tiene exactamente siete componentes visibles y no debes agregar otros:
 1. frase_destacada
 2. reflexion
 3. pregunta_meditar
@@ -143,6 +144,8 @@ REGLAS OBLIGATORIAS:
 - Fidelidad a la doctrina católica y al sentido real del texto bíblico.
 - No inventes hechos, versículos, citas, personajes, promesas ni enseñanzas que no estén justificadas por el Evangelio.
 - La frase destacada DEBE ser una cita textual tomada del Evangelio suministrado. No la parafrasees. Preséntala entre comillas angulares españolas « ».
+- cita_destacada debe identificar el versículo exacto de frase_destacada, con abreviatura bíblica católica, por ejemplo Mc 6, 20. No incluyas comillas ni texto adicional.
+- Si el texto continuo no permite identificar con certeza el versículo exacto, usa la cita completa recibida. Nunca inventes una numeración.
 - La reflexión debe tener exactamente tres párrafos desarrollados. Primer párrafo: ilumina el mensaje del Evangelio. Segundo: confronta la vida concreta del creyente. Tercero: conduce a una respuesta personal a Jesucristo. Busca profundidad sin lenguaje académico.
 - La pregunta para meditar será una sola pregunta, personal, concreta y profunda.
 - La oración debe tener exactamente tres párrafos, ser una respuesta directa a Jesús, estar relacionada con el Evangelio y terminar de forma natural con Amén.
@@ -155,7 +158,7 @@ PROMPT;
   }
 
   /** @param array<string,string> $content */
-  private function validateContent(array $content, string $gospelText): void
+  private function validateContent(array $content, string $gospelText, string $gospelCitation): void
   {
     $phrase = trim($content['frase_destacada'], " \t\n\r\0\x0B«»\"“”");
     if (mb_strlen($phrase, 'UTF-8') < 10) {
@@ -166,6 +169,10 @@ PROMPT;
     $needle = $this->normalizeForMatch($phrase);
     if ($needle === '' || !str_contains($haystack, $needle)) {
       throw new RuntimeException('La frase destacada no coincide literalmente con el Evangelio recibido.');
+    }
+
+    if (preg_match('/^[1-3]?\\s*[A-Za-zÁÉÍÓÚÑáéíóúñ]+\\s+\\d/u', $content['cita_destacada']) !== 1) {
+      throw new RuntimeException('La cita destacada no tiene un formato bíblico válido.');
     }
 
     $reflectionParagraphs = array_values(array_filter(

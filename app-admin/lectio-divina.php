@@ -47,6 +47,7 @@ function lectio_admin_required_for_publish(array $data): string
   $required = [
     'cita' => 'Cita bíblica',
     'frase_destacada' => 'Frase destacada',
+    'cita_destacada' => 'Cita del versículo destacado',
     'reflexion' => 'Reflexión',
     'pregunta_meditar' => 'Pregunta para meditar',
     'oracion' => 'Oración',
@@ -70,6 +71,7 @@ function lectio_admin_json_payload(array $row): array
       'fecha' => lectio_admin_text($row['fecha'] ?? ''),
       'cita' => lectio_admin_text($row['cita'] ?? ''),
       'frase_destacada' => lectio_admin_text($row['frase_destacada'] ?? ''),
+      'cita_destacada' => lectio_admin_text($row['cita_destacada'] ?? $row['cita'] ?? ''),
       'reflexion' => lectio_admin_text($row['reflexion'] ?? ''),
       'pregunta_meditar' => lectio_admin_text($row['pregunta_meditar'] ?? ''),
       'oracion' => lectio_admin_text($row['oracion'] ?? ''),
@@ -93,7 +95,7 @@ function lectio_admin_json_payload(array $row): array
 
 $columns = lectio_admin_columns($pdo);
 $requiredSchema = [
-  'id', 'fecha', 'cita', 'cita_clave', 'frase_destacada', 'reflexion',
+  'id', 'fecha', 'cita', 'cita_clave', 'frase_destacada', 'cita_destacada', 'reflexion',
   'pregunta_meditar', 'oracion', 'compromiso', 'mensaje_final', 'estado',
   'generada_ia', 'modelo_ia', 'prompt_version', 'revisado_at',
 ];
@@ -148,6 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'fecha' => $fecha,
         'cita' => $cita !== '' ? $cita : null,
         'frase_destacada' => lectio_admin_text($_POST['frase_destacada'] ?? '') ?: null,
+        'cita_destacada' => mb_substr(lectio_admin_text($_POST['cita_destacada'] ?? ''), 0, 80, 'UTF-8') ?: null,
         'reflexion' => lectio_admin_text($_POST['reflexion'] ?? '') ?: null,
         'pregunta_meditar' => lectio_admin_text($_POST['pregunta_meditar'] ?? '') ?: null,
         'oracion' => lectio_admin_text($_POST['oracion'] ?? '') ?: null,
@@ -443,7 +446,12 @@ require __DIR__ . '/includes/header.php';
         </div>
 
         <?php if (!empty($editRow['frase_destacada'])): ?>
-          <div class="alert alert-success">«<?php echo e(trim((string) $editRow['frase_destacada'], " \t\n\r\0\x0B«»\"“”")); ?>»</div>
+          <div class="alert alert-success">
+            <div>«<?php echo e(trim((string) $editRow['frase_destacada'], " \t\n\r\0\x0B«»\"“”")); ?>»</div>
+            <?php if (!empty($editRow['cita_destacada'])): ?>
+              <div style="margin-top:8px;color:#a56f08;font-weight:800;"><?php echo e((string) $editRow['cita_destacada']); ?></div>
+            <?php endif; ?>
+          </div>
         <?php endif; ?>
       </article>
 
@@ -504,7 +512,9 @@ require __DIR__ . '/includes/header.php';
         <label class="content-field full">Frase destacada
           <textarea name="frase_destacada" rows="3" placeholder="Frase textual del Evangelio"><?php echo e((string) ($formRow['frase_destacada'] ?? '')); ?></textarea>
         </label>
-        <label class="content-field full">Reflexión
+        <label class="content-field">Cita del versículo destacado
+          <input type="text" name="cita_destacada" maxlength="80" value="<?php echo e((string) ($formRow['cita_destacada'] ?? $formRow['cita'] ?? '')); ?>" placeholder="Ej. Mc 6, 20">
+        </label>        <label class="content-field full">Reflexión
           <textarea name="reflexion" rows="9"><?php echo e((string) ($formRow['reflexion'] ?? '')); ?></textarea>
         </label>
         <label class="content-field full">Pregunta para meditar

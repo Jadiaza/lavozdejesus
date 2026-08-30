@@ -87,9 +87,9 @@ final class LectioLibraryService
 
     $statement = $this->pdo->prepare(
       "INSERT INTO lvj_lit_lectio_divina
-        (liturgia_id, fecha, cita, cita_clave, frase_destacada, reflexion, pregunta_meditar, oracion, compromiso, mensaje_final, audio_url, generada_ia, modelo_ia, prompt_version, estado)
+        (liturgia_id, fecha, cita, cita_clave, frase_destacada, cita_destacada, reflexion, pregunta_meditar, oracion, compromiso, mensaje_final, audio_url, generada_ia, modelo_ia, prompt_version, estado)
        VALUES
-        (NULL, :fecha, :cita, :cita_clave, :frase_destacada, :reflexion, :pregunta_meditar, :oracion, :compromiso, :mensaje_final, NULL, 1, :modelo_ia, :prompt_version, 'borrador')"
+        (NULL, :fecha, :cita, :cita_clave, :frase_destacada, :cita_destacada, :reflexion, :pregunta_meditar, :oracion, :compromiso, :mensaje_final, NULL, 1, :modelo_ia, :prompt_version, 'borrador')"
     );
 
     try {
@@ -98,6 +98,7 @@ final class LectioLibraryService
         'cita' => $citation,
         'cita_clave' => $key,
         'frase_destacada' => $content['frase_destacada'],
+        'cita_destacada' => $content['cita_destacada'],
         'reflexion' => $content['reflexion'],
         'pregunta_meditar' => $content['pregunta_meditar'],
         'oracion' => $content['oracion'],
@@ -208,7 +209,7 @@ final class LectioLibraryService
 
   private function schemaReady(): bool
   {
-    foreach (['cita', 'cita_clave', 'frase_destacada', 'generada_ia', 'modelo_ia', 'prompt_version'] as $column) {
+    foreach (['cita', 'cita_clave', 'frase_destacada', 'cita_destacada', 'generada_ia', 'modelo_ia', 'prompt_version'] as $column) {
       $statement = $this->pdo->prepare(
         'SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?'
       );
