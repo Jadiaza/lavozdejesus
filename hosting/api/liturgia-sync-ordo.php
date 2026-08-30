@@ -47,6 +47,7 @@ function lvj_liturgia_sync_filter_payload(array $payload, array $columns): array
 {
   $allowed = [
     'fecha',
+    'tiempo_id',
     'tiempo_liturgico',
     'celebracion',
     'color_liturgico',
@@ -73,6 +74,40 @@ function lvj_liturgia_sync_filter_payload(array $payload, array $columns): array
   return $filtered;
 }
 
+function lvj_liturgia_sync_time_key(string $value): string
+{
+  $value = mb_strtoupper(trim($value), 'UTF-8');
+  $value = strtr($value, [
+    'Á' => 'A', 'É' => 'E', 'Í' => 'I', 'Ó' => 'O', 'Ú' => 'U', 'Ü' => 'U', 'Ñ' => 'N',
+  ]);
+
+  foreach (['ADVIENTO', 'NAVIDAD', 'CUARESMA', 'PASCUA', 'ORDINARIO'] as $key) {
+    if (str_contains($value, $key)) return $key;
+  }
+
+  return preg_replace('/[^A-Z0-9]+/', '', $value) ?? '';
+}
+
+function lvj_liturgia_sync_resolve_time_id(PDO $pdo, string $ordoTime): ?string
+{
+  $sourceKey = lvj_liturgia_sync_time_key($ordoTime);
+  if ($sourceKey === '') return null;
+
+  try {
+    $rows = $pdo->query('SELECT * FROM lvj_lit_tiempos ORDER BY id ASC')->fetchAll();
+  } catch (Throwable $error) {
+    return null;
+  }
+
+  foreach ($rows as $row) {
+    $catalogName = trim((string) ($row['nombre'] ?? $row['tiempo'] ?? ''));
+    if ($catalogName !== '' && lvj_liturgia_sync_time_key($catalogName) === $sourceKey) {
+      return trim((string) ($row['id'] ?? '')) ?: null;
+    }
+  }
+
+  return null;
+}
 function lvj_liturgia_sync_draft_value(array $columns): mixed
 {
   $type = strtolower((string) ($columns['estado']['Type'] ?? ''));
@@ -200,6 +235,13 @@ try {
 
   $pdo = lvj_db();
   $columns = lvj_liturgia_sync_columns($pdo);
+  if (isset($columns['tiempo_id'])) {
+    $timeId = lvj_liturgia_sync_resolve_time_id(
+      $pdo,
+      trim((string) ($payload['tiempo_liturgico'] ?? '')),
+    );
+    if ($timeId !== null) $payload['tiempo_id'] = $timeId;
+  }
   $result = lvj_liturgia_sync_upsert($pdo, $payload, $columns);
 
   // La sincronización litúrgica es independiente de las generaciones editoriales.
