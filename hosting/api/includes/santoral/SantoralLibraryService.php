@@ -13,6 +13,11 @@ final class SantoralLibraryService
     $this->pdo = $pdo;
   }
 
+  /**
+   * @param array<int,array<string,mixed>> $saints
+   * @param array<string,mixed> $context
+   * @return array<string,mixed>
+   */
   public function ensureForOrdo(array $saints, array $context): array
   {
     if (!$this->schemaReady()) {
@@ -40,10 +45,14 @@ final class SantoralLibraryService
       $ordoId = trim((string) ($saint['ordo_santo_id'] ?? ''));
       $name = trim((string) ($saint['nombre'] ?? ''));
       $title = trim((string) ($saint['titulo'] ?? ''));
-      if ($name === '') continue;
+      if ($name === '') {
+        continue;
+      }
 
       $existing = $ordoId !== '' ? $this->findByOrdoId($ordoId) : null;
-      if (!$existing) $existing = $this->findLegacyByDateName($month, $day, $name);
+      if (!$existing) {
+        $existing = $this->findLegacyByDateName($month, $day, $name);
+      }
 
       if ($existing) {
         $this->linkPublishedFeaturedToLiturgia($existing, $date);
@@ -58,7 +67,11 @@ final class SantoralLibraryService
       }
 
       if (!$ai->isConfigured()) {
-        $items[] = ['status' => 'pending_ai_config', 'nombre' => $name, 'ordo_santo_id' => $ordoId];
+        $items[] = [
+          'status' => 'pending_ai_config',
+          'nombre' => $name,
+          'ordo_santo_id' => $ordoId,
+        ];
         continue;
       }
 
@@ -128,12 +141,17 @@ final class SantoralLibraryService
       ];
     }
 
-    return ['status' => $items ? 'processed' : 'no_saints', 'items' => $items];
+    return [
+      'status' => $items ? 'processed' : 'no_saints',
+      'items' => $items,
+    ];
   }
 
   private function findByOrdoId(string $ordoId): ?array
   {
-    $statement = $this->pdo->prepare('SELECT * FROM lvj_san_santo_dia WHERE ordo_santo_id = ? AND deleted_at IS NULL ORDER BY id DESC LIMIT 1');
+    $statement = $this->pdo->prepare(
+      'SELECT * FROM lvj_san_santo_dia WHERE ordo_santo_id = ? AND deleted_at IS NULL ORDER BY id DESC LIMIT 1'
+    );
     $statement->execute([$ordoId]);
     $row = $statement->fetch();
     return $row ?: null;
@@ -149,19 +167,34 @@ final class SantoralLibraryService
        ORDER BY destacado DESC, orden ASC, id ASC
        LIMIT 1'
     );
-    $statement->execute(['mes' => $month, 'dia' => $day, 'nombre' => $name]);
+    $statement->execute([
+      'mes' => $month,
+      'dia' => $day,
+      'nombre' => $name,
+    ]);
     $row = $statement->fetch();
     return $row ?: null;
   }
 
   private function linkPublishedFeaturedToLiturgia(array $row, string $date): void
   {
-    $state = strtolower(trim((string) ($row['estado'] ?? ''));
-    if ($state !== 'publicado' || (int) ($row['destacado'] ?? 0) !== 1) return;
+    $state = strtolower(trim((string) ($row['estado'] ?? '')));
+    if ($state !== 'publicado' || (int) ($row['destacado'] ?? 0) !== 1) {
+      return;
+    }
+
     $column = $this->pdo->query("SHOW COLUMNS FROM lvj_lit_lectura_dia LIKE 'santo_id'")->fetch();
-    if (!$column) return;
-    $statement = $this->pdo->prepare('UPDATE lvj_lit_lectura_dia SET santo_id = :santo_id WHERE fecha = :fecha LIMIT 1');
-    $statement->execute(['santo_id' => (int) ($row['id'] ?? 0), 'fecha' => $date]);
+    if (!$column) {
+      return;
+    }
+
+    $statement = $this->pdo->prepare(
+      'UPDATE lvj_lit_lectura_dia SET santo_id = :santo_id WHERE fecha = :fecha LIMIT 1'
+    );
+    $statement->execute([
+      'santo_id' => (int) ($row['id'] ?? 0),
+      'fecha' => $date,
+    ]);
   }
 
   private function schemaReady(): bool
@@ -172,8 +205,11 @@ final class SantoralLibraryService
          WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?'
       );
       $statement->execute(['lvj_san_santo_dia', $column]);
-      if ((int) $statement->fetchColumn() === 0) return false;
+      if ((int) $statement->fetchColumn() === 0) {
+        return false;
+      }
     }
+
     return true;
   }
 }
