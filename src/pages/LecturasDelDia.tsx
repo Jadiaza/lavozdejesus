@@ -7,7 +7,6 @@ import {
   Home,
   MessageCircleQuestion,
   Music2,
-  RefreshCw,
   Sparkles,
   Star,
   UserRound,
@@ -668,13 +667,11 @@ const LecturasDelDia = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(false);
   const [refreshNonce, setRefreshNonce] = useState(0);
 
   useEffect(() => {
     let mounted = true;
-    if (refreshNonce > 0) setRefreshing(true);
     const cached = readLecturasCache();
 
     if (cached?.liturgias.length) {
@@ -768,7 +765,6 @@ const LecturasDelDia = () => {
       .finally(() => {
         if (mounted) {
           setLoading(false);
-          setRefreshing(false);
         }
       });
 
@@ -846,7 +842,7 @@ const LecturasDelDia = () => {
   return (
     <main
       className="lvj-reading-page min-h-screen"
-      style={{ backgroundColor: "#fff8ec" }}
+      style={{ backgroundColor: "#f7eedf" }}
     >
       <div
         className="fixed left-0 top-0 z-[998] h-1 bg-[#d4af37] transition-[width]"
@@ -860,29 +856,22 @@ const LecturasDelDia = () => {
         <div className="md:flex md:overflow-hidden md:rounded-[28px] md:border md:border-[#e6d8bf] md:bg-white/70 md:shadow-[0_30px_90px_-70px_rgba(8,35,71,0.75)]">
           <DesktopSidebar activeTab={activeTab} onSelectTab={selectTab} />
 
-          <section className="min-w-0 flex-1 px-4 pb-28 pt-5 sm:px-6 md:px-8 md:py-8">
+          <section className="min-w-0 flex-1 px-4 pb-28 pt-5 text-[#071a33] sm:px-6 md:px-8 md:py-8">
             <header className="mx-auto max-w-[860px]">
               <div className="text-center md:text-left">
-                <div className="mb-4 flex justify-center md:hidden"><Logo size="md" /></div>
-                <div className="flex items-center justify-center gap-3 md:justify-between">
-                  <h1 className="flex items-center justify-center gap-2 text-[13px] font-extrabold uppercase tracking-[0.18em] text-[#c69222] md:justify-start md:text-base md:tracking-[0.22em]">
-                    <BookOpen className="h-4 w-4 md:h-5 md:w-5" />
-                    <span>Liturgia del Día</span>
-                  </h1>
-                  <button type="button" onClick={() => setRefreshNonce((value) => value + 1)} disabled={refreshing} className="inline-flex items-center gap-1.5 rounded-full border border-[#d8c9ac] bg-white px-3 py-2 text-xs font-bold text-[#082347] shadow-sm transition hover:border-[#d4af37] disabled:opacity-60" aria-label="Actualizar contenido litúrgico">
-                    <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-                    <span>{refreshing ? "Actualizando" : "Actualizar"}</span>
-                  </button>
-                </div>
+                <h1 className="flex items-center justify-center gap-2 text-[13px] font-extrabold uppercase tracking-[0.18em] text-[#a56f08] md:justify-start md:text-base md:tracking-[0.22em]">
+                  <BookOpen className="h-4 w-4 md:h-5 md:w-5" />
+                  <span>Liturgia del Día</span>
+                </h1>
               </div>
 
-              <div className="mt-7 border-y border-[#e7dcc8] bg-white/55 px-1 py-3">
+              <div className="mt-5 rounded-xl border border-[#d7c39d] bg-[#fffdf8] px-1 py-3 shadow-sm">
                 <div className="grid grid-cols-7 gap-1">
                   {weekDays.map((day) => {
                     const active = day.fecha === selectedDate;
                     const available = liturgias.some((item) => item.fecha === day.fecha);
                     return (
-                      <button key={day.fecha} type="button" disabled={!available} onClick={() => selectDate(day.fecha)} className={`mx-auto flex min-h-[62px] w-full max-w-[48px] flex-col items-center justify-center rounded-lg text-sm transition ${active ? "bg-[#d4af37] font-extrabold text-[#071a33] shadow-md" : "text-[#526071]"} disabled:opacity-35`}>
+                      <button key={day.fecha} type="button" disabled={!available} onClick={() => selectDate(day.fecha)} className={`mx-auto flex min-h-[62px] w-full max-w-[48px] flex-col items-center justify-center rounded-lg border text-sm transition disabled:cursor-not-allowed disabled:opacity-100 ${active ? "border-[#a56f08] bg-[#d4af37] font-extrabold text-[#071a33] shadow-md" : available ? "border-[#d8c9ac] bg-white font-bold text-[#082347] hover:border-[#c89a2b] hover:bg-[#fff4d8]" : "border-[#e2d5bf] bg-[#eee5d7] font-semibold text-[#657084]"}`}>
                         <span className="text-xs font-bold">{day.label}</span>
                         <span className="mt-1 text-lg">{day.day}</span>
                       </button>
@@ -897,7 +886,7 @@ const LecturasDelDia = () => {
                   <span className="text-2xl font-extrabold leading-none">{formatDiaSelector(selectedDate).day}</span>
                 </span>
                 <h2 className="mx-auto mt-5 max-w-3xl font-display text-[32px] leading-[1.08] text-[#082347] sm:text-[42px] md:text-[54px]">{liturgicalLabel}</h2>
-                <p className="mt-3 text-sm font-semibold text-[#526071]">Liturgia católica para Colombia · {formatFecha(selectedDate)}</p>
+                <p className="mt-3 text-sm font-bold text-[#3d4c61]">Liturgia católica para Colombia · {formatFecha(selectedDate)}</p>
               </div>
               <div className="mt-4 flex items-center justify-center gap-2 text-sm font-bold text-[#082347]">
                 <LiturgicalStole color={liturgia?.color_liturgico} />
@@ -905,7 +894,7 @@ const LecturasDelDia = () => {
               </div>
             </header>
 
-            <section className="mx-auto mt-5 max-w-[860px] rounded-2xl border border-[#e6d8bf] bg-white px-5 py-4 text-center shadow-[0_18px_50px_-42px_rgba(8,35,71,0.55)] sm:px-6 sm:py-5 md:rounded-3xl md:p-8">
+            <section className="mx-auto mt-5 max-w-[860px] rounded-2xl border-2 border-[#d7c39d] bg-[#fffdf8] px-5 py-4 text-center shadow-[0_18px_50px_-36px_rgba(8,35,71,0.65)] sm:px-6 sm:py-5 md:rounded-3xl md:p-8">
               <h2 className="mx-auto max-w-2xl text-[22px] font-extrabold leading-[1.18] text-[#082347] sm:text-[26px] md:text-[36px] md:leading-tight">
                 {palabraHoyDisplay}
               </h2>
@@ -913,7 +902,7 @@ const LecturasDelDia = () => {
 
             <nav
               id="lecturas-tabs"
-              className="sticky top-3 z-30 mx-auto mt-5 grid max-w-[860px] scroll-mt-4 grid-cols-3 gap-1 rounded-xl bg-[#efe5d4] p-1 shadow-[0_12px_32px_-30px_rgba(8,35,71,0.35)]"
+              className="sticky top-3 z-30 mx-auto mt-5 grid max-w-[860px] scroll-mt-4 grid-cols-3 gap-1 rounded-xl border border-[#d7c39d] bg-[#e9dcc6] p-1 shadow-[0_12px_32px_-26px_rgba(8,35,71,0.5)]"
               aria-label="Secciones de lectura"
             >
               {(Object.keys(tabLabels) as LecturasTab[]).map((tab) => (
