@@ -335,7 +335,7 @@ require __DIR__ . '/includes/header.php';
     <a href="liturgia-ordo.php">Sincronizar Ordo</a>
     <a href="lectio-divina.php">Lectio Divina</a>
     <a href="santoral-dia.php">Santo del Día</a>
-    <a href="content.php?module=liturgia&amp;table=lvj_lit_dia">Configuración litúrgica</a>
+    <a href="content.php?module=liturgia&amp;table=lvj_lit_tiempos">Configuración litúrgica</a>
   </div>
 </nav>
 
