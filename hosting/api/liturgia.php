@@ -82,6 +82,32 @@ function lvj_month_day_from_row(array $row): string
   return lvj_month_day_from_date(lvj_normalize_date($row['fecha'] ?? ''));
 }
 
+/**
+ * Consolida una sola fila por fecha respetando la prioridad editorial.
+ * La mera existencia de una fila canónica bloquea el fallback legacy,
+ * incluso cuando esa fila todavía no está publicada.
+ *
+ * @param array<int,array<string,mixed>> ...$sources
+ * @return array<int,array<string,mixed>>
+ */
+function lvj_liturgia_rows_by_date(array ...$sources): array
+{
+  $rowsByDate = [];
+
+  foreach ($sources as $rows) {
+    foreach ($rows as $row) {
+      $date = lvj_normalize_date($row['fecha'] ?? '');
+      if ($date === '' || isset($rowsByDate[$date])) {
+        continue;
+      }
+      $rowsByDate[$date] = $row;
+    }
+  }
+
+  ksort($rowsByDate);
+  return array_values($rowsByDate);
+}
+
 try {
   $pdo = lvj_db();
   $fecha = substr(trim((string) ($_GET['fecha'] ?? '')), 0, 10);
@@ -129,7 +155,7 @@ try {
   $santosByMonthDay = lvj_rows_by_key($santos, fn ($row) => lvj_month_day_from_row($row));
   $celebracionesById = lvj_rows_by_id($celebraciones);
   $tiposById = lvj_rows_by_id($tipos);
-  $baseRows = count($lecturas) > 0 ? $lecturas : (count($dias) > 0 ? $dias : $palabras);
+  $baseRows = lvj_liturgia_rows_by_date($lecturas, $dias, $palabras);
   $data = [];
 
   foreach ($baseRows as $row) {
