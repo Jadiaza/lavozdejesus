@@ -38,7 +38,7 @@ interface LecturasCache {
   santos: SantoDelDia[];
 }
 
-const CACHE_KEY = "lvj_lecturas_publicadas_v15";
+const CACHE_KEY = "lvj_lecturas_publicadas_v16";
 
 const liturgicalStoleMap: Record<
   string,
@@ -963,6 +963,11 @@ const LecturasDelDia = () => {
               </h2>
             </section>
 
+            {lectio?.cita_destacada && (
+              <p className="mx-auto mt-3 max-w-[860px] text-center text-sm font-extrabold tracking-wide text-[#a56f08] sm:text-base">
+                {lectio.cita_destacada}
+              </p>
+            )}
             <nav
               id="lecturas-tabs"
               className="sticky top-3 z-30 mx-auto mt-5 grid max-w-[860px] scroll-mt-4 grid-cols-3 gap-1 rounded-xl border border-[#d7c39d] bg-[#e9dcc6] p-1 shadow-[0_12px_32px_-26px_rgba(8,35,71,0.5)]"

@@ -11564,6 +11564,8 @@ Antes de crear claves foráneas físicas deberá verificarse:
 
 `lvj_lit_palabra_dia` no deberá recibir una segunda importación. Su contenido deberá derivarse del registro canónico publicado.
 
+En lvj_lit_lectio_divina, rase_destacada conservará el fragmento bíblico textual y cita_destacada almacenará su referencia específica. La cita general cita y la clave protegida cita_clave no deberán reemplazarse. Si no puede comprobarse el versículo exacto, cita_destacada usará la referencia completa del Evangelio y quedará sujeta a revisión humana.
+
 ---
 
 ## 9.9 Sincronización automática
