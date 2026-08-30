@@ -1,0 +1,22 @@
+.git
+.agents
+.claude
+.tmp-chrome-pdf
+.vscode
+.vercel
+app-admin
+Copias Agents
+dist
+hosting
+node_modules
+storage
+supabase
+tools
+*.local
+*.log
+*.sql
+*.traineddata
+*.tsbuildinfo
+estructura.txt
+rosary-exportaciones.txt
+rosary-integracion.txt
