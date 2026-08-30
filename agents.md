@@ -11623,6 +11623,42 @@ La frecuencia deberá ser configurable desde la arquitectura existente, sin alma
 
 ## 9.10 Idempotencia y protección de datos
 
+### 9.10.1 Reutilización de lecturas por ciclo
+
+Para evitar repetir los mismos textos cada tres años, la persistencia litúrgica se divide en dos responsabilidades:
+
+```text
+lvj_lit_lecturas_base
+    → biblioteca reutilizable de lecturas y salmos normalizados
+
+lvj_lit_lectura_dia
+    → asignación por fecha, publicación y ajustes editoriales excepcionales
+```
+
+La biblioteca se identificará mediante una clave litúrgica estable y un hash del contenido. Debe conservar, cuando corresponda, el ciclo dominical `A`, `B` o `C`, el ciclo ferial `I` o `II`, el país, el rito y la fuente. Una fecha nueva que use lecturas ya conocidas deberá apuntar al registro existente mediante `lectura_base_id` y no volver a copiar los textos.
+
+Los campos de lecturas existentes en `lvj_lit_lectura_dia` se conservan como compatibilidad y como sobrescritura editorial opcional. La API resolverá primero una sobrescritura diaria no vacía y luego la biblioteca base. Los registros históricos no se eliminan ni se migran automáticamente.
+
+Una corrección real del proveedor crea o selecciona una nueva versión por hash; nunca modifica silenciosamente contenido previamente aprobado. El estado de publicación continúa perteneciendo a la asignación diaria y toda fecha sincronizada entra a revisión humana.
+
+### 9.10.1 Reutilización de lecturas por ciclo
+
+Para evitar repetir los mismos textos cada tres años, la persistencia litúrgica se divide en dos responsabilidades:
+
+```text
+lvj_lit_lecturas_base
+    → biblioteca reutilizable de lecturas y salmos normalizados
+
+lvj_lit_lectura_dia
+    → asignación por fecha, publicación y ajustes editoriales excepcionales
+```
+
+La biblioteca se identificará mediante una clave litúrgica estable y un hash del contenido. Debe conservar, cuando corresponda, el ciclo dominical `A`, `B` o `C`, el ciclo ferial `I` o `II`, el país, el rito y la fuente. Una fecha nueva que use lecturas ya conocidas deberá apuntar al registro existente mediante `lectura_base_id` y no volver a copiar los textos.
+
+Los campos de lecturas existentes en `lvj_lit_lectura_dia` se conservan como compatibilidad y como sobrescritura editorial opcional. La API resolverá primero una sobrescritura diaria no vacía y luego la biblioteca base. Los registros históricos no se eliminan ni se migran automáticamente.
+
+Una corrección real del proveedor crea o selecciona una nueva versión por hash; nunca modifica silenciosamente contenido previamente aprobado. El estado de publicación continúa perteneciendo a la asignación diaria y toda fecha sincronizada entra a revisión humana.
+
 Toda sincronización deberá ser idempotente.
 
 El proceso deberá:

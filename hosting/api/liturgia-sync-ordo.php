@@ -47,6 +47,11 @@ function lvj_liturgia_sync_filter_payload(array $payload, array $columns): array
 {
   $allowed = [
     'fecha',
+    'lectura_base_id',
+    'ciclo_dominical',
+    'ciclo_ferial',
+    'clave_liturgica',
+    'hash_contenido',
     'tiempo_id',
     'tiempo_liturgico',
     'celebracion',
@@ -107,6 +112,24 @@ function lvj_liturgia_sync_resolve_time_id(PDO $pdo, string $ordoTime): ?string
   }
 
   return null;
+}
+function lvj_liturgia_sync_store_base(PDO $pdo, array $payload): ?string
+{
+  try {
+    if (!(bool) $pdo->query("SHOW TABLES LIKE 'lvj_lit_lecturas_base'")->fetchColumn()) return null;
+  } catch (Throwable $error) { return null; }
+  $fields = ['clave_liturgica','hash_contenido','pais','rito','ciclo_dominical','ciclo_ferial','tiempo_liturgico','celebracion','grado_celebracion','color_liturgico','primera_lectura_cita','primera_lectura_texto','salmo_cita','salmo_respuesta','salmo_texto','segunda_lectura_cita','segunda_lectura_texto','evangelio_cita','evangelio_texto','fuente'];
+  $base = [];
+  foreach ($fields as $field) $base[$field] = $payload[$field] ?? null;
+  if (trim((string) $base['clave_liturgica']) === '' || trim((string) $base['hash_contenido']) === '') return null;
+  $find = $pdo->prepare('SELECT id FROM lvj_lit_lecturas_base WHERE clave_liturgica = ? AND hash_contenido = ? LIMIT 1');
+  $find->execute([$base['clave_liturgica'], $base['hash_contenido']]);
+  $id = trim((string) $find->fetchColumn());
+  if ($id !== '') return $id;
+  $names = array_keys($base);
+  $statement = $pdo->prepare('INSERT INTO lvj_lit_lecturas_base (`' . implode('`,`', $names) . '`) VALUES (' . implode(',', array_fill(0, count($names), '?')) . ')');
+  $statement->execute(array_values($base));
+  return (string) $pdo->lastInsertId();
 }
 function lvj_liturgia_sync_draft_value(array $columns): mixed
 {
@@ -242,7 +265,10 @@ try {
     );
     if ($timeId !== null) $payload['tiempo_id'] = $timeId;
   }
+  $baseId = lvj_liturgia_sync_store_base($pdo, $payload);
+  if ($baseId !== null && isset($columns['lectura_base_id'])) $payload['lectura_base_id'] = $baseId;
   $result = lvj_liturgia_sync_upsert($pdo, $payload, $columns);
+  $result['lectura_base_id'] = $baseId;
 
   // La sincronización litúrgica es independiente de las generaciones editoriales.
   // Lectio y Santoral también permanecen en borrador hasta revisión humana.

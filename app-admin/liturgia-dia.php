@@ -31,6 +31,22 @@ function liturgia_admin_columns(PDO $pdo): array
   return $columns;
 }
 
+function liturgia_admin_with_base(PDO $pdo, array $row): array
+{
+  $baseId = trim((string) ($row['lectura_base_id'] ?? ''));
+  if ($baseId === '') return $row;
+  try {
+    $statement = $pdo->prepare('SELECT * FROM lvj_lit_lecturas_base WHERE id = :id LIMIT 1');
+    $statement->execute(['id' => $baseId]);
+    $base = $statement->fetch() ?: [];
+  } catch (Throwable $error) {
+    return $row;
+  }
+  foreach ($base as $field => $value) {
+    if (trim((string) ($row[$field] ?? '')) === '') $row[$field] = $value;
+  }
+  return $row;
+}
 function liturgia_admin_text(mixed $value): string
 {
   return trim((string) ($value ?? ''));
@@ -165,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $existingStmt = $pdo->prepare($existingSql);
     $existingStmt->execute(['id' => $id]);
-    $existing = $existingStmt->fetch() ?: [];
+    $existing = liturgia_admin_with_base($pdo, $existingStmt->fetch() ?: []);
 
     if (!$existing) {
       $error = 'La Liturgia seleccionada ya no está disponible.';
@@ -248,7 +264,7 @@ if ($schemaReady && $editId > 0) {
 
     $stmt = $pdo->prepare($editSql);
     $stmt->execute(['id' => $editId]);
-    $editRow = $stmt->fetch() ?: [];
+    $editRow = liturgia_admin_with_base($pdo, $stmt->fetch() ?: []);
   } catch (Throwable $editError) {
     $editRow = [];
   }
@@ -306,7 +322,7 @@ if ($schemaReady) {
       . ' ORDER BY fecha DESC, id DESC LIMIT 250'
     );
     $stmt->execute($params);
-    $rows = $stmt->fetchAll();
+    $rows = array_map(static fn (array $row): array => liturgia_admin_with_base($pdo, $row), $stmt->fetchAll());
   } catch (Throwable $listError) {
     $error = $error ?: 'No se pudieron cargar las Liturgias: ' . $listError->getMessage();
   }
