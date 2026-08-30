@@ -183,7 +183,9 @@ try {
     $tiempoNombre = lvj_text($row, 'tiempo_liturgico') ?: lvj_text($day, 'tiempo_liturgico') ?: preg_replace('/^tiempo\s+/i', '', lvj_text($tiempo, 'nombre'));
     $celebracionNombre = lvj_text($row, 'celebracion') ?: lvj_text($day, 'celebracion') ?: lvj_text($celebracion, 'nombre') ?: lvj_text($santo, 'nombre');
     $palabraHoy = lvj_text($row, 'palabra_hoy', 'frase_destacada') ?:
+      lvj_text($day, 'palabra_hoy', 'frase_destacada') ?:
       lvj_text($word, 'frase_destacada', 'palabra_hoy', 'texto');
+
 
     $data[] = [
       'fecha' => $normalizedDate,

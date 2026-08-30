@@ -817,7 +817,8 @@ const LecturasDelDia = () => {
   const weekDays = useMemo(() => getWeekSelector(selectedDate), [selectedDate]);
 
   const palabraHoy =
-    liturgia?.palabra_hoy || "La Palabra para hoy estará disponible pronto.";
+    liturgia?.palabra_hoy?.trim() ||
+    "La Palabra para hoy estará disponible pronto.";
   const palabraHoyDisplay = loading
     ? "Cargando lecturas..."
     : `«${stripOuterQuotes(palabraHoy)}»`;
@@ -869,7 +870,7 @@ const LecturasDelDia = () => {
                 </h1>
               </div>
 
-              <div className="mt-5 border-y border-[#d7c39d] bg-[#fffdf8]/80 px-1 py-2 shadow-[0_10px_28px_-26px_rgba(8,35,71,0.55)] lg:rounded-xl lg:border lg:bg-[#fffdf8] lg:py-3 lg:shadow-sm">
+              <div className="mt-5 border-y border-[#d7c39d] bg-[#fffdf8]/80 px-1 py-2 shadow-[0_10px_28px_-26px_rgba(8,35,71,0.55)] xl:rounded-xl xl:border xl:bg-[#fffdf8] xl:py-3 xl:shadow-sm">
                 <div className="grid grid-cols-7 gap-1">
                   {weekDays.map((day) => {
                     const active = day.fecha === selectedDate;
@@ -882,32 +883,32 @@ const LecturasDelDia = () => {
                         aria-pressed={active}
                         aria-label={`${day.label} ${day.day}`}
                         onClick={() => selectDate(day.fecha)}
-                        className={`mx-auto flex h-11 w-10 items-center justify-center rounded-md border text-[15px] transition lg:h-auto lg:min-h-[62px] lg:w-full lg:max-w-[48px] lg:flex-col lg:rounded-lg lg:text-sm disabled:cursor-not-allowed disabled:opacity-100 ${
+                        className={`mx-auto flex h-11 w-10 items-center justify-center rounded-md border text-[15px] transition xl:h-auto xl:min-h-[62px] xl:w-full xl:max-w-[48px] xl:flex-col xl:rounded-lg xl:text-sm disabled:cursor-not-allowed disabled:opacity-100 ${
                           active
                             ? "border-[#a56f08] bg-[#d4af37] font-extrabold text-[#071a33] shadow-md"
                             : available
-                              ? "border-transparent bg-transparent font-extrabold text-[#082347] hover:border-[#c89a2b] hover:bg-[#fff4d8] lg:border-[#d8c9ac] lg:bg-white lg:font-bold"
-                              : "border-transparent bg-transparent font-semibold text-[#657084] lg:border-[#e2d5bf] lg:bg-[#eee5d7]"
+                              ? "border-transparent bg-transparent font-extrabold text-[#082347] hover:border-[#c89a2b] hover:bg-[#fff4d8] xl:border-[#d8c9ac] xl:bg-white xl:font-bold"
+                              : "border-transparent bg-transparent font-semibold text-[#657084] xl:border-[#e2d5bf] xl:bg-[#eee5d7]"
                         }`}
                       >
-                        <span className="text-[15px] font-extrabold lg:text-xs lg:font-bold">
+                        <span className="text-[15px] font-extrabold xl:text-xs xl:font-bold">
                           {day.label}
                         </span>
-                        <span className="mt-1 hidden text-lg lg:block">{day.day}</span>
+                        <span className="mt-1 hidden text-lg xl:block">{day.day}</span>
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              <div className="bg-[#ebe5dc] px-3 py-5 text-center lg:mt-5 lg:rounded-2xl lg:border lg:border-[#d7c39d] lg:bg-[#f2e9da]">
+              <div className="bg-[#ebe5dc] px-3 py-5 text-center xl:mt-5 xl:rounded-2xl xl:border xl:border-[#d7c39d] xl:bg-[#f2e9da]">
                 <span className="inline-flex min-w-16 flex-col rounded-sm bg-[#082347] px-3 py-1.5 text-white shadow-lg">
                   <span className="text-xs font-bold capitalize leading-tight">{formatDiaSelector(selectedDate).weekday}</span>
                   <span className="text-2xl font-extrabold leading-none">{formatDiaSelector(selectedDate).day}</span>
                   <span className="mt-0.5 text-xs font-bold capitalize leading-tight text-[#f4cf68]">{formatDiaSelector(selectedDate).month}</span>
                 </span>
                 <div className="mt-1 text-xs font-bold text-[#3d4c61]">{formatDiaSelector(selectedDate).year}</div>
-                <h2 className="mx-auto mt-4 max-w-3xl font-display text-[32px] leading-[1.08] text-[#082347] sm:text-[42px] lg:text-[54px]">{liturgicalLabel}</h2>
+                <h2 className="mx-auto mt-4 max-w-3xl font-display text-[32px] leading-[1.08] text-[#082347] sm:text-[42px] xl:text-[54px]">{liturgicalLabel}</h2>
                 <p className="mx-auto mt-3 inline-block border-b-2 border-[#c89a2b] pb-1 text-sm font-bold text-[#3d4c61]">Calendario litúrgico de Colombia</p>
                 <div className="mt-4 flex items-center justify-center gap-2 text-sm font-bold text-[#082347]">
                   <LiturgicalStole color={liturgia?.color_liturgico} />

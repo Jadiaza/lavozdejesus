@@ -174,6 +174,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           evangelio_texto: text(row, "evangelio_texto"),
           palabra_hoy:
             text(row, "palabra_hoy", "frase_destacada") ||
+            text(day, "palabra_hoy", "frase_destacada") ||
             text(word, "frase_destacada", "palabra_hoy", "texto"),
           reflexion: text(row, "reflexion"),
           pregunta_meditar: text(row, "pregunta_meditar"),
