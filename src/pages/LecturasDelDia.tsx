@@ -961,11 +961,6 @@ const LecturasDelDia = () => {
               <h2 className="mx-auto max-w-2xl text-[22px] font-extrabold leading-[1.18] text-[#082347] sm:text-[26px] md:text-[36px] md:leading-tight">
                 {palabraHoyDisplay}
               </h2>
-              {lectio?.cita_destacada && (
-                <p className="mt-3 w-full text-left text-xs font-medium tracking-wide text-[#a56f08] sm:text-sm">
-                  {lectio.cita_destacada}
-                </p>
-              )}
             </section>
 
             <nav
