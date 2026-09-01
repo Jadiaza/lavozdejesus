@@ -267,10 +267,10 @@ const TabButton = ({
   <button
     type="button"
     onClick={onClick}
-    className={`rounded-lg px-4 py-2.5 text-sm font-bold transition ${
+    className={`flex min-h-12 items-center justify-center rounded-sm border px-4 py-3 text-sm font-bold transition sm:min-h-14 sm:text-base ${
       active
-        ? "bg-[#082347] text-white shadow-[0_8px_20px_-14px_rgba(8,35,71,0.9)]"
-        : "text-[#071a33] hover:bg-white"
+        ? "border-[#082347] bg-[#082347] text-white shadow-[0_8px_20px_-14px_rgba(8,35,71,0.9)]"
+        : "border-transparent text-[#071a33] hover:border-[#c89a2b] hover:bg-white"
     }`}
   >
     {children}
@@ -910,8 +910,8 @@ const LecturasDelDia = () => {
                 </h1>
               </div>
 
-              <div className="mt-5 border-y border-[#d7c39d] bg-[#fffdf8]/80 px-1 py-2 shadow-[0_10px_28px_-26px_rgba(8,35,71,0.55)] xl:rounded-xl xl:border xl:bg-[#fffdf8] xl:py-3 xl:shadow-sm">
-                <div className="grid grid-cols-7 gap-1">
+              <div className="mt-5 border-y border-[#d7c39d] bg-[#fffdf8]/80 px-2 py-3 shadow-[0_10px_28px_-26px_rgba(8,35,71,0.55)] lg:border lg:bg-[#fffdf8] lg:px-4 lg:py-4 lg:shadow-sm">
+                <div className="grid grid-cols-7 gap-2 lg:gap-3">
                   {weekDays.map((day) => {
                     const active = day.fecha === selectedDate;
                     const available = liturgias.some((item) => item.fecha === day.fecha);
@@ -923,18 +923,18 @@ const LecturasDelDia = () => {
                         aria-pressed={active}
                         aria-label={`${day.label} ${day.day}`}
                         onClick={() => selectDate(day.fecha)}
-                        className={`mx-auto flex h-11 w-10 items-center justify-center rounded-md border text-[15px] transition xl:h-auto xl:min-h-[62px] xl:w-full xl:max-w-[48px] xl:flex-col xl:rounded-lg xl:text-sm disabled:cursor-not-allowed disabled:opacity-100 ${
+                        className={`mx-auto flex h-12 w-full min-w-0 items-center justify-center rounded-sm border text-[15px] transition sm:h-14 lg:min-h-[96px] lg:max-w-[92px] lg:flex-col lg:text-base disabled:cursor-not-allowed disabled:opacity-100 ${
                           active
                             ? "border-[#a56f08] bg-[#d4af37] font-extrabold text-[#071a33] shadow-md"
                             : available
-                              ? "border-transparent bg-transparent font-extrabold text-[#082347] hover:border-[#c89a2b] hover:bg-[#fff4d8] xl:border-[#d8c9ac] xl:bg-white xl:font-bold"
-                              : "border-transparent bg-transparent font-semibold text-[#657084] xl:border-[#e2d5bf] xl:bg-[#eee5d7]"
+                              ? "border-[#d8c9ac] bg-white font-extrabold text-[#082347] hover:border-[#c89a2b] hover:bg-[#fff4d8] lg:font-bold"
+                              : "border-[#e2d5bf] bg-[#eee5d7] font-semibold text-[#657084]"
                         }`}
                       >
-                        <span className="text-[15px] font-extrabold xl:text-xs xl:font-bold">
+                        <span className="text-[15px] font-extrabold lg:text-base lg:font-bold">
                           {day.label}
                         </span>
-                        <span className="mt-1 hidden text-lg xl:block">{day.day}</span>
+                        <span className="mt-1 hidden text-2xl font-light lg:block">{day.day}</span>
                       </button>
                     );
                   })}
@@ -965,7 +965,7 @@ const LecturasDelDia = () => {
 
             <nav
               id="lecturas-tabs"
-              className="sticky top-3 z-30 mx-auto mt-5 grid max-w-[860px] scroll-mt-4 grid-cols-3 gap-1 rounded-xl border border-[#d7c39d] bg-[#e9dcc6] p-1 shadow-[0_12px_32px_-26px_rgba(8,35,71,0.5)]"
+              className="sticky top-3 z-30 mx-auto mt-5 grid max-w-[860px] scroll-mt-4 grid-cols-3 gap-1 border border-[#d7c39d] bg-[#e9dcc6] p-1.5 shadow-[0_12px_32px_-26px_rgba(8,35,71,0.5)] sm:gap-2 sm:p-2"
               aria-label="Secciones de lectura"
             >
               {(Object.keys(tabLabels) as LecturasTab[]).map((tab) => (
