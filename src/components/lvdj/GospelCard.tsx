@@ -116,12 +116,12 @@ export const GospelCard = ({
           </p>
 
           {lectio?.cita_destacada && !palabraHoy && (
-            <p className="mt-2 w-full text-left text-xs font-medium tracking-wide text-gold/90">
+            <p className="mt-2 w-full text-left text-xs font-medium italic tracking-wide text-gold/90">
               {lectio.cita_destacada}
             </p>
           )}
           {palabraDisplay.referencia && (
-            <p className="mt-3 text-left text-sm font-semibold leading-tight text-gold">
+            <p className="mt-3 w-full text-left text-sm font-medium italic leading-tight text-gold">
               {palabraDisplay.referencia}
             </p>
           )}
