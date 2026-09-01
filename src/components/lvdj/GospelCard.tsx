@@ -88,17 +88,17 @@ export const GospelCard = ({
 
   return (
     <article
-      className={`relative overflow-hidden rounded-2xl gold-border bg-card shadow-deep ${className}`}
+      className={`relative overflow-hidden rounded-2xl glass gold-border shadow-deep ${className}`}
     >
       <div className="absolute inset-0">
         <img
           src={bible}
           alt=""
-          className="h-full w-full scale-[0.92] object-cover object-center"
+          className="w-full h-full object-cover opacity-25"
         />
 
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,5,0.64)_0%,rgba(5,5,5,0.50)_45%,rgba(5,5,5,0.32)_72%,rgba(5,5,5,0.18)_100%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background/42 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-card/90 via-card/80 to-card/92" />
+        <div className="absolute inset-0 bg-gradient-radial-gold opacity-15 mix-blend-screen" />
       </div>
 
       <div className="relative flex h-full flex-col px-5 py-5">
@@ -111,17 +111,17 @@ export const GospelCard = ({
         </div>
 
         <div className="mx-auto flex flex-1 max-w-[22rem] flex-col justify-center">
-          <p className="text-center text-[15px] font-semibold leading-snug text-foreground sm:text-base [text-shadow:0_2px_10px_rgba(0,0,0,0.95)]">
+          <p className="text-center text-[15px] font-semibold leading-snug text-foreground/95 sm:text-base">
             {palabraDisplay.frase}
           </p>
 
           {lectio?.cita_destacada && !palabraHoy && (
-            <p className="mt-2 w-full text-left text-xs font-medium tracking-wide text-gold/90">
+            <p className="mt-2 w-full text-left text-xs font-medium italic tracking-wide text-gold/90">
               {lectio.cita_destacada}
             </p>
           )}
           {palabraDisplay.referencia && (
-            <p className="mt-3 text-left text-sm font-semibold leading-tight text-gold [text-shadow:0_2px_10px_rgba(0,0,0,0.9)]">
+            <p className="mt-3 w-full text-left text-sm font-medium italic leading-tight text-gold">
               {palabraDisplay.referencia}
             </p>
           )}
