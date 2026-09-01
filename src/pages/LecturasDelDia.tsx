@@ -1,9 +1,6 @@
 import {
-  ArrowLeft,
   BookOpen,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
   Cross,
   Heart,
   Headphones,
@@ -18,6 +15,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/lvdj/Logo";
+import { BottomNav } from "@/components/lvdj/BottomNav";
 import {
   LectioDivina,
   LiturgiaDia,
@@ -40,7 +38,7 @@ interface LecturasCache {
   santos: SantoDelDia[];
 }
 
-const CACHE_KEY = "lvj_lecturas_publicadas_v14";
+const CACHE_KEY = "lvj_lecturas_publicadas_v16";
 
 const liturgicalStoleMap: Record<
   string,
@@ -78,7 +76,7 @@ const formatFecha = (fecha?: string) => {
 const formatDiaSelector = (fecha: string) => {
   const date = new Date(`${fecha}T12:00:00`);
   if (Number.isNaN(date.getTime())) {
-    return { day: fecha, weekday: "" };
+    return { day: fecha, weekday: "", month: "", year: "" };
   }
 
   return {
@@ -86,9 +84,30 @@ const formatDiaSelector = (fecha: string) => {
     weekday: date
       .toLocaleDateString("es-CO", { weekday: "short" })
       .replace(".", ""),
+    month: date
+      .toLocaleDateString("es-CO", { month: "short" })
+      .replace(".", ""),
+    year: String(date.getFullYear()),
   };
 };
 
+const getWeekSelector = (fecha: string) => {
+  const selected = new Date(`${fecha}T12:00:00`);
+  if (Number.isNaN(selected.getTime())) return [];
+  const mondayOffset = (selected.getDay() + 6) % 7;
+  const monday = new Date(selected);
+  monday.setDate(selected.getDate() - mondayOffset);
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(monday);
+    date.setDate(monday.getDate() + index);
+    const iso = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    return {
+      fecha: iso,
+      label: ["L", "M", "X", "J", "V", "S", "D"][index],
+      day: String(date.getDate()).padStart(2, "0"),
+    };
+  });
+};
 const getLiturgicalStoleValue = (color?: string) => {
   const key = color?.trim().toLowerCase() ?? "";
   return liturgicalStoleMap[key] ?? liturgicalStoleMap.dorado;
@@ -121,6 +140,46 @@ const formatPsalmResponse = (value?: string) => {
   return response ? `R/. ${response}` : "";
 };
 
+const gospelBooks: Record<string, string> = {
+  Mt: "Mateo",
+  Mc: "Marcos",
+  Lc: "Lucas",
+  Jn: "Juan",
+};
+
+const citationNumbers = (citation?: string) =>
+  (citation ?? "").trim().replace(/^[^\d]+(?=\d)/u, "");
+
+const proclamationLine = (text?: string) =>
+  (text ?? "")
+    .split(/\r?\n/)
+    .slice(0, 4)
+    .map((line) => line.trim())
+    .find((line) => /^Lectura\s+(?:del|de la|de los|de las)\s+/iu.test(line));
+
+const formatLiturgicalCitation = (
+  kind: "reading" | "psalm" | "gospel",
+  citation?: string,
+  readingText?: string,
+) => {
+  const value = citation?.trim() ?? "";
+  if (!value) return "";
+  if (/^(?:De(?:l| la| los| las)?|Lectura|Del santo evangelio|Santo evangelio)/iu.test(value)) {
+    return value;
+  }
+  if (kind === "psalm") return value.replace(/^Sal\s+/iu, "Salmo ");
+  if (kind === "gospel") {
+    const match = value.match(/^([1-3]?\s*[A-Za-zÁÉÍÓÚÑáéíóúñ]+)\s+(.+)$/u);
+    const abbreviation = match?.[1]?.replace(/\s+/g, "") ?? "";
+    const evangelist = gospelBooks[abbreviation];
+    return evangelist && match ? `Del santo evangelio según san ${evangelist} ${match[2]}` : value;
+  }
+  const formula = proclamationLine(readingText);
+  if (!formula) return value;
+  const source = formula.replace(/^Lectura\s+/iu, "").replace(/[.:;]+$/u, "");
+  const normalizedSource = source.charAt(0).toUpperCase() + source.slice(1);
+  return `${normalizedSource} ${citationNumbers(value)}`.trim();
+};
 const findSantoForDate = (items: SantoDelDia[], fecha: string) =>
   items.find((item) => santoMatchesDate(item, fecha)) ?? null;
 
@@ -208,10 +267,10 @@ const TabButton = ({
   <button
     type="button"
     onClick={onClick}
-    className={`rounded-lg px-4 py-2.5 text-sm font-bold transition ${
+    className={`flex min-h-12 items-center justify-center rounded-sm border px-4 py-3 text-sm font-bold transition sm:min-h-14 sm:text-base ${
       active
-        ? "bg-[#082347] text-white shadow-[0_8px_20px_-14px_rgba(8,35,71,0.9)]"
-        : "text-[#071a33] hover:bg-white"
+        ? "border-[#082347] bg-[#082347] text-white shadow-[0_8px_20px_-14px_rgba(8,35,71,0.9)]"
+        : "border-transparent text-[#071a33] hover:border-[#c89a2b] hover:bg-white"
     }`}
   >
     {children}
@@ -653,6 +712,7 @@ const LecturasDelDia = () => {
   const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [refreshNonce, setRefreshNonce] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -678,12 +738,12 @@ const LecturasDelDia = () => {
     }
 
     Promise.all([
-      getPublishedLiturgias(),
-      getPublishedLectios(),
-      getPublishedSantosDelDia(),
-      getTodayLiturgia(),
-      getTodayLectio(),
-      getTodaySantoDelDia(),
+      getPublishedLiturgias(true),
+      getPublishedLectios(true),
+      getPublishedSantosDelDia(true),
+      getTodayLiturgia(getTodayISO(), true),
+      getTodayLectio(getTodayISO(), true),
+      getTodaySantoDelDia(getTodayISO(), true),
     ])
       .then(
         ([
@@ -747,12 +807,25 @@ const LecturasDelDia = () => {
         if (mounted) setError(true);
       })
       .finally(() => {
-        if (mounted) setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       });
 
     return () => {
       mounted = false;
     };
+  }, [refreshNonce]);
+
+  useEffect(() => {
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") {
+        setRefreshNonce((value) => value + 1);
+      }
+    };
+
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    return () => document.removeEventListener("visibilitychange", refreshWhenVisible);
   }, []);
 
   useEffect(() => {
@@ -781,27 +854,11 @@ const LecturasDelDia = () => {
     };
   }, []);
 
-  const selectedIndex = liturgias.findIndex(
-    (item) => item.fecha === selectedDate,
-  );
-
-  const visibleDays = useMemo(() => {
-    if (selectedIndex < 0) return liturgias.slice(-2);
-    return liturgias.slice(
-      Math.max(0, selectedIndex - 1),
-      Math.min(liturgias.length, selectedIndex + 2),
-    );
-  }, [liturgias, selectedIndex]);
-
-  const previousDate =
-    selectedIndex > 0 ? liturgias[selectedIndex - 1]?.fecha : undefined;
-  const nextDate =
-    selectedIndex >= 0 && selectedIndex < liturgias.length - 1
-      ? liturgias[selectedIndex + 1]?.fecha
-      : undefined;
+  const weekDays = useMemo(() => getWeekSelector(selectedDate), [selectedDate]);
 
   const palabraHoy =
-    liturgia?.palabra_hoy || "La Palabra para hoy estará disponible pronto.";
+    lectio?.frase_destacada?.trim() ||
+    "La Palabra para hoy estará disponible pronto.";
   const palabraHoyDisplay = loading
     ? "Cargando lecturas..."
     : `«${stripOuterQuotes(palabraHoy)}»`;
@@ -830,28 +887,12 @@ const LecturasDelDia = () => {
   return (
     <main
       className="lvj-reading-page min-h-screen"
-      style={{ backgroundColor: "#fff8ec" }}
+      style={{ backgroundColor: "#f7eedf" }}
     >
       <div
         className="fixed left-0 top-0 z-[998] h-1 bg-[#d4af37] transition-[width]"
         style={{ width: `${progress * 100}%` }}
       />
-
-      <Link
-        to="/"
-        className="fixed left-[max(20px,env(safe-area-inset-left))] top-1/2 z-[999] hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-[#d4af37]/50 bg-[#111111] text-[#f8f5ea] shadow-[0_6px_18px_rgba(0,0,0,0.22)] transition hover:scale-95 hover:bg-black active:scale-95 md:inline-flex"
-        aria-label="Volver al inicio"
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Link>
-
-      <Link
-        to="/"
-        className="fixed left-[max(18px,env(safe-area-inset-left))] top-[max(1.75rem,env(safe-area-inset-top))] z-[999] inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#d4af37]/50 bg-[#111111] text-[#f8f5ea] shadow-[0_6px_18px_rgba(0,0,0,0.22)] transition active:scale-95 md:hidden"
-        aria-label="Volver al inicio"
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Link>
 
       <div
         className="mx-auto w-full md:px-5 md:py-8"
@@ -860,87 +901,63 @@ const LecturasDelDia = () => {
         <div className="md:flex md:overflow-hidden md:rounded-[28px] md:border md:border-[#e6d8bf] md:bg-white/70 md:shadow-[0_30px_90px_-70px_rgba(8,35,71,0.75)]">
           <DesktopSidebar activeTab={activeTab} onSelectTab={selectTab} />
 
-          <section className="min-w-0 flex-1 px-4 pb-14 pt-7 sm:px-6 md:px-8 md:py-8">
+          <section className="min-w-0 flex-1 px-4 pb-28 pt-5 text-[#071a33] sm:px-6 md:px-8 md:py-8">
             <header className="mx-auto max-w-[860px]">
-              <div className="grid grid-cols-[52px_minmax(0,1fr)] items-start gap-3 md:block">
-                <div className="h-12 w-12 md:hidden" aria-hidden="true" />
-                <div className="min-w-0 pt-0.5 text-right md:pt-0 md:text-left">
-                  <h1 className="flex w-full items-center justify-end gap-1.5 text-[13px] font-extrabold uppercase leading-tight tracking-[0.14em] text-[#c69222] md:justify-start md:text-left md:text-base md:tracking-[0.22em]">
-                    <BookOpen className="h-4 w-4 md:h-5 md:w-5" />
-                    <span>Evangelio del Día</span>
-                  </h1>
-                  <p className="mt-1 text-right text-[13px] font-semibold capitalize leading-tight text-[#4f5663] md:mt-2 md:text-left md:text-[15px]">
-                    {formatFecha(liturgia?.fecha)}
-                  </p>
+              <div className="text-center md:text-left">
+                <h1 className="flex items-center justify-center gap-2 text-[13px] font-extrabold uppercase tracking-[0.18em] text-[#a56f08] md:justify-start md:text-base md:tracking-[0.22em]">
+                  <BookOpen className="h-4 w-4 md:h-5 md:w-5" />
+                  <span>Liturgia del Día</span>
+                </h1>
+              </div>
+
+              <div className="mt-5 border-y border-[#d7c39d] bg-[#fffdf8]/80 px-2 py-3 shadow-[0_10px_28px_-26px_rgba(8,35,71,0.55)] lg:border lg:bg-[#fffdf8] lg:px-4 lg:py-4 lg:shadow-sm">
+                <div className="grid grid-cols-7 gap-2 lg:gap-3">
+                  {weekDays.map((day) => {
+                    const active = day.fecha === selectedDate;
+                    const available = liturgias.some((item) => item.fecha === day.fecha);
+                    return (
+                      <button
+                        key={day.fecha}
+                        type="button"
+                        disabled={!available}
+                        aria-pressed={active}
+                        aria-label={`${day.label} ${day.day}`}
+                        onClick={() => selectDate(day.fecha)}
+                        className={`mx-auto flex h-12 w-full min-w-0 items-center justify-center rounded-sm border text-[15px] transition sm:h-14 lg:min-h-[96px] lg:max-w-[92px] lg:flex-col lg:text-base disabled:cursor-not-allowed disabled:opacity-100 ${
+                          active
+                            ? "border-[#a56f08] bg-[#d4af37] font-extrabold text-[#071a33] shadow-md"
+                            : available
+                              ? "border-[#d8c9ac] bg-white font-extrabold text-[#082347] hover:border-[#c89a2b] hover:bg-[#fff4d8] lg:font-bold"
+                              : "border-[#e2d5bf] bg-[#eee5d7] font-semibold text-[#657084]"
+                        }`}
+                      >
+                        <span className="text-[15px] font-extrabold lg:text-base lg:font-bold">
+                          {day.label}
+                        </span>
+                        <span className="mt-1 hidden text-2xl font-light lg:block">{day.day}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              {liturgias.length > 0 && (
-                <div className="mt-12 flex items-center justify-center gap-3 md:mt-5">
-                  <button
-                    type="button"
-                    onClick={() => selectDate(previousDate)}
-                    disabled={!previousDate}
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-[#082347] disabled:opacity-35"
-                    aria-label="Día anterior"
-                  >
-                    <ChevronLeft className="h-6 w-6" />
-                  </button>
-
-                  <div className="flex items-center gap-2">
-                    {visibleDays.map((item) => {
-                      const date = formatDiaSelector(item.fecha);
-                      const active = item.fecha === selectedDate;
-
-                      return (
-                        <button
-                          key={item.fecha}
-                          type="button"
-                          onClick={() => selectDate(item.fecha)}
-                          className={`flex flex-col items-center justify-center text-sm font-bold transition ${
-                            active
-                              ? "h-[48px] w-[38px] rounded-[4px] border border-[#d4af37] bg-[#fff8ec] text-[#082347] shadow-[0_10px_26px_-22px_rgba(8,35,71,0.8)] ring-1 ring-[#f0dfbf]"
-                              : "h-[46px] w-[38px] rounded-md bg-transparent text-[#082347]"
-                          }`}
-                        >
-                          <span
-                            className={`text-xs capitalize leading-none ${
-                              active ? "font-extrabold text-[#9b6d16]" : ""
-                            }`}
-                          >
-                            {date.weekday}
-                          </span>
-                          <span
-                            className={`mt-1 text-xl leading-none ${
-                              active ? "font-extrabold text-[#c69222]" : ""
-                            }`}
-                          >
-                            {date.day}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => selectDate(nextDate)}
-                    disabled={!nextDate}
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-[#082347] disabled:opacity-35"
-                    aria-label="Día siguiente"
-                  >
-                    <ChevronRight className="h-6 w-6" />
-                  </button>
+              <div className="bg-[#ebe5dc] px-3 py-5 text-center xl:mt-5 xl:rounded-2xl xl:border xl:border-[#d7c39d] xl:bg-[#f2e9da]">
+                <span className="inline-flex min-w-16 flex-col rounded-sm bg-[#082347] px-3 py-1.5 text-white shadow-lg">
+                  <span className="text-xs font-bold capitalize leading-tight">{formatDiaSelector(selectedDate).weekday}</span>
+                  <span className="text-2xl font-extrabold leading-none">{formatDiaSelector(selectedDate).day}</span>
+                  <span className="mt-0.5 text-xs font-bold capitalize leading-tight text-[#f4cf68]">{formatDiaSelector(selectedDate).month}</span>
+                </span>
+                <div className="mt-1 text-xs font-bold text-[#3d4c61]">{formatDiaSelector(selectedDate).year}</div>
+                <h2 className="mx-auto mt-4 max-w-3xl font-display text-[32px] leading-[1.08] text-[#082347] sm:text-[42px] xl:text-[54px]">{liturgicalLabel}</h2>
+                <p className="mx-auto mt-3 inline-block border-b-2 border-[#c89a2b] pb-1 text-sm font-bold text-[#3d4c61]">Calendario litúrgico de Colombia</p>
+                <div className="mt-4 flex items-center justify-center gap-2 text-sm font-bold text-[#082347]">
+                  <LiturgicalStole color={liturgia?.color_liturgico} />
+                  <span>{liturgia?.tiempo_liturgico || "Tiempo litúrgico"}</span>
                 </div>
-              )}
-
-              <div className="mt-3 flex items-center justify-center gap-2 text-sm font-bold text-[#082347]">
-                <LiturgicalStole color={liturgia?.color_liturgico} />
-                <span>{liturgicalLabel}</span>
               </div>
             </header>
 
-            <section className="mx-auto mt-5 max-w-[860px] rounded-2xl border border-[#e6d8bf] bg-white px-5 py-4 text-center shadow-[0_18px_50px_-42px_rgba(8,35,71,0.55)] sm:px-6 sm:py-5 md:rounded-3xl md:p-8">
+            <section className="mx-auto mt-5 max-w-[860px] rounded-2xl border-2 border-[#d7c39d] bg-[#fffdf8] px-5 py-4 text-center shadow-[0_18px_50px_-36px_rgba(8,35,71,0.65)] sm:px-6 sm:py-5 md:rounded-3xl md:p-8">
               <h2 className="mx-auto max-w-2xl text-[22px] font-extrabold leading-[1.18] text-[#082347] sm:text-[26px] md:text-[36px] md:leading-tight">
                 {palabraHoyDisplay}
               </h2>
@@ -948,7 +965,7 @@ const LecturasDelDia = () => {
 
             <nav
               id="lecturas-tabs"
-              className="sticky top-3 z-30 mx-auto mt-5 grid max-w-[860px] scroll-mt-4 grid-cols-3 gap-1 rounded-xl bg-[#efe5d4] p-1 shadow-[0_12px_32px_-30px_rgba(8,35,71,0.35)]"
+              className="sticky top-3 z-30 mx-auto mt-5 grid max-w-[860px] scroll-mt-4 grid-cols-3 gap-1 border border-[#d7c39d] bg-[#e9dcc6] p-1.5 shadow-[0_12px_32px_-26px_rgba(8,35,71,0.5)] sm:gap-2 sm:p-2"
               aria-label="Secciones de lectura"
             >
               {(Object.keys(tabLabels) as LecturasTab[]).map((tab) => (
@@ -974,7 +991,7 @@ const LecturasDelDia = () => {
                   <ExpandableContentCard
                     id="primera-lectura"
                     title="Primera Lectura"
-                    subtitle={liturgia?.primera_lectura_cita}
+                    subtitle={formatLiturgicalCitation("reading", liturgia?.primera_lectura_cita, liturgia?.primera_lectura_texto)}
                     text={liturgia?.primera_lectura_texto}
                     icon={<BookOpen className="h-5 w-5" />}
                     expanded={expandedId === "primera-lectura"}
@@ -983,7 +1000,7 @@ const LecturasDelDia = () => {
                   <ExpandableContentCard
                     id="salmo-responsorial"
                     title="Salmo Responsorial"
-                    subtitle={liturgia?.salmo_cita}
+                    subtitle={formatLiturgicalCitation("psalm", liturgia?.salmo_cita)}
                     response={formatPsalmResponse(liturgia?.salmo_respuesta)}
                     text={liturgia?.salmo_texto}
                     icon={<Music2 className="h-5 w-5" />}
@@ -994,7 +1011,7 @@ const LecturasDelDia = () => {
                   <ExpandableContentCard
                     id="segunda-lectura"
                     title="Segunda Lectura"
-                    subtitle={liturgia?.segunda_lectura_cita}
+                    subtitle={formatLiturgicalCitation("reading", liturgia?.segunda_lectura_cita, liturgia?.segunda_lectura_texto)}
                     text={liturgia?.segunda_lectura_texto}
                     icon={<BookOpen className="h-5 w-5" />}
                     expanded={expandedId === "segunda-lectura"}
@@ -1003,7 +1020,7 @@ const LecturasDelDia = () => {
                   <ExpandableContentCard
                     id="evangelio"
                     title="Evangelio"
-                    subtitle={liturgia?.evangelio_cita}
+                    subtitle={formatLiturgicalCitation("gospel", liturgia?.evangelio_cita)}
                     text={liturgia?.evangelio_texto}
                     icon={<Cross className="h-5 w-5" />}
                     expanded={expandedId === "evangelio"}
@@ -1030,56 +1047,11 @@ const LecturasDelDia = () => {
                 />
               )}
 
-              {false && activeTab === "reflexion" && (
-                <div className="space-y-4">
-                  <ExpandableContentCard
-                    id="reflexion-lvj"
-                    title="Reflexión LVJ"
-                    subtitle="La Palabra de hoy para tu vida"
-                    text={lectio?.reflexion}
-                    icon={<Sparkles className="h-5 w-5" />}
-                    expanded={expandedId === "reflexion-lvj"}
-                    onToggle={toggleExpanded}
-                  />
-                  <ExpandableContentCard
-                    id="pregunta-meditar"
-                    title="Pregunta para Meditar"
-                    text={lectio?.pregunta_meditar}
-                    icon={<MessageCircleQuestion className="h-5 w-5" />}
-                    expanded={expandedId === "pregunta-meditar"}
-                    onToggle={toggleExpanded}
-                  />
-                  <ExpandableContentCard
-                    id="oracion-final"
-                    title="Oración"
-                    text={lectio?.oracion}
-                    icon={<Heart className="h-5 w-5" />}
-                    expanded={expandedId === "oracion-final"}
-                    onToggle={toggleExpanded}
-                  />
-                  <ExpandableContentCard
-                    id="compromiso"
-                    title="Compromiso"
-                    text={lectio?.compromiso}
-                    icon={<CheckCircle2 className="h-5 w-5" />}
-                    expanded={expandedId === "compromiso"}
-                    onToggle={toggleExpanded}
-                  />
-                  <ExpandableContentCard
-                    id="mensaje-final"
-                    title="Mensaje Final"
-                    text={lectio?.mensaje_final}
-                    icon={<Star className="h-5 w-5" />}
-                    expanded={expandedId === "mensaje-final"}
-                    onToggle={toggleExpanded}
-                  />
-                  <ReflectionAudioCard audioUrl={lectio?.audio_url} />
-                </div>
-              )}
             </div>
           </section>
         </div>
       </div>
+      <BottomNav activeLabel="Liturgia" />
     </main>
   );
 };

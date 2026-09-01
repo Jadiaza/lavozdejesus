@@ -2,7 +2,7 @@ import { BookOpen, ChevronRight } from "lucide-react";
 import bible from "@/assets/bible.jpg";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { LiturgiaDia, getTodayLiturgia } from "@/services/sheetsService";
+import { LectioDivina, getTodayLectio } from "@/services/sheetsService";
 
 interface GospelCardProps {
   palabraHoy?: string;
@@ -36,7 +36,7 @@ export const GospelCard = ({
   className = "",
   compact: _compact,
 }: GospelCardProps) => {
-  const [liturgia, setLiturgia] = useState<LiturgiaDia | null>(null);
+  const [lectio, setLectio] = useState<LectioDivina | null>(null);
   const [loading, setLoading] = useState(!palabraHoy);
   const [error, setError] = useState(false);
 
@@ -48,16 +48,16 @@ export const GospelCard = ({
 
     let mounted = true;
 
-    const loadLiturgia = async () => {
+    const loadLectio = async () => {
       try {
-        const data = await getTodayLiturgia();
+        const data = await getTodayLectio();
         if (!mounted) return;
 
         if (data) {
-          setLiturgia(data);
+          setLectio(data);
           setError(false);
         } else {
-          setLiturgia(null);
+          setLectio(null);
           setError(true);
         }
       } catch {
@@ -67,7 +67,7 @@ export const GospelCard = ({
       }
     };
 
-    loadLiturgia();
+    loadLectio();
 
     return () => {
       mounted = false;
@@ -76,7 +76,7 @@ export const GospelCard = ({
 
   const palabraHoyActual =
     palabraHoy ??
-    liturgia?.palabra_hoy ??
+    lectio?.frase_destacada ??
     (loading
       ? "Cargando palabra..."
       : error
@@ -115,6 +115,11 @@ export const GospelCard = ({
             {palabraDisplay.frase}
           </p>
 
+          {lectio?.cita_destacada && !palabraHoy && (
+            <p className="mt-2 w-full text-left text-xs font-medium tracking-wide text-gold/90">
+              {lectio.cita_destacada}
+            </p>
+          )}
           {palabraDisplay.referencia && (
             <p className="mt-3 text-left text-sm font-semibold leading-tight text-gold">
               {palabraDisplay.referencia}

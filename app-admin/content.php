@@ -27,17 +27,13 @@ $modules = [
     ],
   ],
   'liturgia' => [
-    'title' => 'Liturgia',
-    'subtitle' => 'Liturgia diaria, calendario, lectio divina y catálogos',
+    'title' => 'Configuración litúrgica',
+    'subtitle' => 'Catálogos auxiliares utilizados por la Liturgia del Día',
     'tables' => [
-      'lvj_lit_lectura_dia' => 'Lectura del Dia',
-      'lvj_lit_dia' => 'Calendario liturgico',
-      'lvj_lit_lectio_divina' => 'Lectio Divina',
-      'lvj_lit_palabra_dia' => 'Palabra del Dia',
-      'lvj_lit_tiempos' => 'Tiempos liturgicos',
+      'lvj_lit_tiempos' => 'Tiempos litúrgicos',
       'lvj_lit_temas' => 'Temas',
       'lvj_lit_celebraciones' => 'Celebraciones',
-      'lvj_lit_tipos_celebracion' => 'Tipos de celebracion',
+      'lvj_lit_tipos_celebracion' => 'Tipos de celebración',
     ],
   ],
   'santoral' => [
@@ -1632,7 +1628,7 @@ $page = max(1, (int) ($_GET['page'] ?? 1));
 $perPage = 20;
 $totalRows = 0;
 $totalPages = 1;
-$searchPlaceholder = $moduleKey === 'liturgia' ? 'Buscar por fecha, tema, santo...' : 'Buscar registros...';
+$searchPlaceholder = 'Buscar registros...';
 if ($table === 'lvj_capillas') {
   $searchPlaceholder = 'Buscar por nombre, ciudad o pais...';
 }
@@ -1799,13 +1795,7 @@ require __DIR__ . '/includes/header.php';
   </section>
 <?php endif; ?>
 
-<?php if ($moduleKey === 'liturgia'): ?>
-  <section class="panel import-panel">
-    <h2>Importador asistido</h2>
-    <p class="muted">Preparado para pegar una URL o texto largo y distribuirlo luego en lecturas, salmo, evangelio y reflexion. Por ahora no guarda automaticamente para evitar errores de contenido.</p>
-    <textarea rows="5" placeholder="Pega aqui el texto de la liturgia para revisarlo antes de guardarlo..."></textarea>
-  </section>
-<?php endif; ?>
+
 
 <section class="panel content-records-panel content-grid-card">
   <div class="panel-header content-list-header">

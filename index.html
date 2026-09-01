@@ -8,6 +8,27 @@
     <meta name="author" content="La Voz de Jesús" />
     <meta name="theme-color" content="#0a0f1f" />
 
+    <style>
+      /* Liturgia del Día: el selector semanal muestra solo L · M · X · J · V · S · D. */
+      .lvj-reading-page header .grid.grid-cols-7 > button[aria-pressed] > span:nth-of-type(2) {
+        display: none !important;
+      }
+
+      .lvj-reading-page header .grid.grid-cols-7 > button[aria-pressed] {
+        height: 44px !important;
+        min-height: 44px !important;
+        width: 40px !important;
+        max-width: 40px !important;
+        flex-direction: row !important;
+      }
+
+      .lvj-reading-page header .grid.grid-cols-7 > button[aria-pressed] > span:first-of-type {
+        margin: 0 !important;
+        font-size: 15px !important;
+        font-weight: 800 !important;
+      }
+    </style>
+
     <link rel="icon" href="/favicon.png" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />

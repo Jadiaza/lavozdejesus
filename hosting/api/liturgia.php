@@ -82,6 +82,32 @@ function lvj_month_day_from_row(array $row): string
   return lvj_month_day_from_date(lvj_normalize_date($row['fecha'] ?? ''));
 }
 
+/**
+ * Consolida una sola fila por fecha respetando la prioridad editorial.
+ * La mera existencia de una fila canónica bloquea el fallback legacy,
+ * incluso cuando esa fila todavía no está publicada.
+ *
+ * @param array<int,array<string,mixed>> ...$sources
+ * @return array<int,array<string,mixed>>
+ */
+function lvj_liturgia_rows_by_date(array ...$sources): array
+{
+  $rowsByDate = [];
+
+  foreach ($sources as $rows) {
+    foreach ($rows as $row) {
+      $date = lvj_normalize_date($row['fecha'] ?? '');
+      if ($date === '' || isset($rowsByDate[$date])) {
+        continue;
+      }
+      $rowsByDate[$date] = $row;
+    }
+  }
+
+  ksort($rowsByDate);
+  return array_values($rowsByDate);
+}
+
 try {
   $pdo = lvj_db();
   $fecha = substr(trim((string) ($_GET['fecha'] ?? '')), 0, 10);
@@ -89,6 +115,10 @@ try {
   $lecturas = lvj_optional_rows(
     $pdo,
     'SELECT * FROM lvj_lit_lectura_dia ORDER BY fecha ASC, id ASC LIMIT 800',
+  );
+  $lecturasBase = lvj_optional_rows(
+    $pdo,
+    'SELECT * FROM lvj_lit_lecturas_base ORDER BY id ASC LIMIT 1200',
   );
   $dias = lvj_optional_rows(
     $pdo,
@@ -119,6 +149,7 @@ try {
     'SELECT * FROM lvj_lit_tipos_celebracion ORDER BY prioridad ASC, id ASC LIMIT 100',
   );
 
+  $lecturasBaseById = lvj_rows_by_id($lecturasBase);
   $diasById = lvj_rows_by_id($dias);
   $diasByDate = lvj_rows_by_key($dias, fn ($row) => lvj_normalize_date($row['fecha'] ?? ''));
   $palabrasByLiturgiaId = lvj_rows_by_key($palabras, fn ($row) => lvj_text($row, 'liturgia_id'));
@@ -129,10 +160,14 @@ try {
   $santosByMonthDay = lvj_rows_by_key($santos, fn ($row) => lvj_month_day_from_row($row));
   $celebracionesById = lvj_rows_by_id($celebraciones);
   $tiposById = lvj_rows_by_id($tipos);
-  $baseRows = count($lecturas) > 0 ? $lecturas : (count($dias) > 0 ? $dias : $palabras);
+  $baseRows = lvj_liturgia_rows_by_date($lecturas, $dias, $palabras);
   $data = [];
 
   foreach ($baseRows as $row) {
+    $baseReading = $lecturasBaseById[lvj_text($row, 'lectura_base_id')] ?? [];
+    foreach ($baseReading as $field => $value) {
+      if (lvj_text($row, (string) $field) === '') $row[$field] = $value;
+    }
     if (!lvj_visible_row($row)) {
       continue;
     }
@@ -156,8 +191,9 @@ try {
     $tipo = $tiposById[lvj_text($celebracion, 'tipo_celebracion_id', 'tipo_id')] ?? null;
     $tiempoNombre = lvj_text($row, 'tiempo_liturgico') ?: lvj_text($day, 'tiempo_liturgico') ?: preg_replace('/^tiempo\s+/i', '', lvj_text($tiempo, 'nombre'));
     $celebracionNombre = lvj_text($row, 'celebracion') ?: lvj_text($day, 'celebracion') ?: lvj_text($celebracion, 'nombre') ?: lvj_text($santo, 'nombre');
-    $palabraHoy = lvj_text($row, 'palabra_hoy', 'frase_destacada') ?:
-      lvj_text($word, 'frase_destacada', 'palabra_hoy', 'texto');
+    // Fuente editorial única: lvj_lit_lectura_dia (fila canónica).
+    $palabraHoy = lvj_text($row, 'palabra_hoy', 'frase_destacada');
+
 
     $data[] = [
       'fecha' => $normalizedDate,

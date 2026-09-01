@@ -56,6 +56,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       .map((row) => ({
         ...row,
         fecha: normalizeDate(row.fecha),
+        frase_destacada: text(row, "frase_destacada"),
+        cita_destacada: text(row, "cita_destacada") || text(row, "cita"),
         reflexion: text(row, "reflexion"),
         pregunta_meditar: text(row, "pregunta_meditar"),
         oracion: text(row, "oracion"),

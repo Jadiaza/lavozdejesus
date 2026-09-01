@@ -37,6 +37,11 @@ function side_files_active(): string
   return in_array($currentAdminPage, ['files.php', 'upload.php', 'edit_file.php', 'folders.php', 'download.php'], true) ? 'active' : '';
 }
 
+$liturgiaMainActive = in_array($currentAdminPage, ['liturgia-dia.php', 'liturgia-ordo.php', 'lectio-divina.php'], true)
+  || $currentModule === 'liturgia';
+$santoralMainActive = $currentAdminPage === 'santoral-dia.php'
+  || $currentModule === 'santoral';
+
 $bibliaMainActive = side_nav_active('', 'biblia') === 'active';
 $bibliaImportActive = $currentAdminPage === 'biblia-importar.php';
 $bibliaStudiesActive = in_array($currentAdminPage, ['biblia-estudios-ia.php', 'biblia-estudio-ia.php'], true);
@@ -78,8 +83,9 @@ $aiTrainingActive = $currentAdminPage === 'ia-entrenamiento.php' || $currentModu
     <a class="<?php echo side_nav_active('', 'oracion'); ?>" href="content.php?module=oracion"><span class="nav-icon">O</span> Rosarios y Oraciones</a>
 
     <span class="side-nav-section-label">Liturgia y Santoral</span>
-    <a class="<?php echo side_nav_active('', 'liturgia'); ?>" href="content.php?module=liturgia"><span class="nav-icon">L</span> Liturgia</a>
-    <a class="<?php echo side_nav_active('', 'santoral'); ?>" href="content.php?module=santoral"><span class="nav-icon">S</span> Santoral</a>
+    <a class="<?php echo $liturgiaMainActive ? 'active' : ''; ?>" href="liturgia-dia.php"><span class="nav-icon">L</span> Liturgia</a>
+    <?php if (is_technical_admin()): ?><a class="<?php echo $currentAdminPage === 'liturgia-ordo.php' ? 'active' : ''; ?>" href="liturgia-ordo.php"><span class="nav-icon">Or</span> Sincronizar Ordo</a><?php endif; ?>
+    <a class="<?php echo $santoralMainActive ? 'active' : ''; ?>" href="santoral-dia.php"><span class="nav-icon">S</span> Santoral</a>
 
     <span class="side-nav-section-label">Biblia</span>
     <div class="side-nav-group<?php echo $bibliaGroupActive ? ' is-active' : ''; ?>">
