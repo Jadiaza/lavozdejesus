@@ -34,27 +34,7 @@ import {
 
 type LecturasTab = "liturgia" | "santo" | "reflexion";
 
-interface LecturasCache {
-  liturgias: LiturgiaDia[];
-  lectios: LectioDivina[];
-  santos: SantoDelDia[];
-}
-
-const CACHE_KEY = "lvj_lecturas_publicadas_v14";
-
-const liturgicalStoleMap: Record<
-  string,
-  { background: string; cross: string; border: string }
-> = {
-  verde: { background: "#1faa59", cross: "#f4d35e", border: "#071a33" },
-  ordinario: { background: "#1faa59", cross: "#f4d35e", border: "#071a33" },
-  blanco: { background: "#f8f5eb", cross: "#c69222", border: "#071a33" },
-  rojo: { background: "#c62828", cross: "#ffffff", border: "#071a33" },
-  morado: { background: "#6a1b9a", cross: "#ffffff", border: "#071a33" },
-  violeta: { background: "#6a1b9a", cross: "#ffffff", border: "#071a33" },
-  rosa: { background: "#d86b9d", cross: "#ffffff", border: "#071a33" },
-  dorado: { background: "#d4af37", cross: "#ffffff", border: "#071a33" },
-};
+type ReadingRenderMode = "normal" | "ordo" | "psalm";
 
 const tabLabels: Record<LecturasTab, string> = {
   liturgia: "Liturgia",
@@ -64,1018 +44,317 @@ const tabLabels: Record<LecturasTab, string> = {
 
 const formatFecha = (fecha?: string) => {
   if (!fecha) return "Meditación diaria";
-
   const date = new Date(`${fecha}T12:00:00`);
   if (Number.isNaN(date.getTime())) return fecha;
-
-  return date.toLocaleDateString("es-CO", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-};
-
-const formatDiaSelector = (fecha: string) => {
-  const date = new Date(`${fecha}T12:00:00`);
-  if (Number.isNaN(date.getTime())) {
-    return { day: fecha, weekday: "" };
-  }
-
-  return {
-    day: date.toLocaleDateString("es-CO", { day: "2-digit" }),
-    weekday: date
-      .toLocaleDateString("es-CO", { weekday: "short" })
-      .replace(".", ""),
-  };
-};
-
-const getLiturgicalStoleValue = (color?: string) => {
-  const key = color?.trim().toLowerCase() ?? "";
-  return liturgicalStoleMap[key] ?? liturgicalStoleMap.dorado;
+  return date.toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" });
 };
 
 const stripOuterQuotes = (value: string) =>
-  value.replace(/^[«"“]\s*/, "").replace(/\s*[»"”]$/, "");
+  value.replace(/^[«\"“]\s*/, "").replace(/\s*[»\"”]$/, "");
 
-const compactText = (value?: string, maxLength = 190) => {
-  const normalized = (value ?? "").replace(/\s+/g, " ").trim();
-  if (!normalized) return "";
-
-  return normalized.length > maxLength
-    ? `${normalized.slice(0, maxLength).trim()}...`
-    : normalized;
+const toISO = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 };
 
-const shouldCollapseText = (value?: string) => {
-  const text = value?.trim() ?? "";
-  if (!text) return false;
+const getWeekDates = (fecha: string) => {
+  const selected = new Date(`${fecha}T12:00:00`);
+  if (Number.isNaN(selected.getTime())) return [];
+  const jsDay = selected.getDay();
+  const mondayOffset = jsDay === 0 ? -6 : 1 - jsDay;
+  const monday = new Date(selected);
+  monday.setDate(selected.getDate() + mondayOffset);
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(monday);
+    date.setDate(monday.getDate() + index);
+    return toISO(date);
+  });
+};
 
-  const paragraphs = text.split(/\n{2,}/).filter(Boolean);
-  return text.length > 360 || (paragraphs.length > 1 && text.length > 240);
+const weekLetters = ["L", "M", "X", "J", "V", "S", "D"];
+
+const formatDayNumber = (fecha: string) => {
+  const date = new Date(`${fecha}T12:00:00`);
+  return Number.isNaN(date.getTime()) ? "" : String(date.getDate());
 };
 
 const formatPsalmResponse = (value?: string) => {
   if (!value) return "";
-
   const response = value.trim().replace(/^R\s*[/.]+\.?\s*/i, "");
   return response ? `R/. ${response}` : "";
 };
 
-const findSantoForDate = (items: SantoDelDia[], fecha: string) =>
-  items.find((item) => santoMatchesDate(item, fecha)) ?? null;
+const isLiturgicalFormula = (line: string) =>
+  /^(lectura\s+(de|del)|palabra\s+de\s+dios|en\s+aquel\s+tiempo|en\s+aquellos\s+días)/i.test(
+    line.trim(),
+  );
 
-const renderPsalmLine = (value: string) =>
-  value.split(/(R\s*[/.]+\.?)/gi).map((part, index) => {
-    if (/^R\s*[/.]+\.?$/i.test(part)) {
-      return (
-        <span key={`${part}-${index}`} className="font-normal text-[#b17a12]">
-          R/.
-        </span>
-      );
-    }
-
-    return part;
-  });
-
-const renderPreservedText = (
-  value: string | undefined,
-  fallback: string,
-  renderLine: (line: string) => ReactNode = (line) => line,
-) => {
-  const text = value?.trimEnd() || fallback;
-  const paragraphs = text.split(/\n{2,}/);
+const renderReadingText = (value?: string, mode: ReadingRenderMode = "normal") => {
+  if (!value?.trim()) return null;
+  const paragraphs = value.trimEnd().split(/\n{2,}/);
+  let firstMeaningfulLineRendered = false;
 
   return paragraphs.map((paragraph, paragraphIndex) => {
     const lines = paragraph.split("\n");
-
     return (
-      <p
-        key={`${paragraph.slice(0, 24)}-${paragraphIndex}`}
-        className="mb-6 last:mb-0"
-      >
-        {lines.map((line, lineIndex) => (
-          <Fragment key={`${lineIndex}-${line.slice(0, 12)}`}>
-            {renderLine(line)}
-            {lineIndex < lines.length - 1 && <br />}
-          </Fragment>
-        ))}
+      <p key={`${paragraphIndex}-${paragraph.slice(0, 20)}`} className="mb-6 last:mb-0">
+        {lines.map((rawLine, lineIndex) => {
+          const line = rawLine.trimEnd();
+          const meaningful = Boolean(line.trim());
+          const highlightOrdo =
+            mode === "ordo" &&
+            meaningful &&
+            !firstMeaningfulLineRendered &&
+            !isLiturgicalFormula(line);
+
+          if (meaningful && !firstMeaningfulLineRendered) firstMeaningfulLineRendered = true;
+
+          const node =
+            mode === "psalm" && /R\s*[/.]+\.?/i.test(line) ? (
+              <span>{line}</span>
+            ) : highlightOrdo ? (
+              <span className="font-semibold italic text-[#c69222]">{line}</span>
+            ) : (
+              <span>{line}</span>
+            );
+
+          return (
+            <Fragment key={`${lineIndex}-${line.slice(0, 12)}`}>
+              {node}
+              {lineIndex < lines.length - 1 && <br />}
+            </Fragment>
+          );
+        })}
       </p>
     );
   });
 };
 
-const readLecturasCache = (): LecturasCache | null => {
-  if (typeof window === "undefined") return null;
-
-  try {
-    const raw = window.sessionStorage.getItem(CACHE_KEY);
-    if (!raw) return null;
-
-    const parsed = JSON.parse(raw) as LecturasCache;
-    if (
-      !Array.isArray(parsed.liturgias) ||
-      !Array.isArray(parsed.lectios) ||
-      !Array.isArray(parsed.santos)
-    ) {
-      return null;
-    }
-
-    return parsed;
-  } catch {
-    return null;
-  }
-};
-
-const writeLecturasCache = (cache: LecturasCache) => {
-  if (typeof window === "undefined") return;
-
-  try {
-    window.sessionStorage.setItem(CACHE_KEY, JSON.stringify(cache));
-  } catch {
-    // Si sessionStorage falla, la página sigue funcionando con memoria.
-  }
-};
-
-const TabButton = ({
-  active,
-  children,
-  onClick,
-}: {
-  active: boolean;
-  children: ReactNode;
-  onClick: () => void;
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`rounded-lg px-4 py-2.5 text-sm font-bold transition ${
-      active
-        ? "bg-[#082347] text-white shadow-[0_8px_20px_-14px_rgba(8,35,71,0.9)]"
-        : "text-[#071a33] hover:bg-white"
-    }`}
-  >
-    {children}
-  </button>
-);
-
 const LiturgicalStole = ({ color }: { color?: string }) => {
-  const stole = getLiturgicalStoleValue(color);
-
+  const key = color?.trim().toLowerCase() ?? "";
+  const colors: Record<string, string> = {
+    verde: "#1faa59",
+    ordinario: "#1faa59",
+    blanco: "#f8f5eb",
+    rojo: "#c62828",
+    morado: "#6a1b9a",
+    violeta: "#6a1b9a",
+    rosa: "#d86b9d",
+    dorado: "#d4af37",
+  };
   return (
     <span
-      className="relative inline-flex h-5 w-3 shrink-0 items-center justify-center rounded-[3px] border"
-      style={{
-        backgroundColor: stole.background,
-        borderColor: stole.border,
-      }}
+      className="relative inline-flex h-5 w-3 shrink-0 items-center justify-center rounded-[3px] border border-[#071a33]"
+      style={{ backgroundColor: colors[key] ?? "#d4af37" }}
       aria-hidden="true"
     >
-      <span
-        className="absolute h-3 w-[2px] rounded-full"
-        style={{ backgroundColor: stole.cross }}
-      />
-      <span
-        className="absolute h-[2px] w-2 rounded-full"
-        style={{ backgroundColor: stole.cross }}
-      />
+      <span className="absolute h-3 w-[2px] rounded-full bg-white" />
+      <span className="absolute h-[2px] w-2 rounded-full bg-white" />
     </span>
   );
 };
 
-const SantoImage = ({ src, alt }: { src?: string; alt: string }) => {
-  const [failed, setFailed] = useState(false);
-
-  if (!src || failed) {
-    return (
-      <div className="flex h-full w-full items-center justify-center bg-[#fff8ec] text-[#c69222]">
-        <UserRound className="h-16 w-16" />
-      </div>
-    );
-  }
-
-  return (
-    <img
-      src={src}
-      alt={alt}
-      loading="lazy"
-      onError={() => setFailed(true)}
-      className="h-full w-full object-cover"
-    />
-  );
-};
-
-const ExpandableContentCard = ({
-  id,
+const ContentCard = ({
   title,
   subtitle,
   response,
   text,
   icon,
-  expanded,
-  onToggle,
   featured = false,
-  renderLine,
+  mode = "normal",
 }: {
-  id: string;
   title: string;
   subtitle?: string;
   response?: string;
   text?: string;
   icon: ReactNode;
-  expanded: boolean;
-  onToggle: (id: string) => void;
   featured?: boolean;
-  renderLine?: (line: string) => ReactNode;
+  mode?: ReadingRenderMode;
 }) => {
   if (!text && !response) return null;
-
-  const canExpand = shouldCollapseText(text);
-  const preview = canExpand ? compactText(text, 180) : "";
-
   return (
     <article
-      className={`rounded-2xl border bg-white p-5 text-left shadow-[0_12px_32px_-28px_rgba(8,35,71,0.45)] transition ${
+      className={`rounded-2xl border bg-white p-5 text-left shadow-[0_12px_32px_-28px_rgba(8,35,71,0.45)] ${
         featured ? "border-[#d4af37]" : "border-[#e6d8bf]"
       }`}
     >
       <div className="flex items-start gap-4">
-        <span
-          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full shadow-inner ${
-            featured
-              ? "bg-[#082347] text-[#d4af37]"
-              : "bg-[#f7ead1] text-[#c08a19]"
-          }`}
-        >
+        <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${featured ? "bg-[#082347] text-[#d4af37]" : "bg-[#f7ead1] text-[#c08a19]"}`}>
           {icon}
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="text-[15px] font-extrabold uppercase tracking-[0.14em] text-[#082347]">
-            {title}
-          </h2>
-          {subtitle && (
-            <p className="mt-1 text-[15px] font-semibold text-[#c69222]">
-              {subtitle}
-            </p>
-          )}
+          <h2 className="text-[15px] font-extrabold uppercase tracking-[0.14em] text-[#082347]">{title}</h2>
+          {subtitle && <p className="mt-1 text-[15px] font-semibold text-[#c69222]">{subtitle}</p>}
         </div>
       </div>
-
-      {response && (
-        <p className="mt-5 text-left text-[17px] font-bold leading-[1.7] text-[#b17a12]">
-          {response}
-        </p>
-      )}
-
-      <div className="mt-5 text-left text-[17px] leading-[1.78] text-[#263349]">
-        {expanded ? (
-          renderPreservedText(text, "", renderLine)
-        ) : !canExpand ? (
-          renderPreservedText(text, "", renderLine)
-        ) : (
-          <p>
-            {preview}
-            <button
-              type="button"
-              onClick={() => onToggle(id)}
-              className="ml-1 inline-flex font-extrabold text-[#c69222]"
-            >
-              Leer +
-            </button>
-          </p>
-        )}
-      </div>
-
-      {expanded && canExpand && (
-        <button
-          type="button"
-          onClick={() => onToggle(id)}
-          className="mt-2 inline-flex font-extrabold text-[#c69222]"
-        >
-          Leer -
-        </button>
-      )}
+      {response && <p className="mt-5 text-[17px] font-bold leading-[1.7] text-[#b17a12]">{response}</p>}
+      {text && <div className="mt-5 text-[17px] leading-[1.78] text-[#263349]">{renderReadingText(text, mode)}</div>}
     </article>
   );
 };
 
-const ReflectionAudioCard = ({ audioUrl }: { audioUrl?: string }) => (
-  <article className="rounded-2xl border border-[#e6d8bf] bg-white p-5 text-left shadow-[0_12px_32px_-28px_rgba(8,35,71,0.45)]">
-    <div className="flex items-start gap-4">
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#082347] text-[#d4af37] shadow-inner">
-        <Headphones className="h-5 w-5" />
-      </span>
-      <div className="min-w-0 flex-1">
-        <h2 className="text-[15px] font-extrabold uppercase tracking-[0.14em] text-[#082347]">
-          Audio
-        </h2>
-        <p className="mt-1 text-[15px] font-semibold text-[#c69222]">
-          Escuchar reflexión
-        </p>
-      </div>
-    </div>
-
-    {audioUrl ? (
-      <div className="mt-5 space-y-3">
-        <audio controls preload="none" src={audioUrl} className="w-full">
-          Tu navegador no permite reproducir este audio.
-        </audio>
-        <a
-          href={audioUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex text-sm font-extrabold text-[#c69222]"
-        >
-          Abrir audio
-        </a>
-      </div>
-    ) : (
-      <p className="mt-5 text-[16px] leading-relaxed text-[#263349]">
-        El audio de la reflexión estará disponible pronto.
-      </p>
-    )}
-  </article>
-);
-
-type ReflectionContent = Pick<
-  LectioDivina,
-  | "reflexion"
-  | "pregunta_meditar"
-  | "oracion"
-  | "compromiso"
-  | "mensaje_final"
-  | "audio_url"
->;
-
-const buildReflectionContent = (
-  lectio: LectioDivina | null,
-  liturgia: LiturgiaDia | null,
-): ReflectionContent => ({
-  reflexion: lectio?.reflexion?.trim() || liturgia?.reflexion?.trim() || "",
-  pregunta_meditar:
-    lectio?.pregunta_meditar?.trim() ||
-    liturgia?.pregunta_meditar?.trim() ||
-    "",
-  oracion: lectio?.oracion?.trim() || liturgia?.oracion?.trim() || "",
-  compromiso: lectio?.compromiso?.trim() || liturgia?.compromiso?.trim() || "",
-  mensaje_final:
-    lectio?.mensaje_final?.trim() || liturgia?.mensaje_final?.trim() || "",
-  audio_url: lectio?.audio_url?.trim() || liturgia?.audio_url?.trim() || "",
-});
-
-const hasReflectionContent = (content: ReflectionContent) =>
-  Boolean(
-    content.reflexion ||
-      content.pregunta_meditar ||
-      content.oracion ||
-      content.compromiso ||
-      content.mensaje_final,
-  );
-
-const ReflectionView = ({
-  lectio,
-  liturgia,
-  expandedId,
-  onToggle,
-}: {
-  lectio: LectioDivina | null;
-  liturgia: LiturgiaDia | null;
-  expandedId: string | null;
-  onToggle: (id: string) => void;
-}) => {
-  const content = buildReflectionContent(lectio, liturgia);
-
-  return (
-    <div className="space-y-4">
-      {!hasReflectionContent(content) && (
-        <article className="rounded-2xl border border-[#e6d8bf] bg-white p-5 text-[#263349] shadow-[0_12px_32px_-28px_rgba(8,35,71,0.45)]">
-          Todavía no hay reflexión publicada para esta fecha.
-        </article>
-      )}
-
-      <ExpandableContentCard
-        id="reflexion-lvj"
-        title="Reflexión LVJ"
-        subtitle="La Palabra de hoy para tu vida"
-        text={content.reflexion}
-        icon={<Sparkles className="h-5 w-5" />}
-        expanded={expandedId === "reflexion-lvj"}
-        onToggle={onToggle}
-      />
-      <ExpandableContentCard
-        id="pregunta-meditar"
-        title="Pregunta para Meditar"
-        text={content.pregunta_meditar}
-        icon={<MessageCircleQuestion className="h-5 w-5" />}
-        expanded={expandedId === "pregunta-meditar"}
-        onToggle={onToggle}
-      />
-      <ExpandableContentCard
-        id="oracion-final"
-        title="Oración"
-        text={content.oracion}
-        icon={<Heart className="h-5 w-5" />}
-        expanded={expandedId === "oracion-final"}
-        onToggle={onToggle}
-      />
-      <ExpandableContentCard
-        id="compromiso"
-        title="Compromiso"
-        text={content.compromiso}
-        icon={<CheckCircle2 className="h-5 w-5" />}
-        expanded={expandedId === "compromiso"}
-        onToggle={onToggle}
-      />
-      <ExpandableContentCard
-        id="mensaje-final"
-        title="Mensaje Final"
-        text={content.mensaje_final}
-        icon={<Star className="h-5 w-5" />}
-        expanded={expandedId === "mensaje-final"}
-        onToggle={onToggle}
-      />
-      <ReflectionAudioCard audioUrl={content.audio_url} />
-    </div>
-  );
-};
-
-const DesktopSidebar = ({
-  activeTab,
-  onSelectTab,
-}: {
-  activeTab: LecturasTab;
-  onSelectTab: (tab: LecturasTab) => void;
-}) => (
-  <aside
-    className="hidden w-[238px] shrink-0 rounded-l-[28px] p-6 text-white shadow-[16px_0_44px_-36px_rgba(8,35,71,0.9)] md:block"
-    style={{
-      background:
-        "linear-gradient(180deg, #04172e 0%, #082347 58%, #061a33 100%)",
-    }}
-  >
-    <div className="mb-8 flex justify-center">
-      <Logo size="lg" />
-    </div>
+const DesktopSidebar = ({ activeTab, onSelectTab }: { activeTab: LecturasTab; onSelectTab: (tab: LecturasTab) => void }) => (
+  <aside className="hidden w-[238px] shrink-0 rounded-l-[28px] bg-[#082347] p-6 text-white md:block">
+    <div className="mb-8 flex justify-center"><Logo size="lg" /></div>
     <nav className="space-y-2 text-sm">
-      <Link
-        to="/"
-        className="flex items-center gap-3 rounded-xl px-3 py-3 text-white/80 hover:bg-white/10"
-      >
-        <Home className="h-5 w-5" />
-        <span className="font-semibold">Inicio</span>
-      </Link>
-      {(
-        [
-          ["liturgia", "Lecturas del día", <BookOpen className="h-5 w-5" />],
-          ["santo", "Santo del día", <UserRound className="h-5 w-5" />],
-          ["reflexion", "Reflexión", <Sparkles className="h-5 w-5" />],
-        ] as [LecturasTab, string, ReactNode][]
-      ).map(([tab, label, icon]) => (
-        <button
-          key={tab}
-          type="button"
-          onClick={() => onSelectTab(tab)}
-          className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left ${
-            activeTab === tab
-              ? "bg-[#d4af37] text-[#071a33]"
-              : "text-white/80 hover:bg-white/10"
-          }`}
-        >
-          {icon}
-          <span className="font-semibold">{label}</span>
+      <Link to="/" className="flex items-center gap-3 rounded-xl px-3 py-3 text-white/80 hover:bg-white/10"><Home className="h-5 w-5" />Inicio</Link>
+      {([[
+        "liturgia", "Lecturas del día", <BookOpen className="h-5 w-5" />
+      ], ["santo", "Santo del día", <UserRound className="h-5 w-5" />], ["reflexion", "Reflexión", <Sparkles className="h-5 w-5" />]] as [LecturasTab, string, ReactNode][]).map(([tab, label, icon]) => (
+        <button key={tab} type="button" onClick={() => onSelectTab(tab)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left ${activeTab === tab ? "bg-[#d4af37] text-[#071a33]" : "text-white/80 hover:bg-white/10"}`}>
+          {icon}<span className="font-semibold">{label}</span>
         </button>
       ))}
     </nav>
   </aside>
 );
 
-const santoContentSections: Array<{
-  key: keyof Pick<
-    SantoDelDia,
-    | "lucha_que_enfrento"
-    | "secreto_de_santidad"
-    | "ensenanza_para_hoy"
-    | "como_puedo_imitarlo"
-    | "paso_concreto"
-    | "oracion_intercesion"
-  >;
-  title: string;
-}> = [
-  { key: "lucha_que_enfrento", title: "La lucha que enfrentó" },
-  { key: "secreto_de_santidad", title: "El secreto de su santidad" },
-  { key: "ensenanza_para_hoy", title: "Enseñanza para hoy" },
-  { key: "como_puedo_imitarlo", title: "Cómo puedo imitarlo" },
-  { key: "paso_concreto", title: "Paso concreto para hoy" },
-  { key: "oracion_intercesion", title: "Oración de intercesión" },
-];
-
-const SantoView = ({
-  santo,
-  expandedId,
-  onToggle,
-}: {
-  santo: SantoDelDia | null;
-  expandedId: string | null;
-  onToggle: (id: string) => void;
-}) => {
-  if (!santo?.nombre) {
-    return (
-      <article className="rounded-2xl border border-[#e6d8bf] bg-white p-5 text-[#263349]">
-        El santo del día estará disponible pronto.
-      </article>
-    );
-  }
-
-  const contentSections = santoContentSections.filter(({ key }) =>
-    santo[key]?.trim(),
-  );
-
+const SantoView = ({ santo }: { santo: SantoDelDia | null }) => {
+  if (!santo?.nombre) return <article className="rounded-2xl border border-[#e6d8bf] bg-white p-5">El santo del día estará disponible pronto.</article>;
+  const sections: Array<[string, string]> = [
+    ["lucha_que_enfrento", "La lucha que enfrentó"],
+    ["secreto_de_santidad", "El secreto de su santidad"],
+    ["ensenanza_para_hoy", "Enseñanza para hoy"],
+    ["como_puedo_imitarlo", "Cómo puedo imitarlo"],
+    ["paso_concreto", "Paso concreto para hoy"],
+    ["oracion_intercesion", "Oración de intercesión"],
+  ];
   return (
     <div className="space-y-4">
-      <article className="rounded-2xl border border-[#e6d8bf] bg-white px-5 py-6 text-center shadow-[0_18px_46px_-34px_rgba(8,35,71,0.48)] sm:px-7 md:px-8 md:py-8">
-        <p className="text-xs font-extrabold uppercase tracking-[0.28em] text-[#c69222]">
-          Santo del Día
-        </p>
-
-        <div className="mt-5 grid items-center gap-6 md:grid-cols-[220px_minmax(0,1fr)] md:text-left">
-          <div className="mx-auto h-40 w-40 overflow-hidden rounded-full border-4 border-[#c69222] bg-[#fff8ec] shadow-[0_18px_42px_-30px_rgba(8,35,71,0.7)] md:h-48 md:w-48">
-            <SantoImage src={santo.imagen_url} alt={santo.nombre} />
-          </div>
-
-          <div className="min-w-0">
-            <h2 className="font-display text-[34px] leading-tight text-[#082347] md:text-[44px]">
-              {santo.nombre}
-            </h2>
-            {santo.titulo && (
-              <p className="mt-1 text-lg font-semibold leading-snug text-[#263349] md:text-xl">
-                {santo.titulo}
-              </p>
-            )}
-            {santo.resumen && (
-              <div className="mt-5 text-left text-[16px] leading-[1.75] text-[#263349] md:text-[18px] md:leading-[1.78]">
-                {renderPreservedText(santo.resumen, "")}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {santo.frase_destacada && (
-          <div className="mx-auto mt-6 max-w-xl rounded-xl border border-[#e6d8bf] bg-[#fffaf0] px-5 py-4 text-center text-[15px] font-extrabold leading-relaxed text-[#082347] shadow-[0_12px_34px_-30px_rgba(8,35,71,0.45)] md:ml-[244px] md:text-left md:text-[17px]">
-            «{stripOuterQuotes(santo.frase_destacada)}»
-          </div>
-        )}
+      <article className="rounded-2xl border border-[#e6d8bf] bg-white p-6 text-center">
+        <p className="text-xs font-extrabold uppercase tracking-[0.28em] text-[#c69222]">Santo del Día</p>
+        <h2 className="mt-3 font-display text-[34px] leading-tight text-[#082347]">{santo.nombre}</h2>
+        {santo.titulo && <p className="mt-1 text-lg font-semibold text-[#263349]">{santo.titulo}</p>}
+        {santo.resumen && <div className="mt-5 text-left text-[17px] leading-[1.78] text-[#263349]">{renderReadingText(santo.resumen)}</div>}
+        {santo.frase_destacada && <div className="mt-5 rounded-xl border border-[#e6d8bf] bg-[#fffaf0] p-4 font-bold text-[#082347]">«{stripOuterQuotes(santo.frase_destacada)}»</div>}
       </article>
+      {sections.map(([key, label]) => santo[key]?.trim() ? <ContentCard key={key} title={label} text={santo[key]} icon={<Sparkles className="h-5 w-5" />} /> : null)}
+    </div>
+  );
+};
 
-      {contentSections.map(({ key, title }) => (
-        <ExpandableContentCard
-          key={key}
-          id={`santo-${key}`}
-          title={title}
-          text={santo[key]}
-          icon={<Sparkles className="h-5 w-5" />}
-          expanded={expandedId === `santo-${key}`}
-          onToggle={onToggle}
-        />
-      ))}
+const ReflectionView = ({ lectio, liturgia }: { lectio: LectioDivina | null; liturgia: LiturgiaDia | null }) => {
+  const content = {
+    reflexion: lectio?.reflexion || liturgia?.reflexion || "",
+    pregunta: lectio?.pregunta_meditar || liturgia?.pregunta_meditar || "",
+    oracion: lectio?.oracion || liturgia?.oracion || "",
+    compromiso: lectio?.compromiso || liturgia?.compromiso || "",
+    mensaje: lectio?.mensaje_final || liturgia?.mensaje_final || "",
+    audio: lectio?.audio_url || liturgia?.audio_url || "",
+  };
+  return (
+    <div className="space-y-4">
+      {!content.reflexion && <article className="rounded-2xl border border-[#e6d8bf] bg-white p-5">Todavía no hay reflexión publicada para esta fecha.</article>}
+      <ContentCard title="Reflexión LVJ" subtitle="La Palabra de hoy para tu vida" text={content.reflexion} icon={<Sparkles className="h-5 w-5" />} />
+      <ContentCard title="Pregunta para Meditar" text={content.pregunta} icon={<MessageCircleQuestion className="h-5 w-5" />} />
+      <ContentCard title="Oración" text={content.oracion} icon={<Heart className="h-5 w-5" />} />
+      <ContentCard title="Compromiso" text={content.compromiso} icon={<CheckCircle2 className="h-5 w-5" />} />
+      <ContentCard title="Mensaje Final" text={content.mensaje} icon={<Star className="h-5 w-5" />} />
+      {content.audio && <article className="rounded-2xl border border-[#e6d8bf] bg-white p-5"><div className="mb-4 flex items-center gap-3 font-bold text-[#082347]"><Headphones className="h-5 w-5 text-[#c69222]" />Escuchar reflexión</div><audio controls preload="none" src={content.audio} className="w-full" /></article>}
     </div>
   );
 };
 
 const LecturasDelDia = () => {
-  const [liturgia, setLiturgia] = useState<LiturgiaDia | null>(null);
-  const [lectio, setLectio] = useState<LectioDivina | null>(null);
-  const [santo, setSanto] = useState<SantoDelDia | null>(null);
   const [liturgias, setLiturgias] = useState<LiturgiaDia[]>([]);
   const [lectios, setLectios] = useState<LectioDivina[]>([]);
   const [santos, setSantos] = useState<SantoDelDia[]>([]);
   const [selectedDate, setSelectedDate] = useState(getTodayISO());
   const [activeTab, setActiveTab] = useState<LecturasTab>("liturgia");
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
 
   useEffect(() => {
     let mounted = true;
-    const cached = readLecturasCache();
-
-    if (cached?.liturgias.length) {
-      const today = getTodayISO();
-      const cachedToday =
-        cached.liturgias.find((item) => item.fecha === today) ??
-        cached.liturgias[cached.liturgias.length - 1];
-
-      setLiturgias(cached.liturgias);
-      setLectios(cached.lectios);
-      setSantos(cached.santos);
-      setSelectedDate(cachedToday.fecha);
-      setLiturgia(cachedToday);
-      setLectio(
-        cached.lectios.find((item) => item.fecha === cachedToday.fecha) ?? null,
-      );
-      setSanto(findSantoForDate(cached.santos, cachedToday.fecha));
-      setLoading(false);
-      setError(false);
-    }
-
     Promise.all([
-      getPublishedLiturgias(),
-      getPublishedLectios(),
-      getPublishedSantosDelDia(),
-      getTodayLiturgia(),
-      getTodayLectio(),
-      getTodaySantoDelDia(),
-    ])
-      .then(
-        ([
-          liturgiasData,
-          lectiosData,
-          santosData,
-          todayLiturgia,
-          todayLectio,
-          todaySanto,
-        ]) => {
-        if (!mounted) return;
-
-        const today = getTodayISO();
-        const mergedLiturgias =
-          todayLiturgia &&
-          !liturgiasData.some((item) => item.fecha === todayLiturgia.fecha)
-            ? [...liturgiasData, todayLiturgia].sort((a, b) =>
-                a.fecha.localeCompare(b.fecha),
-              )
-            : liturgiasData;
-        const mergedLectios =
-          todayLectio &&
-          !lectiosData.some((item) => item.fecha === todayLectio.fecha)
-            ? [...lectiosData, todayLectio].sort((a, b) =>
-                a.fecha.localeCompare(b.fecha),
-              )
-            : lectiosData;
-        const mergedSantos =
-          todaySanto &&
-          !santosData.some((item) => santoMatchesDate(item, todaySanto.fecha))
-            ? [...santosData, todaySanto]
-            : santosData;
-        const initialLiturgia =
-          mergedLiturgias.find((item) => item.fecha === today) ??
-          todayLiturgia ??
-          mergedLiturgias[mergedLiturgias.length - 1] ??
-          null;
-        const initialDate = initialLiturgia?.fecha ?? today;
-
-        setSelectedDate(initialDate);
-        setLiturgia(initialLiturgia);
-        setLectio(
-          mergedLectios.find((item) => item.fecha === initialDate) ??
-            (initialDate === today ? todayLectio : null),
-        );
-        setSanto(
-          findSantoForDate(mergedSantos, initialDate) ??
-            (initialDate === today ? todaySanto : null),
-        );
-        setLiturgias(mergedLiturgias);
-        setLectios(mergedLectios);
-        setSantos(mergedSantos);
-        writeLecturasCache({
-          liturgias: mergedLiturgias,
-          lectios: mergedLectios,
-          santos: mergedSantos,
-        });
-        setError(!initialLiturgia && mergedLiturgias.length === 0);
-      })
-      .catch(() => {
-        if (mounted) setError(true);
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-
-    return () => {
-      mounted = false;
-    };
+      getPublishedLiturgias(), getPublishedLectios(), getPublishedSantosDelDia(),
+      getTodayLiturgia(), getTodayLectio(), getTodaySantoDelDia(),
+    ]).then(([liturgiasData, lectiosData, santosData, todayLiturgia, todayLectio, todaySanto]) => {
+      if (!mounted) return;
+      const mergeByDate = <T extends { fecha: string }>(items: T[], today: T | null) => {
+        const merged = [...items];
+        if (today && !merged.some((item) => item.fecha === today.fecha)) merged.push(today);
+        return merged.sort((a, b) => a.fecha.localeCompare(b.fecha));
+      };
+      const mergedLiturgias = mergeByDate(liturgiasData, todayLiturgia);
+      const mergedLectios = mergeByDate(lectiosData, todayLectio);
+      const mergedSantos = todaySanto && !santosData.some((item) => santoMatchesDate(item, todaySanto.fecha)) ? [...santosData, todaySanto] : santosData;
+      setLiturgias(mergedLiturgias);
+      setLectios(mergedLectios);
+      setSantos(mergedSantos);
+      const today = getTodayISO();
+      setSelectedDate(mergedLiturgias.some((item) => item.fecha === today) ? today : mergedLiturgias.at(-1)?.fecha || today);
+    }).finally(() => mounted && setLoading(false));
+    return () => { mounted = false; };
   }, []);
 
-  useEffect(() => {
-    const selectedLiturgia =
-      liturgias.find((item) => item.fecha === selectedDate) ?? null;
-    setLiturgia(selectedLiturgia);
-    setLectio(lectios.find((item) => item.fecha === selectedDate) ?? null);
-    setSanto(findSantoForDate(santos, selectedDate));
-    setExpandedId(null);
-  }, [lectios, liturgias, santos, selectedDate]);
-
-  useEffect(() => {
-    const updateProgress = () => {
-      const maxScroll =
-        document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(maxScroll > 0 ? window.scrollY / maxScroll : 0);
-    };
-
-    updateProgress();
-    window.addEventListener("scroll", updateProgress, { passive: true });
-    window.addEventListener("resize", updateProgress);
-
-    return () => {
-      window.removeEventListener("scroll", updateProgress);
-      window.removeEventListener("resize", updateProgress);
-    };
-  }, []);
-
-  const selectedIndex = liturgias.findIndex(
-    (item) => item.fecha === selectedDate,
-  );
-
-  const visibleDays = useMemo(() => {
-    if (selectedIndex < 0) return liturgias.slice(-2);
-    return liturgias.slice(
-      Math.max(0, selectedIndex - 1),
-      Math.min(liturgias.length, selectedIndex + 2),
-    );
-  }, [liturgias, selectedIndex]);
-
-  const previousDate =
-    selectedIndex > 0 ? liturgias[selectedIndex - 1]?.fecha : undefined;
-  const nextDate =
-    selectedIndex >= 0 && selectedIndex < liturgias.length - 1
-      ? liturgias[selectedIndex + 1]?.fecha
-      : undefined;
-
-  const palabraHoy =
-    liturgia?.palabra_hoy || "La Palabra para hoy estará disponible pronto.";
-  const palabraHoyDisplay = loading
-    ? "Cargando lecturas..."
-    : `«${stripOuterQuotes(palabraHoy)}»`;
-  const liturgicalLabel =
-    liturgia?.celebracion || liturgia?.tiempo_liturgico || "Tiempo litúrgico";
-
-  const selectDate = (fecha?: string) => {
-    if (!fecha) return;
-    setSelectedDate(fecha);
-    window.requestAnimationFrame(() => {
-      document
-        .getElementById("lecturas-tabs")
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  };
-
-  const selectTab = (tab: LecturasTab) => {
-    setActiveTab(tab);
-    setExpandedId(null);
-  };
-
-  const toggleExpanded = (id: string) => {
-    setExpandedId((current) => (current === id ? null : id));
-  };
+  const liturgia = liturgias.find((item) => item.fecha === selectedDate) ?? null;
+  const lectio = lectios.find((item) => item.fecha === selectedDate) ?? null;
+  const santo = santos.find((item) => santoMatchesDate(item, selectedDate)) ?? null;
+  const selectedIndex = liturgias.findIndex((item) => item.fecha === selectedDate);
+  const previousDate = selectedIndex > 0 ? liturgias[selectedIndex - 1]?.fecha : undefined;
+  const nextDate = selectedIndex >= 0 && selectedIndex < liturgias.length - 1 ? liturgias[selectedIndex + 1]?.fecha : undefined;
+  const weekDates = useMemo(() => getWeekDates(selectedDate), [selectedDate]);
+  const publishedDates = useMemo(() => new Set(liturgias.map((item) => item.fecha)), [liturgias]);
+  const palabraHoy = liturgia?.palabra_hoy || "La Palabra para hoy estará disponible pronto.";
 
   return (
-    <main
-      className="lvj-reading-page min-h-screen"
-      style={{ backgroundColor: "#fff8ec" }}
-    >
-      <div
-        className="fixed left-0 top-0 z-[998] h-1 bg-[#d4af37] transition-[width]"
-        style={{ width: `${progress * 100}%` }}
-      />
-
-      <Link
-        to="/"
-        className="fixed left-[max(20px,env(safe-area-inset-left))] top-1/2 z-[999] hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-[#d4af37]/50 bg-[#111111] text-[#f8f5ea] shadow-[0_6px_18px_rgba(0,0,0,0.22)] transition hover:scale-95 hover:bg-black active:scale-95 md:inline-flex"
-        aria-label="Volver al inicio"
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Link>
-
-      <Link
-        to="/"
-        className="fixed left-[max(18px,env(safe-area-inset-left))] top-[max(1.75rem,env(safe-area-inset-top))] z-[999] inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#d4af37]/50 bg-[#111111] text-[#f8f5ea] shadow-[0_6px_18px_rgba(0,0,0,0.22)] transition active:scale-95 md:hidden"
-        aria-label="Volver al inicio"
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Link>
-
-      <div
-        className="mx-auto w-full md:px-5 md:py-8"
-        style={{ maxWidth: "1240px" }}
-      >
-        <div className="md:flex md:overflow-hidden md:rounded-[28px] md:border md:border-[#e6d8bf] md:bg-white/70 md:shadow-[0_30px_90px_-70px_rgba(8,35,71,0.75)]">
-          <DesktopSidebar activeTab={activeTab} onSelectTab={selectTab} />
-
+    <main className="lvj-reading-page min-h-screen bg-[#fff8ec] text-[#071a33]">
+      <Link to="/" className="fixed left-[max(18px,env(safe-area-inset-left))] top-[max(1.75rem,env(safe-area-inset-top))] z-[999] inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#d4af37]/50 bg-[#111111] text-[#f8f5ea] md:hidden" aria-label="Volver al inicio"><ArrowLeft className="h-5 w-5" /></Link>
+      <div className="mx-auto w-full md:px-5 md:py-8" style={{ maxWidth: "1240px" }}>
+        <div className="md:flex md:overflow-hidden md:rounded-[28px] md:border md:border-[#e6d8bf] md:bg-white/70">
+          <DesktopSidebar activeTab={activeTab} onSelectTab={setActiveTab} />
           <section className="min-w-0 flex-1 px-4 pb-14 pt-7 sm:px-6 md:px-8 md:py-8">
             <header className="mx-auto max-w-[860px]">
-              <div className="grid grid-cols-[52px_minmax(0,1fr)] items-start gap-3 md:block">
-                <div className="h-12 w-12 md:hidden" aria-hidden="true" />
-                <div className="min-w-0 pt-0.5 text-right md:pt-0 md:text-left">
-                  <h1 className="flex w-full items-center justify-end gap-1.5 text-[13px] font-extrabold uppercase leading-tight tracking-[0.14em] text-[#c69222] md:justify-start md:text-left md:text-base md:tracking-[0.22em]">
-                    <BookOpen className="h-4 w-4 md:h-5 md:w-5" />
-                    <span>Evangelio del Día</span>
-                  </h1>
-                  <p className="mt-1 text-right text-[13px] font-semibold capitalize leading-tight text-[#4f5663] md:mt-2 md:text-left md:text-[15px]">
-                    {formatFecha(liturgia?.fecha)}
-                  </p>
-                </div>
-              </div>
+              <h1 className="flex items-center justify-end gap-2 text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#c69222] md:justify-start md:text-base md:tracking-[0.22em]"><BookOpen className="h-4 w-4 md:h-5 md:w-5" />Evangelio del Día</h1>
+              <p className="mt-1 text-right text-[13px] font-semibold capitalize text-[#4f5663] md:text-left md:text-[15px]">{formatFecha(liturgia?.fecha)}</p>
 
               {liturgias.length > 0 && (
-                <div className="mt-12 flex items-center justify-center gap-3 md:mt-5">
-                  <button
-                    type="button"
-                    onClick={() => selectDate(previousDate)}
-                    disabled={!previousDate}
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-[#082347] disabled:opacity-35"
-                    aria-label="Día anterior"
-                  >
-                    <ChevronLeft className="h-6 w-6" />
-                  </button>
-
-                  <div className="flex items-center gap-2">
-                    {visibleDays.map((item) => {
-                      const date = formatDiaSelector(item.fecha);
-                      const active = item.fecha === selectedDate;
-
-                      return (
-                        <button
-                          key={item.fecha}
-                          type="button"
-                          onClick={() => selectDate(item.fecha)}
-                          className={`flex flex-col items-center justify-center text-sm font-bold transition ${
-                            active
-                              ? "h-[48px] w-[38px] rounded-[4px] border border-[#d4af37] bg-[#fff8ec] text-[#082347] shadow-[0_10px_26px_-22px_rgba(8,35,71,0.8)] ring-1 ring-[#f0dfbf]"
-                              : "h-[46px] w-[38px] rounded-md bg-transparent text-[#082347]"
-                          }`}
-                        >
-                          <span
-                            className={`text-xs capitalize leading-none ${
-                              active ? "font-extrabold text-[#9b6d16]" : ""
-                            }`}
-                          >
-                            {date.weekday}
-                          </span>
-                          <span
-                            className={`mt-1 text-xl leading-none ${
-                              active ? "font-extrabold text-[#c69222]" : ""
-                            }`}
-                          >
-                            {date.day}
-                          </span>
-                        </button>
-                      );
-                    })}
+                <div className="mt-8 rounded-2xl border border-[#e6d8bf] bg-white/70 px-2 py-3 shadow-sm">
+                  <div className="grid grid-cols-7 gap-1 text-center text-[15px] font-extrabold text-[#4f5663]">
+                    {weekLetters.map((letter, index) => <span key={`${letter}-${index}`}>{letter}</span>)}
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={() => selectDate(nextDate)}
-                    disabled={!nextDate}
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-[#082347] disabled:opacity-35"
-                    aria-label="Día siguiente"
-                  >
-                    <ChevronRight className="h-6 w-6" />
-                  </button>
+                  <div className="mt-2 flex items-center gap-1">
+                    <button type="button" onClick={() => previousDate && setSelectedDate(previousDate)} disabled={!previousDate} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#082347] disabled:opacity-25" aria-label="Día anterior"><ChevronLeft className="h-5 w-5" /></button>
+                    <div className="grid min-w-0 flex-1 grid-cols-7 gap-1">
+                      {weekDates.map((fecha) => {
+                        const active = fecha === selectedDate;
+                        const available = publishedDates.has(fecha);
+                        return (
+                          <button key={fecha} type="button" disabled={!available} onClick={() => setSelectedDate(fecha)} className={`mx-auto flex h-11 w-9 items-center justify-center rounded-xl text-sm font-extrabold transition ${active ? "bg-[#d4af37] text-[#071a33] shadow-md" : available ? "text-[#082347] hover:bg-[#f7ead1]" : "text-[#9da3ad] opacity-45"}`} aria-label={fecha}>
+                            {formatDayNumber(fecha)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <button type="button" onClick={() => nextDate && setSelectedDate(nextDate)} disabled={!nextDate} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#082347] disabled:opacity-25" aria-label="Día siguiente"><ChevronRight className="h-5 w-5" /></button>
+                  </div>
                 </div>
               )}
 
-              <div className="mt-3 flex items-center justify-center gap-2 text-sm font-bold text-[#082347]">
-                <LiturgicalStole color={liturgia?.color_liturgico} />
-                <span>{liturgicalLabel}</span>
-              </div>
+              <div className="mt-3 flex items-center justify-center gap-2 text-sm font-bold text-[#082347]"><LiturgicalStole color={liturgia?.color_liturgico} /><span>{liturgia?.celebracion || liturgia?.tiempo_liturgico || "Tiempo litúrgico"}</span></div>
             </header>
 
-            <section className="mx-auto mt-5 max-w-[860px] rounded-2xl border border-[#e6d8bf] bg-white px-5 py-4 text-center shadow-[0_18px_50px_-42px_rgba(8,35,71,0.55)] sm:px-6 sm:py-5 md:rounded-3xl md:p-8">
-              <h2 className="mx-auto max-w-2xl text-[22px] font-extrabold leading-[1.18] text-[#082347] sm:text-[26px] md:text-[36px] md:leading-tight">
-                {palabraHoyDisplay}
-              </h2>
+            <section className="mx-auto mt-5 max-w-[860px] rounded-2xl border border-[#e6d8bf] bg-white px-5 py-4 text-center sm:px-6 sm:py-5 md:rounded-3xl md:p-8">
+              <h2 className="mx-auto max-w-2xl text-[22px] font-extrabold leading-[1.18] text-[#082347] sm:text-[26px] md:text-[36px]">{loading ? "Cargando lecturas..." : `«${stripOuterQuotes(palabraHoy)}»`}</h2>
             </section>
 
-            <nav
-              id="lecturas-tabs"
-              className="sticky top-3 z-30 mx-auto mt-5 grid max-w-[860px] scroll-mt-4 grid-cols-3 gap-1 rounded-xl bg-[#efe5d4] p-1 shadow-[0_12px_32px_-30px_rgba(8,35,71,0.35)]"
-              aria-label="Secciones de lectura"
-            >
-              {(Object.keys(tabLabels) as LecturasTab[]).map((tab) => (
-                <TabButton
-                  key={tab}
-                  active={activeTab === tab}
-                  onClick={() => selectTab(tab)}
-                >
-                  {tabLabels[tab]}
-                </TabButton>
-              ))}
+            <nav className="sticky top-3 z-30 mx-auto mt-5 grid max-w-[860px] grid-cols-3 gap-1 rounded-xl bg-[#efe5d4] p-1">
+              {(Object.keys(tabLabels) as LecturasTab[]).map((tab) => <button key={tab} type="button" onClick={() => setActiveTab(tab)} className={`rounded-lg px-4 py-2.5 text-sm font-bold ${activeTab === tab ? "bg-[#082347] text-white" : "text-[#071a33]"}`}>{tabLabels[tab]}</button>)}
             </nav>
-
-            {error && !loading && (
-              <div className="mx-auto mt-5 max-w-[860px] rounded-2xl border border-[#d8c9ac] bg-white p-5 text-sm leading-relaxed text-[#263349]">
-                Todavía no hay liturgia publicada para esta fecha.
-              </div>
-            )}
 
             <div className="mx-auto mt-5 max-w-[860px]">
               {activeTab === "liturgia" && (
                 <div className="space-y-4">
-                  <ExpandableContentCard
-                    id="primera-lectura"
-                    title="Primera Lectura"
-                    subtitle={liturgia?.primera_lectura_cita}
-                    text={liturgia?.primera_lectura_texto}
-                    icon={<BookOpen className="h-5 w-5" />}
-                    expanded={expandedId === "primera-lectura"}
-                    onToggle={toggleExpanded}
-                  />
-                  <ExpandableContentCard
-                    id="salmo-responsorial"
-                    title="Salmo Responsorial"
-                    subtitle={liturgia?.salmo_cita}
-                    response={formatPsalmResponse(liturgia?.salmo_respuesta)}
-                    text={liturgia?.salmo_texto}
-                    icon={<Music2 className="h-5 w-5" />}
-                    expanded={expandedId === "salmo-responsorial"}
-                    onToggle={toggleExpanded}
-                    renderLine={renderPsalmLine}
-                  />
-                  <ExpandableContentCard
-                    id="segunda-lectura"
-                    title="Segunda Lectura"
-                    subtitle={liturgia?.segunda_lectura_cita}
-                    text={liturgia?.segunda_lectura_texto}
-                    icon={<BookOpen className="h-5 w-5" />}
-                    expanded={expandedId === "segunda-lectura"}
-                    onToggle={toggleExpanded}
-                  />
-                  <ExpandableContentCard
-                    id="evangelio"
-                    title="Evangelio"
-                    subtitle={liturgia?.evangelio_cita}
-                    text={liturgia?.evangelio_texto}
-                    icon={<Cross className="h-5 w-5" />}
-                    expanded={expandedId === "evangelio"}
-                    onToggle={toggleExpanded}
-                    featured
-                  />
+                  <ContentCard title="Primera Lectura" subtitle={liturgia?.primera_lectura_cita} text={liturgia?.primera_lectura_texto} icon={<BookOpen className="h-5 w-5" />} mode="ordo" />
+                  <ContentCard title="Salmo Responsorial" subtitle={liturgia?.salmo_cita} response={formatPsalmResponse(liturgia?.salmo_respuesta)} text={liturgia?.salmo_texto} icon={<Music2 className="h-5 w-5" />} mode="psalm" />
+                  <ContentCard title="Segunda Lectura" subtitle={liturgia?.segunda_lectura_cita} text={liturgia?.segunda_lectura_texto} icon={<BookOpen className="h-5 w-5" />} mode="ordo" />
+                  <ContentCard title="Evangelio" subtitle={liturgia?.evangelio_cita} text={liturgia?.evangelio_texto} icon={<Cross className="h-5 w-5" />} featured mode="ordo" />
                 </div>
               )}
-
-              {activeTab === "santo" && (
-                <SantoView
-                  santo={santo}
-                  expandedId={expandedId}
-                  onToggle={toggleExpanded}
-                />
-              )}
-
-              {activeTab === "reflexion" && (
-                <ReflectionView
-                  lectio={lectio}
-                  liturgia={liturgia}
-                  expandedId={expandedId}
-                  onToggle={toggleExpanded}
-                />
-              )}
-
-              {false && activeTab === "reflexion" && (
-                <div className="space-y-4">
-                  <ExpandableContentCard
-                    id="reflexion-lvj"
-                    title="Reflexión LVJ"
-                    subtitle="La Palabra de hoy para tu vida"
-                    text={lectio?.reflexion}
-                    icon={<Sparkles className="h-5 w-5" />}
-                    expanded={expandedId === "reflexion-lvj"}
-                    onToggle={toggleExpanded}
-                  />
-                  <ExpandableContentCard
-                    id="pregunta-meditar"
-                    title="Pregunta para Meditar"
-                    text={lectio?.pregunta_meditar}
-                    icon={<MessageCircleQuestion className="h-5 w-5" />}
-                    expanded={expandedId === "pregunta-meditar"}
-                    onToggle={toggleExpanded}
-                  />
-                  <ExpandableContentCard
-                    id="oracion-final"
-                    title="Oración"
-                    text={lectio?.oracion}
-                    icon={<Heart className="h-5 w-5" />}
-                    expanded={expandedId === "oracion-final"}
-                    onToggle={toggleExpanded}
-                  />
-                  <ExpandableContentCard
-                    id="compromiso"
-                    title="Compromiso"
-                    text={lectio?.compromiso}
-                    icon={<CheckCircle2 className="h-5 w-5" />}
-                    expanded={expandedId === "compromiso"}
-                    onToggle={toggleExpanded}
-                  />
-                  <ExpandableContentCard
-                    id="mensaje-final"
-                    title="Mensaje Final"
-                    text={lectio?.mensaje_final}
-                    icon={<Star className="h-5 w-5" />}
-                    expanded={expandedId === "mensaje-final"}
-                    onToggle={toggleExpanded}
-                  />
-                  <ReflectionAudioCard audioUrl={lectio?.audio_url} />
-                </div>
-              )}
+              {activeTab === "santo" && <SantoView santo={santo} />}
+              {activeTab === "reflexion" && <ReflectionView lectio={lectio} liturgia={liturgia} />}
             </div>
           </section>
         </div>
