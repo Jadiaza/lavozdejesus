@@ -43,29 +43,20 @@ const tabLabels: Record<LecturasTab, string> = {
 
 const weekLetters = ["L", "M", "X", "J", "V", "S", "D"];
 
-const formatFecha = (fecha?: string) => {
-  if (!fecha) return "Meditación diaria";
-  const date = new Date(`${fecha}T12:00:00`);
-  if (Number.isNaN(date.getTime())) return fecha;
-  return date.toLocaleDateString("es-CO", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-};
-
 const formatDateCard = (fecha?: string) => {
   if (!fecha) return { weekday: "", day: "", month: "", year: "" };
   const date = new Date(`${fecha}T12:00:00`);
   if (Number.isNaN(date.getTime())) {
     return { weekday: "", day: "", month: "", year: "" };
   }
+
   const weekday = date
     .toLocaleDateString("es-CO", { weekday: "short" })
     .replace(".", "");
   const month = date
     .toLocaleDateString("es-CO", { month: "short" })
     .replace(".", "");
+
   return {
     weekday: weekday.charAt(0).toUpperCase() + weekday.slice(1),
     day: String(date.getDate()),
@@ -87,10 +78,12 @@ const toISO = (date: Date) => {
 const getWeekDates = (fecha: string) => {
   const selected = new Date(`${fecha}T12:00:00`);
   if (Number.isNaN(selected.getTime())) return [];
+
   const jsDay = selected.getDay();
   const mondayOffset = jsDay === 0 ? -6 : 1 - jsDay;
   const monday = new Date(selected);
   monday.setDate(selected.getDate() + mondayOffset);
+
   return Array.from({ length: 7 }, (_, index) => {
     const date = new Date(monday);
     date.setDate(monday.getDate() + index);
@@ -114,6 +107,7 @@ const renderReadingText = (
   mode: ReadingRenderMode = "normal",
 ) => {
   if (!value?.trim()) return null;
+
   const paragraphs = value.trimEnd().split(/\n{2,}/);
   let firstMeaningfulLineRendered = false;
 
@@ -137,16 +131,11 @@ const renderReadingText = (
             firstMeaningfulLineRendered = true;
           }
 
-          const node =
-            mode === "psalm" && /R\s*[/.]+\.?/i.test(line) ? (
-              <span>{line}</span>
-            ) : highlightOrdo ? (
-              <span className="font-semibold italic text-[#c69222]">
-                {line}
-              </span>
-            ) : (
-              <span>{line}</span>
-            );
+          const node = highlightOrdo ? (
+            <span className="font-semibold italic text-[#c69222]">{line}</span>
+          ) : (
+            <span>{line}</span>
+          );
 
           return (
             <Fragment key={`${lineIndex}-${line.slice(0, 12)}`}>
@@ -175,12 +164,12 @@ const LiturgicalStole = ({ color }: { color?: string }) => {
 
   return (
     <span
-      className="relative inline-flex h-5 w-3 shrink-0 items-center justify-center rounded-[3px] border border-[#071a33]"
+      className="relative inline-flex h-6 w-4 shrink-0 items-center justify-center rounded-[4px] border border-[#071a33]"
       style={{ backgroundColor: colors[key] ?? "#d4af37" }}
       aria-hidden="true"
     >
-      <span className="absolute h-3 w-[2px] rounded-full bg-white" />
-      <span className="absolute h-[2px] w-2 rounded-full bg-white" />
+      <span className="absolute h-4 w-[2px] rounded-full bg-white" />
+      <span className="absolute h-[2px] w-2.5 rounded-full bg-white" />
     </span>
   );
 };
@@ -231,17 +220,41 @@ const ContentCard = ({
           )}
         </div>
       </div>
+
       {response && (
         <p className="mt-5 text-[17px] font-bold leading-[1.7] text-[#b17a12]">
           {response}
         </p>
       )}
+
       {text && (
         <div className="mt-5 text-[17px] leading-[1.78] text-[#263349]">
           {renderReadingText(text, mode)}
         </div>
       )}
     </article>
+  );
+};
+
+const SantoImage = ({ src, alt }: { src?: string; alt: string }) => {
+  const [failed, setFailed] = useState(false);
+
+  if (!src || failed) {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-[#fff8ec] text-[#c69222]">
+        <UserRound className="h-16 w-16" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      onError={() => setFailed(true)}
+      className="h-full w-full object-cover object-center"
+    />
   );
 };
 
@@ -292,7 +305,7 @@ const DesktopSidebar = ({
 const SantoView = ({ santo }: { santo: SantoDelDia | null }) => {
   if (!santo?.nombre) {
     return (
-      <article className="rounded-2xl border border-[#e6d8bf] bg-white p-5">
+      <article className="rounded-2xl border border-[#e6d8bf] bg-white p-5 text-center text-[#263349]">
         El santo del día estará disponible pronto.
       </article>
     );
@@ -309,29 +322,40 @@ const SantoView = ({ santo }: { santo: SantoDelDia | null }) => {
 
   return (
     <div className="space-y-4">
-      <article className="rounded-2xl border border-[#e6d8bf] bg-white p-6 text-center">
+      <article className="rounded-2xl border border-[#e6d8bf] bg-white px-5 py-7 text-center shadow-[0_18px_46px_-34px_rgba(8,35,71,0.48)] sm:px-7 md:px-8 md:py-8">
         <p className="text-xs font-extrabold uppercase tracking-[0.28em] text-[#c69222]">
           Santo del Día
         </p>
-        <h2 className="mt-3 font-display text-[34px] leading-tight text-[#082347]">
-          {santo.nombre}
-        </h2>
-        {santo.titulo && (
-          <p className="mt-1 text-lg font-semibold text-[#263349]">
-            {santo.titulo}
-          </p>
-        )}
-        {santo.resumen && (
-          <div className="mt-5 text-left text-[17px] leading-[1.78] text-[#263349]">
-            {renderReadingText(santo.resumen)}
+
+        <div className="mt-5 grid items-center gap-6 md:grid-cols-[210px_minmax(0,1fr)] md:text-left">
+          <div className="mx-auto h-40 w-40 overflow-hidden rounded-full border-[4px] border-[#c69222] bg-[#fff8ec] shadow-[0_18px_42px_-30px_rgba(8,35,71,0.7)] sm:h-44 sm:w-44 md:h-48 md:w-48">
+            <SantoImage src={santo.imagen_url} alt={santo.nombre} />
           </div>
-        )}
+
+          <div className="min-w-0">
+            <h2 className="font-display text-[34px] leading-tight text-[#082347] md:text-[42px]">
+              {santo.nombre}
+            </h2>
+            {santo.titulo && (
+              <p className="mt-1 text-lg font-semibold leading-snug text-[#263349]">
+                {santo.titulo}
+              </p>
+            )}
+            {santo.resumen && (
+              <div className="mt-5 text-left text-[16px] leading-[1.75] text-[#263349] md:text-[17px] md:leading-[1.78]">
+                {renderReadingText(santo.resumen)}
+              </div>
+            )}
+          </div>
+        </div>
+
         {santo.frase_destacada && (
-          <div className="mt-5 rounded-xl border border-[#e6d8bf] bg-[#fffaf0] p-4 font-bold text-[#082347]">
+          <div className="mx-auto mt-6 max-w-xl rounded-xl border border-[#e6d8bf] bg-[#fffaf0] px-5 py-4 text-[16px] font-bold leading-relaxed text-[#082347] md:ml-[226px] md:text-left">
             «{stripOuterQuotes(santo.frase_destacada)}»
           </div>
         )}
       </article>
+
       {sections.map(([key, label]) =>
         santo[key]?.trim() ? (
           <ContentCard
@@ -418,6 +442,7 @@ const LecturasDelDia = () => {
 
   useEffect(() => {
     let mounted = true;
+
     Promise.all([
       getPublishedLiturgias(),
       getPublishedLectios(),
@@ -508,20 +533,23 @@ const LecturasDelDia = () => {
         <ArrowLeft className="h-5 w-5" />
       </Link>
 
-      <div className="mx-auto w-full md:px-5 md:py-8" style={{ maxWidth: "1240px" }}>
+      <div
+        className="mx-auto w-full md:px-5 md:py-8"
+        style={{ maxWidth: "1240px" }}
+      >
         <div className="md:flex md:overflow-hidden md:rounded-[28px] md:border md:border-[#e6d8bf] md:bg-white/70">
           <DesktopSidebar activeTab={activeTab} onSelectTab={setActiveTab} />
 
           <section className="min-w-0 flex-1 px-4 pb-14 pt-7 sm:px-6 md:px-8 md:py-8">
             <header className="mx-auto max-w-[860px]">
-              <h1 className="flex items-center justify-center gap-2 text-[16px] font-extrabold uppercase tracking-[0.18em] text-[#b17a12] md:justify-start md:text-lg md:tracking-[0.22em]">
+              <h1 className="flex items-center justify-center gap-2 border-b border-[#e6d8bf] pb-5 text-[17px] font-extrabold uppercase tracking-[0.18em] text-[#b17a12] md:justify-start md:text-lg md:tracking-[0.22em]">
                 <BookOpen className="h-5 w-5" />
                 Liturgia del Día
               </h1>
 
               {liturgias.length > 0 && (
-                <div className="mt-7 overflow-hidden rounded-2xl border border-[#e6d8bf] bg-[#fffaf2] shadow-sm">
-                  <div className="grid grid-cols-7 border-b border-[#e6d8bf] px-2 py-3 sm:px-4">
+                <div className="overflow-hidden bg-[#fffaf2]">
+                  <div className="grid grid-cols-7 border-b border-[#e6d8bf] px-2 py-4 sm:px-4">
                     {weekDates.map((fecha, index) => {
                       const active = fecha === selectedDate;
                       const available = publishedDates.has(fecha);
@@ -531,7 +559,7 @@ const LecturasDelDia = () => {
                           type="button"
                           disabled={!available}
                           onClick={() => setSelectedDate(fecha)}
-                          className={`mx-auto flex h-12 w-10 items-center justify-center rounded-xl text-[18px] font-extrabold transition sm:h-14 sm:w-12 sm:text-[20px] ${
+                          className={`mx-auto flex h-12 w-10 items-center justify-center rounded-xl text-[19px] font-extrabold transition sm:h-14 sm:w-12 sm:text-[20px] ${
                             active
                               ? "border border-[#a97812] bg-[#d4af37] text-[#082347] shadow-[0_6px_16px_-8px_rgba(8,35,71,0.65)]"
                               : available
@@ -551,7 +579,7 @@ const LecturasDelDia = () => {
                       type="button"
                       onClick={() => previousDate && setSelectedDate(previousDate)}
                       disabled={!previousDate}
-                      className="absolute left-3 flex h-10 w-10 items-center justify-center rounded-full text-[#082347] disabled:opacity-20"
+                      className="absolute left-2 flex h-10 w-10 items-center justify-center rounded-full text-[#082347] disabled:opacity-20"
                       aria-label="Día anterior"
                     >
                       <ChevronLeft className="h-6 w-6" />
@@ -578,7 +606,7 @@ const LecturasDelDia = () => {
                       type="button"
                       onClick={() => nextDate && setSelectedDate(nextDate)}
                       disabled={!nextDate}
-                      className="absolute right-3 flex h-10 w-10 items-center justify-center rounded-full text-[#082347] disabled:opacity-20"
+                      className="absolute right-2 flex h-10 w-10 items-center justify-center rounded-full text-[#082347] disabled:opacity-20"
                       aria-label="Día siguiente"
                     >
                       <ChevronRight className="h-6 w-6" />
@@ -587,23 +615,23 @@ const LecturasDelDia = () => {
                 </div>
               )}
 
-              <div className="mt-5 text-center">
-                <h2 className="font-display text-[32px] leading-[1.08] text-[#082347] sm:text-[42px]">
+              <div className="bg-[#f3eadb]/55 px-4 pb-7 pt-4 text-center">
+                <h2 className="font-display text-[35px] leading-[1.08] text-[#082347] sm:text-[44px]">
                   {liturgia?.celebracion || "Liturgia del Día"}
                 </h2>
-                <p className="mt-4 text-[17px] font-extrabold text-[#40506a]">
+                <p className="mt-5 text-[17px] font-extrabold text-[#40506a]">
                   Calendario litúrgico de Colombia
                 </p>
                 <div className="mx-auto mt-2 h-[3px] w-3/4 max-w-[480px] bg-[#c69222]" />
-                <div className="mt-5 flex items-center justify-center gap-2 text-[17px] font-extrabold text-[#082347]">
+                <div className="mt-5 flex items-center justify-center gap-3 text-[17px] font-extrabold uppercase text-[#082347]">
                   <LiturgicalStole color={liturgia?.color_liturgico} />
                   <span>{liturgia?.tiempo_liturgico || "Tiempo litúrgico"}</span>
                 </div>
               </div>
             </header>
 
-            <section className="mx-auto mt-7 max-w-[860px] rounded-2xl border border-[#e6d8bf] bg-white px-5 py-5 text-center sm:px-6 sm:py-6 md:rounded-3xl md:p-8">
-              <h2 className="mx-auto max-w-2xl text-[22px] font-extrabold leading-[1.18] text-[#082347] sm:text-[26px] md:text-[36px]">
+            <section className="mx-auto mt-7 max-w-[860px] rounded-[26px] border-2 border-[#d8c49d] bg-white px-5 py-6 text-center shadow-[0_16px_36px_-30px_rgba(8,35,71,0.35)] sm:px-7 sm:py-7 md:p-8">
+              <h2 className="mx-auto max-w-2xl text-[23px] font-extrabold leading-[1.18] text-[#082347] sm:text-[27px] md:text-[36px]">
                 {loading
                   ? "Cargando lecturas..."
                   : `«${stripOuterQuotes(palabraHoy)}»`}
@@ -662,7 +690,9 @@ const LecturasDelDia = () => {
                   />
                 </div>
               )}
+
               {activeTab === "santo" && <SantoView santo={santo} />}
+
               {activeTab === "reflexion" && (
                 <ReflectionView lectio={lectio} liturgia={liturgia} />
               )}
