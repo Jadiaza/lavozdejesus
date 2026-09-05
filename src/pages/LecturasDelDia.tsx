@@ -140,61 +140,49 @@ const formatPsalmResponse = (value?: string) => {
   return response ? `R/. ${response}` : "";
 };
 
-const gospelBooks: Record<string, string> = {
-  Mt: "Mateo",
-  Mc: "Marcos",
-  Lc: "Lucas",
-  Jn: "Juan",
-};
-
-const citationNumbers = (citation?: string) =>
-  (citation ?? "").trim().replace(/^[^\d]+(?=\d)/u, "");
-
-const proclamationLine = (text?: string) =>
-  (text ?? "")
-    .split(/\r?\n/)
-    .slice(0, 4)
-    .map((line) => line.trim())
-    .find((line) => /^Lectura\s+(?:del|de la|de los|de las)\s+/iu.test(line));
-
-const formatLiturgicalCitation = (
-  kind: "reading" | "psalm" | "gospel",
-  citation?: string,
-  readingText?: string,
-) => {
-  const value = citation?.trim() ?? "";
-  if (!value) return "";
-  if (/^(?:De(?:l| la| los| las)?|Lectura|Del santo evangelio|Santo evangelio)/iu.test(value)) {
-    return value;
-  }
-  if (kind === "psalm") return value.replace(/^Sal\s+/iu, "Salmo ");
-  if (kind === "gospel") {
-    const match = value.match(/^([1-3]?\s*[A-Za-zÁÉÍÓÚÑáéíóúñ]+)\s+(.+)$/u);
-    const abbreviation = match?.[1]?.replace(/\s+/g, "") ?? "";
-    const evangelist = gospelBooks[abbreviation];
-    return evangelist && match ? `Del santo evangelio según san ${evangelist} ${match[2]}` : value;
-  }
-  const formula = proclamationLine(readingText);
-  if (!formula) return value;
-  const source = formula.replace(/^Lectura\s+/iu, "").replace(/[.:;]+$/u, "");
-  const normalizedSource = source.charAt(0).toUpperCase() + source.slice(1);
-  return `${normalizedSource} ${citationNumbers(value)}`.trim();
-};
 const findSantoForDate = (items: SantoDelDia[], fecha: string) =>
   items.find((item) => santoMatchesDate(item, fecha)) ?? null;
 
 const renderPsalmLine = (value: string) =>
-  value.split(/(R\s*[/.]+\.?)/gi).map((part, index) => {
-    if (/^R\s*[/.]+\.?$/i.test(part)) {
+  value.split(/(R\s*[/.]+\.?|V\.)/gi).map((part, index) => {
+    if (/^(?:R\s*[/.]+\.?|V\.)$/i.test(part)) {
       return (
-        <span key={`${part}-${index}`} className="font-normal text-[#b17a12]">
-          R/.
+        <span key={`${part}-${index}`} className="font-extrabold text-[#b17a12]">
+          {/^V\.$/i.test(part) ? "V." : "R/."}
         </span>
       );
     }
 
     return part;
   });
+
+const splitReadingIntroduction = (value?: string) => {
+  const lines = (value ?? "").replace(/\r\n/g, "\n").split("\n");
+  const isProclamation = (line: string) =>
+    /^(?:Lectura\s+(?:del|de la|de los|de las)|Del santo evangelio)/iu.test(
+      line.trim(),
+    );
+  let index = lines.findIndex((line) => line.trim() !== "");
+  if (index < 0) return { lead: "", proclamation: "", body: "" };
+
+  let lead = "";
+  let proclamation = "";
+  if (!isProclamation(lines[index])) {
+    lead = lines[index].trim();
+    index += 1;
+    while (index < lines.length && lines[index].trim() === "") index += 1;
+  }
+  if (index < lines.length && isProclamation(lines[index])) {
+    proclamation = lines[index].trim();
+    index += 1;
+  }
+
+  return {
+    lead,
+    proclamation,
+    body: lines.slice(index).join("\n").trim(),
+  };
+};
 
 const renderPreservedText = (
   value: string | undefined,
@@ -334,6 +322,7 @@ const ExpandableContentCard = ({
   onToggle,
   featured = false,
   renderLine,
+  structuredIntro = false,
 }: {
   id: string;
   title: string;
@@ -345,11 +334,16 @@ const ExpandableContentCard = ({
   onToggle: (id: string) => void;
   featured?: boolean;
   renderLine?: (line: string) => ReactNode;
+  structuredIntro?: boolean;
 }) => {
   if (!text && !response) return null;
 
-  const canExpand = shouldCollapseText(text);
-  const preview = canExpand ? compactText(text, 180) : "";
+  const introduction = structuredIntro
+    ? splitReadingIntroduction(text)
+    : { lead: "", proclamation: "", body: text ?? "" };
+  const displayText = introduction.body || text;
+  const canExpand = shouldCollapseText(displayText);
+  const preview = canExpand ? compactText(displayText, 180) : "";
 
   return (
     <article
@@ -379,6 +373,18 @@ const ExpandableContentCard = ({
         </div>
       </div>
 
+      {introduction.lead && (
+        <p className="mt-5 text-left text-[17px] font-bold leading-[1.6] text-[#b17a12]">
+          {introduction.lead}
+        </p>
+      )}
+
+      {introduction.proclamation && (
+        <p className="mt-4 text-left text-[15px] font-medium italic leading-relaxed text-[#596579]">
+          {introduction.proclamation}
+        </p>
+      )}
+
       {response && (
         <p className="mt-5 text-left text-[17px] font-bold leading-[1.7] text-[#b17a12]">
           {response}
@@ -387,9 +393,9 @@ const ExpandableContentCard = ({
 
       <div className="mt-5 text-left text-[17px] leading-[1.78] text-[#263349]">
         {expanded ? (
-          renderPreservedText(text, "", renderLine)
+          renderPreservedText(displayText, "", renderLine)
         ) : !canExpand ? (
-          renderPreservedText(text, "", renderLine)
+          renderPreservedText(displayText, "", renderLine)
         ) : (
           <p>
             {preview}
@@ -991,16 +997,17 @@ const LecturasDelDia = () => {
                   <ExpandableContentCard
                     id="primera-lectura"
                     title="Primera Lectura"
-                    subtitle={formatLiturgicalCitation("reading", liturgia?.primera_lectura_cita, liturgia?.primera_lectura_texto)}
+                    subtitle={liturgia?.primera_lectura_cita}
                     text={liturgia?.primera_lectura_texto}
                     icon={<BookOpen className="h-5 w-5" />}
                     expanded={expandedId === "primera-lectura"}
                     onToggle={toggleExpanded}
+                    structuredIntro
                   />
                   <ExpandableContentCard
                     id="salmo-responsorial"
                     title="Salmo Responsorial"
-                    subtitle={formatLiturgicalCitation("psalm", liturgia?.salmo_cita)}
+                    subtitle={liturgia?.salmo_cita}
                     response={formatPsalmResponse(liturgia?.salmo_respuesta)}
                     text={liturgia?.salmo_texto}
                     icon={<Music2 className="h-5 w-5" />}
@@ -1011,21 +1018,23 @@ const LecturasDelDia = () => {
                   <ExpandableContentCard
                     id="segunda-lectura"
                     title="Segunda Lectura"
-                    subtitle={formatLiturgicalCitation("reading", liturgia?.segunda_lectura_cita, liturgia?.segunda_lectura_texto)}
+                    subtitle={liturgia?.segunda_lectura_cita}
                     text={liturgia?.segunda_lectura_texto}
                     icon={<BookOpen className="h-5 w-5" />}
                     expanded={expandedId === "segunda-lectura"}
                     onToggle={toggleExpanded}
+                    structuredIntro
                   />
                   <ExpandableContentCard
                     id="evangelio"
                     title="Evangelio"
-                    subtitle={formatLiturgicalCitation("gospel", liturgia?.evangelio_cita)}
+                    subtitle={liturgia?.evangelio_cita}
                     text={liturgia?.evangelio_texto}
                     icon={<Cross className="h-5 w-5" />}
                     expanded={expandedId === "evangelio"}
                     onToggle={toggleExpanded}
                     featured
+                    structuredIntro
                   />
                 </div>
               )}
