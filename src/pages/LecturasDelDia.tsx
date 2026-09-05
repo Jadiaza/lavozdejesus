@@ -151,7 +151,7 @@ const renderReadingText = (
                 /^[VR](?:\/)?\.$/i.test(part) ? (
                   <span
                     key={`${part}-${partIndex}`}
-                    className="font-bold text-[#c69222]"
+                    className="text-[#c69222]"
                   >
                     {part}
                   </span>
