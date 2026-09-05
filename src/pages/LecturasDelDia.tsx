@@ -147,7 +147,7 @@ const renderPsalmLine = (value: string) =>
   value.split(/(R\s*[/.]+\.?|V\.)/gi).map((part, index) => {
     if (/^(?:R\s*[/.]+\.?|V\.)$/i.test(part)) {
       return (
-        <span key={`${part}-${index}`} className="font-extrabold text-[#b17a12]">
+        <span key={`${part}-${index}`} className="text-[#b17a12]">
           {/^V\.$/i.test(part) ? "V." : "R/."}
         </span>
       );
