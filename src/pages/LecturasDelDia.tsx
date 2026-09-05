@@ -916,7 +916,7 @@ const LecturasDelDia = () => {
                 </h1>
               </div>
 
-              <div className="mt-5 border-y border-[#d7c39d] bg-[#fffdf8]/80 px-2 py-3 shadow-[0_10px_28px_-26px_rgba(8,35,71,0.55)] lg:border lg:bg-[#fffdf8] lg:px-4 lg:py-4 lg:shadow-sm">
+              <div className="mt-2 border-y border-[#d7c39d] bg-[#fffdf8]/80 px-2 py-3 shadow-[0_10px_28px_-26px_rgba(8,35,71,0.55)] lg:border lg:bg-[#fffdf8] lg:px-4 lg:py-4 lg:shadow-sm">
                 <div className="grid grid-cols-7 gap-2 lg:gap-3">
                   {weekDays.map((day) => {
                     const active = day.fecha === selectedDate;
@@ -929,7 +929,7 @@ const LecturasDelDia = () => {
                         aria-pressed={active}
                         aria-label={`${day.label} ${day.day}`}
                         onClick={() => selectDate(day.fecha)}
-                        className={`mx-auto flex h-12 w-full min-w-0 items-center justify-center rounded-sm border text-[15px] transition sm:h-14 lg:min-h-[96px] lg:max-w-[92px] lg:flex-col lg:text-base disabled:cursor-not-allowed disabled:opacity-100 ${
+                        className={`mx-auto flex aspect-square w-full min-w-0 max-w-12 items-center justify-center rounded-none border text-[15px] transition sm:max-w-14 lg:max-w-[92px] lg:flex-col lg:text-base disabled:cursor-not-allowed disabled:opacity-100 ${
                           active
                             ? "border-[#a56f08] bg-[#d4af37] font-extrabold text-[#071a33] shadow-md"
                             : available
@@ -948,7 +948,7 @@ const LecturasDelDia = () => {
               </div>
 
               <div className="bg-[#f3eadb]/70 px-4 pb-7 pt-5 text-center xl:mt-5 xl:rounded-2xl xl:border xl:border-[#d7c39d]">
-                <span className="inline-flex min-w-16 flex-col rounded-sm bg-[#082347] px-3 py-1.5 text-white shadow-lg">
+                <span className="inline-flex h-20 w-20 flex-col items-center justify-center rounded-none bg-[#082347] px-2 py-1.5 text-white shadow-lg">
                   <span className="text-xs font-bold capitalize leading-tight">{formatDiaSelector(selectedDate).weekday}</span>
                   <span className="text-2xl font-extrabold leading-none">{formatDiaSelector(selectedDate).day}</span>
                   <span className="mt-0.5 text-xs font-bold capitalize leading-tight text-[#f4cf68]">{formatDiaSelector(selectedDate).month}</span>
