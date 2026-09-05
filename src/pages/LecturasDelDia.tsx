@@ -318,7 +318,7 @@ const SantoImage = ({ src, alt }: { src?: string; alt: string }) => {
       alt={alt}
       loading="lazy"
       onError={() => setFailed(true)}
-      className="h-full w-full object-cover"
+      className="h-full w-full object-cover object-center"
     />
   );
 };
@@ -904,7 +904,7 @@ const LecturasDelDia = () => {
           <section className="min-w-0 flex-1 px-4 pb-28 pt-5 text-[#071a33] sm:px-6 md:px-8 md:py-8">
             <header className="mx-auto max-w-[860px]">
               <div className="text-center md:text-left">
-                <h1 className="flex items-center justify-center gap-2 text-[13px] font-extrabold uppercase tracking-[0.18em] text-[#a56f08] md:justify-start md:text-base md:tracking-[0.22em]">
+                <h1 className="flex items-center justify-center gap-2 border-b border-[#e6d8bf] pb-5 text-[15px] font-extrabold uppercase tracking-[0.18em] text-[#a56f08] md:justify-start md:text-lg md:tracking-[0.22em]">
                   <BookOpen className="h-4 w-4 md:h-5 md:w-5" />
                   <span>Liturgia del Día</span>
                 </h1>
@@ -941,24 +941,24 @@ const LecturasDelDia = () => {
                 </div>
               </div>
 
-              <div className="bg-[#ebe5dc] px-3 py-5 text-center xl:mt-5 xl:rounded-2xl xl:border xl:border-[#d7c39d] xl:bg-[#f2e9da]">
+              <div className="bg-[#f3eadb]/70 px-4 pb-7 pt-5 text-center xl:mt-5 xl:rounded-2xl xl:border xl:border-[#d7c39d]">
                 <span className="inline-flex min-w-16 flex-col rounded-sm bg-[#082347] px-3 py-1.5 text-white shadow-lg">
                   <span className="text-xs font-bold capitalize leading-tight">{formatDiaSelector(selectedDate).weekday}</span>
                   <span className="text-2xl font-extrabold leading-none">{formatDiaSelector(selectedDate).day}</span>
                   <span className="mt-0.5 text-xs font-bold capitalize leading-tight text-[#f4cf68]">{formatDiaSelector(selectedDate).month}</span>
                 </span>
                 <div className="mt-1 text-xs font-bold text-[#3d4c61]">{formatDiaSelector(selectedDate).year}</div>
-                <h2 className="mx-auto mt-4 max-w-3xl font-display text-[32px] leading-[1.08] text-[#082347] sm:text-[42px] xl:text-[54px]">{liturgicalLabel}</h2>
-                <p className="mx-auto mt-3 inline-block border-b-2 border-[#c89a2b] pb-1 text-sm font-bold text-[#3d4c61]">Calendario litúrgico de Colombia</p>
-                <div className="mt-4 flex items-center justify-center gap-2 text-sm font-bold text-[#082347]">
+                <h2 className="mx-auto mt-4 max-w-3xl font-display text-[35px] leading-[1.08] text-[#082347] sm:text-[44px] xl:text-[54px]">{liturgicalLabel}</h2>
+                <p className="mx-auto mt-4 inline-block border-b-[3px] border-[#c89a2b] pb-1 text-[15px] font-bold text-[#3d4c61]">Calendario litúrgico de Colombia</p>
+                <div className="mt-5 flex items-center justify-center gap-3 text-[15px] font-bold uppercase text-[#082347]">
                   <LiturgicalStole color={liturgia?.color_liturgico} />
                   <span>{liturgia?.tiempo_liturgico || "Tiempo litúrgico"}</span>
                 </div>
               </div>
             </header>
 
-            <section className="mx-auto mt-5 max-w-[860px] rounded-2xl border-2 border-[#d7c39d] bg-[#fffdf8] px-5 py-4 text-center shadow-[0_18px_50px_-36px_rgba(8,35,71,0.65)] sm:px-6 sm:py-5 md:rounded-3xl md:p-8">
-              <h2 className="mx-auto max-w-2xl text-[22px] font-extrabold leading-[1.18] text-[#082347] sm:text-[26px] md:text-[36px] md:leading-tight">
+            <section className="mx-auto mt-7 max-w-[860px] rounded-[26px] border-2 border-[#d8c49d] bg-white px-5 py-6 text-center shadow-[0_16px_36px_-30px_rgba(8,35,71,0.35)] sm:px-7 sm:py-7 md:p-8">
+              <h2 className="mx-auto max-w-2xl text-[23px] font-extrabold leading-[1.18] text-[#082347] sm:text-[27px] md:text-[36px] md:leading-tight">
                 {palabraHoyDisplay}
               </h2>
             </section>
