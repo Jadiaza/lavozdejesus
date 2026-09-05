@@ -933,8 +933,8 @@ const LecturasDelDia = () => {
                           active
                             ? "border-[#a56f08] bg-[#d4af37] font-extrabold text-[#071a33] shadow-md"
                             : available
-                              ? "border-[#d8c9ac] bg-white font-extrabold text-[#082347] hover:border-[#c89a2b] hover:bg-[#fff4d8] lg:font-bold"
-                              : "border-[#e2d5bf] bg-[#eee5d7] font-semibold text-[#657084]"
+                              ? "border-transparent bg-transparent font-extrabold text-[#082347] lg:border-[#d8c9ac] lg:bg-white lg:font-bold lg:hover:border-[#c89a2b] lg:hover:bg-[#fff4d8]"
+                              : "border-transparent bg-transparent font-semibold text-[#657084] lg:border-[#e2d5bf] lg:bg-[#eee5d7]"
                         }`}
                       >
                         <span className="text-[15px] font-extrabold lg:text-base lg:font-bold">
