@@ -20,6 +20,7 @@ const RosarioDescargas = lazy(() => import("@/modules/rosary/pages/RosarioDescar
 const RosarioDiario = lazy(() => import("@/modules/rosary/pages/RosarioDiario"));
 const RosarioInfo = lazy(() => import("@/modules/rosary/pages/RosarioInfo"));
 const Podcast = lazy(() => import("@/modules/podcast/pages/PodcastHome"));
+const PodcastSeries = lazy(() => import("@/modules/podcast/pages/PodcastSeries"));
 
 const Contacto = lazy(() => import("./pages/Contacto.tsx"));
 const LecturasDelDia = lazy(() => import("./pages/LecturasDelDia.tsx"));
@@ -88,6 +89,7 @@ const App = () => (
               <Route path="/formacion" element={<Formacion />} />
               <Route path="/testimonios" element={<Testimonios />} />
               <Route path="/podcast" element={<Podcast />} />
+              <Route path="/podcast/santos-arcangeles-33-dias" element={<PodcastSeries />} />
               <Route path="/eventos" element={<Eventos />} />
               <Route path="/donar" element={<Donar />} />
               <Route path="/acerca-de" element={<AcercaDe />} />
