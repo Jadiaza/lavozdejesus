@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronRight, Settings } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 import { RosaryLayout } from "../components/RosaryLayout";
 import { RosaryLoading } from "../components/RosaryStateViews";
@@ -57,19 +57,7 @@ export const RosarioHome = () => {
   };
 
   return (
-    <RosaryLayout
-      title="Oración Mariana"
-      actions={
-        <Link
-          to="/rosario/configuracion"
-          aria-label="Configuración del Rosario"
-          className="flex h-11 w-11 items-center justify-center rounded-full text-gold transition hover:bg-gold/10 hover:text-gold-bright active:scale-95"
-        >
-          <Settings className="h-7 w-7" strokeWidth={1.7} aria-hidden="true" />
-        </Link>
-      }
-      fullScreen
-    >
+    <RosaryLayout title="Oración Mariana" fullScreen>
       {today.status === "loading" ? (
         <div className="flex h-full items-center justify-center">
           <RosaryLoading label="Preparando los misterios de hoy" />
