@@ -1,39 +1,24 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { RadioPlayerProvider } from "@/context/RadioPlayerContext";
 import Index from "./pages/Index.tsx";
 
-const RosarioHome = lazy(
-  () => import("@/modules/rosary/pages/RosarioHome")
-);
-
-const RosarioModalidad = lazy(
-  () => import("@/modules/rosary/pages/RosarioModalidad")
-);
-
-const RosarioIntencion = lazy(
-  () => import("@/modules/rosary/pages/RosarioIntencion")
-);
-
-const RosarioSeleccionMisterios = lazy(
-  () => import("@/modules/rosary/pages/RosarioSeleccionMisterios")
-);
-
-const RosarioDigital = lazy(
-  () => import("@/modules/rosary/pages/RosarioDigital")
-);
-
-const RosarioFisico = lazy(
-  () => import("@/modules/rosary/pages/RosarioFisico")
-);
-
-const RosarioAudio = lazy(
-  () => import("@/modules/rosary/pages/RosarioAudio")
-);
+const RosarioHome = lazy(() => import("@/modules/rosary/pages/RosarioHome"));
+const RosarioModalidad = lazy(() => import("@/modules/rosary/pages/RosarioModalidad"));
+const RosarioIntencion = lazy(() => import("@/modules/rosary/pages/RosarioIntencion"));
+const RosarioSeleccionMisterios = lazy(() => import("@/modules/rosary/pages/RosarioSeleccionMisterios"));
+const RosarioDigital = lazy(() => import("@/modules/rosary/pages/RosarioDigital"));
+const RosarioFisico = lazy(() => import("@/modules/rosary/pages/RosarioFisico"));
+const RosarioAudio = lazy(() => import("@/modules/rosary/pages/RosarioAudio"));
+const RosarioMisterios = lazy(() => import("@/modules/rosary/pages/RosarioMisterios"));
+const RosarioConfiguracion = lazy(() => import("@/modules/rosary/pages/RosarioConfiguracion"));
+const RosarioDescargas = lazy(() => import("@/modules/rosary/pages/RosarioDescargas"));
+const RosarioDiario = lazy(() => import("@/modules/rosary/pages/RosarioDiario"));
+const RosarioInfo = lazy(() => import("@/modules/rosary/pages/RosarioInfo"));
 
 const Contacto = lazy(() => import("./pages/Contacto.tsx"));
 const LecturasDelDia = lazy(() => import("./pages/LecturasDelDia.tsx"));
@@ -111,62 +96,20 @@ const App = () => (
               <Route path="/privacidad" element={<PoliticaPrivacidad />} />
               <Route path="/terminos" element={<TerminosCondiciones />} />
               <Route path="/terminos-y-condiciones" element={<TerminosCondiciones />} />
+
               <Route path="/rosario" element={<RosarioHome />} />
+              <Route path="/rosario/modalidad" element={<RosarioModalidad />} />
+              <Route path="/rosario/intencion" element={<RosarioIntencion />} />
+              <Route path="/rosario/seleccionar-misterios" element={<RosarioSeleccionMisterios />} />
+              <Route path="/rosario/configuracion" element={<RosarioConfiguracion />} />
+              <Route path="/rosario/digital" element={<RosarioDigital />} />
+              <Route path="/rosario/fisico" element={<RosarioFisico />} />
+              <Route path="/rosario/audio" element={<RosarioAudio />} />
+              <Route path="/rosario/misterios" element={<RosarioMisterios />} />
+              <Route path="/rosario/descargas" element={<RosarioDescargas />} />
+              <Route path="/rosario/diario" element={<RosarioDiario />} />
+              <Route path="/rosario/informacion" element={<RosarioInfo />} />
 
-<Route
-  path="/rosario/modalidad"
-  element={<RosarioModalidad />}
-/>
-
-<Route
-  path="/rosario/intencion"
-  element={<RosarioIntencion />}
-/>
-
-<Route
-  path="/rosario/seleccionar-misterios"
-  element={<RosarioSeleccionMisterios />}
-/>
-
-<Route
-  path="/rosario/configuracion"
-  element={<Navigate to="/rosario" replace />}
-/>
-
-<Route
-  path="/rosario/digital"
-  element={<RosarioDigital />}
-/>
-
-<Route
-  path="/rosario/fisico"
-  element={<RosarioFisico />}
-/>
-
-<Route
-  path="/rosario/audio"
-  element={<RosarioAudio />}
-/>
-
-<Route
-  path="/rosario/misterios"
-  element={<Navigate to="/rosario" replace />}
-/>
-
-<Route
-  path="/rosario/descargas"
-  element={<Navigate to="/rosario" replace />}
-/>
-
-<Route
-  path="/rosario/diario"
-  element={<Navigate to="/rosario" replace />}
-/>
-
-<Route
-  path="/rosario/informacion"
-  element={<Navigate to="/rosario" replace />}
-/>
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
