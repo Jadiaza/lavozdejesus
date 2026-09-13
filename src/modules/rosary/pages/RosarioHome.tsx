@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronRight, Settings } from "lucide-react";
 
@@ -34,11 +34,6 @@ export const RosarioHome = () => {
   const group = suggested;
   const groupData = mysteryGroups[group];
 
-  const longDate = useMemo(
-    () => rosaryTodayService.longDate(),
-    [],
-  );
-
   const hasPendingSession =
     resume !== null && resume.status !== "terminado";
 
@@ -67,8 +62,7 @@ export const RosarioHome = () => {
 
   return (
     <RosaryLayout
-      title={groupData.name}
-      subtitle={longDate}
+      title="Oración Mariana"
       back="/"
       actions={
         <Link
