@@ -6,14 +6,12 @@ import {
 } from "react-router-dom";
 import {
   Bookmark,
-  ArrowLeft,
   ChevronLeft,
   ChevronRight,
   CircleDot,
   Eye,
   HandHeart,
   RefreshCcw,
-  Settings,
 } from "lucide-react";
 
 import { RosaryLayout } from "../components/RosaryLayout";
@@ -23,7 +21,6 @@ import { RosaryProgress } from "../components/RosaryProgress";
 import { RosaryBeadRing } from "../components/RosaryBeadRing";
 import { RosaryFullRing } from "../components/RosaryFullRing";
 import { RosaryCompletion } from "../components/RosaryCompletion";
-import { RosarySettingsSheet } from "../components/RosarySettingsSheet";
 
 import { useRosarySession } from "../hooks/useRosarySession";
 import { useRosaryPreferences } from "../hooks/useRosaryPreferences";
@@ -74,9 +71,8 @@ export const RosarioDigital = () => {
     ? requestedGroup
     : rosaryTodayService.groupForDate();
 
-  const { prefs, update } = useRosaryPreferences();
+  const { prefs } = useRosaryPreferences();
   const { flow } = useRosaryFlow();
-  const [showSettings, setShowSettings] = useState(false);
   const [fullRing, setFullRing] = useState(false);
 
   const session = useRosarySession({
@@ -151,39 +147,17 @@ export const RosarioDigital = () => {
       title="Interactivo"
       focus
       actions={
-        <>
-          <button
-            type="button"
-            onClick={() => setFullRing((current) => !current)}
-            aria-pressed={fullRing}
-            aria-label="Ver el Rosario completo"
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/35 bg-navy-deep text-gold transition hover:bg-gold/10"
-          >
-            <CircleDot className="h-5 w-5" aria-hidden="true" />
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setShowSettings((current) => !current)}
-            aria-expanded={showSettings}
-            aria-label="Ajustes del Rosario"
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/35 bg-navy-deep text-gold transition hover:bg-gold/10"
-          >
-            <Settings className="h-5 w-5" aria-hidden="true" />
-          </button>
-        </>
+        <button
+          type="button"
+          onClick={() => setFullRing((current) => !current)}
+          aria-pressed={fullRing}
+          aria-label="Ver el Rosario completo"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/35 bg-navy-deep text-gold transition hover:bg-gold/10"
+        >
+          <CircleDot className="h-5 w-5" aria-hidden="true" />
+        </button>
       }
     >
-      {showSettings ? (
-        <div className="mb-4">
-          <RosarySettingsSheet
-            prefs={prefs}
-            update={update}
-            onClose={() => setShowSettings(false)}
-          />
-        </div>
-      ) : null}
-
       {session.completed ? (
         <RosaryCompletion
           onRestart={session.restart}
@@ -197,34 +171,13 @@ export const RosarioDigital = () => {
           {fullRing ? (
             <div className="fixed inset-0 z-[65] overflow-y-auto bg-[#020c16] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] text-[#fff7e8] before:pointer-events-none before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_50%_32%,rgba(22,72,105,0.22),transparent_48%)]">
               <div className="relative mx-auto w-full max-w-md">
-                <header className="grid grid-cols-[3rem_1fr_3rem] items-start">
-                  <button
-                    type="button"
-                    onClick={() => setFullRing(false)}
-                    className="flex h-12 w-12 items-center justify-center text-[#f5c65a]"
-                    aria-label="Volver a la oración"
-                  >
-                    <ArrowLeft className="h-8 w-8" strokeWidth={1.5} aria-hidden="true" />
-                  </button>
-
-                  <div className="pt-1 text-center">
+                <header className="text-center">
+                  <div className="pt-1">
                     <h2 className="font-display text-[1.8rem] leading-none">Rosario completo</h2>
                     <p className="mt-2 font-display text-xl text-[#f5c65a]">
                       {mysteryGroups[group].name}
                     </p>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFullRing(false);
-                      setShowSettings(true);
-                    }}
-                    className="flex h-12 w-12 items-center justify-center text-[#f5c65a]"
-                    aria-label="Ajustes del Rosario"
-                  >
-                    <Settings className="h-8 w-8" strokeWidth={1.5} aria-hidden="true" />
-                  </button>
                 </header>
 
                 <div className="mx-auto mt-5 flex min-h-12 w-fit items-center gap-3 rounded-full border border-[#c9892e] px-6 font-display text-lg text-[#f5c65a]">
