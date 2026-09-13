@@ -32,6 +32,7 @@ export const RosarioHome = () => {
 
   const group = suggested;
   const groupData = mysteryGroups[group];
+  const groupShortName = groupData.name.replace(/^Misterios\s+/i, "");
   const hasPendingSession = resume !== null && resume.status !== "terminado";
 
   const startFlow = () => {
@@ -95,8 +96,8 @@ export const RosarioHome = () => {
               <p className="font-display text-[11px] font-medium uppercase tracking-[0.22em] text-gold-bright/90">
                 Misterio de hoy
               </p>
-              <h2 className="mt-1.5 font-display text-[clamp(1.55rem,6.4vw,2rem)] font-semibold leading-tight text-foreground drop-shadow-lg">
-                {groupData.name}
+              <h2 className="mt-1.5 font-display text-[clamp(1.7rem,7vw,2.2rem)] font-semibold leading-tight text-foreground drop-shadow-lg">
+                {groupShortName}
               </h2>
             </div>
           </div>
