@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { RosaryLayout } from "../components/RosaryLayout";
-import { RosarySwitchRow, RosaryValueRow } from "../components/RosaryRows";
+import { RosarySliderRow, RosarySwitchRow, RosaryValueRow } from "../components/RosaryRows";
 import { useRosaryFlow } from "../hooks/useRosaryFlow";
 import { useRosaryPreferences } from "../hooks/useRosaryPreferences";
 import { routeForMode } from "../utils/routes";
@@ -19,7 +19,7 @@ const SIZES: Array<{ id: TextSize; label: string }> = [
   { id: "lg", label: "Grande" },
 ];
 
-/** Pantalla 6: configuración previa al rezo. */
+/** Pantalla de ajustes generales del Santo Rosario. */
 export const RosarioConfiguracion = () => {
   const navigate = useNavigate();
   const { flow } = useRosaryFlow();
@@ -46,6 +46,27 @@ export const RosarioConfiguracion = () => {
           label="Recordar mi elección"
           checked={prefs.rememberChoice}
           onChange={(rememberChoice) => update({ rememberChoice })}
+        />
+      </section>
+
+      <section className="mt-5 glass gold-border rounded-3xl p-5" aria-label="Ajustes de audio">
+        <h2 className="font-display text-xl">Audio</h2>
+        <RosarySliderRow
+          id="rosary-voice"
+          label="Volumen de voz"
+          value={prefs.voiceVolume}
+          onChange={(voiceVolume) => update({ voiceVolume })}
+        />
+        <RosarySliderRow
+          id="rosary-music"
+          label="Volumen de música"
+          value={prefs.musicVolume}
+          onChange={(musicVolume) => update({ musicVolume })}
+        />
+        <RosarySwitchRow
+          label="Fundido entre pistas"
+          checked={prefs.crossfade}
+          onChange={(crossfade) => update({ crossfade })}
         />
       </section>
 
