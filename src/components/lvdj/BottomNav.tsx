@@ -2,7 +2,7 @@
 ==============================================================================
 PROYECTO: LA VOZ DE JESUS - PWA RADIO CATOLICA
 COMPONENTE: BottomNav.tsx
-VERSION: 1.2.0
+VERSION: 1.3.0
 
 DESCRIPCION:
 Menu inferior fijo para la navegacion principal en dispositivos moviles.
@@ -14,6 +14,7 @@ import {
   CalendarRange,
   Church,
   HandHeart,
+  Headphones,
   Home,
   MoreHorizontal,
   Radio,
@@ -36,13 +37,25 @@ const capillaItems = [
   { icon: MoreHorizontal, label: "Mas", to: "/" },
 ];
 
+const podcastItems = [
+  { icon: Home, label: "Inicio", to: "/" },
+  { icon: Radio, label: "Radio", to: "/radio" },
+  { icon: Church, label: "Capilla", to: "/capilla" },
+  { icon: Headphones, label: "Podcast", to: "/podcast" },
+  { icon: MoreHorizontal, label: "Mas", to: "/" },
+];
+
 export const BottomNav = ({
   activeLabel = "Inicio",
 }: {
   activeLabel?: string;
 }) => {
   const usesCapillaNav = activeLabel === "Capilla" || activeLabel === "Biblia";
-  const items = usesCapillaNav ? capillaItems : defaultItems;
+  const items = activeLabel === "Podcast"
+    ? podcastItems
+    : usesCapillaNav
+      ? capillaItems
+      : defaultItems;
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-[9998] w-full max-w-full overflow-x-hidden xl:hidden">
@@ -57,7 +70,7 @@ export const BottomNav = ({
                   key={item.label}
                   to={item.to}
                   onClick={() => {
-                    if (item.to === "/" || item.to === "/radio") {
+                    if (item.to === "/" || item.to === "/radio" || item.to === "/podcast") {
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }
                   }}
