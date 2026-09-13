@@ -1,18 +1,14 @@
 import {
   Clock3,
   Headphones,
-  HeartPulse,
   Pause,
   Play,
   RefreshCw,
-  ScrollText,
   Sparkles,
   Star,
-  Sword,
   Volume2,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import cathedralBg from "@/assets/cathedral-bg.jpg";
 import { BottomNav } from "@/components/lvdj/BottomNav";
 import { Logo } from "@/components/lvdj/Logo";
 import {
@@ -23,6 +19,8 @@ import {
 } from "@/modules/podcast/services/podcastService";
 
 const LAST_EPISODE_KEY = "lvj:podcast:consecration:last-episode";
+const PODCAST_HERO_BG =
+  "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/consagraciones/san-miguel/imagenes/dias/dia-03.webp";
 const positionKey = (id: string) => `lvj:podcast:consecration:position:${id}`;
 
 const readSavedPosition = (id: string) => {
@@ -250,29 +248,17 @@ const PodcastHome = () => {
 
             <section className="relative min-h-[405px] overflow-hidden rounded-[28px] border border-gold/45 bg-[#080909] shadow-deep sm:min-h-[390px]">
               <img
-                src={cathedralBg}
+                src={PODCAST_HERO_BG}
                 alt=""
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-[0.34]"
+                className="pointer-events-none absolute inset-0 h-full w-full object-cover object-[58%_center] opacity-[0.72] sm:object-center sm:opacity-[0.64]"
               />
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(4,5,6,.98)_0%,rgba(4,5,6,.92)_43%,rgba(4,5,6,.48)_72%,rgba(4,5,6,.78)_100%)]" />
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_38%,rgba(4,5,6,.9)_100%)]" />
-              <div className="pointer-events-none absolute -right-10 top-12 h-60 w-60 rounded-full bg-gold/[0.11] blur-3xl" />
-
-              <div className="pointer-events-none absolute right-3 top-20 h-[190px] w-[150px] opacity-70 sm:right-8 sm:top-12 sm:h-[260px] sm:w-[220px]">
-                <div className="absolute left-1/2 top-0 flex h-24 w-24 -translate-x-1/2 items-center justify-center rounded-full border border-gold/30 bg-black/40 shadow-gold sm:h-32 sm:w-32">
-                  <Sword className="h-14 w-14 text-gold/80 sm:h-20 sm:w-20" strokeWidth={1.1} />
-                </div>
-                <div className="absolute bottom-2 left-0 flex h-16 w-16 items-center justify-center rounded-full border border-gold/20 bg-black/45 sm:h-20 sm:w-20">
-                  <ScrollText className="h-8 w-8 text-gold/65 sm:h-10 sm:w-10" strokeWidth={1.2} />
-                </div>
-                <div className="absolute bottom-0 right-0 flex h-16 w-16 items-center justify-center rounded-full border border-gold/20 bg-black/45 sm:h-20 sm:w-20">
-                  <HeartPulse className="h-8 w-8 text-gold/65 sm:h-10 sm:w-10" strokeWidth={1.2} />
-                </div>
-              </div>
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(4,5,6,.98)_0%,rgba(4,5,6,.90)_42%,rgba(4,5,6,.42)_72%,rgba(4,5,6,.62)_100%)]" />
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(4,5,6,.12)_0%,rgba(4,5,6,.18)_38%,rgba(4,5,6,.93)_100%)]" />
+              <div className="pointer-events-none absolute -right-10 top-12 h-60 w-60 rounded-full bg-gold/[0.10] blur-3xl" />
 
               <div className="relative z-10 flex min-h-[405px] flex-col p-5 sm:min-h-[390px] sm:p-7">
-                <div className="inline-flex w-fit items-center gap-2 rounded-full border border-gold/25 bg-black/40 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-gold backdrop-blur-sm">
+                <div className="inline-flex w-fit items-center gap-2 rounded-full border border-gold/25 bg-black/45 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-gold backdrop-blur-sm">
                   <Sparkles className="h-3.5 w-3.5" />
                   Serie espiritual · Consagración
                 </div>
@@ -281,16 +267,16 @@ const PodcastHome = () => {
                   <h3 className="font-display text-[clamp(2rem,8.5vw,3.25rem)] font-semibold leading-[0.9] tracking-[-0.02em] text-gold">
                     33 Días con los Santos Arcángeles
                   </h3>
-                  <p className="mt-3 text-[13px] font-medium leading-snug text-foreground/82 sm:text-base">
+                  <p className="mt-3 text-[13px] font-medium leading-snug text-foreground/90 sm:text-base">
                     {series.subtitle || "San Miguel · San Gabriel · San Rafael"}
                   </p>
-                  <p className="mt-3 line-clamp-3 max-w-[95%] text-[12px] leading-relaxed text-foreground/58 sm:text-sm">
+                  <p className="mt-3 line-clamp-3 max-w-[95%] text-[12px] leading-relaxed text-foreground/70 sm:text-sm">
                     {series.description}
                   </p>
                 </div>
 
                 <div className="mt-auto max-w-[95%] sm:max-w-xl">
-                  <div className="mb-4 flex items-center gap-4 text-[11px] text-foreground/62 sm:text-xs">
+                  <div className="mb-4 flex items-center gap-4 text-[11px] text-foreground/72 sm:text-xs">
                     <span className="inline-flex items-center gap-2">
                       <Headphones className="h-4 w-4 text-gold" />
                       {episodes.length} enseñanzas
@@ -313,7 +299,7 @@ const PodcastHome = () => {
                         {resumeSeconds > 5 ? "Continuar escuchando" : "Comenzar a escuchar"}
                       </button>
 
-                      <div className="mt-3 flex max-w-[330px] items-center gap-2.5 text-[10px] text-foreground/60 sm:text-xs">
+                      <div className="mt-3 flex max-w-[330px] items-center gap-2.5 text-[10px] text-foreground/70 sm:text-xs">
                         <span className="whitespace-nowrap">Día {resumeEpisode.day_number} de {series.duration_days}</span>
                         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
                           <div
