@@ -1,14 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronRight, Settings } from "lucide-react";
 
 import { RosaryLayout } from "../components/RosaryLayout";
-import { RosaryBottomNav } from "../components/RosaryBottomNav";
 import { RosaryLoading } from "../components/RosaryStateViews";
 import { useRosaryToday } from "../hooks/useRosaryToday";
 import { useRosaryFlow } from "../hooks/useRosaryFlow";
 import { mysteryGroups } from "../mocks/mysteries";
-import { mysteryArt } from "../mocks/mysteryArt";
+import { mysteryArt, mysteryDays } from "../mocks/mysteryArt";
 import { rosarySessionService } from "../services/rosarySessionService";
 import { rosaryTodayService } from "../services/rosaryTodayService";
 import { routeForMode } from "../utils/routes";
@@ -34,8 +33,22 @@ export const RosarioHome = () => {
   const group = suggested;
   const groupData = mysteryGroups[group];
 
-  const hasPendingSession =
-    resume !== null && resume.status !== "terminado";
+  const displayDate = useMemo(() => {
+    if (today.status !== "ready") {
+      return "";
+    }
+
+    const parsed = new Date(`${today.data.date}T12:00:00`);
+    const formatted = new Intl.DateTimeFormat("es-CO", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    }).format(parsed);
+
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  }, [today]);
+
+  const hasPendingSession = resume !== null && resume.status !== "terminado";
 
   const startFlow = () => {
     update({ group });
@@ -63,7 +76,6 @@ export const RosarioHome = () => {
   return (
     <RosaryLayout
       title="Oración Mariana"
-      back="/"
       actions={
         <Link
           to="/rosario/configuracion"
@@ -98,13 +110,25 @@ export const RosarioHome = () => {
               aria-hidden="true"
             />
             <div
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-[34%] bg-gradient-to-t from-navy-deep via-navy-deep/52 to-transparent"
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-navy-deep via-navy-deep/58 to-transparent"
               aria-hidden="true"
             />
             <div
               className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,transparent_32%,hsl(var(--navy-deep)/0.10)_64%,hsl(var(--navy-deep)/0.42)_100%)]"
               aria-hidden="true"
             />
+
+            <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-4 text-center min-[390px]:px-6">
+              <p className="font-display text-[11px] font-medium uppercase tracking-[0.2em] text-gold-bright/90">
+                {displayDate}
+              </p>
+              <h2 className="mt-1 font-display text-[clamp(1.45rem,6vw,1.9rem)] font-semibold leading-tight text-foreground drop-shadow-lg">
+                {groupData.name}
+              </h2>
+              <p className="mt-1 text-xs tracking-wide text-foreground/75">
+                {mysteryDays[group]}
+              </p>
+            </div>
           </div>
 
           <div className="relative z-20 shrink-0 bg-navy-deep px-5 pb-3 pt-3 min-[390px]:px-6">
@@ -159,8 +183,6 @@ export const RosarioHome = () => {
           </div>
         </section>
       )}
-
-      <RosaryBottomNav />
     </RosaryLayout>
   );
 };
