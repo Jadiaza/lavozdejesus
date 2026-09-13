@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronRight, Settings } from "lucide-react";
 
@@ -7,7 +7,7 @@ import { RosaryLoading } from "../components/RosaryStateViews";
 import { useRosaryToday } from "../hooks/useRosaryToday";
 import { useRosaryFlow } from "../hooks/useRosaryFlow";
 import { mysteryGroups } from "../mocks/mysteries";
-import { mysteryArt, mysteryDays } from "../mocks/mysteryArt";
+import { mysteryArt } from "../mocks/mysteryArt";
 import { rosarySessionService } from "../services/rosarySessionService";
 import { rosaryTodayService } from "../services/rosaryTodayService";
 import { routeForMode } from "../utils/routes";
@@ -32,22 +32,6 @@ export const RosarioHome = () => {
 
   const group = suggested;
   const groupData = mysteryGroups[group];
-
-  const displayDate = useMemo(() => {
-    if (today.status !== "ready") {
-      return "";
-    }
-
-    const parsed = new Date(`${today.data.date}T12:00:00`);
-    const formatted = new Intl.DateTimeFormat("es-CO", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    }).format(parsed);
-
-    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
-  }, [today]);
-
   const hasPendingSession = resume !== null && resume.status !== "terminado";
 
   const startFlow = () => {
@@ -61,9 +45,7 @@ export const RosarioHome = () => {
         "Se descartará el progreso del Rosario pendiente. ¿Deseas comenzar el Rosario de hoy?",
       );
 
-      if (!confirmed) {
-        return;
-      }
+      if (!confirmed) return;
 
       rosarySessionService.clear();
       setResume(null);
@@ -105,29 +87,17 @@ export const RosarioHome = () => {
               className="absolute inset-0 h-full w-full scale-[1.01] object-cover object-center"
             />
 
-            <div
-              className="pointer-events-none absolute inset-x-0 top-0 h-[16%] bg-gradient-to-b from-navy-deep/90 via-navy-deep/35 to-transparent"
-              aria-hidden="true"
-            />
-            <div
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-navy-deep via-navy-deep/58 to-transparent"
-              aria-hidden="true"
-            />
-            <div
-              className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,transparent_32%,hsl(var(--navy-deep)/0.10)_64%,hsl(var(--navy-deep)/0.42)_100%)]"
-              aria-hidden="true"
-            />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-[16%] bg-gradient-to-b from-navy-deep/90 via-navy-deep/35 to-transparent" aria-hidden="true" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-navy-deep via-navy-deep/58 to-transparent" aria-hidden="true" />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,transparent_32%,hsl(var(--navy-deep)/0.10)_64%,hsl(var(--navy-deep)/0.42)_100%)]" aria-hidden="true" />
 
             <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-4 text-center min-[390px]:px-6">
-              <p className="font-display text-[11px] font-medium uppercase tracking-[0.2em] text-gold-bright/90">
-                {displayDate}
+              <p className="font-display text-[11px] font-medium uppercase tracking-[0.22em] text-gold-bright/90">
+                Misterio de hoy
               </p>
-              <h2 className="mt-1 font-display text-[clamp(1.45rem,6vw,1.9rem)] font-semibold leading-tight text-foreground drop-shadow-lg">
+              <h2 className="mt-1.5 font-display text-[clamp(1.55rem,6.4vw,2rem)] font-semibold leading-tight text-foreground drop-shadow-lg">
                 {groupData.name}
               </h2>
-              <p className="mt-1 text-xs tracking-wide text-foreground/75">
-                {mysteryDays[group]}
-              </p>
             </div>
           </div>
 
@@ -138,12 +108,7 @@ export const RosarioHome = () => {
                   to={`${routeForMode(resume.mode)}?grupo=${resume.group}`}
                   className="relative flex min-h-[64px] w-full items-center justify-center overflow-hidden rounded-[1.15rem] border border-gold-bright/55 bg-gradient-gold whitespace-nowrap px-12 font-sans text-[clamp(0.9rem,4.2vw,1.12rem)] font-bold uppercase tracking-[0.045em] text-navy-deep shadow-[0_14px_40px_-12px_hsl(var(--gold)/0.65)] transition duration-300 hover:-translate-y-0.5 hover:brightness-105 active:translate-y-0 active:scale-[0.99] min-[390px]:tracking-[0.09em]"
                 >
-                  <img
-                    src="/icons/rosario.png"
-                    alt=""
-                    className="absolute left-5 h-9 w-9 object-contain brightness-0"
-                    aria-hidden="true"
-                  />
+                  <img src="/icons/rosario.png" alt="" className="absolute left-5 h-9 w-9 object-contain brightness-0" aria-hidden="true" />
                   Continuar Rosario
                   <ChevronRight className="absolute right-5 h-5 w-5" aria-hidden="true" />
                 </Link>
@@ -162,12 +127,7 @@ export const RosarioHome = () => {
                 onClick={startFlow}
                 className="relative flex min-h-[64px] w-full items-center justify-center overflow-hidden rounded-[1.15rem] border border-gold-bright/55 bg-gradient-gold whitespace-nowrap px-12 font-sans text-[clamp(0.9rem,4.2vw,1.12rem)] font-bold uppercase tracking-[0.045em] text-navy-deep shadow-[0_14px_40px_-12px_hsl(var(--gold)/0.65)] transition duration-300 hover:-translate-y-0.5 hover:brightness-105 active:translate-y-0 active:scale-[0.99] min-[390px]:tracking-[0.09em]"
               >
-                <img
-                  src="/icons/rosario.png"
-                  alt=""
-                  className="absolute left-5 h-9 w-9 object-contain brightness-0"
-                  aria-hidden="true"
-                />
+                <img src="/icons/rosario.png" alt="" className="absolute left-5 h-9 w-9 object-contain brightness-0" aria-hidden="true" />
                 Comenzar el Rosario
                 <ChevronRight className="absolute right-5 h-5 w-5" aria-hidden="true" />
               </button>
