@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
-import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { RosaryBottomNav } from "./RosaryBottomNav";
 
 interface Props {
   title: string;
   subtitle?: string;
+  /** Se conserva por compatibilidad con las pantallas existentes; la navegación inferior sustituye el retroceso. */
   back?: string;
   actions?: ReactNode;
   children: ReactNode;
@@ -16,7 +16,6 @@ interface Props {
 export const RosaryLayout = ({
   title,
   subtitle,
-  back = "/rosario",
   actions,
   children,
   focus = false,
@@ -39,44 +38,54 @@ export const RosaryLayout = ({
         aria-hidden="true"
       />
 
-      <header className={`sticky top-0 z-40 shrink-0 backdrop-blur-xl ${fullScreen ? "bg-gradient-to-b from-navy-deep via-navy-deep/95 to-navy-deep/80" : "border-b border-gold/15 bg-navy-deep/95"}`}>
+      <header
+        className={`sticky top-0 z-40 shrink-0 backdrop-blur-xl ${
+          fullScreen
+            ? "bg-gradient-to-b from-navy-deep via-navy-deep/95 to-navy-deep/80"
+            : "border-b border-gold/15 bg-navy-deep/95"
+        }`}
+      >
         <div
-          className={`mx-auto flex w-full items-center gap-3 px-4 ${fullScreen ? "min-h-[108px] pb-3 pt-4" : "min-h-[88px] py-3"} ${maxWidth}`}
+          className={`mx-auto flex w-full items-center gap-3 px-4 ${
+            fullScreen ? "min-h-[108px] pb-3 pt-4" : "min-h-[88px] py-3"
+          } ${maxWidth}`}
         >
-          <Link
-            to={back}
-            aria-label="Volver"
-            className={`flex shrink-0 items-center justify-center rounded-full text-gold transition hover:bg-gold/10 hover:text-gold-bright active:scale-95 ${fullScreen ? "h-11 w-11 border border-transparent bg-transparent" : "h-14 w-14 border border-gold bg-navy-deep"}`}
-          >
-            <ArrowLeft
-              className="h-6 w-6"
-              strokeWidth={1.8}
-              aria-hidden="true"
-            />
-          </Link>
-
           <div className="min-w-0 flex-1">
-            <p className={`truncate font-semibold uppercase text-gold ${fullScreen ? "text-[10px] tracking-[0.34em]" : "text-[11px] tracking-[0.25em]"}`}>
+            <p
+              className={`truncate font-semibold uppercase text-gold ${
+                fullScreen
+                  ? "text-[10px] tracking-[0.34em]"
+                  : "text-[11px] tracking-[0.25em]"
+              }`}
+            >
               Santo Rosario
             </p>
 
-            <h1 className={`mt-1 truncate font-display font-semibold leading-none text-foreground ${fullScreen ? "text-[clamp(1.8rem,7.8vw,2.35rem)] tracking-[-0.025em]" : "text-2xl"}`}>
+            <h1
+              className={`mt-1 truncate font-display font-semibold leading-none text-foreground ${
+                fullScreen
+                  ? "text-[clamp(1.8rem,7.8vw,2.35rem)] tracking-[-0.025em]"
+                  : "text-2xl"
+              }`}
+            >
               {title}
             </h1>
 
             {subtitle ? (
-              <p className={`mt-1.5 truncate font-display text-gold/70 ${fullScreen ? "text-[clamp(0.78rem,3.4vw,0.9rem)] tracking-wide" : "text-xs"}`}>
+              <p
+                className={`mt-1.5 truncate font-display text-gold/70 ${
+                  fullScreen
+                    ? "text-[clamp(0.78rem,3.4vw,0.9rem)] tracking-wide"
+                    : "text-xs"
+                }`}
+              >
                 {subtitle}
               </p>
             ) : null}
           </div>
 
           {actions ? (
-            <div className="ml-auto flex shrink-0 items-center gap-2">
-              {actions}
-            </div>
-          ) : fullScreen ? (
-            <span className="h-11 w-11 shrink-0" aria-hidden="true" />
+            <div className="ml-auto flex shrink-0 items-center gap-2">{actions}</div>
           ) : null}
         </div>
       </header>
@@ -94,6 +103,8 @@ export const RosaryLayout = ({
       >
         {children}
       </main>
+
+      <RosaryBottomNav />
     </div>
   );
 };
