@@ -19,6 +19,7 @@ const RosarioConfiguracion = lazy(() => import("@/modules/rosary/pages/RosarioCo
 const RosarioDescargas = lazy(() => import("@/modules/rosary/pages/RosarioDescargas"));
 const RosarioDiario = lazy(() => import("@/modules/rosary/pages/RosarioDiario"));
 const RosarioInfo = lazy(() => import("@/modules/rosary/pages/RosarioInfo"));
+const Podcast = lazy(() => import("@/modules/podcast/pages/PodcastHome"));
 
 const Contacto = lazy(() => import("./pages/Contacto.tsx"));
 const LecturasDelDia = lazy(() => import("./pages/LecturasDelDia.tsx"));
@@ -44,7 +45,6 @@ const Donar = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ defa
 const Eventos = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Eventos })));
 const Formacion = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Formacion })));
 const Liturgia = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Liturgia })));
-const Podcast = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Podcast })));
 const PoliticaPrivacidad = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.PoliticaPrivacidad })));
 const TerminosCondiciones = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.TerminosCondiciones })));
 const Testimonios = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Testimonios })));
