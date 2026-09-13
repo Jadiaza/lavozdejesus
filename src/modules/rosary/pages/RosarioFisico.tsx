@@ -1,11 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Settings } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { RosaryLayout } from "../components/RosaryLayout";
 import { RosaryLoading } from "../components/RosaryStateViews";
 import { RosaryPrayerScene } from "../components/RosaryPrayerScene";
 import { RosaryCompletion } from "../components/RosaryCompletion";
-import { RosarySettingsSheet } from "../components/RosarySettingsSheet";
 import { useRosarySession } from "../hooks/useRosarySession";
 import { useRosaryPreferences } from "../hooks/useRosaryPreferences";
 import { useRosaryFlow } from "../hooks/useRosaryFlow";
@@ -21,9 +20,8 @@ const isGroup = (v: string | null): v is MysteryGroupId =>
 export const RosarioFisico = () => {
   const [params] = useSearchParams();
   const group = isGroup(params.get("grupo")) ? (params.get("grupo") as MysteryGroupId) : rosaryTodayService.groupForDate();
-  const { prefs, update } = useRosaryPreferences();
+  const { prefs } = useRosaryPreferences();
   const { flow } = useRosaryFlow();
-  const [showSettings, setShowSettings] = useState(false);
 
   const s = useRosarySession({
     group,
@@ -45,23 +43,7 @@ export const RosarioFisico = () => {
       title={mysteryGroups[group].name}
       subtitle="Con mi rosario"
       focus
-      actions={
-        <button
-          type="button"
-          onClick={() => setShowSettings((v) => !v)}
-          aria-label="Ajustes del rosario"
-          className="h-11 w-11 rounded-full glass gold-border flex items-center justify-center"
-        >
-          <Settings className="h-4 w-4" aria-hidden="true" />
-        </button>
-      }
     >
-      {showSettings && (
-        <div className="mb-4">
-          <RosarySettingsSheet prefs={prefs} update={update} onClose={() => setShowSettings(false)} />
-        </div>
-      )}
-
       {s.completed ? (
         <RosaryCompletion onRestart={s.restart} intentionLabel={flow.intention?.label ?? null} group={group} />
       ) : !s.definition || !s.section ? (
