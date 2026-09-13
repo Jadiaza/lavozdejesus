@@ -1,15 +1,18 @@
 import {
   Clock3,
   Headphones,
+  HeartPulse,
   Pause,
   Play,
   RefreshCw,
-  Shield,
+  ScrollText,
   Sparkles,
   Star,
+  Sword,
   Volume2,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import cathedralBg from "@/assets/cathedral-bg.jpg";
 import { BottomNav } from "@/components/lvdj/BottomNav";
 import { Logo } from "@/components/lvdj/Logo";
 import {
@@ -198,25 +201,28 @@ const PodcastHome = () => {
         onEnded={playNextEpisode}
       />
 
-      <main className="relative z-10 mx-auto w-full max-w-5xl px-4 pb-44 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6 lg:px-8 xl:pb-12">
-        <header className="flex items-center justify-between gap-4">
-          <Logo size="md" />
-          <div className="hidden text-right sm:block">
-            <p className="font-serif text-lg italic text-gold">La fe también se escucha</p>
-            <p className="text-xs uppercase tracking-[0.24em] text-foreground/45">La Voz de Jesús</p>
+      <main className="relative z-10 mx-auto w-full max-w-5xl px-4 pb-40 pt-[max(2.75rem,env(safe-area-inset-top))] sm:px-6 sm:pt-7 lg:px-8 xl:pb-12">
+        <header className="flex items-start justify-between gap-3">
+          <Logo size="sm" />
+          <div className="max-w-[145px] text-right sm:max-w-none">
+            <p className="font-serif text-[12px] italic leading-tight text-gold sm:text-base">
+              “Tu Palabra ilumina mi camino”
+            </p>
+            <p className="mt-1 text-[9px] uppercase tracking-[0.18em] text-foreground/45 sm:text-[10px]">
+              Salmo 119, 105
+            </p>
           </div>
         </header>
 
-        <section className="pb-5 pt-7 sm:pt-10">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.28em] text-gold/80">
-            Escucha · medita · vive
-          </p>
-          <h1 className="font-display text-5xl font-semibold leading-none sm:text-7xl">Podcast</h1>
-          <p className="mt-3 text-base text-foreground/65 sm:text-lg">Escucha y fortalece tu fe.</p>
+        <section className="pb-5 pt-6 sm:pb-7 sm:pt-8">
+          <h1 className="font-display text-[clamp(3.15rem,14vw,4.6rem)] font-semibold leading-[0.82] tracking-[-0.025em]">
+            Podcast
+          </h1>
+          <p className="mt-4 text-[15px] text-foreground/66 sm:text-lg">Escucha y fortalece tu fe.</p>
         </section>
 
         {loading && (
-          <section className="flex min-h-[360px] items-center justify-center rounded-[28px] border border-gold/15 bg-black/25">
+          <section className="flex min-h-[300px] items-center justify-center rounded-[26px] border border-gold/15 bg-black/25">
             <div className="text-center text-foreground/60">
               <RefreshCw className="mx-auto mb-3 h-7 w-7 animate-spin text-gold" />
               <p>Cargando enseñanzas...</p>
@@ -225,7 +231,7 @@ const PodcastHome = () => {
         )}
 
         {!loading && error && (
-          <section className="rounded-[28px] border border-gold/20 bg-black/35 p-7 text-center">
+          <section className="rounded-[26px] border border-gold/20 bg-black/35 p-7 text-center">
             <Headphones className="mx-auto h-10 w-10 text-gold" />
             <h2 className="mt-4 font-serif text-2xl font-semibold">No pudimos cargar los audios</h2>
             <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-foreground/60">{error}</p>
@@ -237,113 +243,131 @@ const PodcastHome = () => {
 
         {!loading && !error && series && (
           <>
-            <section className="mb-4 mt-2 flex items-center gap-3">
-              <Star className="h-6 w-6 fill-gold text-gold" />
-              <h2 className="font-serif text-3xl font-semibold">Serie destacada</h2>
+            <section className="mb-3 mt-1 flex items-center gap-3">
+              <Star className="h-6 w-6 shrink-0 fill-gold text-gold" />
+              <h2 className="font-serif text-[28px] font-semibold leading-none sm:text-3xl">Serie destacada</h2>
             </section>
 
-            <section className="relative overflow-hidden rounded-[30px] border border-gold/45 bg-[linear-gradient(135deg,rgba(24,20,14,.96),rgba(4,5,7,.98))] p-5 shadow-deep sm:p-8">
-              <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-gold/10 blur-3xl" />
-              <div className="pointer-events-none absolute bottom-0 right-0 h-full w-2/5 bg-[radial-gradient(circle_at_70%_45%,rgba(212,165,76,.2),transparent_58%)]" />
-              <Shield className="pointer-events-none absolute -bottom-12 -right-7 h-64 w-64 text-gold/[0.06]" strokeWidth={1} />
+            <section className="relative min-h-[405px] overflow-hidden rounded-[28px] border border-gold/45 bg-[#080909] shadow-deep sm:min-h-[390px]">
               <img
-                src="/icons/podcast.png"
+                src={cathedralBg}
                 alt=""
                 aria-hidden="true"
-                className="pointer-events-none absolute right-5 top-6 hidden h-24 w-24 opacity-20 sm:block"
+                className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-[0.34]"
               />
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(4,5,6,.98)_0%,rgba(4,5,6,.92)_43%,rgba(4,5,6,.48)_72%,rgba(4,5,6,.78)_100%)]" />
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_38%,rgba(4,5,6,.9)_100%)]" />
+              <div className="pointer-events-none absolute -right-10 top-12 h-60 w-60 rounded-full bg-gold/[0.11] blur-3xl" />
 
-              <div className="relative z-10 max-w-3xl">
-                <div className="inline-flex items-center gap-2 rounded-full border border-gold/25 bg-gold/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-gold">
+              <div className="pointer-events-none absolute right-3 top-20 h-[190px] w-[150px] opacity-70 sm:right-8 sm:top-12 sm:h-[260px] sm:w-[220px]">
+                <div className="absolute left-1/2 top-0 flex h-24 w-24 -translate-x-1/2 items-center justify-center rounded-full border border-gold/30 bg-black/40 shadow-gold sm:h-32 sm:w-32">
+                  <Sword className="h-14 w-14 text-gold/80 sm:h-20 sm:w-20" strokeWidth={1.1} />
+                </div>
+                <div className="absolute bottom-2 left-0 flex h-16 w-16 items-center justify-center rounded-full border border-gold/20 bg-black/45 sm:h-20 sm:w-20">
+                  <ScrollText className="h-8 w-8 text-gold/65 sm:h-10 sm:w-10" strokeWidth={1.2} />
+                </div>
+                <div className="absolute bottom-0 right-0 flex h-16 w-16 items-center justify-center rounded-full border border-gold/20 bg-black/45 sm:h-20 sm:w-20">
+                  <HeartPulse className="h-8 w-8 text-gold/65 sm:h-10 sm:w-10" strokeWidth={1.2} />
+                </div>
+              </div>
+
+              <div className="relative z-10 flex min-h-[405px] flex-col p-5 sm:min-h-[390px] sm:p-7">
+                <div className="inline-flex w-fit items-center gap-2 rounded-full border border-gold/25 bg-black/40 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-gold backdrop-blur-sm">
                   <Sparkles className="h-3.5 w-3.5" />
                   Serie espiritual · Consagración
                 </div>
 
-                <h3 className="mt-5 max-w-2xl font-display text-4xl font-semibold leading-[0.95] text-gold sm:text-6xl">
-                  33 Días con los Santos Arcángeles
-                </h3>
-                <p className="mt-3 text-sm font-medium text-foreground/75 sm:text-base">
-                  {series.subtitle || "San Miguel · San Gabriel · San Rafael"}
-                </p>
-                <p className="mt-4 max-w-2xl text-sm leading-relaxed text-foreground/65 sm:text-base">
-                  {series.description}
-                </p>
-
-                <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-foreground/60 sm:text-sm">
-                  <span className="inline-flex items-center gap-2">
-                    <Headphones className="h-4 w-4 text-gold" />
-                    {episodes.length} enseñanzas disponibles
-                  </span>
-                  <span>{series.duration_days} días de itinerario</span>
+                <div className="mt-5 max-w-[78%] sm:max-w-[62%]">
+                  <h3 className="font-display text-[clamp(2rem,8.5vw,3.25rem)] font-semibold leading-[0.9] tracking-[-0.02em] text-gold">
+                    33 Días con los Santos Arcángeles
+                  </h3>
+                  <p className="mt-3 text-[13px] font-medium leading-snug text-foreground/82 sm:text-base">
+                    {series.subtitle || "San Miguel · San Gabriel · San Rafael"}
+                  </p>
+                  <p className="mt-3 line-clamp-3 max-w-[95%] text-[12px] leading-relaxed text-foreground/58 sm:text-sm">
+                    {series.description}
+                  </p>
                 </div>
 
-                {resumeEpisode && (
-                  <div className="mt-6 max-w-xl">
-                    <button
-                      type="button"
-                      onClick={() => void playEpisode(resumeEpisode)}
-                      className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full bg-gradient-gold px-6 py-3 font-bold text-black shadow-gold transition hover:brightness-110 sm:w-auto"
-                    >
-                      {currentEpisode?.id === resumeEpisode.id && isPlaying ? (
-                        <Pause className="h-5 w-5 fill-current" />
-                      ) : (
-                        <Play className="h-5 w-5 fill-current" />
-                      )}
-                      {resumeSeconds > 5 ? "Continuar escuchando" : "Comenzar a escuchar"}
-                    </button>
-
-                    <div className="mt-4 flex items-center gap-3 text-xs text-foreground/65">
-                      <span>Día {resumeEpisode.day_number} de {series.duration_days}</span>
-                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
-                        <div
-                          className="h-full rounded-full bg-gradient-gold transition-[width]"
-                          style={{ width: `${resumePercent}%` }}
-                        />
-                      </div>
-                      <span>{resumePercent}%</span>
-                    </div>
+                <div className="mt-auto max-w-[95%] sm:max-w-xl">
+                  <div className="mb-4 flex items-center gap-4 text-[11px] text-foreground/62 sm:text-xs">
+                    <span className="inline-flex items-center gap-2">
+                      <Headphones className="h-4 w-4 text-gold" />
+                      {episodes.length} enseñanzas
+                    </span>
+                    <span>{series.duration_days} días</span>
                   </div>
-                )}
+
+                  {resumeEpisode && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => void playEpisode(resumeEpisode)}
+                        className="inline-flex min-h-11 w-full max-w-[295px] items-center justify-center gap-3 rounded-full bg-gradient-gold px-5 py-2.5 text-sm font-bold text-black shadow-gold transition hover:brightness-110"
+                      >
+                        {currentEpisode?.id === resumeEpisode.id && isPlaying ? (
+                          <Pause className="h-4.5 w-4.5 fill-current" />
+                        ) : (
+                          <Play className="h-4.5 w-4.5 fill-current" />
+                        )}
+                        {resumeSeconds > 5 ? "Continuar escuchando" : "Comenzar a escuchar"}
+                      </button>
+
+                      <div className="mt-3 flex max-w-[330px] items-center gap-2.5 text-[10px] text-foreground/60 sm:text-xs">
+                        <span className="whitespace-nowrap">Día {resumeEpisode.day_number} de {series.duration_days}</span>
+                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
+                          <div
+                            className="h-full rounded-full bg-gradient-gold transition-[width]"
+                            style={{ width: `${resumePercent}%` }}
+                          />
+                        </div>
+                        <span>{resumePercent}%</span>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </section>
 
-            <section className="mt-8">
-              <div className="mb-4 flex items-end justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <Headphones className="h-7 w-7 text-gold" />
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-gold/70">Consagración</p>
-                    <h2 className="font-serif text-3xl font-semibold">Todos los episodios</h2>
+            <section className="mt-7">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <Headphones className="h-6 w-6 shrink-0 text-gold" />
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-gold/70">Consagración</p>
+                    <h2 className="whitespace-nowrap font-serif text-[25px] font-semibold leading-tight sm:text-3xl">Todos los episodios</h2>
                   </div>
                 </div>
-                <span className="text-xs text-foreground/45">{episodes.length} disponibles</span>
+                <span className="shrink-0 text-right text-[10px] leading-tight text-foreground/42 sm:text-xs">
+                  {episodes.length}<br className="sm:hidden" /> disponibles
+                </span>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-2.5 md:grid-cols-2">
                 {episodes.map((episode) => {
                   const active = currentEpisode?.id === episode.id;
                   return (
                     <article
                       key={episode.id}
-                      className={`group flex items-center gap-3 rounded-[22px] border p-3 transition sm:p-4 ${
+                      className={`group flex min-h-[96px] items-center gap-3 rounded-[22px] border px-3 py-2.5 transition sm:min-h-[104px] sm:px-4 ${
                         active
-                          ? "border-gold/55 bg-gold/[0.08] shadow-gold"
+                          ? "border-gold/55 bg-gold/[0.075] shadow-gold"
                           : "border-white/10 bg-black/35 hover:border-gold/25 hover:bg-black/50"
                       }`}
                     >
-                      <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-gold/15 bg-[radial-gradient(circle_at_50%_35%,rgba(212,165,76,.3),rgba(10,10,12,.95)_68%)] sm:h-20 sm:w-20">
-                        <img src="/icons/podcast.png" alt="" className="h-9 w-9 opacity-75 sm:h-11 sm:w-11" />
-                        <span className="absolute bottom-1.5 right-1.5 rounded-full bg-black/75 px-1.5 py-0.5 text-[9px] font-bold text-gold">
+                      <div className="relative flex h-[66px] w-[66px] shrink-0 items-center justify-center overflow-hidden rounded-[16px] border border-gold/18 bg-[radial-gradient(circle_at_45%_35%,rgba(212,165,76,.32),rgba(8,9,11,.96)_72%)] sm:h-[74px] sm:w-[74px]">
+                        <Headphones className="h-8 w-8 text-gold/80 sm:h-9 sm:w-9" strokeWidth={1.7} />
+                        <span className="absolute bottom-1 right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-black/85 px-1 text-[9px] font-bold text-gold">
                           {episode.day_number}
                         </span>
                       </div>
 
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-medium text-gold/80">Día {episode.day_number}</p>
-                        <h3 className="mt-0.5 line-clamp-2 text-sm font-semibold leading-snug text-foreground sm:text-base">
+                      <div className="min-w-0 flex-1 py-0.5">
+                        <p className="text-[11px] font-semibold text-gold/85">Día {episode.day_number}</p>
+                        <h3 className="mt-0.5 line-clamp-2 text-[14px] font-semibold leading-[1.22] text-foreground sm:text-[15px]">
                           {episode.title}
                         </h3>
-                        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-foreground/50 sm:text-xs">
+                        <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-foreground/46 sm:text-[11px]">
                           <Clock3 className="h-3.5 w-3.5" />
                           {formatEpisodeDuration(episode)}
                         </div>
@@ -353,7 +377,7 @@ const PodcastHome = () => {
                         type="button"
                         onClick={() => void playEpisode(episode)}
                         aria-label={`${active && isPlaying ? "Pausar" : "Reproducir"} día ${episode.day_number}: ${episode.title}`}
-                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition ${
+                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition sm:h-12 sm:w-12 ${
                           active
                             ? "border-gold bg-gold text-black"
                             : "border-gold/55 text-gold hover:bg-gold hover:text-black"
@@ -382,12 +406,12 @@ const PodcastHome = () => {
 
       {currentEpisode && (
         <div className="fixed inset-x-0 bottom-[76px] z-[9997] px-3 xl:bottom-5">
-          <div className="mx-auto max-w-3xl overflow-hidden rounded-[22px] border border-gold/35 bg-[rgba(7,8,10,.96)] p-3 shadow-deep backdrop-blur-xl sm:p-4">
+          <div className="mx-auto max-w-[430px] overflow-hidden rounded-[20px] border border-gold/35 bg-[rgba(6,7,9,.97)] px-3 py-2.5 shadow-deep backdrop-blur-xl sm:max-w-3xl sm:px-4 sm:py-3">
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => void playEpisode(currentEpisode)}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-gold text-black shadow-gold"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-gold text-black shadow-gold sm:h-12 sm:w-12"
                 aria-label={isPlaying ? "Pausar audio" : "Reproducir audio"}
               >
                 {isPlaying ? (
@@ -400,23 +424,23 @@ const PodcastHome = () => {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gold/75">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-gold/78">
                       Día {currentEpisode.day_number}
                     </p>
-                    <p className="truncate text-sm font-semibold">{currentEpisode.title}</p>
+                    <p className="truncate text-[13px] font-semibold sm:text-sm">{currentEpisode.title}</p>
                   </div>
                   <Volume2 className="h-4 w-4 shrink-0 text-gold/70" />
                 </div>
 
-                <div className="mt-2 flex items-center gap-2">
-                  <span className="w-9 text-[10px] text-foreground/45">{formatClock(currentTime)}</span>
+                <div className="mt-1.5 flex items-center gap-2">
+                  <span className="w-8 text-[9px] text-foreground/42">{formatClock(currentTime)}</span>
                   <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
                     <div
                       className="h-full rounded-full bg-gradient-gold transition-[width]"
                       style={{ width: `${currentPercent}%` }}
                     />
                   </div>
-                  <span className="w-9 text-right text-[10px] text-foreground/45">{formatClock(duration)}</span>
+                  <span className="w-8 text-right text-[9px] text-foreground/42">{formatClock(duration)}</span>
                 </div>
               </div>
             </div>
