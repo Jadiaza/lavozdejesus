@@ -32,13 +32,13 @@ export default function PodcastLayout({ children, backTo }: PodcastLayoutProps) 
             )}
           </div>
 
-          <div className="text-center">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.38em] text-[#D4AF37]/80">
+          <div className="min-w-0 text-center">
+            <div className="text-[9px] font-semibold uppercase tracking-[0.3em] text-[#D4AF37]">
               La Voz de Jesús
             </div>
-            <div className="mt-0.5 font-display text-[1.35rem] font-semibold tracking-[0.16em] text-[#F8F5EA]">
+            <h1 className="font-display text-[clamp(1.72rem,7.2vw,2.05rem)] leading-none text-[#F8F5EA] drop-shadow-[0_4px_18px_rgba(0,0,0,0.8)]">
               LVJPRAYER
-            </div>
+            </h1>
           </div>
 
           <button
