@@ -57,7 +57,7 @@ export const RosarioHome = () => {
   };
 
   return (
-    <RosaryLayout title="Oración Mariana" fullScreen>
+    <RosaryLayout title="Santo Rosario" fullScreen>
       {today.status === "loading" ? (
         <div className="flex h-full items-center justify-center">
           <RosaryLoading label="Preparando los misterios de hoy" />
