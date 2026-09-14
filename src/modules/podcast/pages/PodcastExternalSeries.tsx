@@ -1,6 +1,16 @@
-import { ArrowLeft, CalendarDays, Clock3, Headphones, Pause, Play, RefreshCw, Volume2 } from "lucide-react";
+import {
+  CalendarDays,
+  Clock3,
+  Headphones,
+  Info,
+  Pause,
+  Play,
+  RefreshCw,
+  Sparkles,
+  Volume2,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import PodcastLayout from "@/modules/podcast/components/PodcastLayout";
 import {
   formatExternalDuration,
@@ -61,6 +71,7 @@ export default function PodcastExternalSeries() {
   const [duration, setDuration] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [tab, setTab] = useState<"episodes" | "about">("episodes");
 
   useEffect(() => {
     let mounted = true;
@@ -86,7 +97,6 @@ export default function PodcastExternalSeries() {
 
   const nearestEpisode = useMemo(() => {
     if (!episodes.length) return null;
-
     const today = new Date();
 
     return (
@@ -103,10 +113,6 @@ export default function PodcastExternalSeries() {
 
         if (episodeDistance < nearestDistance) return episode;
         if (episodeDistance > nearestDistance) return nearest;
-
-        // Si dos episodios caen en el mismo mes/día o a igual distancia,
-        // preferimos la publicación real más reciente, sin usar el año
-        // para decidir qué día corresponde a hoy.
         return episodeTimestamp(episode) > episodeTimestamp(nearest) ? episode : nearest;
       }, null) ?? episodes[0]
     );
@@ -139,7 +145,7 @@ export default function PodcastExternalSeries() {
   const progress = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
 
   return (
-    <PodcastLayout>
+    <PodcastLayout backTo="/podcast">
       <audio
         ref={audioRef}
         preload="metadata"
@@ -157,22 +163,18 @@ export default function PodcastExternalSeries() {
         }}
       />
 
-      <div className="pt-4">
-        <Link to="/podcast" className="inline-flex items-center gap-2 text-sm font-medium text-[#D4AF37]">
-          <ArrowLeft className="h-4 w-4" />
-          Podcast
-        </Link>
-      </div>
-
       {loading && (
-        <div className="flex min-h-[22rem] items-center justify-center">
-          <RefreshCw className="h-7 w-7 animate-spin text-[#D4AF37]" />
-        </div>
+        <section className="flex min-h-[30rem] items-center justify-center">
+          <div className="text-center text-[#F8F5EA]/55">
+            <RefreshCw className="mx-auto mb-3 h-7 w-7 animate-spin text-[#D4AF37]" />
+            <p className="text-sm">Cargando podcast...</p>
+          </div>
+        </section>
       )}
 
       {!loading && error && (
-        <section className="mt-5 rounded-[1.35rem] border border-[#D4AF37]/20 bg-[#0A0A0A] p-7 text-center">
-          <Headphones className="mx-auto h-9 w-9 text-[#D4AF37]" />
+        <section className="mt-6 rounded-[1.5rem] border border-[#D4AF37]/20 bg-[#0A0A0A] p-7 text-center">
+          <Headphones className="mx-auto h-10 w-10 text-[#D4AF37]" />
           <h1 className="mt-4 font-display text-2xl">No pudimos cargar el podcast</h1>
           <p className="mt-2 text-sm text-[#F8F5EA]/55">{error}</p>
         </section>
@@ -180,136 +182,213 @@ export default function PodcastExternalSeries() {
 
       {!loading && !error && podcast && (
         <>
-          <section className="mt-4 flex gap-4 rounded-[1.4rem] border border-[#D4AF37]/25 bg-[#0A0A0A] p-4">
-            <div className="h-28 w-28 shrink-0 overflow-hidden rounded-[1rem] border border-[#D4AF37]/25 bg-[#111]">
-              {podcast.image_url ? (
-                <img src={podcast.image_url} alt={podcast.title} className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <Headphones className="h-9 w-9 text-[#D4AF37]" />
-                </div>
-              )}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#D4AF37]">
-                {podcast.category} · RSS
-              </p>
-              <h1 className="mt-1 font-display text-[1.75rem] leading-[0.95] text-[#F8F5EA]">{podcast.title}</h1>
-              {podcast.author && <p className="mt-2 text-xs text-[#F8F5EA]/55">{podcast.author}</p>}
-              <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-[#F8F5EA]/50">{podcast.description}</p>
-            </div>
-          </section>
+          <section className="relative -mx-4 min-h-[27rem] overflow-hidden bg-[#070707] px-4 pb-6 pt-6">
+            {podcast.image_url && (
+              <img
+                src={podcast.image_url}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 h-full w-full object-cover object-center opacity-42"
+              />
+            )}
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,5,.98)_0%,rgba(5,5,5,.88)_46%,rgba(5,5,5,.40)_75%,rgba(5,5,5,.72)_100%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.05)_0%,rgba(5,5,5,.18)_58%,rgba(5,5,5,.98)_100%)]" />
 
-          {nearestEpisode && (
-            <section className="mt-4 rounded-[1.1rem] border border-[#D4AF37]/35 bg-[linear-gradient(135deg,rgba(212,175,55,.12),rgba(8,8,8,.96))] p-3.5">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4AF37]">
-                {nearestMatchesToday ? "Para hoy" : "Fecha más cercana"}
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#D4AF37]/45 bg-[#050505]/65 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#F2D27A] backdrop-blur-sm">
+                <Sparkles className="h-3.5 w-3.5" />
+                {podcast.category || "Podcast católico"}
+              </div>
+
+              <h1 className="mt-5 max-w-[21rem] font-display text-[2.55rem] font-semibold leading-[0.9] tracking-[-0.025em] text-[#F2D27A]">
+                {podcast.title}
+              </h1>
+              {podcast.author && (
+                <p className="mt-3 text-sm font-medium text-[#F8F5EA]/80">{podcast.author}</p>
+              )}
+              <p className="mt-4 max-w-[20rem] line-clamp-5 text-[13px] leading-relaxed text-[#F8F5EA]/62">
+                {podcast.description}
               </p>
-              <div className="mt-2 flex items-center gap-3">
-                <div className="min-w-0 flex-1">
-                  <h2 className="line-clamp-2 text-sm font-semibold text-[#F8F5EA]">{nearestEpisode.title}</h2>
-                  <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-[#F8F5EA]/55">
-                    <CalendarDays className="h-3.5 w-3.5 text-[#D4AF37]" />
-                    {formatDate(nearestEpisode.pub_date)}
-                  </div>
-                </div>
+
+              <div className="mt-5 grid gap-2.5 text-[12px] text-[#F8F5EA]/68">
+                <span className="inline-flex items-center gap-2.5">
+                  <Headphones className="h-4.5 w-4.5 text-[#D4AF37]" />
+                  {episodes.length} episodios disponibles
+                </span>
+                {nearestEpisode && (
+                  <span className="inline-flex items-center gap-2.5">
+                    <CalendarDays className="h-4.5 w-4.5 text-[#D4AF37]" />
+                    {nearestMatchesToday ? "Episodio para hoy" : `Fecha más cercana: ${formatDate(nearestEpisode.pub_date)}`}
+                  </span>
+                )}
+              </div>
+
+              {nearestEpisode && (
                 <button
                   type="button"
                   onClick={() => void playEpisode(nearestEpisode)}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#D4AF37] text-black"
-                  aria-label={`Reproducir ${nearestEpisode.title}`}
+                  className="mt-5 inline-flex min-h-12 w-full max-w-[20rem] items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#F2D27A] to-[#D4AF37] px-6 py-3 text-sm font-black text-[#050505] shadow-[0_12px_30px_rgba(212,175,55,0.25)]"
                 >
-                  <Play className="ml-0.5 h-4 w-4 fill-current" />
+                  {current?.id === nearestEpisode.id && playing ? (
+                    <Pause className="h-5 w-5 fill-current" />
+                  ) : (
+                    <Play className="h-5 w-5 fill-current" />
+                  )}
+                  {nearestMatchesToday ? "Escuchar episodio de hoy" : "Escuchar episodio"}
                 </button>
+              )}
+            </div>
+          </section>
+
+          <div className="-mx-4 border-b border-[#D4AF37]/15 bg-[#080808] px-4">
+            <div className="grid grid-cols-2">
+              <button
+                type="button"
+                onClick={() => setTab("episodes")}
+                className={`border-b-2 px-2 py-3 text-sm font-semibold ${
+                  tab === "episodes"
+                    ? "border-[#D4AF37] text-[#F2D27A]"
+                    : "border-transparent text-[#F8F5EA]/48"
+                }`}
+              >
+                Episodios
+              </button>
+              <button
+                type="button"
+                onClick={() => setTab("about")}
+                className={`border-b-2 px-2 py-3 text-sm font-semibold ${
+                  tab === "about"
+                    ? "border-[#D4AF37] text-[#F2D27A]"
+                    : "border-transparent text-[#F8F5EA]/48"
+                }`}
+              >
+                Acerca de la serie
+              </button>
+            </div>
+          </div>
+
+          {tab === "episodes" ? (
+            <section className="pt-5">
+              <div className="mb-4 flex items-end justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#D4AF37]">
+                    {podcast.category || "Podcast"}
+                  </p>
+                  <h2 className="font-display text-[2rem] font-semibold leading-none">Todos los episodios</h2>
+                </div>
+                <span className="text-xs text-[#F8F5EA]/42">{episodes.length} disponibles</span>
+              </div>
+
+              <div className="space-y-3 pb-28">
+                {episodes.map((episode) => {
+                  const active = current?.id === episode.id;
+                  return (
+                    <article
+                      key={episode.id}
+                      className={`flex items-center gap-3 rounded-[1.25rem] border p-3 transition ${
+                        active
+                          ? "border-[#D4AF37]/65 bg-[#D4AF37]/[0.08]"
+                          : "border-white/10 bg-[#0A0A0A]"
+                      }`}
+                    >
+                      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[0.95rem] border border-[#D4AF37]/25 bg-[#111]">
+                        {episode.image_url || podcast.image_url ? (
+                          <img
+                            src={episode.image_url || podcast.image_url}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center">
+                            <Headphones className="h-7 w-7 text-[#D4AF37]" strokeWidth={1.45} />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-[#D4AF37]">{formatDate(episode.pub_date)}</p>
+                        <h3 className="mt-0.5 line-clamp-2 text-[15px] font-semibold leading-snug text-[#F8F5EA]">
+                          {episode.title}
+                        </h3>
+                        <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-[#F8F5EA]/45">
+                          <Clock3 className="h-3.5 w-3.5" />
+                          {formatExternalDuration(episode.duration_seconds)}
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => void playEpisode(episode)}
+                        aria-label={`${active && playing ? "Pausar" : "Reproducir"} ${episode.title}`}
+                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition ${
+                          active
+                            ? "border-[#D4AF37] bg-[#D4AF37] text-[#050505]"
+                            : "border-[#D4AF37]/60 text-[#F2D27A]"
+                        }`}
+                      >
+                        {active && playing ? (
+                          <Pause className="h-5 w-5 fill-current" />
+                        ) : (
+                          <Play className="ml-0.5 h-5 w-5 fill-current" />
+                        )}
+                      </button>
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+          ) : (
+            <section className="pb-28 pt-6">
+              <div className="rounded-[1.4rem] border border-[#D4AF37]/20 bg-[#0A0A0A] p-5">
+                <div className="flex items-center gap-2 text-[#D4AF37]">
+                  <Info className="h-5 w-5" />
+                  <span className="text-xs font-semibold uppercase tracking-[0.2em]">Sobre este podcast</span>
+                </div>
+                <h2 className="mt-4 font-display text-2xl text-[#F8F5EA]">{podcast.title}</h2>
+                {podcast.author && <p className="mt-2 text-sm text-[#F2D27A]/80">{podcast.author}</p>}
+                <p className="mt-3 text-sm leading-7 text-[#F8F5EA]/62">{podcast.description}</p>
               </div>
             </section>
           )}
-
-          <div className="mb-3 mt-6 flex items-center justify-between gap-3">
-            <h2 className="font-display text-2xl text-[#F8F5EA]">Todos los episodios</h2>
-            <span className="text-xs text-[#F8F5EA]/40">{episodes.length}</span>
-          </div>
-
-          <div className="space-y-2.5 pb-28">
-            {episodes.map((episode) => {
-              const active = current?.id === episode.id;
-              const nearest = nearestEpisode?.id === episode.id;
-              return (
-                <article
-                  key={episode.id}
-                  className={`flex items-center gap-3 rounded-[1rem] border p-3 ${
-                    active
-                      ? "border-[#D4AF37]/60 bg-[#15120A]"
-                      : nearest
-                        ? "border-[#D4AF37]/32 bg-[#0E0D08]"
-                        : "border-white/8 bg-[#0B0C0E]"
-                  }`}
-                >
-                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-[0.8rem] bg-[#111]">
-                    {episode.image_url || podcast.image_url ? (
-                      <img src={episode.image_url || podcast.image_url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <Headphones className="h-6 w-6 text-[#D4AF37]" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-[#F8F5EA]">{episode.title}</h3>
-                    <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#F8F5EA]/45">
-                      <span className="inline-flex items-center gap-1.5">
-                        <CalendarDays className="h-3.5 w-3.5" />
-                        {formatDate(episode.pub_date)}
-                      </span>
-                      <span className="inline-flex items-center gap-1.5">
-                        <Clock3 className="h-3.5 w-3.5" />
-                        {formatExternalDuration(episode.duration_seconds)}
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => void playEpisode(episode)}
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${
-                      active ? "border-[#D4AF37] bg-[#D4AF37] text-black" : "border-[#D4AF37]/60 text-[#D4AF37]"
-                    }`}
-                    aria-label={`${active && playing ? "Pausar" : "Reproducir"} ${episode.title}`}
-                  >
-                    {active && playing ? (
-                      <Pause className="h-4 w-4 fill-current" />
-                    ) : (
-                      <Play className="ml-0.5 h-4 w-4 fill-current" />
-                    )}
-                  </button>
-                </article>
-              );
-            })}
-          </div>
         </>
       )}
 
       {current && (
         <div className="fixed inset-x-0 bottom-[76px] z-[9997] px-3 xl:bottom-5">
-          <div className="mx-auto max-w-[430px] rounded-[1rem] border border-[#D4AF37]/35 bg-[#090A0D]/95 p-3 shadow-2xl backdrop-blur-xl">
+          <div className="mx-auto max-w-[430px] rounded-[1.15rem] border border-[#D4AF37]/40 bg-[#070809]/96 p-3 shadow-[0_18px_45px_rgba(0,0,0,0.58)] backdrop-blur-xl md:max-w-3xl">
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => void playEpisode(current)}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#D4AF37] text-black"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#F2D27A] to-[#D4AF37] text-[#050505]"
+                aria-label={playing ? "Pausar audio" : "Reproducir audio"}
               >
-                {playing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="ml-0.5 h-4 w-4 fill-current" />}
+                {playing ? (
+                  <Pause className="h-4.5 w-4.5 fill-current" />
+                ) : (
+                  <Play className="ml-0.5 h-4.5 w-4.5 fill-current" />
+                )}
               </button>
+
               <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="truncate text-sm font-semibold text-[#F8F5EA]">{current.title}</p>
-                  <Volume2 className="h-4 w-4 shrink-0 text-[#D4AF37]" />
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#D4AF37]">
+                      {podcast?.title || "Podcast"}
+                    </p>
+                    <p className="truncate text-[13px] font-semibold text-[#F8F5EA]">{current.title}</p>
+                  </div>
+                  <Volume2 className="h-4 w-4 shrink-0 text-[#F2D27A]/70" />
                 </div>
                 <div className="mt-2 flex items-center gap-2">
-                  <span className="w-9 text-[10px] text-[#F8F5EA]/40">{formatClock(currentTime)}</span>
-                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
-                    <div className="h-full rounded-full bg-[#D4AF37]" style={{ width: `${progress}%` }} />
+                  <span className="w-8 text-[9px] text-[#F8F5EA]/38">{formatClock(currentTime)}</span>
+                  <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/10">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-[#F2D27A] to-[#D4AF37]"
+                      style={{ width: `${progress}%` }}
+                    />
                   </div>
-                  <span className="w-9 text-right text-[10px] text-[#F8F5EA]/40">{formatClock(duration)}</span>
+                  <span className="w-8 text-right text-[9px] text-[#F8F5EA]/38">{formatClock(duration)}</span>
                 </div>
               </div>
             </div>
