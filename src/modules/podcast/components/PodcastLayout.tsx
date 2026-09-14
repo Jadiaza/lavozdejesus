@@ -16,34 +16,34 @@ export default function PodcastLayout({ children, backTo }: PodcastLayoutProps) 
 
       <header className="sticky top-0 z-40 border-b border-[#D4AF37]/12 bg-[#050505]/94 shadow-[0_12px_34px_rgba(0,0,0,0.5)] backdrop-blur-xl">
         <div className="mx-auto flex h-[4.35rem] w-full max-w-[430px] items-center justify-between px-4 md:max-w-4xl">
-          <div className="w-10">
+          <div className="flex min-w-0 items-center gap-3">
             {backTo ? (
               <Link
                 to={backTo}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#D4AF37]/30 bg-[#111111]/80 text-[#F2D27A] transition hover:border-[#D4AF37]/60"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#D4AF37]/30 bg-[#111111]/80 text-[#F2D27A] transition hover:border-[#D4AF37]/60"
                 aria-label="Volver"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Link>
             ) : (
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#D4AF37]/25 bg-[#111111]/70 text-[#D4AF37]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#D4AF37]/25 bg-[#111111]/70 text-[#D4AF37]">
                 <Headphones className="h-5 w-5" strokeWidth={1.6} />
               </div>
             )}
-          </div>
 
-          <div className="min-w-0 text-center">
-            <div className="text-[9px] font-semibold uppercase tracking-[0.3em] text-[#D4AF37]">
-              La Voz de Jesús
+            <div className="min-w-0 text-left">
+              <div className="text-[9px] font-semibold uppercase tracking-[0.3em] text-[#D4AF37]">
+                La Voz de Jesús
+              </div>
+              <h1 className="font-display text-[clamp(1.72rem,7.2vw,2.05rem)] leading-none text-[#F8F5EA] drop-shadow-[0_4px_18px_rgba(0,0,0,0.8)]">
+                Podcast
+              </h1>
             </div>
-            <h1 className="font-display text-[clamp(1.72rem,7.2vw,2.05rem)] leading-none text-[#F8F5EA] drop-shadow-[0_4px_18px_rgba(0,0,0,0.8)]">
-              LVJPRAYER
-            </h1>
           </div>
 
           <button
             type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-[#D4AF37]/35 bg-[#111111]/75 text-[#F2D27A]"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#D4AF37]/35 bg-[#111111]/75 text-[#F2D27A]"
             aria-label="Perfil"
           >
             <UserRound className="h-5 w-5" strokeWidth={1.6} />
