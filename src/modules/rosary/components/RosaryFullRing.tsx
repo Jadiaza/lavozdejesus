@@ -60,7 +60,7 @@ export const RosaryFullRing = ({ definition, currentOrder, centerImage, onSelect
       </div>
 
       <svg
-        viewBox="0 0 400 650"
+        viewBox="0 0 400 690"
         className="min-h-0 w-full flex-1 overflow-visible drop-shadow-[0_22px_32px_rgba(0,0,0,0.45)]"
         role="group"
         aria-label="Cuentas del Rosario completo"
@@ -103,7 +103,6 @@ export const RosaryFullRing = ({ definition, currentOrder, centerImage, onSelect
           </clipPath>
         </defs>
 
-        {/* Cordón orgánico de la corona, conectado cuenta a cuenta. */}
         <g stroke={`url(#${uid}-cord)`} strokeWidth="4" strokeLinecap="round" opacity=".88">
           {ringPoints.map((point, index) => {
             const next = ringPoints[(index + 1) % ringPoints.length];
@@ -136,14 +135,7 @@ export const RosaryFullRing = ({ definition, currentOrder, centerImage, onSelect
               filter={`url(#${uid}-shadow)`}
             >
               {active ? (
-                <circle
-                  cx={point.x}
-                  cy={point.y}
-                  r={radius + 8}
-                  fill="#f5b82f"
-                  opacity=".26"
-                  filter={`url(#${uid}-glow)`}
-                />
+                <circle cx={point.x} cy={point.y} r={radius + 8} fill="#f5b82f" opacity=".26" filter={`url(#${uid}-glow)`} />
               ) : null}
               <circle
                 cx={point.x}
@@ -172,7 +164,6 @@ export const RosaryFullRing = ({ definition, currentOrder, centerImage, onSelect
           );
         })}
 
-        {/* Unión inferior y ramal inicial del Rosario. */}
         <path d="M200 398 C201 420 198 432 200 443" fill="none" stroke={`url(#${uid}-cord)`} strokeWidth="5" strokeLinecap="round" />
 
         <g
