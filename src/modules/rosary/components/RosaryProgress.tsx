@@ -8,9 +8,7 @@ interface Props {
   sectionLabel?: string;
 }
 
-/**
- * Progreso textual del misterio y de la oración actual.
- */
+/** Progreso visual del misterio y de la cuenta actual. */
 export const RosaryProgress = ({
   progress,
   mysteryNumber,
@@ -19,44 +17,45 @@ export const RosaryProgress = ({
   sectionLabel,
 }: Props) => (
   <section
-    className="overflow-hidden rounded-2xl border border-gold/30 bg-navy/80"
+    className="overflow-hidden rounded-[1.35rem] border border-gold/35 bg-[#071522]/95 shadow-[0_14px_32px_rgba(0,0,0,0.24)]"
     aria-label="Progreso del Santo Rosario"
   >
-    <div className="grid min-h-14 grid-cols-[1fr_auto_1fr] items-center">
-      <div className="flex min-w-0 items-center justify-center gap-2 px-3">
-        <Crown
-          className="h-5 w-5 shrink-0 text-gold"
-          strokeWidth={1.6}
-          aria-hidden="true"
-        />
-
-        <span className="truncate text-sm font-medium text-gold">
-          {mysteryNumber
-            ? `Misterio ${mysteryNumber} de ${mysteryTotal}`
-            : sectionLabel ?? "Oraciones"}
+    <div className="grid min-h-[4.65rem] grid-cols-[1fr_auto_1fr] items-center px-2">
+      <div className="flex min-w-0 items-center gap-3 px-2.5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gold/35 bg-gold/5">
+          <Crown className="h-5 w-5 text-gold-bright" strokeWidth={1.55} aria-hidden="true" />
+        </span>
+        <span className="min-w-0">
+          <span className="block text-[9px] font-semibold uppercase tracking-[0.2em] text-foreground/45">
+            Misterio
+          </span>
+          <strong className="mt-0.5 block truncate font-display text-[0.98rem] font-semibold leading-tight text-gold-bright">
+            {mysteryNumber
+              ? `${mysteryNumber} de ${mysteryTotal}`
+              : sectionLabel ?? "Oraciones"}
+          </strong>
         </span>
       </div>
 
-      <span
-        className="h-8 w-px bg-gold/25"
-        aria-hidden="true"
-      />
+      <span className="h-10 w-px bg-gold/25" aria-hidden="true" />
 
-      <div className="flex min-w-0 items-center justify-center gap-2 px-3">
-        <CircleDot
-          className="h-5 w-5 shrink-0 text-foreground/75"
-          strokeWidth={1.6}
-          aria-hidden="true"
-        />
-
-        <span className="truncate text-sm text-foreground/90">
-          {prayerLabel}
+      <div className="flex min-w-0 items-center gap-3 px-2.5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gold/35 bg-gold/5">
+          <CircleDot className="h-5 w-5 text-gold-bright" strokeWidth={1.55} aria-hidden="true" />
+        </span>
+        <span className="min-w-0">
+          <span className="block text-[9px] font-semibold uppercase tracking-[0.2em] text-foreground/45">
+            Cuenta
+          </span>
+          <strong className="mt-0.5 block truncate font-display text-[0.98rem] font-semibold leading-tight text-foreground">
+            {prayerLabel}
+          </strong>
         </span>
       </div>
     </div>
 
     <div
-      className="h-0.5 w-full bg-white/5"
+      className="h-[3px] w-full bg-white/5"
       role="progressbar"
       aria-valuenow={progress}
       aria-valuemin={0}
@@ -65,9 +64,7 @@ export const RosaryProgress = ({
     >
       <div
         className="h-full bg-gradient-gold transition-[width] duration-300"
-        style={{
-          width: `${progress}%`,
-        }}
+        style={{ width: `${progress}%` }}
       />
     </div>
   </section>
