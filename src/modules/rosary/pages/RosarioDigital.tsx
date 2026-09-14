@@ -138,9 +138,9 @@ export const RosarioDigital = () => {
           onClick={() => setFullRing((current) => !current)}
           aria-pressed={fullRing}
           aria-label="Ver el Rosario completo"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-gold/35 bg-navy-deep text-gold transition hover:bg-gold/10"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-gold/35 bg-navy-deep text-gold transition hover:bg-gold/10"
         >
-          <CircleDot className="h-4.5 w-4.5" aria-hidden="true" />
+          <CircleDot className="h-5 w-5" aria-hidden="true" />
         </button>
       }
     >
@@ -191,22 +191,24 @@ export const RosarioDigital = () => {
           </div>
         </div>
       ) : (
-        <div className="flex h-full min-h-0 flex-col gap-2 overflow-hidden px-3 pb-1 pt-1">
-          <section className="grid shrink-0 grid-cols-[104px_1fr] items-center gap-3 overflow-hidden rounded-[1.05rem] border border-gold/20 bg-[#06131f] p-2 min-[390px]:grid-cols-[116px_1fr]">
-            <img
-              src={mysteryArt[group]}
-              alt={mystery?.title ?? mysteryGroups[group].name}
-              className="h-[82px] w-full rounded-[0.8rem] object-cover object-center min-[390px]:h-[92px]"
-            />
-            <div className="min-w-0 pr-1">
-              <p className="text-[7px] font-semibold uppercase tracking-[0.26em] text-gold/70">
+        <div className="flex h-full min-h-0 flex-col gap-[clamp(0.3rem,0.8dvh,0.5rem)] overflow-hidden px-3 pb-1 pt-1">
+          <section className="shrink-0 overflow-hidden rounded-[1.2rem] border border-gold/20 bg-[#06131f]">
+            <div className="h-[clamp(118px,17dvh,170px)] w-full overflow-hidden">
+              <img
+                src={mysteryArt[group]}
+                alt={mystery?.title ?? mysteryGroups[group].name}
+                className="h-full w-full object-cover object-center"
+              />
+            </div>
+            <div className="border-t border-gold/10 bg-[#020c16] px-4 py-[clamp(0.42rem,0.85dvh,0.65rem)] text-center">
+              <p className="text-[8px] font-semibold uppercase tracking-[0.28em] text-gold/70">
                 Santo Rosario
               </p>
-              <h2 className="mt-1 line-clamp-2 font-display text-[clamp(1.1rem,4.7vw,1.45rem)] font-semibold leading-[1.02] tracking-[-0.02em] text-foreground">
+              <h2 className="mt-1 font-display text-[clamp(1.3rem,5.8vw,1.85rem)] font-semibold leading-[1.02] tracking-[-0.02em] text-foreground">
                 {mysteryHeading}
               </h2>
               {mystery?.title ? (
-                <p className="mt-1 line-clamp-1 font-display text-[0.8rem] italic leading-tight text-gold-bright">
+                <p className="mt-1 line-clamp-1 font-display text-[clamp(0.8rem,3.1vw,0.98rem)] italic leading-tight text-gold-bright">
                   {mystery.title}
                 </p>
               ) : null}
@@ -223,7 +225,7 @@ export const RosarioDigital = () => {
             />
           </div>
 
-          <div className="shrink-0 scale-[0.9] -my-1 origin-center">
+          <div className="shrink-0 -my-0.5 scale-[0.96] origin-center">
             <RosaryBeadRing
               section={session.section}
               currentBeadId={session.bead.id}
@@ -231,7 +233,7 @@ export const RosarioDigital = () => {
             />
           </div>
 
-          <div className="min-h-0 flex-1 overflow-hidden">
+          <div className="min-h-[128px] flex-1 overflow-hidden">
             <PrayerStepCard
               bead={session.bead}
               mystery={mystery}
@@ -241,13 +243,13 @@ export const RosarioDigital = () => {
             />
           </div>
 
-          <div className="grid shrink-0 grid-cols-[42px_1fr] items-center gap-2">
+          <div className="grid shrink-0 grid-cols-[46px_1fr] items-center gap-2.5">
             <button
               type="button"
               onClick={session.prev}
               disabled={!canGoBack}
               aria-label="Oración anterior"
-              className="flex h-[42px] w-[42px] items-center justify-center rounded-full border border-gold/45 bg-navy/60 text-gold transition hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-25"
+              className="flex h-[46px] w-[46px] items-center justify-center rounded-full border border-gold/45 bg-navy/60 text-gold transition hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-25"
             >
               <ChevronLeft className="h-5 w-5" aria-hidden="true" />
             </button>
@@ -255,29 +257,29 @@ export const RosarioDigital = () => {
             <button
               type="button"
               onClick={session.next}
-              className="flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-[#ffe18a]/70 bg-gradient-to-r from-[#e5a92f] via-[#f7ca59] to-[#d99a28] px-5 font-display text-[0.92rem] font-bold uppercase tracking-[0.12em] text-[#11100b] shadow-[0_8px_22px_rgba(216,155,38,0.22)] transition hover:brightness-105 active:scale-[0.99]"
+              className="flex min-h-[48px] items-center justify-center gap-2.5 rounded-full border border-[#ffe18a]/70 bg-gradient-to-r from-[#e5a92f] via-[#f7ca59] to-[#d99a28] px-5 font-display text-[1rem] font-bold uppercase tracking-[0.12em] text-[#11100b] shadow-[0_8px_22px_rgba(216,155,38,0.22)] transition hover:brightness-105 active:scale-[0.99]"
             >
               Continuar
-              <ChevronRight className="h-4.5 w-4.5" aria-hidden="true" />
+              <ChevronRight className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
 
-          <div className="grid shrink-0 grid-cols-2 gap-2">
+          <div className="grid shrink-0 grid-cols-2 gap-2.5">
             <button
               type="button"
               onClick={saveAndExit}
-              className="flex min-h-8 items-center justify-center gap-1.5 rounded-lg border border-gold/20 bg-navy/55 px-2 text-[9px] text-gold/85"
+              className="flex min-h-9 items-center justify-center gap-2 rounded-xl border border-gold/25 bg-navy/55 px-2 text-[10px] text-gold/90"
             >
-              <Bookmark className="h-3.5 w-3.5" aria-hidden="true" />
+              <Bookmark className="h-4 w-4" aria-hidden="true" />
               Guardar
             </button>
 
             <button
               type="button"
               onClick={changeMystery}
-              className="flex min-h-8 items-center justify-center gap-1.5 rounded-lg border border-gold/20 bg-navy/55 px-2 text-[9px] text-gold/85"
+              className="flex min-h-9 items-center justify-center gap-2 rounded-xl border border-gold/25 bg-navy/55 px-2 text-[10px] text-gold/90"
             >
-              <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
+              <RefreshCcw className="h-4 w-4" aria-hidden="true" />
               Cambiar misterio
             </button>
           </div>
