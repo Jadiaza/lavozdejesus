@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Bookmark, ChevronLeft, ChevronRight, CircleDot, Eye, HandHeart, RefreshCcw } from "lucide-react";
+import { Bookmark, ChevronLeft, ChevronRight, CircleDot, HandHeart, RefreshCcw } from "lucide-react";
 
 import { RosaryLayout } from "../components/RosaryLayout";
 import { RosaryLoading } from "../components/RosaryStateViews";
@@ -64,12 +64,18 @@ export const RosarioDigital = () => {
       ) : !session.definition || !session.section || !session.bead ? (
         <div className="flex h-full items-center justify-center"><RosaryLoading label="Preparando el Rosario" /></div>
       ) : fullRing ? (
-        <div className="fixed inset-0 z-[65] flex h-dvh flex-col overflow-hidden bg-[#020c16] px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] text-[#fff7e8]">
-          <div className="mx-auto flex h-full w-full max-w-md flex-col">
-            <header className="shrink-0 text-center"><h2 className="font-display text-[1.45rem] leading-none">Rosario completo</h2><p className="mt-1 font-display text-base text-[#f5c65a]">{mysteryGroups[group].name}</p></header>
-            <div className="mx-auto mt-2 flex min-h-9 w-fit shrink-0 items-center gap-2 rounded-full border border-[#c9892e] px-4 font-display text-sm text-[#f5c65a]"><Eye className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />Vista general</div>
-            <div className="min-h-0 flex-1 py-2"><RosaryFullRing definition={session.definition} currentOrder={session.bead.order} centerImage={mysteryArt[group]} onSelectOrder={session.jumpToOrder} /></div>
-            <button type="button" onClick={() => setFullRing(false)} className="flex min-h-12 shrink-0 items-center justify-center gap-3 rounded-full border border-[#ffe18a] bg-gradient-to-r from-[#f1bd46] via-[#ffd96c] to-[#d99a28] px-5 font-display text-base font-semibold uppercase tracking-[0.06em] text-[#11100b]"><HandHeart className="h-5 w-5" aria-hidden="true" />Volver a la oración</button>
+        <div className="fixed inset-0 z-[65] h-dvh overflow-hidden bg-[#080604] text-[#fff7e8]">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_12%,rgba(198,132,42,0.18),transparent_24%),radial-gradient(circle_at_18%_72%,rgba(88,47,18,0.24),transparent_34%),linear-gradient(155deg,#080604_0%,#071018_48%,#100a05_100%)]" aria-hidden="true" />
+          <div className="relative mx-auto flex h-full w-full max-w-[470px] flex-col px-3 pb-[max(0.65rem,env(safe-area-inset-bottom))] pt-[max(0.65rem,env(safe-area-inset-top))]">
+            <header className="shrink-0 px-2 pb-1 text-center">
+              <p className="text-[8px] font-semibold uppercase tracking-[0.3em] text-[#d5a343]">Santo Rosario</p>
+              <h2 className="mt-1 font-display text-[1.45rem] leading-none">Rosario completo</h2>
+              <p className="mt-1 font-display text-[0.86rem] italic text-[#e9bd5c]">{mysteryGroups[group].name}</p>
+            </header>
+            <div className="min-h-0 flex-1">
+              <RosaryFullRing definition={session.definition} currentOrder={session.bead.order} centerImage={mysteryArt[group]} onSelectOrder={session.jumpToOrder} />
+            </div>
+            <button type="button" onClick={() => setFullRing(false)} className="mx-auto mt-1 flex min-h-11 w-[min(92%,22rem)] shrink-0 items-center justify-center gap-2.5 rounded-full border border-[#ffe18a]/80 bg-gradient-to-r from-[#d79222] via-[#f5c751] to-[#bc7416] px-5 font-display text-[0.98rem] font-semibold uppercase tracking-[0.07em] text-[#160d05] shadow-[0_10px_28px_rgba(193,126,29,0.22)]"><HandHeart className="h-5 w-5" aria-hidden="true" />Volver a la oración</button>
           </div>
         </div>
       ) : (
