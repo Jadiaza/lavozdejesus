@@ -114,6 +114,23 @@ export async function getExternalPodcast(slug: string): Promise<ExternalPodcastR
   };
 }
 
+export async function getExternalPodcastMetadata(slug: string): Promise<ExternalPodcast> {
+  const response = await fetch(`/api/podcast-rss?slug=${encodeURIComponent(slug)}&meta=1`, {
+    headers: { Accept: "application/json" },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Podcast metadata ${response.status}`);
+  }
+
+  const data = (await response.json()) as { podcast?: ExternalPodcast };
+  if (!data.podcast) {
+    throw new Error("La fuente RSS no devolvió metadatos válidos.");
+  }
+
+  return data.podcast;
+}
+
 export function formatExternalDuration(seconds: number): string {
   if (!seconds || seconds < 1) return "Audio";
   const total = Math.floor(seconds);
