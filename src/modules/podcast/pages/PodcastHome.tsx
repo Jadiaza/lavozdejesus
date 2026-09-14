@@ -1,8 +1,6 @@
 import {
-  BookOpen,
   CalendarDays,
   ChevronRight,
-  ExternalLink,
   Headphones,
   Play,
   RefreshCw,
@@ -16,10 +14,8 @@ import {
   getConsecrationPodcast,
   type PodcastSeries,
 } from "@/modules/podcast/services/podcastService";
+import { EXTERNAL_PODCASTS } from "@/modules/podcast/services/externalPodcastService";
 import "@/modules/podcast/podcast-home.css";
-
-const SPOTIFY_BIBLE_365_URL =
-  "https://open.spotify.com/show/4y5hjQzj47wTLujQsyGdab?si=2iouVqm8RryYfbCC6mu-qA&utm_source=copy-link";
 
 export default function PodcastHome() {
   const [series, setSeries] = useState<PodcastSeries | null>(null);
@@ -66,7 +62,7 @@ export default function PodcastHome() {
       {!loading && error && (
         <section className="rounded-[1.35rem] border border-[#D4AF37]/20 bg-[#0A0A0A] p-7 text-center">
           <Headphones className="mx-auto h-10 w-10 text-[#D4AF37]" />
-          <h2 className="mt-4 font-display text-2xl">No pudimos cargar el módulo</h2>
+          <h2 className="mt-4 font-display text-2xl">No pudimos cargar la serie propia</h2>
           <p className="mt-2 text-sm leading-relaxed text-[#F8F5EA]/55">{error}</p>
           <button
             type="button"
@@ -78,11 +74,11 @@ export default function PodcastHome() {
         </section>
       )}
 
-      {!loading && !error && series && (
+      {!loading && series && (
         <>
           <section className="mb-3 mt-1 flex items-center justify-between gap-3">
             <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#D4AF37]">
-              Serie destacada
+              Producción LVJ
             </div>
             <span className="text-[11px] text-[#F8F5EA]/38">LVJPRAYER</span>
           </section>
@@ -120,58 +116,49 @@ export default function PodcastHome() {
               </span>
             </div>
           </Link>
-
-          <section className="mt-7">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#D4AF37]/72">
-                  También puedes escuchar
-                </p>
-                <h2 className="mt-1 font-display text-2xl text-[#F8F5EA]">Otros podcasts</h2>
-              </div>
-            </div>
-
-            <div className="podcast-list">
-              <a
-                href={SPOTIFY_BIBLE_365_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="podcast-list-card"
-                aria-label="Abrir La Biblia Católica en 365 días en Spotify"
-              >
-                <div className="podcast-list-cover">
-                  <BookOpen className="h-8 w-8" strokeWidth={1.35} />
-                </div>
-                <div className="podcast-list-copy">
-                  <h3>La Biblia Católica en 365 días</h3>
-                  <p>Recorrido diario por la Sagrada Escritura</p>
-                  <small>
-                    <Headphones className="h-3 w-3" />
-                    Spotify · Podcast externo
-                  </small>
-                </div>
-                <span className="podcast-list-action" aria-hidden="true">
-                  <ExternalLink className="h-4 w-4" />
-                </span>
-              </a>
-
-              <div className="podcast-list-card opacity-55" aria-disabled="true">
-                <div className="podcast-list-cover">
-                  <Headphones className="h-7 w-7" strokeWidth={1.35} />
-                </div>
-                <div className="podcast-list-copy">
-                  <h3>Nuevas series LVJ</h3>
-                  <p>Formación, oración y vida espiritual</p>
-                  <small>Próximamente</small>
-                </div>
-                <span className="podcast-list-action" aria-hidden="true">
-                  <ChevronRight className="h-4 w-4" />
-                </span>
-              </div>
-            </div>
-          </section>
         </>
       )}
+
+      <section className="mt-7 pb-3">
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#D4AF37]/72">
+              Biblioteca católica
+            </p>
+            <h2 className="mt-1 font-display text-2xl text-[#F8F5EA]">Podcasts recomendados</h2>
+          </div>
+          <span className="text-[11px] text-[#F8F5EA]/38">{EXTERNAL_PODCASTS.length} fuentes RSS</span>
+        </div>
+
+        <div className="podcast-list">
+          {EXTERNAL_PODCASTS.map((podcast, index) => (
+            <Link
+              key={podcast.slug}
+              to={`/podcast/rss/${podcast.slug}`}
+              className="podcast-list-card"
+              aria-label={`Abrir ${podcast.title}`}
+            >
+              <div className="podcast-list-cover relative">
+                <Headphones className="h-7 w-7" strokeWidth={1.35} />
+                <span className="absolute bottom-1.5 right-1.5 rounded-full bg-[#050505]/85 px-1.5 py-0.5 text-[9px] font-bold text-[#D4AF37]">
+                  {index + 1}
+                </span>
+              </div>
+              <div className="podcast-list-copy">
+                <h3>{podcast.title}</h3>
+                <p>{podcast.subtitle}</p>
+                <small>
+                  <Headphones className="h-3 w-3" />
+                  {podcast.category} · Reproducción en LVJPRAYER
+                </small>
+              </div>
+              <span className="podcast-list-action" aria-hidden="true">
+                <ChevronRight className="h-4 w-4" />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
     </PodcastLayout>
   );
 }
