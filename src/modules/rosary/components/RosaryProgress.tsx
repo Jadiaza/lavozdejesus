@@ -18,15 +18,15 @@ export const RosaryProgress = ({
     className="overflow-hidden rounded-full border border-gold/25 bg-[#071522]/90 shadow-[0_10px_26px_rgba(0,0,0,0.18)]"
     aria-label="Progreso del Santo Rosario"
   >
-    <div className="flex min-h-[2.7rem] items-center gap-2.5 px-4">
-      <span className="shrink-0 text-[8px] font-semibold uppercase tracking-[0.18em] text-gold/65">
+    <div className="flex min-h-[2.85rem] items-center gap-2.5 px-4">
+      <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[0.18em] text-gold/65">
         Misterio
       </span>
-      <strong className="shrink-0 font-display text-[0.9rem] font-semibold text-gold-bright">
+      <strong className="shrink-0 font-display text-[1rem] font-semibold text-gold-bright">
         {mysteryNumber ? `${mysteryNumber} de ${mysteryTotal}` : sectionLabel ?? "Oraciones"}
       </strong>
       <span className="h-4 w-px shrink-0 bg-gold/25" aria-hidden="true" />
-      <strong className="min-w-0 flex-1 truncate text-right font-display text-[0.9rem] font-medium text-foreground/90">
+      <strong className="min-w-0 flex-1 truncate text-right font-display text-[1rem] font-medium text-foreground/90">
         {prayerLabel}
       </strong>
     </div>
