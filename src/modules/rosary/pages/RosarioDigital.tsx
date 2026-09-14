@@ -1,9 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-  Link,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Bookmark,
   ChevronLeft,
@@ -40,19 +36,10 @@ const MYSTERY_GROUPS: MysteryGroupId[] = [
   "gloriosos",
 ];
 
-const isGroup = (
-  value: string | null,
-): value is MysteryGroupId =>
-  Boolean(value) &&
-  MYSTERY_GROUPS.includes(value as MysteryGroupId);
+const isGroup = (value: string | null): value is MysteryGroupId =>
+  Boolean(value) && MYSTERY_GROUPS.includes(value as MysteryGroupId);
 
-const ORDINALS = [
-  "Primer",
-  "Segundo",
-  "Tercer",
-  "Cuarto",
-  "Quinto",
-];
+const ORDINALS = ["Primer", "Segundo", "Tercer", "Cuarto", "Quinto"];
 
 const GROUP_ADJECTIVES: Record<MysteryGroupId, string> = {
   gozosos: "gozoso",
@@ -137,10 +124,7 @@ export const RosarioDigital = () => {
       (session.session?.beadIndex ?? 0) > 0);
 
   const saveAndExit = () => navigate("/rosario");
-
-  const changeMystery = () => {
-    navigate("/rosario/seleccionar-misterios");
-  };
+  const changeMystery = () => navigate("/rosario/seleccionar-misterios");
 
   return (
     <RosaryLayout
@@ -251,11 +235,18 @@ export const RosarioDigital = () => {
                     className="h-full w-full object-cover object-center"
                   />
                   <div
-                    className="pointer-events-none absolute inset-0 bg-gradient-to-b from-navy-deep/10 via-transparent to-navy-deep"
+                    className="pointer-events-none absolute inset-0 bg-gradient-to-b from-navy-deep/5 via-transparent to-navy-deep"
+                    aria-hidden="true"
+                  />
+                  <div
+                    className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#020c16] via-[#020c16]/55 to-transparent"
                     aria-hidden="true"
                   />
 
-                  <div className="absolute inset-x-0 bottom-0 px-5 pb-5 text-center">
+                  <div className="absolute inset-x-0 bottom-0 px-5 pb-6 text-center">
+                    <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.28em] text-gold/75">
+                      Santo Rosario
+                    </p>
                     <h2 className="font-display text-[clamp(2.15rem,9vw,3.25rem)] font-semibold leading-[0.98] tracking-[-0.025em] text-foreground drop-shadow-[0_3px_12px_rgba(0,0,0,0.85)]">
                       {mysteryHeading}
                     </h2>
@@ -293,33 +284,24 @@ export const RosarioDigital = () => {
             highContrast={prefs.highContrast}
           />
 
-          <div className="grid grid-cols-[72px_1fr_72px] items-center gap-3">
+          <div className="grid grid-cols-[52px_1fr] items-center gap-3 pt-1">
             <button
               type="button"
               onClick={session.prev}
               disabled={!canGoBack}
               aria-label="Oración anterior"
-              className="flex h-16 w-16 items-center justify-center rounded-full border border-gold/70 text-gold transition hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-30"
+              className="flex h-[52px] w-[52px] items-center justify-center rounded-full border border-gold/45 bg-navy/60 text-gold transition hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-25"
             >
-              <ChevronLeft className="h-7 w-7" aria-hidden="true" />
+              <ChevronLeft className="h-6 w-6" aria-hidden="true" />
             </button>
 
             <button
               type="button"
               onClick={session.next}
-              className="flex min-h-14 items-center justify-center gap-2 rounded-full bg-gradient-gold px-5 font-semibold text-navy-deep shadow-gold transition hover:brightness-105 active:scale-[0.99]"
+              className="flex min-h-[56px] items-center justify-center gap-3 rounded-full border border-[#ffe18a]/70 bg-gradient-to-r from-[#e5a92f] via-[#f7ca59] to-[#d99a28] px-6 font-display text-[1.05rem] font-bold uppercase tracking-[0.12em] text-[#11100b] shadow-[0_10px_30px_rgba(216,155,38,0.25)] transition hover:brightness-105 active:scale-[0.99]"
             >
-              Siguiente
+              Continuar
               <ChevronRight className="h-5 w-5" aria-hidden="true" />
-            </button>
-
-            <button
-              type="button"
-              onClick={session.next}
-              aria-label="Siguiente oración"
-              className="flex h-16 w-16 items-center justify-center rounded-full border border-gold/70 text-gold transition hover:bg-gold/10"
-            >
-              <ChevronRight className="h-7 w-7" aria-hidden="true" />
             </button>
           </div>
 
@@ -327,7 +309,7 @@ export const RosarioDigital = () => {
             <button
               type="button"
               onClick={saveAndExit}
-              className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-gold/35 bg-navy/70 px-4 text-sm text-gold transition hover:bg-gold/5"
+              className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-gold/30 bg-navy/65 px-4 text-sm text-gold transition hover:bg-gold/5"
             >
               <Bookmark className="h-5 w-5" aria-hidden="true" />
               Guardar y continuar después
@@ -336,7 +318,7 @@ export const RosarioDigital = () => {
             <button
               type="button"
               onClick={changeMystery}
-              className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-gold/35 bg-navy/70 px-4 text-sm text-gold transition hover:bg-gold/5"
+              className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-gold/30 bg-navy/65 px-4 text-sm text-gold transition hover:bg-gold/5"
             >
               <RefreshCcw className="h-5 w-5" aria-hidden="true" />
               Cambiar de misterio
