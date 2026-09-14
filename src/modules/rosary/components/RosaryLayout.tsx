@@ -11,6 +11,8 @@ interface Props {
   focus?: boolean;
   /** La página ocupa la altura disponible y evita el desplazamiento. */
   fullScreen?: boolean;
+  /** Reduce el encabezado para experiencias inmersivas que deben caber completas en una sola pantalla. */
+  compactHeader?: boolean;
 }
 
 export const RosaryLayout = ({
@@ -20,6 +22,7 @@ export const RosaryLayout = ({
   children,
   focus = false,
   fullScreen = false,
+  compactHeader = false,
 }: Props) => {
   const maxWidth = fullScreen
     ? "max-w-[430px]"
@@ -47,15 +50,21 @@ export const RosaryLayout = ({
       >
         <div
           className={`mx-auto flex w-full items-center gap-3 px-4 ${
-            fullScreen ? "min-h-[108px] pb-3 pt-4" : "min-h-[88px] py-3"
+            compactHeader
+              ? "min-h-[62px] py-2"
+              : fullScreen
+                ? "min-h-[108px] pb-3 pt-4"
+                : "min-h-[88px] py-3"
           } ${maxWidth}`}
         >
           <div className="min-w-0 flex-1">
             <p
               className={`truncate font-semibold uppercase text-gold ${
-                fullScreen
-                  ? "text-[10px] tracking-[0.34em]"
-                  : "text-[11px] tracking-[0.25em]"
+                compactHeader
+                  ? "text-[8px] tracking-[0.28em]"
+                  : fullScreen
+                    ? "text-[10px] tracking-[0.34em]"
+                    : "text-[11px] tracking-[0.25em]"
               }`}
             >
               Santo Rosario
@@ -63,9 +72,11 @@ export const RosaryLayout = ({
 
             <h1
               className={`mt-1 truncate font-display font-semibold leading-none text-foreground ${
-                fullScreen
-                  ? "text-[clamp(1.8rem,7.8vw,2.35rem)] tracking-[-0.025em]"
-                  : "text-2xl"
+                compactHeader
+                  ? "text-[1.35rem] tracking-[-0.02em]"
+                  : fullScreen
+                    ? "text-[clamp(1.8rem,7.8vw,2.35rem)] tracking-[-0.025em]"
+                    : "text-2xl"
               }`}
             >
               {title}
@@ -74,9 +85,11 @@ export const RosaryLayout = ({
             {subtitle ? (
               <p
                 className={`mt-1.5 truncate font-display text-gold/70 ${
-                  fullScreen
-                    ? "text-[clamp(0.78rem,3.4vw,0.9rem)] tracking-wide"
-                    : "text-xs"
+                  compactHeader
+                    ? "text-[0.7rem] tracking-wide"
+                    : fullScreen
+                      ? "text-[clamp(0.78rem,3.4vw,0.9rem)] tracking-wide"
+                      : "text-xs"
                 }`}
               >
                 {subtitle}
