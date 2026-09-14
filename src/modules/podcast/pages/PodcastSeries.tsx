@@ -10,7 +10,6 @@ import {
   Volume2,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import cathedralBg from "@/assets/cathedral-bg.jpg";
 import PodcastLayout from "@/modules/podcast/components/PodcastLayout";
 import {
   formatEpisodeDuration,
@@ -19,6 +18,8 @@ import {
   type PodcastSeries,
 } from "@/modules/podcast/services/podcastService";
 
+const CONSECRATION_COVER =
+  "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/consagraciones/san-miguel/imagenes/dias/dia-03.webp";
 const LAST_EPISODE_KEY = "lvj:podcast:consecration:last-episode";
 const positionKey = (id: string) => `lvj:podcast:consecration:position:${id}`;
 
@@ -194,9 +195,8 @@ export default function PodcastSeries() {
         <>
           <section className="relative -mx-4 min-h-[27rem] overflow-hidden bg-[#070707] px-4 pb-6 pt-6">
             <img
-              src={cathedralBg}
-              alt=""
-              aria-hidden="true"
+              src={CONSECRATION_COVER}
+              alt="Carátula de 33 Días con los Santos Arcángeles"
               className="absolute inset-0 h-full w-full object-cover object-center opacity-42"
             />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,5,.98)_0%,rgba(5,5,5,.88)_46%,rgba(5,5,5,.40)_75%,rgba(5,5,5,.72)_100%)]" />
