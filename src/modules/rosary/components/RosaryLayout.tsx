@@ -67,7 +67,7 @@ export const RosaryLayout = ({
                     : "text-[11px] tracking-[0.25em]"
               }`}
             >
-              Santo Rosario
+              La Voz de Jesús
             </p>
 
             <h1
