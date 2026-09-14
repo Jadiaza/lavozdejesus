@@ -128,6 +128,11 @@ const imagesMatch = (episodeImage: string, channelImage: string) => {
   return episode === channel;
 };
 
+const toTimestamp = (value: string) => {
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : 0;
+};
+
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method && req.method !== "GET") {
     res.setHeader("Allow", "GET");
@@ -182,6 +187,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         const guid = stripHtml(tag(item, "guid")) || audioUrl;
         const durationText = stripHtml(tag(item, "itunes:duration"));
         const itemImage = getImage(item);
+        const pubDate = stripHtml(tag(item, "pubDate"));
         return {
           id: `${slug}-${index}-${guid.slice(-24)}`,
           guid,
@@ -191,7 +197,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           image_url: itemImage || podcast.image_url,
           _item_image: itemImage,
           duration_seconds: durationToSeconds(durationText),
-          pub_date: stripHtml(tag(item, "pubDate")),
+          pub_date: pubDate,
         };
       })
       .filter(Boolean) as Array<{
@@ -213,16 +219,16 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         imagesMatch(episode._item_image || episode.image_url, podcast.image_url),
       );
 
-      // Solo activamos el filtro si realmente identifica una cantidad útil de episodios.
-      // Esto evita vaciar feeds legítimos que usan arte individual por episodio.
       if (matching.length >= 3) {
         filteredEpisodes = matching;
       }
     }
 
-    const episodes = filteredEpisodes.slice(0, 40).map(({ _item_image, ...episode }) => episode);
+    const episodes = filteredEpisodes
+      .sort((a, b) => toTimestamp(b.pub_date) - toTimestamp(a.pub_date))
+      .map(({ _item_image, ...episode }) => episode);
 
-    res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=3600");
+    res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=1800");
     res.status(200).json({ podcast, episodes });
   } catch (error) {
     res.status(500).json({
