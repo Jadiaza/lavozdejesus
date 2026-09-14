@@ -128,11 +128,6 @@ const imagesMatch = (episodeImage: string, channelImage: string) => {
   return episode === channel;
 };
 
-const toTimestamp = (value: string) => {
-  const timestamp = Date.parse(value);
-  return Number.isFinite(timestamp) ? timestamp : 0;
-};
-
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method && req.method !== "GET") {
     res.setHeader("Allow", "GET");
@@ -142,6 +137,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
 
   const rawSlug = req.query?.slug;
   const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug || "";
+  const rawMeta = req.query?.meta;
+  const metaOnly = (Array.isArray(rawMeta) ? rawMeta[0] : rawMeta) === "1";
   const source = SOURCES[slug];
 
   if (!source) {
@@ -166,8 +163,6 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     const xml = await response.text();
     const channelMatch = xml.match(/<channel\b[^>]*>([\s\S]*?)<\/channel>/i);
     const channel = channelMatch?.[1] || xml;
-    const itemMatches = [...channel.matchAll(/<item\b[^>]*>([\s\S]*?)<\/item>/gi)];
-
     const channelWithoutItems = channel.replace(/<item\b[^>]*>[\s\S]*?<\/item>/gi, "");
     const podcast = {
       slug,
@@ -179,6 +174,13 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       source: "rss",
     };
 
+    if (metaOnly) {
+      res.setHeader("Cache-Control", "s-maxage=21600, stale-while-revalidate=86400");
+      res.status(200).json({ podcast });
+      return;
+    }
+
+    const itemMatches = [...channel.matchAll(/<item\b[^>]*>([\s\S]*?)<\/item>/gi)];
     const parsedEpisodes = itemMatches
       .map((match, index) => {
         const item = match[1];
@@ -187,7 +189,6 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         const guid = stripHtml(tag(item, "guid")) || audioUrl;
         const durationText = stripHtml(tag(item, "itunes:duration"));
         const itemImage = getImage(item);
-        const pubDate = stripHtml(tag(item, "pubDate"));
         return {
           id: `${slug}-${index}-${guid.slice(-24)}`,
           guid,
@@ -197,7 +198,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           image_url: itemImage || podcast.image_url,
           _item_image: itemImage,
           duration_seconds: durationToSeconds(durationText),
-          pub_date: pubDate,
+          pub_date: stripHtml(tag(item, "pubDate")),
         };
       })
       .filter(Boolean) as Array<{
@@ -225,10 +226,17 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     }
 
     const episodes = filteredEpisodes
-      .sort((a, b) => toTimestamp(b.pub_date) - toTimestamp(a.pub_date))
+      .sort((a, b) => {
+        const aTime = Date.parse(a.pub_date || "");
+        const bTime = Date.parse(b.pub_date || "");
+        if (Number.isNaN(aTime) && Number.isNaN(bTime)) return 0;
+        if (Number.isNaN(aTime)) return 1;
+        if (Number.isNaN(bTime)) return -1;
+        return bTime - aTime;
+      })
       .map(({ _item_image, ...episode }) => episode);
 
-    res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=1800");
+    res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=3600");
     res.status(200).json({ podcast, episodes });
   } catch (error) {
     res.status(500).json({
