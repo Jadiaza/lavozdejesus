@@ -1,5 +1,5 @@
-import { ArrowLeft, Clock3, Headphones, Pause, Play, RefreshCw, Volume2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, CalendarDays, Clock3, Headphones, Pause, Play, RefreshCw, Volume2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import PodcastLayout from "@/modules/podcast/components/PodcastLayout";
 import {
@@ -13,6 +13,21 @@ const formatClock = (seconds: number) => {
   if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
   const total = Math.floor(seconds);
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+};
+
+const episodeTimestamp = (episode: ExternalPodcastEpisode) => {
+  const timestamp = Date.parse(episode.pub_date || "");
+  return Number.isFinite(timestamp) ? timestamp : 0;
+};
+
+const formatDate = (value: string) => {
+  const timestamp = Date.parse(value || "");
+  if (!Number.isFinite(timestamp)) return "Fecha no disponible";
+  return new Intl.DateTimeFormat("es-CO", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(timestamp));
 };
 
 export default function PodcastExternalSeries() {
@@ -48,6 +63,17 @@ export default function PodcastExternalSeries() {
       mounted = false;
     };
   }, [slug]);
+
+  const nearestEpisode = useMemo(() => {
+    if (!episodes.length) return null;
+    const now = Date.now();
+    return episodes.reduce<ExternalPodcastEpisode | null>((nearest, episode) => {
+      const timestamp = episodeTimestamp(episode);
+      if (!timestamp) return nearest;
+      if (!nearest) return episode;
+      return Math.abs(timestamp - now) < Math.abs(episodeTimestamp(nearest) - now) ? episode : nearest;
+    }, null) ?? episodes[0];
+  }, [episodes]);
 
   const playEpisode = async (episode: ExternalPodcastEpisode) => {
     const audio = audioRef.current;
@@ -89,10 +115,7 @@ export default function PodcastExternalSeries() {
       />
 
       <div className="pt-4">
-        <Link
-          to="/podcast"
-          className="inline-flex items-center gap-2 text-sm font-medium text-[#D4AF37]"
-        >
+        <Link to="/podcast" className="inline-flex items-center gap-2 text-sm font-medium text-[#D4AF37]">
           <ArrowLeft className="h-4 w-4" />
           Podcast
         </Link>
@@ -128,38 +151,58 @@ export default function PodcastExternalSeries() {
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#D4AF37]">
                 {podcast.category} · RSS
               </p>
-              <h1 className="mt-1 font-display text-[1.75rem] leading-[0.95] text-[#F8F5EA]">
-                {podcast.title}
-              </h1>
+              <h1 className="mt-1 font-display text-[1.75rem] leading-[0.95] text-[#F8F5EA]">{podcast.title}</h1>
               {podcast.author && <p className="mt-2 text-xs text-[#F8F5EA]/55">{podcast.author}</p>}
-              <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-[#F8F5EA]/50">
-                {podcast.description}
-              </p>
+              <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-[#F8F5EA]/50">{podcast.description}</p>
             </div>
           </section>
 
+          {nearestEpisode && (
+            <section className="mt-4 rounded-[1.1rem] border border-[#D4AF37]/35 bg-[linear-gradient(135deg,rgba(212,175,55,.12),rgba(8,8,8,.96))] p-3.5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4AF37]">Más cercano a hoy</p>
+              <div className="mt-2 flex items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <h2 className="line-clamp-2 text-sm font-semibold text-[#F8F5EA]">{nearestEpisode.title}</h2>
+                  <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-[#F8F5EA]/55">
+                    <CalendarDays className="h-3.5 w-3.5 text-[#D4AF37]" />
+                    {formatDate(nearestEpisode.pub_date)}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void playEpisode(nearestEpisode)}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#D4AF37] text-black"
+                  aria-label={`Reproducir ${nearestEpisode.title}`}
+                >
+                  <Play className="ml-0.5 h-4 w-4 fill-current" />
+                </button>
+              </div>
+            </section>
+          )}
+
           <div className="mb-3 mt-6 flex items-center justify-between gap-3">
-            <h2 className="font-display text-2xl text-[#F8F5EA]">Episodios</h2>
-            <span className="text-xs text-[#F8F5EA]/40">{episodes.length} recientes</span>
+            <h2 className="font-display text-2xl text-[#F8F5EA]">Todos los episodios</h2>
+            <span className="text-xs text-[#F8F5EA]/40">{episodes.length}</span>
           </div>
 
           <div className="space-y-2.5 pb-28">
             {episodes.map((episode) => {
               const active = current?.id === episode.id;
+              const nearest = nearestEpisode?.id === episode.id;
               return (
                 <article
                   key={episode.id}
                   className={`flex items-center gap-3 rounded-[1rem] border p-3 ${
-                    active ? "border-[#D4AF37]/55 bg-[#15120A]" : "border-white/8 bg-[#0B0C0E]"
+                    active
+                      ? "border-[#D4AF37]/60 bg-[#15120A]"
+                      : nearest
+                        ? "border-[#D4AF37]/32 bg-[#0E0D08]"
+                        : "border-white/8 bg-[#0B0C0E]"
                   }`}
                 >
                   <div className="h-14 w-14 shrink-0 overflow-hidden rounded-[0.8rem] bg-[#111]">
                     {episode.image_url || podcast.image_url ? (
-                      <img
-                        src={episode.image_url || podcast.image_url}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
+                      <img src={episode.image_url || podcast.image_url} alt="" className="h-full w-full object-cover" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center">
                         <Headphones className="h-6 w-6 text-[#D4AF37]" />
@@ -167,12 +210,16 @@ export default function PodcastExternalSeries() {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-[#F8F5EA]">
-                      {episode.title}
-                    </h3>
-                    <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-[#F8F5EA]/45">
-                      <Clock3 className="h-3.5 w-3.5" />
-                      {formatExternalDuration(episode.duration_seconds)}
+                    <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-[#F8F5EA]">{episode.title}</h3>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#F8F5EA]/45">
+                      <span className="inline-flex items-center gap-1.5">
+                        <CalendarDays className="h-3.5 w-3.5" />
+                        {formatDate(episode.pub_date)}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Clock3 className="h-3.5 w-3.5" />
+                        {formatExternalDuration(episode.duration_seconds)}
+                      </span>
                     </div>
                   </div>
                   <button
