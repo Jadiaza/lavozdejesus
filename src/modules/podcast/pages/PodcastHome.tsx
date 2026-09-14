@@ -1,4 +1,13 @@
-import { CalendarDays, Headphones, Play, RefreshCw, Sparkles } from "lucide-react";
+import {
+  BookOpen,
+  CalendarDays,
+  ChevronRight,
+  ExternalLink,
+  Headphones,
+  Play,
+  RefreshCw,
+  Sparkles,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import cathedralBg from "@/assets/cathedral-bg.jpg";
@@ -7,6 +16,10 @@ import {
   getConsecrationPodcast,
   type PodcastSeries,
 } from "@/modules/podcast/services/podcastService";
+import "@/modules/podcast/podcast-home.css";
+
+const SPOTIFY_BIBLE_365_URL =
+  "https://open.spotify.com/show/4y5hjQzj47wTLujQsyGdab?si=2iouVqm8RryYfbCC6mu-qA&utm_source=copy-link";
 
 export default function PodcastHome() {
   const [series, setSeries] = useState<PodcastSeries | null>(null);
@@ -42,7 +55,7 @@ export default function PodcastHome() {
       </section>
 
       {loading && (
-        <section className="flex min-h-[22rem] items-center justify-center rounded-[1.6rem] border border-[#D4AF37]/20 bg-[#0A0A0A]">
+        <section className="flex min-h-[18rem] items-center justify-center rounded-[1.35rem] border border-[#D4AF37]/20 bg-[#0A0A0A]">
           <div className="text-center text-[#F8F5EA]/55">
             <RefreshCw className="mx-auto mb-3 h-7 w-7 animate-spin text-[#D4AF37]" />
             <p className="text-sm">Cargando series...</p>
@@ -51,7 +64,7 @@ export default function PodcastHome() {
       )}
 
       {!loading && error && (
-        <section className="rounded-[1.6rem] border border-[#D4AF37]/20 bg-[#0A0A0A] p-7 text-center">
+        <section className="rounded-[1.35rem] border border-[#D4AF37]/20 bg-[#0A0A0A] p-7 text-center">
           <Headphones className="mx-auto h-10 w-10 text-[#D4AF37]" />
           <h2 className="mt-4 font-display text-2xl">No pudimos cargar el módulo</h2>
           <p className="mt-2 text-sm leading-relaxed text-[#F8F5EA]/55">{error}</p>
@@ -67,67 +80,95 @@ export default function PodcastHome() {
 
       {!loading && !error && series && (
         <>
-          <section className="mb-3 mt-1">
+          <section className="mb-3 mt-1 flex items-center justify-between gap-3">
             <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#D4AF37]">
               Serie destacada
             </div>
+            <span className="text-[11px] text-[#F8F5EA]/38">LVJPRAYER</span>
           </section>
 
-          <Link
-            to="/podcast/santos-arcangeles-33-dias"
-            className="group relative block min-h-[32rem] overflow-hidden rounded-[1.7rem] border border-[#D4AF37]/60 bg-[#070707] shadow-[0_22px_55px_rgba(0,0,0,0.5)]"
-          >
-            <img
-              src={cathedralBg}
-              alt=""
-              aria-hidden="true"
-              className="absolute inset-0 h-full w-full object-cover object-center opacity-40 transition duration-500 group-hover:scale-[1.02]"
-            />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,5,.98)_0%,rgba(5,5,5,.90)_45%,rgba(5,5,5,.45)_72%,rgba(5,5,5,.78)_100%)]" />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.06)_0%,rgba(5,5,5,.22)_52%,rgba(5,5,5,.96)_100%)]" />
-            <div className="absolute -right-10 top-10 h-56 w-56 rounded-full bg-[#D4AF37]/12 blur-3xl" />
+          <Link to="/podcast/santos-arcangeles-33-dias" className="podcast-feature-card group">
+            <div className="podcast-feature-cover">
+              <img src={cathedralBg} alt="33 Días con los Santos Arcángeles" />
+              <div className="absolute inset-x-2 bottom-2 z-10 text-center">
+                <span className="font-display text-[1rem] leading-none text-[#F2D27A]">33 Días</span>
+              </div>
+            </div>
 
-            <div className="relative z-10 flex min-h-[32rem] flex-col p-5">
-              <div className="inline-flex w-fit items-center gap-2 rounded-full border border-[#D4AF37]/45 bg-[#050505]/65 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#F2D27A] backdrop-blur-sm">
-                <Sparkles className="h-3.5 w-3.5" />
+            <div className="podcast-feature-content">
+              <span className="podcast-eyebrow">
+                <Sparkles className="h-3 w-3" />
                 Serie espiritual
-              </div>
-
-              <div className="mt-7 max-w-[82%]">
-                <h2 className="font-display text-[2.55rem] font-semibold leading-[0.9] tracking-[-0.025em] text-[#F2D27A]">
-                  33 Días con los Santos Arcángeles
-                </h2>
-                <p className="mt-3 text-sm font-medium text-[#F8F5EA]/78">
-                  {series.subtitle || "San Miguel · San Gabriel · San Rafael"}
-                </p>
-              </div>
-
-              <div className="mt-auto">
-                <div className="mb-5 grid max-w-[20rem] gap-2.5 text-[12px] text-[#F8F5EA]/68">
-                  <span className="inline-flex items-center gap-2.5">
-                    <Headphones className="h-4.5 w-4.5 text-[#D4AF37]" />
-                    {availableEpisodes} enseñanzas disponibles
-                  </span>
-                  <span className="inline-flex items-center gap-2.5">
-                    <CalendarDays className="h-4.5 w-4.5 text-[#D4AF37]" />
-                    {series.duration_days} días de itinerario
-                  </span>
-                </div>
-
-                <span className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#F2D27A] to-[#D4AF37] px-6 py-3 text-base font-black text-[#050505] shadow-[0_12px_30px_rgba(212,175,55,0.25)]">
-                  <Play className="h-5 w-5 fill-current" />
-                  Ver serie
+              </span>
+              <h2 className="podcast-feature-title">33 Días con los Santos Arcángeles</h2>
+              <p className="podcast-feature-subtitle">
+                {series.subtitle || "San Miguel · San Gabriel · San Rafael"}
+              </p>
+              <div className="podcast-feature-meta">
+                <span>
+                  <Headphones className="h-3.5 w-3.5 text-[#D4AF37]" />
+                  {availableEpisodes} enseñanzas
+                </span>
+                <span>
+                  <CalendarDays className="h-3.5 w-3.5 text-[#D4AF37]" />
+                  {series.duration_days} días
                 </span>
               </div>
+              <span className="podcast-feature-action">
+                <Play className="h-4 w-4 fill-current" />
+                Ver serie
+              </span>
             </div>
           </Link>
 
-          <section className="mt-8 rounded-[1.35rem] border border-[#D4AF37]/18 bg-[#0A0A0A]/85 px-5 py-6 text-center">
-            <Headphones className="mx-auto h-7 w-7 text-[#D4AF37]/75" />
-            <p className="mt-3 font-display text-xl text-[#F8F5EA]">Nuevas series en preparación</p>
-            <p className="mt-1.5 text-sm leading-relaxed text-[#F8F5EA]/48">
-              Este espacio irá reuniendo nuevos contenidos de formación y vida espiritual.
-            </p>
+          <section className="mt-7">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#D4AF37]/72">
+                  También puedes escuchar
+                </p>
+                <h2 className="mt-1 font-display text-2xl text-[#F8F5EA]">Otros podcasts</h2>
+              </div>
+            </div>
+
+            <div className="podcast-list">
+              <a
+                href={SPOTIFY_BIBLE_365_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="podcast-list-card"
+                aria-label="Abrir La Biblia Católica en 365 días en Spotify"
+              >
+                <div className="podcast-list-cover">
+                  <BookOpen className="h-8 w-8" strokeWidth={1.35} />
+                </div>
+                <div className="podcast-list-copy">
+                  <h3>La Biblia Católica en 365 días</h3>
+                  <p>Recorrido diario por la Sagrada Escritura</p>
+                  <small>
+                    <Headphones className="h-3 w-3" />
+                    Spotify · Podcast externo
+                  </small>
+                </div>
+                <span className="podcast-list-action" aria-hidden="true">
+                  <ExternalLink className="h-4 w-4" />
+                </span>
+              </a>
+
+              <div className="podcast-list-card opacity-55" aria-disabled="true">
+                <div className="podcast-list-cover">
+                  <Headphones className="h-7 w-7" strokeWidth={1.35} />
+                </div>
+                <div className="podcast-list-copy">
+                  <h3>Nuevas series LVJ</h3>
+                  <p>Formación, oración y vida espiritual</p>
+                  <small>Próximamente</small>
+                </div>
+                <span className="podcast-list-action" aria-hidden="true">
+                  <ChevronRight className="h-4 w-4" />
+                </span>
+              </div>
+            </div>
           </section>
         </>
       )}
