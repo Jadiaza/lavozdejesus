@@ -151,7 +151,7 @@ export const RosarioDigital = () => {
       ) : !session.definition || !session.section || !session.bead ? (
         <RosaryLoading label="Preparando el Rosario" />
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 pb-[calc(2rem+env(safe-area-inset-bottom))]">
           {fullRing ? (
             <div className="fixed inset-0 z-[65] overflow-y-auto bg-[#020c16] px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] text-[#fff7e8] before:pointer-events-none before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_50%_32%,rgba(22,72,105,0.22),transparent_48%)]">
               <div className="relative mx-auto w-full max-w-md">
@@ -227,35 +227,27 @@ export const RosarioDigital = () => {
             </div>
           ) : (
             <>
-              <section className="relative -mx-4 -mt-4 overflow-hidden border-b border-gold/15 bg-navy-deep">
-                <div className="relative h-[22rem] min-[390px]:h-[25rem] sm:h-[28rem]">
+              <section className="-mx-4 -mt-4 overflow-hidden border-b border-gold/15 bg-navy-deep">
+                <div className="h-[20rem] min-[390px]:h-[23rem] sm:h-[27rem]">
                   <img
                     src={mysteryArt[group]}
                     alt={mystery?.title ?? mysteryGroups[group].name}
                     className="h-full w-full object-cover object-center"
                   />
-                  <div
-                    className="pointer-events-none absolute inset-0 bg-gradient-to-b from-navy-deep/5 via-transparent to-navy-deep"
-                    aria-hidden="true"
-                  />
-                  <div
-                    className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#020c16] via-[#020c16]/55 to-transparent"
-                    aria-hidden="true"
-                  />
+                </div>
 
-                  <div className="absolute inset-x-0 bottom-0 px-5 pb-6 text-center">
-                    <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.28em] text-gold/75">
-                      Santo Rosario
+                <div className="border-t border-gold/10 bg-[#020c16] px-5 py-6 text-center">
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.3em] text-gold/75">
+                    Santo Rosario
+                  </p>
+                  <h2 className="mt-2 font-display text-[clamp(2rem,8.5vw,3rem)] font-semibold leading-[1.02] tracking-[-0.025em] text-foreground">
+                    {mysteryHeading}
+                  </h2>
+                  {mystery?.title ? (
+                    <p className="mx-auto mt-2 max-w-[28rem] font-display text-[clamp(1rem,4vw,1.25rem)] italic leading-tight text-gold-bright">
+                      {mystery.title}
                     </p>
-                    <h2 className="font-display text-[clamp(2.15rem,9vw,3.25rem)] font-semibold leading-[0.98] tracking-[-0.025em] text-foreground drop-shadow-[0_3px_12px_rgba(0,0,0,0.85)]">
-                      {mysteryHeading}
-                    </h2>
-                    {mystery?.title ? (
-                      <p className="mx-auto mt-2 max-w-[28rem] font-display text-[clamp(1rem,4.3vw,1.3rem)] italic leading-tight text-gold-bright drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-                        {mystery.title}
-                      </p>
-                    ) : null}
-                  </div>
+                  ) : null}
                 </div>
               </section>
 
