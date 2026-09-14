@@ -299,9 +299,14 @@ export default function PodcastSeries() {
                           : "border-white/10 bg-[#0A0A0A]"
                       }`}
                     >
-                      <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[0.95rem] border border-[#D4AF37]/25 bg-[radial-gradient(circle_at_50%_30%,rgba(212,175,55,.28),rgba(8,8,8,.98)_70%)]">
-                        <Headphones className="h-8 w-8 text-[#D4AF37]" strokeWidth={1.45} />
-                        <span className="absolute bottom-1 right-1 rounded-full bg-[#050505] px-1.5 py-0.5 text-[9px] font-bold text-[#F2D27A]">
+                      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[0.95rem] border border-[#D4AF37]/25 bg-[#080808]">
+                        <img
+                          src={CONSECRATION_COVER}
+                          alt={`Carátula del episodio ${episode.day_number}: ${episode.title}`}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                        <span className="absolute bottom-1 right-1 rounded-full bg-[#050505]/92 px-1.5 py-0.5 text-[9px] font-bold text-[#F2D27A] shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
                           {episode.day_number}
                         </span>
                       </div>
