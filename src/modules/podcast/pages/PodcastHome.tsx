@@ -74,10 +74,7 @@ export default function PodcastHome() {
   return (
     <PodcastLayout>
       <section className="pb-5 pt-6">
-        <h1 className="font-display text-[3.35rem] font-semibold leading-[0.9] tracking-[-0.03em] text-[#F8F5EA]">
-          Podcast
-        </h1>
-        <p className="mt-3 text-[1.05rem] text-[#F8F5EA]/62">Escucha y fortalece tu fe.</p>
+        <p className="text-[1.05rem] text-[#F8F5EA]/62">Escucha y fortalece tu fe.</p>
       </section>
 
       <section className="mb-3 mt-1 flex items-center justify-between gap-3">
