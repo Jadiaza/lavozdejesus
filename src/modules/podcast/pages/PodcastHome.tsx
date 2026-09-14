@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import cathedralBg from "@/assets/cathedral-bg.jpg";
 import PodcastLayout from "@/modules/podcast/components/PodcastLayout";
 import {
   getConsecrationPodcast,
@@ -19,6 +18,9 @@ import {
   getExternalPodcastMetadata,
 } from "@/modules/podcast/services/externalPodcastService";
 import "@/modules/podcast/podcast-home.css";
+
+const CONSECRATION_COVER =
+  "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/consagraciones/san-miguel/imagenes/dias/dia-03.webp";
 
 export default function PodcastHome() {
   const [series, setSeries] = useState<PodcastSeries | null>(null);
@@ -109,7 +111,7 @@ export default function PodcastHome() {
       {!loading && series && (
         <Link to="/podcast/santos-arcangeles-33-dias" className="podcast-feature-card group">
           <div className="podcast-feature-cover">
-            <img src={cathedralBg} alt="33 Días con los Santos Arcángeles" />
+            <img src={CONSECRATION_COVER} alt="33 Días con los Santos Arcángeles" />
             <div className="absolute inset-x-2 bottom-2 z-10 text-center">
               <span className="font-display text-[1rem] leading-none text-[#F2D27A]">33 Días</span>
             </div>
