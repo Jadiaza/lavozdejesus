@@ -1,5 +1,3 @@
-import { CircleDot, Crown } from "lucide-react";
-
 interface Props {
   progress: number;
   mysteryNumber?: number | null;
@@ -8,7 +6,7 @@ interface Props {
   sectionLabel?: string;
 }
 
-/** Progreso visual del misterio y de la cuenta actual. */
+/** Franja compacta con el misterio y la oración/cuenta actual. */
 export const RosaryProgress = ({
   progress,
   mysteryNumber,
@@ -17,45 +15,24 @@ export const RosaryProgress = ({
   sectionLabel,
 }: Props) => (
   <section
-    className="overflow-hidden rounded-[1.25rem] border border-gold/35 bg-[#071522]/95 shadow-[0_14px_32px_rgba(0,0,0,0.24)]"
+    className="overflow-hidden rounded-full border border-gold/25 bg-[#071522]/90 shadow-[0_10px_26px_rgba(0,0,0,0.18)]"
     aria-label="Progreso del Santo Rosario"
   >
-    <div className="grid min-h-[4.25rem] grid-cols-[1fr_auto_1fr] items-center px-1.5">
-      <div className="flex min-w-0 items-center gap-2 px-2">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold/35 bg-gold/5">
-          <Crown className="h-4.5 w-4.5 text-gold-bright" strokeWidth={1.55} aria-hidden="true" />
-        </span>
-        <span className="min-w-0">
-          <span className="block text-[8px] font-semibold uppercase tracking-[0.18em] text-foreground/45">
-            Misterio
-          </span>
-          <strong className="mt-0.5 block line-clamp-2 font-display text-[0.86rem] font-semibold leading-[1.05] text-gold-bright">
-            {mysteryNumber
-              ? `${mysteryNumber} de ${mysteryTotal}`
-              : sectionLabel ?? "Oraciones"}
-          </strong>
-        </span>
-      </div>
-
-      <span className="h-9 w-px bg-gold/25" aria-hidden="true" />
-
-      <div className="flex min-w-0 items-center gap-2 px-2">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold/35 bg-gold/5">
-          <CircleDot className="h-4.5 w-4.5 text-gold-bright" strokeWidth={1.55} aria-hidden="true" />
-        </span>
-        <span className="min-w-0">
-          <span className="block text-[8px] font-semibold uppercase tracking-[0.18em] text-foreground/45">
-            Cuenta
-          </span>
-          <strong className="mt-0.5 block line-clamp-2 font-display text-[0.86rem] font-semibold leading-[1.05] text-foreground">
-            {prayerLabel}
-          </strong>
-        </span>
-      </div>
+    <div className="flex min-h-[2.7rem] items-center gap-2.5 px-4">
+      <span className="shrink-0 text-[8px] font-semibold uppercase tracking-[0.18em] text-gold/65">
+        Misterio
+      </span>
+      <strong className="shrink-0 font-display text-[0.9rem] font-semibold text-gold-bright">
+        {mysteryNumber ? `${mysteryNumber} de ${mysteryTotal}` : sectionLabel ?? "Oraciones"}
+      </strong>
+      <span className="h-4 w-px shrink-0 bg-gold/25" aria-hidden="true" />
+      <strong className="min-w-0 flex-1 truncate text-right font-display text-[0.9rem] font-medium text-foreground/90">
+        {prayerLabel}
+      </strong>
     </div>
 
     <div
-      className="h-[3px] w-full bg-white/5"
+      className="h-[2px] w-full bg-white/5"
       role="progressbar"
       aria-valuenow={progress}
       aria-valuemin={0}
