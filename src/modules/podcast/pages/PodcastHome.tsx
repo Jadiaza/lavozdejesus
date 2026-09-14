@@ -14,7 +14,10 @@ import {
   getConsecrationPodcast,
   type PodcastSeries,
 } from "@/modules/podcast/services/podcastService";
-import { EXTERNAL_PODCASTS } from "@/modules/podcast/services/externalPodcastService";
+import {
+  EXTERNAL_PODCASTS,
+  getExternalPodcastMetadata,
+} from "@/modules/podcast/services/externalPodcastService";
 import "@/modules/podcast/podcast-home.css";
 
 export default function PodcastHome() {
@@ -22,6 +25,7 @@ export default function PodcastHome() {
   const [availableEpisodes, setAvailableEpisodes] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [coverMap, setCoverMap] = useState<Record<string, string>>({});
 
   const load = async () => {
     setLoading(true);
@@ -39,6 +43,30 @@ export default function PodcastHome() {
 
   useEffect(() => {
     void load();
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    void Promise.allSettled(
+      EXTERNAL_PODCASTS.map(async (podcast) => {
+        const metadata = await getExternalPodcastMetadata(podcast.slug);
+        return { slug: podcast.slug, image_url: metadata.image_url };
+      }),
+    ).then((results) => {
+      if (!mounted) return;
+      const next: Record<string, string> = {};
+      results.forEach((result) => {
+        if (result.status === "fulfilled" && result.value.image_url) {
+          next[result.value.slug] = result.value.image_url;
+        }
+      });
+      setCoverMap(next);
+    });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return (
@@ -126,27 +154,41 @@ export default function PodcastHome() {
         </div>
 
         <div className="podcast-shelf" aria-label="Podcasts recomendados">
-          {EXTERNAL_PODCASTS.map((podcast, index) => (
-            <Link
-              key={podcast.slug}
-              to={`/podcast/rss/${podcast.slug}`}
-              className="podcast-tile"
-              aria-label={`Abrir ${podcast.title}`}
-            >
-              <div className="podcast-tile-cover">
-                <div className="podcast-tile-glow" />
-                {podcast.category === "Biblia" ? (
-                  <BookOpen className="relative z-10 h-10 w-10 text-[#F2D27A]" strokeWidth={1.25} />
-                ) : (
-                  <Headphones className="relative z-10 h-10 w-10 text-[#F2D27A]" strokeWidth={1.25} />
-                )}
-                <span className="podcast-tile-number">{index + 1}</span>
-              </div>
-              <h3>{podcast.title}</h3>
-              <p>{podcast.subtitle}</p>
-              <small>{podcast.category}</small>
-            </Link>
-          ))}
+          {EXTERNAL_PODCASTS.map((podcast, index) => {
+            const cover = coverMap[podcast.slug];
+            return (
+              <Link
+                key={podcast.slug}
+                to={`/podcast/rss/${podcast.slug}`}
+                className="podcast-tile"
+                aria-label={`Abrir ${podcast.title}`}
+              >
+                <div className="podcast-tile-cover">
+                  {cover ? (
+                    <img
+                      src={cover}
+                      alt={`Carátula de ${podcast.title}`}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <>
+                      <div className="podcast-tile-glow" />
+                      {podcast.category === "Biblia" ? (
+                        <BookOpen className="relative z-10 h-10 w-10 text-[#F2D27A]" strokeWidth={1.25} />
+                      ) : (
+                        <Headphones className="relative z-10 h-10 w-10 text-[#F2D27A]" strokeWidth={1.25} />
+                      )}
+                    </>
+                  )}
+                  <span className="podcast-tile-number">{index + 1}</span>
+                </div>
+                <h3>{podcast.title}</h3>
+                <p>{podcast.subtitle}</p>
+                <small>{podcast.category}</small>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
