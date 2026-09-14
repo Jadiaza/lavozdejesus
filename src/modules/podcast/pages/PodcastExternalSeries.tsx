@@ -20,14 +20,34 @@ const episodeTimestamp = (episode: ExternalPodcastEpisode) => {
   return Number.isFinite(timestamp) ? timestamp : 0;
 };
 
-const formatDate = (value: string) => {
+const parseEpisodeDate = (value: string) => {
   const timestamp = Date.parse(value || "");
-  if (!Number.isFinite(timestamp)) return "Fecha no disponible";
+  return Number.isFinite(timestamp) ? new Date(timestamp) : null;
+};
+
+const calendarDayIndex = (date: Date) => {
+  const fixedYear = 2000;
+  const start = Date.UTC(fixedYear, 0, 1);
+  const current = Date.UTC(fixedYear, date.getMonth(), date.getDate());
+  return Math.floor((current - start) / 86400000);
+};
+
+const calendarDistance = (date: Date, reference: Date) => {
+  const yearLength = 366;
+  const direct = Math.abs(calendarDayIndex(date) - calendarDayIndex(reference));
+  return Math.min(direct, yearLength - direct);
+};
+
+const sameMonthAndDay = (date: Date, reference: Date) =>
+  date.getMonth() === reference.getMonth() && date.getDate() === reference.getDate();
+
+const formatDate = (value: string) => {
+  const date = parseEpisodeDate(value);
+  if (!date) return "Fecha no disponible";
   return new Intl.DateTimeFormat("es-CO", {
     day: "2-digit",
     month: "short",
-    year: "numeric",
-  }).format(new Date(timestamp));
+  }).format(date);
 };
 
 export default function PodcastExternalSeries() {
@@ -66,14 +86,37 @@ export default function PodcastExternalSeries() {
 
   const nearestEpisode = useMemo(() => {
     if (!episodes.length) return null;
-    const now = Date.now();
-    return episodes.reduce<ExternalPodcastEpisode | null>((nearest, episode) => {
-      const timestamp = episodeTimestamp(episode);
-      if (!timestamp) return nearest;
-      if (!nearest) return episode;
-      return Math.abs(timestamp - now) < Math.abs(episodeTimestamp(nearest) - now) ? episode : nearest;
-    }, null) ?? episodes[0];
+
+    const today = new Date();
+
+    return (
+      episodes.reduce<ExternalPodcastEpisode | null>((nearest, episode) => {
+        const episodeDate = parseEpisodeDate(episode.pub_date);
+        if (!episodeDate) return nearest;
+        if (!nearest) return episode;
+
+        const nearestDate = parseEpisodeDate(nearest.pub_date);
+        if (!nearestDate) return episode;
+
+        const episodeDistance = calendarDistance(episodeDate, today);
+        const nearestDistance = calendarDistance(nearestDate, today);
+
+        if (episodeDistance < nearestDistance) return episode;
+        if (episodeDistance > nearestDistance) return nearest;
+
+        // Si dos episodios caen en el mismo mes/día o a igual distancia,
+        // preferimos la publicación real más reciente, sin usar el año
+        // para decidir qué día corresponde a hoy.
+        return episodeTimestamp(episode) > episodeTimestamp(nearest) ? episode : nearest;
+      }, null) ?? episodes[0]
+    );
   }, [episodes]);
+
+  const nearestMatchesToday = useMemo(() => {
+    if (!nearestEpisode) return false;
+    const date = parseEpisodeDate(nearestEpisode.pub_date);
+    return date ? sameMonthAndDay(date, new Date()) : false;
+  }, [nearestEpisode]);
 
   const playEpisode = async (episode: ExternalPodcastEpisode) => {
     const audio = audioRef.current;
@@ -159,7 +202,9 @@ export default function PodcastExternalSeries() {
 
           {nearestEpisode && (
             <section className="mt-4 rounded-[1.1rem] border border-[#D4AF37]/35 bg-[linear-gradient(135deg,rgba(212,175,55,.12),rgba(8,8,8,.96))] p-3.5">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4AF37]">Más cercano a hoy</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4AF37]">
+                {nearestMatchesToday ? "Para hoy" : "Fecha más cercana"}
+              </p>
               <div className="mt-2 flex items-center gap-3">
                 <div className="min-w-0 flex-1">
                   <h2 className="line-clamp-2 text-sm font-semibold text-[#F8F5EA]">{nearestEpisode.title}</h2>
