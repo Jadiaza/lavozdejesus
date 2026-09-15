@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Bookmark, ChevronLeft, ChevronRight, CircleDot, HandHeart, RefreshCcw } from "lucide-react";
+import { Bookmark, ChevronLeft, ChevronRight, CircleDot, HandHeart, RefreshCcw, Volume2, VolumeX } from "lucide-react";
 
 import { RosaryLayout } from "../components/RosaryLayout";
 import { RosaryLoading } from "../components/RosaryStateViews";
@@ -16,6 +16,7 @@ import { useKeepAwake } from "../hooks/useKeepAwake";
 import { mysteryGroups } from "../mocks/mysteries";
 import { mysteryArt } from "../mocks/mysteryArt";
 import { rosaryTodayService } from "../services/rosaryTodayService";
+import { rosaryAmbientAudioService } from "../services/rosaryAmbientAudioService";
 import type { MysteryGroupId } from "../types";
 
 const MYSTERY_GROUPS: MysteryGroupId[] = ["gozosos", "luminosos", "dolorosos", "gloriosos"];
@@ -29,7 +30,7 @@ export const RosarioDigital = () => {
   const [params] = useSearchParams();
   const requestedGroup = params.get("grupo");
   const group: MysteryGroupId = isGroup(requestedGroup) ? requestedGroup : rosaryTodayService.groupForDate();
-  const { prefs } = useRosaryPreferences();
+  const { prefs, update: updatePrefs } = useRosaryPreferences();
   const { flow } = useRosaryFlow();
   const [fullRing, setFullRing] = useState(false);
   const session = useRosarySession({ group, mode: "digital", intention: flow.intention, haptics: prefs.haptics, decades: flow.scope === "decena" ? 1 : 5, startDecade: flow.startDecade });
@@ -52,12 +53,23 @@ export const RosarioDigital = () => {
   const canGoBack = Boolean(session.session) && ((session.session?.sectionIndex ?? 0) > 0 || (session.session?.beadIndex ?? 0) > 0);
   const saveAndExit = () => navigate("/rosario");
   const changeMystery = () => navigate("/rosario/seleccionar-misterios");
+  const toggleAmbient = () => {
+    const next = !prefs.backgroundMusic;
+    updatePrefs({ backgroundMusic: next });
+    if (next) void rosaryAmbientAudioService.play(prefs.musicVolume);
+    else rosaryAmbientAudioService.pause();
+  };
 
   return (
     <RosaryLayout title="Interactivo" focus fullScreen compactHeader actions={
-      <button type="button" onClick={() => setFullRing((current) => !current)} aria-pressed={fullRing} aria-label="Ver el Rosario completo" className="flex h-10 w-10 items-center justify-center rounded-full border border-gold/35 bg-navy-deep text-gold transition hover:bg-gold/10">
-        <CircleDot className="h-5 w-5" aria-hidden="true" />
-      </button>
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={toggleAmbient} aria-pressed={prefs.backgroundMusic} aria-label={prefs.backgroundMusic ? "Silenciar música de fondo" : "Activar música de fondo"} className={`flex h-10 w-10 items-center justify-center rounded-full border transition ${prefs.backgroundMusic ? "border-gold/55 bg-gold/10 text-gold-bright" : "border-gold/25 bg-navy-deep text-foreground/55"}`}>
+          {prefs.backgroundMusic ? <Volume2 className="h-5 w-5" aria-hidden="true" /> : <VolumeX className="h-5 w-5" aria-hidden="true" />}
+        </button>
+        <button type="button" onClick={() => setFullRing((current) => !current)} aria-pressed={fullRing} aria-label="Ver el Rosario completo" className="flex h-10 w-10 items-center justify-center rounded-full border border-gold/35 bg-navy-deep text-gold transition hover:bg-gold/10">
+          <CircleDot className="h-5 w-5" aria-hidden="true" />
+        </button>
+      </div>
     }>
       {session.completed ? (
         <div className="h-full overflow-hidden px-3 py-2"><RosaryCompletion onRestart={session.restart} intentionLabel={flow.intention?.label ?? null} group={group} /></div>
@@ -87,11 +99,9 @@ export const RosarioDigital = () => {
               {mystery?.title ? <p className="mt-1 line-clamp-1 font-display text-[clamp(0.94rem,3.45vw,1.08rem)] italic leading-tight text-gold-bright">{mystery.title}</p> : null}
             </div>
           </section>
-
           <div className="shrink-0"><RosaryProgress progress={session.progress} mysteryNumber={mysteryNumber} mysteryTotal={flow.scope === "decena" ? 1 : 5} prayerLabel={prayerProgressLabel} sectionLabel={session.section.title} /></div>
           <div className="shrink-0 -my-1.5 scale-[0.93] origin-center"><RosaryBeadRing section={session.section} currentBeadId={session.bead.id} onSelect={session.jumpToBead} /></div>
           <div className="min-h-[120px] flex-1 overflow-hidden"><PrayerStepCard bead={session.bead} mystery={mystery} textSize={prefs.textSize} highContrast={prefs.highContrast} compact /></div>
-
           <div className="grid shrink-0 grid-cols-[48px_1fr] items-center gap-2.5">
             <button type="button" onClick={session.prev} disabled={!canGoBack} aria-label="Oración anterior" className="flex h-[48px] w-[48px] items-center justify-center rounded-full border border-gold/45 bg-navy/60 text-gold transition hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-25"><ChevronLeft className="h-5.5 w-5.5" aria-hidden="true" /></button>
             <button type="button" onClick={session.next} className="flex min-h-[50px] items-center justify-center gap-2.5 rounded-full border border-[#ffe18a]/70 bg-gradient-to-r from-[#e5a92f] via-[#f7ca59] to-[#d99a28] px-5 font-display text-[1.12rem] font-bold uppercase tracking-[0.1em] text-[#11100b] shadow-[0_8px_22px_rgba(216,155,38,0.22)] transition hover:brightness-105 active:scale-[0.99]">Continuar<ChevronRight className="h-5.5 w-5.5" aria-hidden="true" /></button>
