@@ -51,7 +51,7 @@ export const RosarioFisico = () => {
         <RosaryLoading label="Preparando el rosario" />
       ) : (
         <div className="space-y-4">
-          <RosaryPrayerScene title={decade ? `${decade}º misterio` : s.section.title} subtitle={mystery?.title} image={mysteryArt[group]} mystery={mystery} />
+          <RosaryPrayerScene title={decade ? `${decade}º misterio` : s.section.title} subtitle={mystery?.title} image={mystery?.imageUrl ?? mysteryArt[group]} mystery={mystery} />
           <section className="glass gold-border rounded-3xl p-4">
             <h3 className="text-xs uppercase tracking-[0.2em] text-gold/90">Oraciones de esta decena</h3>
             <ul className="mt-2 space-y-1">
