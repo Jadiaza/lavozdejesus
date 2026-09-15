@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Headphones, Pause, Play, RotateCcw, RotateCw, Volume2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Headphones, Pause, Play, RotateCcw, RotateCw, Volume2 } from "lucide-react";
 import { RosaryLayout } from "../components/RosaryLayout";
 import { RosaryPrayerScene } from "../components/RosaryPrayerScene";
 import { mysteryGroups } from "../mocks/mysteries";
@@ -34,12 +34,14 @@ const formatTime = (seconds: number) => {
 
 export const RosarioAudio = () => {
   const [params] = useSearchParams();
-  const group = isGroup(params.get("grupo")) ? (params.get("grupo") as MysteryGroupId) : rosaryTodayService.groupForDate();
+  const todayGroup = rosaryTodayService.groupForDate();
+  const group = isGroup(params.get("grupo")) ? (params.get("grupo") as MysteryGroupId) : todayGroup;
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState(false);
+  const [showGroups, setShowGroups] = useState(false);
 
   const groupData = mysteryGroups[group];
   const featuredMystery = useMemo(() => groupData.mysteries[0] ?? null, [groupData]);
@@ -76,15 +78,13 @@ export const RosarioAudio = () => {
   };
 
   return (
-    <RosaryLayout title="Rosario en audio" subtitle={groupData.name} focus>
+    <RosaryLayout title="Rosario en audio" subtitle={group === todayGroup ? "Misterios de hoy" : groupData.name} focus>
       <div className="mx-auto w-full max-w-2xl space-y-5 pb-4">
         <RosaryPrayerScene title={groupData.name} subtitle={DAYS_BY_GROUP[group]} image={mysteryArt[group]} mystery={featuredMystery} />
 
         <section className="glass gold-border overflow-hidden rounded-3xl p-5 sm:p-7">
           <div className="text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-gold/60 text-gold-bright">
-              <Headphones className="h-6 w-6" aria-hidden="true" />
-            </div>
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-gold/60 text-gold-bright"><Headphones className="h-6 w-6" aria-hidden="true" /></div>
             <p className="mt-3 font-display text-2xl font-semibold text-foreground">{groupData.name}</p>
             <p className="mt-1 text-sm text-muted-foreground">Reza el Santo Rosario acompañado de principio a fin.</p>
           </div>
@@ -93,9 +93,7 @@ export const RosarioAudio = () => {
 
           <div className="mt-6">
             <input type="range" min={0} max={duration || 0} step={1} value={Math.min(currentTime, duration || 0)} onChange={(event) => seekTo(Number(event.target.value))} aria-label="Progreso del Rosario en audio" className="w-full accent-gold" />
-            <div className="mt-1 flex justify-between text-xs text-muted-foreground">
-              <span>{formatTime(currentTime)}</span><span>{formatTime(duration)}</span>
-            </div>
+            <div className="mt-1 flex justify-between text-xs text-muted-foreground"><span>{formatTime(currentTime)}</span><span>{formatTime(duration)}</span></div>
           </div>
 
           <div className="mt-4 flex items-center justify-center gap-7">
@@ -108,12 +106,21 @@ export const RosarioAudio = () => {
           {error && <p role="alert" className="mt-4 rounded-2xl border border-gold/30 bg-navy-deep/60 px-4 py-3 text-center text-xs text-muted-foreground">No fue posible cargar el audio. Comprueba tu conexión e inténtalo nuevamente.</p>}
         </section>
 
-        <section className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Seleccionar misterios para escuchar">
-          {(Object.keys(AUDIO_BY_GROUP) as MysteryGroupId[]).map((item) => (
-            <a key={item} href={`?grupo=${item}`} aria-current={item === group ? "page" : undefined} className={`rounded-2xl border px-3 py-3 text-center text-xs font-medium transition ${item === group ? "border-gold bg-gold/10 text-gold-bright" : "border-gold/25 text-muted-foreground hover:border-gold/60"}`}>
-              {mysteryGroups[item].name.replace("Misterios ", "")}
-            </a>
-          ))}
+        <section className="text-center">
+          <button type="button" onClick={() => setShowGroups((value) => !value)} aria-expanded={showGroups} className="inline-flex min-h-11 items-center gap-2 px-3 text-sm text-gold-bright">
+            ¿Quieres rezar otros misterios? <span className="font-semibold">Cambiar</span>
+            {showGroups ? <ChevronUp className="h-4 w-4" aria-hidden="true" /> : <ChevronDown className="h-4 w-4" aria-hidden="true" />}
+          </button>
+
+          {showGroups && (
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Seleccionar otros misterios para escuchar">
+              {(Object.keys(AUDIO_BY_GROUP) as MysteryGroupId[]).map((item) => (
+                <a key={item} href={`?grupo=${item}`} aria-current={item === group ? "page" : undefined} className={`rounded-2xl border px-3 py-3 text-center text-xs font-medium transition ${item === group ? "border-gold bg-gold/10 text-gold-bright" : "border-gold/25 text-muted-foreground hover:border-gold/60"}`}>
+                  {mysteryGroups[item].name.replace("Misterios ", "")}
+                </a>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </RosaryLayout>
