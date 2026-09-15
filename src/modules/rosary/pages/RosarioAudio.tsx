@@ -15,13 +15,6 @@ const AUDIO_BY_GROUP: Record<MysteryGroupId, string> = {
   luminosos: "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/lvjplayer/rosario/audio/mysteries/luminosos/Misterios%20Luminosos%20(Jueves).mp3",
 };
 
-const DAYS_BY_GROUP: Record<MysteryGroupId, string> = {
-  gozosos: "Lunes y sábado",
-  luminosos: "Jueves",
-  dolorosos: "Martes y viernes",
-  gloriosos: "Miércoles y domingo",
-};
-
 const isGroup = (v: string | null): v is MysteryGroupId =>
   !!v && ["gozosos", "luminosos", "dolorosos", "gloriosos"].includes(v);
 
@@ -78,9 +71,9 @@ export const RosarioAudio = () => {
   };
 
   return (
-    <RosaryLayout title="Rosario en audio" subtitle={group === todayGroup ? "Misterios de hoy" : groupData.name} focus>
+    <RosaryLayout title="Rosario en audio" subtitle={group === todayGroup ? "Misterios de hoy" : undefined} focus>
       <div className="mx-auto w-full max-w-2xl space-y-5 pb-4">
-        <RosaryPrayerScene title={groupData.name} subtitle={DAYS_BY_GROUP[group]} image={mysteryArt[group]} mystery={featuredMystery} />
+        <RosaryPrayerScene title={groupData.name} image={mysteryArt[group]} mystery={featuredMystery} />
 
         <section className="glass gold-border overflow-hidden rounded-3xl p-5 sm:p-7">
           <div className="text-center">
@@ -102,7 +95,7 @@ export const RosarioAudio = () => {
             <button type="button" onClick={() => seekBy(15)} aria-label="Avanzar 15 segundos" className="flex h-12 w-12 items-center justify-center rounded-full gold-border text-gold-bright"><RotateCw className="h-5 w-5" aria-hidden="true" /></button>
           </div>
 
-          <div className="mt-5 flex items-center justify-center gap-2 text-xs text-muted-foreground"><Volume2 className="h-4 w-4 text-gold" aria-hidden="true" /><span>Audio completo · {DAYS_BY_GROUP[group]}</span></div>
+          <div className="mt-5 flex items-center justify-center gap-2 text-xs text-muted-foreground"><Volume2 className="h-4 w-4 text-gold" aria-hidden="true" /><span>Audio completo</span></div>
           {error && <p role="alert" className="mt-4 rounded-2xl border border-gold/30 bg-navy-deep/60 px-4 py-3 text-center text-xs text-muted-foreground">No fue posible cargar el audio. Comprueba tu conexión e inténtalo nuevamente.</p>}
         </section>
 
