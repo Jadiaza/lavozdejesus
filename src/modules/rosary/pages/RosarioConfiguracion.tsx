@@ -5,13 +5,7 @@ import { useRosaryFlow } from "../hooks/useRosaryFlow";
 import { useRosaryPreferences } from "../hooks/useRosaryPreferences";
 import { routeForMode } from "../utils/routes";
 import { rosarySessionService } from "../services/rosarySessionService";
-import type { RosaryVoiceId, TextSize } from "../types";
-
-const VOICES: Array<{ id: RosaryVoiceId; label: string }> = [
-  { id: "femenina1", label: "Voz femenina 1" },
-  { id: "femenina2", label: "Voz femenina 2" },
-  { id: "masculina1", label: "Voz masculina 1" },
-];
+import type { TextSize } from "../types";
 
 const SIZES: Array<{ id: TextSize; label: string }> = [
   { id: "sm", label: "Pequeño" },
@@ -33,7 +27,6 @@ export const RosarioConfiguracion = () => {
   return (
     <RosaryLayout title="Configuración" subtitle="Ajusta tu experiencia de oración" back="/rosario/seleccionar-misterios">
       <section className="glass gold-border rounded-3xl px-5 py-2">
-        <RosaryValueRow label="Voz" value={prefs.voice} options={VOICES} onChange={(voice) => update({ voice })} />
         <RosarySwitchRow
           label="Música de fondo"
           checked={prefs.backgroundMusic}
@@ -51,12 +44,6 @@ export const RosarioConfiguracion = () => {
 
       <section className="mt-5 glass gold-border rounded-3xl p-5" aria-label="Ajustes de audio">
         <h2 className="font-display text-xl">Audio</h2>
-        <RosarySliderRow
-          id="rosary-voice"
-          label="Volumen de voz"
-          value={prefs.voiceVolume}
-          onChange={(voiceVolume) => update({ voiceVolume })}
-        />
         <RosarySliderRow
           id="rosary-music"
           label="Volumen de música"
