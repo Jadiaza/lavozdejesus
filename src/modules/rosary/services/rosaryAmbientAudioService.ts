@@ -8,20 +8,29 @@ const getAudio = () => {
     ambientAudio = new Audio(AMBIENT_AUDIO_URL);
     ambientAudio.loop = true;
     ambientAudio.preload = "auto";
+    ambientAudio.playsInline = true;
     ambientAudio.volume = 0.22;
   }
   return ambientAudio;
 };
 
 export const rosaryAmbientAudioService = {
-  async play() {
+  async play(volume = 0.22) {
     const audio = getAudio();
-    if (!audio) return;
+    if (!audio) return false;
+    audio.volume = Math.min(1, Math.max(0, volume));
     try {
       await audio.play();
+      return true;
     } catch {
-      // El navegador puede bloquear reproducción si se pierde el gesto del usuario.
+      return false;
     }
+  },
+
+  setVolume(volume: number) {
+    const audio = getAudio();
+    if (!audio) return;
+    audio.volume = Math.min(1, Math.max(0, volume));
   },
 
   pause() {
