@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ChevronDown, ChevronUp, Headphones, Pause, Play, RotateCcw, RotateCw, Volume2 } from "lucide-react";
 import { RosaryLayout } from "../components/RosaryLayout";
-import { RosaryPrayerScene } from "../components/RosaryPrayerScene";
 import { mysteryGroups } from "../mocks/mysteries";
 import { mysteryArt } from "../mocks/mysteryArt";
 import { rosaryTodayService } from "../services/rosaryTodayService";
@@ -15,9 +14,7 @@ const AUDIO_BY_GROUP: Record<MysteryGroupId, string> = {
   luminosos: "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/lvjplayer/rosario/audio/mysteries/luminosos/Misterios%20Luminosos%20(Jueves).mp3",
 };
 
-const isGroup = (v: string | null): v is MysteryGroupId =>
-  !!v && ["gozosos", "luminosos", "dolorosos", "gloriosos"].includes(v);
-
+const isGroup = (v: string | null): v is MysteryGroupId => !!v && ["gozosos", "luminosos", "dolorosos", "gloriosos"].includes(v);
 const formatTime = (seconds: number) => {
   if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
   const minutes = Math.floor(seconds / 60);
@@ -35,35 +32,22 @@ export const RosarioAudio = () => {
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState(false);
   const [showGroups, setShowGroups] = useState(false);
-
   const groupData = mysteryGroups[group];
-  const featuredMystery = useMemo(() => groupData.mysteries[0] ?? null, [groupData]);
 
   useEffect(() => {
-    setPlaying(false);
-    setCurrentTime(0);
-    setDuration(0);
-    setError(false);
-    audioRef.current?.load();
+    setPlaying(false); setCurrentTime(0); setDuration(0); setError(false); audioRef.current?.load();
   }, [group]);
 
   const togglePlayback = async () => {
     const audio = audioRef.current;
     if (!audio) return;
-    try {
-      if (audio.paused) await audio.play();
-      else audio.pause();
-    } catch {
-      setError(true);
-    }
+    try { if (audio.paused) await audio.play(); else audio.pause(); } catch { setError(true); }
   };
-
   const seekBy = (seconds: number) => {
     const audio = audioRef.current;
     if (!audio) return;
     audio.currentTime = Math.min(Math.max(0, audio.currentTime + seconds), audio.duration || 0);
   };
-
   const seekTo = (value: number) => {
     const audio = audioRef.current;
     if (!audio || !Number.isFinite(audio.duration)) return;
@@ -71,50 +55,47 @@ export const RosarioAudio = () => {
   };
 
   return (
-    <RosaryLayout title="Rosario en audio" subtitle={group === todayGroup ? "Misterios de hoy" : undefined} focus>
-      <div className="mx-auto w-full max-w-2xl space-y-5 pb-4">
-        <RosaryPrayerScene title={groupData.name} image={mysteryArt[group]} mystery={featuredMystery} />
-
-        <section className="glass gold-border overflow-hidden rounded-3xl p-5 sm:p-7">
-          <div className="text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-gold/60 text-gold-bright"><Headphones className="h-6 w-6" aria-hidden="true" /></div>
-            <p className="mt-3 font-display text-2xl font-semibold text-foreground">{groupData.name}</p>
-            <p className="mt-1 text-sm text-muted-foreground">Reza el Santo Rosario acompañado de principio a fin.</p>
+    <RosaryLayout title="" focus fullScreen hideHeader>
+      <div className="relative flex h-full min-h-0 flex-col overflow-y-auto bg-[#020a12] pb-5">
+        <section className="relative min-h-[clamp(350px,52dvh,500px)] shrink-0 overflow-hidden">
+          <img src={mysteryArt[group]} alt={groupData.name} className="absolute inset-0 h-full w-full object-cover object-center" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,6,12,.08)_0%,rgba(0,6,12,.03)_38%,rgba(0,6,12,.18)_58%,rgba(0,7,13,.88)_92%,#020a12_100%)]" />
+          <div className="absolute inset-x-5 bottom-8 [text-shadow:0_3px_12px_rgba(0,0,0,1),0_1px_4px_rgba(0,0,0,1)]">
+            <span className="inline-flex rounded-full border border-gold/80 bg-[#06111c]/72 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-gold-bright shadow-lg backdrop-blur-sm">{group === todayGroup ? "Misterios de hoy" : "Santo Rosario"}</span>
+            <h1 className="mt-2 font-display text-[clamp(2rem,8.5vw,2.65rem)] font-semibold leading-none text-white">{groupData.name}</h1>
+            <p className="mt-2 text-[0.9rem] text-white/90">Rosario completo en audio</p>
           </div>
-
-          <audio ref={audioRef} src={AUDIO_BY_GROUP[group]} preload="metadata" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)} onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)} onError={() => setError(true)} />
-
-          <div className="mt-6">
-            <input type="range" min={0} max={duration || 0} step={1} value={Math.min(currentTime, duration || 0)} onChange={(event) => seekTo(Number(event.target.value))} aria-label="Progreso del Rosario en audio" className="w-full accent-gold" />
-            <div className="mt-1 flex justify-between text-xs text-muted-foreground"><span>{formatTime(currentTime)}</span><span>{formatTime(duration)}</span></div>
-          </div>
-
-          <div className="mt-4 flex items-center justify-center gap-7">
-            <button type="button" onClick={() => seekBy(-15)} aria-label="Retroceder 15 segundos" className="flex h-12 w-12 items-center justify-center rounded-full gold-border text-gold-bright"><RotateCcw className="h-5 w-5" aria-hidden="true" /></button>
-            <button type="button" onClick={togglePlayback} aria-label={playing ? "Pausar Rosario" : "Reproducir Rosario"} className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-gold text-navy-deep shadow-lg">{playing ? <Pause className="h-8 w-8" fill="currentColor" aria-hidden="true" /> : <Play className="ml-1 h-8 w-8" fill="currentColor" aria-hidden="true" />}</button>
-            <button type="button" onClick={() => seekBy(15)} aria-label="Avanzar 15 segundos" className="flex h-12 w-12 items-center justify-center rounded-full gold-border text-gold-bright"><RotateCw className="h-5 w-5" aria-hidden="true" /></button>
-          </div>
-
-          <div className="mt-5 flex items-center justify-center gap-2 text-xs text-muted-foreground"><Volume2 className="h-4 w-4 text-gold" aria-hidden="true" /><span>Audio completo</span></div>
-          {error && <p role="alert" className="mt-4 rounded-2xl border border-gold/30 bg-navy-deep/60 px-4 py-3 text-center text-xs text-muted-foreground">No fue posible cargar el audio. Comprueba tu conexión e inténtalo nuevamente.</p>}
         </section>
 
-        <section className="text-center">
-          <button type="button" onClick={() => setShowGroups((value) => !value)} aria-expanded={showGroups} className="inline-flex min-h-11 items-center gap-2 px-3 text-sm text-gold-bright">
-            ¿Quieres rezar otros misterios? <span className="font-semibold">Cambiar</span>
-            {showGroups ? <ChevronUp className="h-4 w-4" aria-hidden="true" /> : <ChevronDown className="h-4 w-4" aria-hidden="true" />}
-          </button>
-
-          {showGroups && (
-            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Seleccionar otros misterios para escuchar">
-              {(Object.keys(AUDIO_BY_GROUP) as MysteryGroupId[]).map((item) => (
-                <a key={item} href={`?grupo=${item}`} aria-current={item === group ? "page" : undefined} className={`rounded-2xl border px-3 py-3 text-center text-xs font-medium transition ${item === group ? "border-gold bg-gold/10 text-gold-bright" : "border-gold/25 text-muted-foreground hover:border-gold/60"}`}>
-                  {mysteryGroups[item].name.replace("Misterios ", "")}
-                </a>
-              ))}
+        <div className="relative z-10 -mt-3 px-3">
+          <section className="overflow-hidden rounded-[1.65rem] border border-gold/45 bg-[linear-gradient(145deg,rgba(12,31,47,.98),rgba(5,19,31,.98))] px-5 py-5 shadow-[0_18px_45px_rgba(0,0,0,.3)]">
+            <div className="text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-gold/60 text-gold-bright"><Headphones className="h-6 w-6" aria-hidden="true" /></div>
+              <p className="mt-2 font-display text-[1.35rem] font-semibold text-foreground">{groupData.name}</p>
+              <p className="mt-1 text-[0.78rem] text-muted-foreground">Reza el Santo Rosario acompañado de principio a fin.</p>
             </div>
-          )}
-        </section>
+
+            <audio ref={audioRef} src={AUDIO_BY_GROUP[group]} preload="metadata" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)} onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)} onError={() => setError(true)} />
+
+            <div className="mt-4">
+              <input type="range" min={0} max={duration || 0} step={1} value={Math.min(currentTime, duration || 0)} onChange={(event) => seekTo(Number(event.target.value))} aria-label="Progreso del Rosario en audio" className="w-full accent-gold" />
+              <div className="mt-1 flex justify-between text-[0.7rem] text-muted-foreground"><span>{formatTime(currentTime)}</span><span>{formatTime(duration)}</span></div>
+            </div>
+
+            <div className="mt-3 flex items-center justify-center gap-7">
+              <button type="button" onClick={() => seekBy(-15)} aria-label="Retroceder 15 segundos" className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/45 text-gold-bright"><RotateCcw className="h-5 w-5" /></button>
+              <button type="button" onClick={togglePlayback} aria-label={playing ? "Pausar Rosario" : "Reproducir Rosario"} className="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gradient-gold text-navy-deep shadow-[0_8px_24px_rgba(219,163,47,.28)]">{playing ? <Pause className="h-7 w-7" fill="currentColor" /> : <Play className="ml-1 h-7 w-7" fill="currentColor" />}</button>
+              <button type="button" onClick={() => seekBy(15)} aria-label="Avanzar 15 segundos" className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/45 text-gold-bright"><RotateCw className="h-5 w-5" /></button>
+            </div>
+            <div className="mt-3 flex items-center justify-center gap-2 text-[0.72rem] text-muted-foreground"><Volume2 className="h-4 w-4 text-gold" /><span>Audio completo</span></div>
+            {error ? <p role="alert" className="mt-3 rounded-2xl border border-gold/30 bg-navy-deep/60 px-4 py-3 text-center text-xs text-muted-foreground">No fue posible cargar el audio. Comprueba tu conexión e inténtalo nuevamente.</p> : null}
+          </section>
+
+          <section className="pt-3 text-center">
+            <button type="button" onClick={() => setShowGroups((value) => !value)} aria-expanded={showGroups} className="inline-flex min-h-11 items-center gap-2 px-3 text-[0.82rem] text-gold-bright">¿Quieres rezar otros misterios? <span className="font-semibold">Cambiar</span>{showGroups ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</button>
+            {showGroups ? <div className="mt-2 grid grid-cols-2 gap-2" aria-label="Seleccionar otros misterios para escuchar">{(Object.keys(AUDIO_BY_GROUP) as MysteryGroupId[]).map((item) => <a key={item} href={`?grupo=${item}`} aria-current={item === group ? "page" : undefined} className={`rounded-2xl border px-3 py-3 text-center text-xs font-medium ${item === group ? "border-gold bg-gold/10 text-gold-bright" : "border-gold/25 text-muted-foreground"}`}>{mysteryGroups[item].name.replace("Misterios ", "")}</a>)}</div> : null}
+          </section>
+        </div>
       </div>
     </RosaryLayout>
   );
