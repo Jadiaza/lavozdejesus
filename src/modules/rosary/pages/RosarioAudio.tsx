@@ -48,7 +48,6 @@ export const RosarioAudio = () => {
           <div className="absolute inset-x-5 bottom-5 [text-shadow:0_3px_12px_rgba(0,0,0,1),0_1px_4px_rgba(0,0,0,1)]">
             <span className="inline-flex rounded-full border border-gold/80 bg-[#06111c]/72 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-gold-bright shadow-lg backdrop-blur-sm">{group === todayGroup ? "Misterios de hoy" : "Santo Rosario"}</span>
             <h1 className="mt-1.5 font-display text-[clamp(1.85rem,8vw,2.45rem)] font-semibold leading-none text-white">{groupData.name}</h1>
-            <p className="mt-1.5 text-[0.82rem] text-white/90">Rosario completo en audio</p>
           </div>
         </section>
 
