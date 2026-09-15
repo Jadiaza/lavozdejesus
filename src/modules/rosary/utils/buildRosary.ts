@@ -8,9 +8,7 @@ import type {
 
 export interface RosaryEngineConfig {
   group: MysteryGroupId;
-  /** número de decenas */
   groups?: number;
-  /** avemarías por decena */
   beadsPerGroup?: number;
   includeSpiritInvocation?: boolean;
   includeOffering?: boolean;
@@ -34,8 +32,10 @@ const bead = (
 });
 
 /**
- * Motor configurable de cuentas: la estructura del Rosario se genera desde
- * datos, no desde JSX. Reutilizable para coronillas y otras devociones.
+ * Secuencia del Santo Rosario en español:
+ * Señal de la Cruz, Credo, Padre Nuestro, tres Ave Marías y Gloria;
+ * cinco misterios con Padre Nuestro, diez Ave Marías, Gloria y Fátima;
+ * Salve, oración final y Señal de la Cruz.
  */
 export const buildRosaryDefinition = (
   config: RosaryEngineConfig,
@@ -44,13 +44,7 @@ export const buildRosaryDefinition = (
     group,
     groups = 5,
     beadsPerGroup = 10,
-    includeSpiritInvocation = true,
-    includeOffering = true,
-    includeContrition = true,
     includeFatima = true,
-    includeJaculatory = true,
-    includeLitanies = false,
-    includeConsecration = false,
   } = config;
 
   const groupData = mysteryGroups[group];
@@ -59,23 +53,13 @@ export const buildRosaryDefinition = (
   const next = () => order++;
   const sections: RosarySection[] = [];
 
-  // 1. Apertura
   const openingKeys: Array<[string, string, RosaryBead["type"]]> = [
     ["senal_cruz", "Señal de la Cruz", "cross"],
-    ...(includeSpiritInvocation
-      ? ([["espiritu_santo", "Invocación al Espíritu Santo", "separator"]] as Array<[string, string, RosaryBead["type"]]>)
-      : []),
-    ...(includeOffering
-      ? ([["ofrecimiento", "Ofrecimiento del Rosario", "separator"]] as Array<[string, string, RosaryBead["type"]]>)
-      : []),
-    ...(includeContrition
-      ? ([["contricion", "Acto de contrición", "separator"]] as Array<[string, string, RosaryBead["type"]]>)
-      : []),
-    ["credo", "Credo", "medal"],
-    ["padrenuestro", "Padrenuestro", "large"],
-    ["avemaria", "Avemaría 1 de 3", "small"],
-    ["avemaria", "Avemaría 2 de 3", "small"],
-    ["avemaria", "Avemaría 3 de 3", "small"],
+    ["credo", "Credo de los Apóstoles", "medal"],
+    ["padrenuestro", "Padre Nuestro", "large"],
+    ["avemaria", "Ave María 1 de 3 · por la Fe", "small"],
+    ["avemaria", "Ave María 2 de 3 · por la Esperanza", "small"],
+    ["avemaria", "Ave María 3 de 3 · por la Caridad", "small"],
     ["gloria", "Gloria", "separator"],
   ];
 
@@ -86,120 +70,49 @@ export const buildRosaryDefinition = (
     title: "Oraciones iniciales",
     beads: openingKeys.map(([prayerKey, label, type], i) =>
       bead(
-        {
-          id: `opening-${i}`,
-          order: next(),
-          group: null,
-          type,
-          prayerKey,
-          label,
-          audioSegmentId: `seg-${prayerKey}`,
-        },
+        { id: `opening-${i}`, order: next(), group: null, type, prayerKey, label, audioSegmentId: `seg-${prayerKey}` },
         palette,
       ),
     ),
   });
 
-  // 2. Decenas
   for (let d = 1; d <= groups; d++) {
     const mystery = groupData.mysteries[d - 1];
     const beads: RosaryBead[] = [];
     beads.push(
       bead(
-        {
-          id: `d${d}-anuncio`,
-          order: next(),
-          group: d,
-          type: "separator",
-          prayerKey: "anuncio",
-          label: `${d}º misterio: ${mystery?.shortName ?? ""}`,
-          audioSegmentId: `seg-lectura-${d}`,
-        },
+        { id: `d${d}-anuncio`, order: next(), group: d, type: "separator", prayerKey: "anuncio", label: `${d}º misterio: ${mystery?.shortName ?? ""}`, audioSegmentId: `seg-lectura-${d}` },
         palette,
         false,
       ),
       bead(
-        {
-          id: `d${d}-pausa`,
-          order: next(),
-          group: d,
-          type: "separator",
-          prayerKey: "pausa",
-          label: "Pausa contemplativa",
-          audioSegmentId: `seg-meditacion-${d}`,
-        },
+        { id: `d${d}-pausa`, order: next(), group: d, type: "separator", prayerKey: "pausa", label: "Contemplación", audioSegmentId: `seg-meditacion-${d}` },
         palette,
         false,
       ),
       bead(
-        {
-          id: `d${d}-pn`,
-          order: next(),
-          group: d,
-          type: "large",
-          prayerKey: "padrenuestro",
-          label: "Padrenuestro",
-          audioSegmentId: "seg-padrenuestro",
-        },
+        { id: `d${d}-pn`, order: next(), group: d, type: "large", prayerKey: "padrenuestro", label: "Padre Nuestro", audioSegmentId: "seg-padrenuestro" },
         palette,
       ),
     );
     for (let a = 1; a <= beadsPerGroup; a++) {
       beads.push(
         bead(
-          {
-            id: `d${d}-ave${a}`,
-            order: next(),
-            group: d,
-            type: "small",
-            prayerKey: "avemaria",
-            label: `Avemaría ${a} de ${beadsPerGroup}`,
-            audioSegmentId: "seg-avemaria",
-          },
+          { id: `d${d}-ave${a}`, order: next(), group: d, type: "small", prayerKey: "avemaria", label: `Ave María ${a} de ${beadsPerGroup}`, audioSegmentId: "seg-avemaria" },
           palette,
         ),
       );
     }
     beads.push(
       bead(
-        {
-          id: `d${d}-gloria`,
-          order: next(),
-          group: d,
-          type: "separator",
-          prayerKey: "gloria",
-          label: "Gloria",
-          audioSegmentId: "seg-gloria",
-        },
+        { id: `d${d}-gloria`, order: next(), group: d, type: "separator", prayerKey: "gloria", label: "Gloria", audioSegmentId: "seg-gloria" },
         palette,
       ),
     );
     if (includeFatima) {
       beads.push(
         bead(
-          {
-            id: `d${d}-fatima`,
-            order: next(),
-            group: d,
-            type: "separator",
-            prayerKey: "fatima",
-            label: "Oración de Fátima",
-          },
-          palette,
-        ),
-      );
-    }
-    if (includeJaculatory) {
-      beads.push(
-        bead(
-          {
-            id: `d${d}-jac`,
-            order: next(),
-            group: d,
-            type: "separator",
-            prayerKey: "jaculatoria",
-            label: "Jaculatoria",
-          },
+          { id: `d${d}-fatima`, order: next(), group: d, type: "separator", prayerKey: "fatima", label: "Jaculatoria de Fátima" },
           palette,
         ),
       );
@@ -215,12 +128,9 @@ export const buildRosaryDefinition = (
     });
   }
 
-  // 3. Cierre
   const closingKeys: Array<[string, string]> = [
-    ["salve", "Salve"],
-    ...(includeLitanies ? ([["letanias", "Letanías lauretanas"]] as Array<[string, string]>) : []),
-    ["oracion_final", "Oración final"],
-    ...(includeConsecration ? ([["consagracion", "Consagración mariana"]] as Array<[string, string]>) : []),
+    ["salve", "La Salve"],
+    ["oracion_final", "Oración Final"],
     ["senal_cruz", "Señal de la Cruz"],
   ];
   sections.push({
@@ -230,15 +140,7 @@ export const buildRosaryDefinition = (
     title: "Oraciones finales",
     beads: closingKeys.map(([prayerKey, label], i) =>
       bead(
-        {
-          id: `closing-${i}`,
-          order: next(),
-          group: null,
-          type: "closing",
-          prayerKey,
-          label,
-          audioSegmentId: `seg-${prayerKey}`,
-        },
+        { id: `closing-${i}`, order: next(), group: null, type: "closing", prayerKey, label, audioSegmentId: `seg-${prayerKey}` },
         palette,
         false,
       ),
@@ -251,7 +153,7 @@ export const buildRosaryDefinition = (
     title: `Santo Rosario — ${groupData.name}`,
     mysteryGroup: group,
     sections,
-    version: "1.0.0",
+    version: "1.1.0-es",
   };
 };
 
