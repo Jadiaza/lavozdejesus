@@ -1,4 +1,5 @@
 import type { Mystery, MysteryGroup, MysteryGroupId } from "../types";
+import { mysteryImageFor } from "./mysteryArt";
 
 /**
  * CONTENIDO PROVISIONAL — datos mock claramente identificados.
@@ -25,7 +26,7 @@ const m = (
   fruit,
   suggestedIntention: null,
   healingPrayer: null,
-  imageUrl: null,
+  imageUrl: mysteryImageFor(group, order),
   readingAudioId: null,
   meditationAudioId: null,
   estimatedMinutes: 4,
