@@ -50,6 +50,7 @@ export const RosarioDigital = () => {
   const prayerProgressLabel = currentAveMariaIndex >= 0 ? `Avemaría ${currentAveMariaIndex + 1} de ${aveMariaBeads.length}` : session.bead?.label ?? "Oración actual";
   const mysteryNumber = decade ?? mystery?.order ?? null;
   const mysteryHeading = mysteryNumber ? `${ORDINALS[mysteryNumber - 1] ?? "Primer"} misterio ${GROUP_ADJECTIVES[group]}` : session.section?.title ?? "Oraciones del Rosario";
+  const currentMysteryImage = mystery?.imageUrl ?? mysteryArt[group];
   const canGoBack = Boolean(session.session) && ((session.session?.sectionIndex ?? 0) > 0 || (session.session?.beadIndex ?? 0) > 0);
   const saveAndExit = () => navigate("/rosario");
   const changeMystery = () => navigate("/rosario/seleccionar-misterios");
@@ -85,7 +86,7 @@ export const RosarioDigital = () => {
               <p className="mt-1 font-display text-[0.86rem] italic text-[#e9bd5c]">{mysteryGroups[group].name}</p>
             </header>
             <div className="min-h-0 flex-1">
-              <RosaryFullRing definition={session.definition} currentOrder={session.bead.order} centerImage={mysteryArt[group]} onSelectOrder={session.jumpToOrder} />
+              <RosaryFullRing definition={session.definition} currentOrder={session.bead.order} centerImage={currentMysteryImage} onSelectOrder={session.jumpToOrder} />
             </div>
             <button type="button" onClick={() => setFullRing(false)} className="mx-auto mt-1 flex min-h-11 w-[min(92%,22rem)] shrink-0 items-center justify-center gap-2.5 rounded-full border border-[#ffe18a]/80 bg-gradient-to-r from-[#d79222] via-[#f5c751] to-[#bc7416] px-5 font-display text-[0.98rem] font-semibold uppercase tracking-[0.07em] text-[#160d05] shadow-[0_10px_28px_rgba(193,126,29,0.22)]"><HandHeart className="h-5 w-5" aria-hidden="true" />Volver a la oración</button>
           </div>
@@ -93,7 +94,7 @@ export const RosarioDigital = () => {
       ) : (
         <div className="flex h-full min-h-0 flex-col gap-[clamp(0.26rem,0.68dvh,0.42rem)] overflow-hidden px-3 pb-1 pt-1">
           <section className="shrink-0 overflow-hidden rounded-[1.2rem] border border-gold/20 bg-[#06131f] shadow-[0_14px_34px_rgba(0,0,0,0.2)]">
-            <div className="h-[clamp(125px,17.5dvh,172px)] w-full overflow-hidden"><img src={mysteryArt[group]} alt={mystery?.title ?? mysteryGroups[group].name} className="h-full w-full object-cover object-center" /></div>
+            <div className="h-[clamp(125px,17.5dvh,172px)] w-full overflow-hidden"><img src={currentMysteryImage} alt={mystery?.title ?? mysteryGroups[group].name} className="h-full w-full object-cover object-center" /></div>
             <div className="border-t border-gold/10 bg-[#020c16] px-4 py-[clamp(0.44rem,0.82dvh,0.62rem)] text-center">
               <h2 className="font-display text-[clamp(1.5rem,6.4vw,2.05rem)] font-semibold leading-[1.01] tracking-[-0.02em] text-foreground">{mysteryHeading}</h2>
               {mystery?.title ? <p className="mt-1 line-clamp-1 font-display text-[clamp(0.94rem,3.45vw,1.08rem)] italic leading-tight text-gold-bright">{mystery.title}</p> : null}
