@@ -39,10 +39,10 @@ export const PrayerStepCard = ({ bead, mystery, textSize, highContrast, compact 
 
       <div className={`min-h-0 flex-1 overflow-y-auto overscroll-contain pr-2 [scrollbar-color:rgba(214,164,67,.65)_rgba(255,255,255,.08)] [scrollbar-width:thin] ${isMysteryStep ? "" : "mt-3"}`}>
         {isMysteryStep && mystery ? (
-          <div>
-            <p className="font-display text-[0.98rem] italic text-gold-bright">{mystery.scriptureRef} · Fruto: {mystery.fruit}</p>
-            {mystery.scriptureText ? <p className={`mt-3 ${activeTextClass} font-display text-foreground/95`}>{mystery.scriptureText}</p> : null}
-            {mystery.meditation ? <p className={`mt-3 ${activeTextClass} font-display text-foreground/85`}>{mystery.meditation}</p> : null}
+          <div className="flex h-full min-h-[92px] flex-col justify-center">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-gold/70">Fruto espiritual</p>
+            <p className="mt-1.5 font-display text-[clamp(1.25rem,5vw,1.55rem)] italic leading-tight text-gold-bright">{mystery.fruit}</p>
+            {mystery.meditation ? <p className={`mt-3 ${activeTextClass} font-display text-foreground/85`}>{mystery.meditation}</p> : <p className="mt-2 text-[0.82rem] leading-relaxed text-foreground/65">Contempla en silencio la Palabra proclamada y pide esta gracia para tu vida.</p>}
           </div>
         ) : null}
 
