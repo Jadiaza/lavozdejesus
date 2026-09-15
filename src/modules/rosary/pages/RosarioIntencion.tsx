@@ -5,6 +5,7 @@ import { RosaryLayout } from "../components/RosaryLayout";
 import { useRosaryFlow } from "../hooks/useRosaryFlow";
 import { rosaryTodayService } from "../services/rosaryTodayService";
 import { rosaryAmbientAudioService } from "../services/rosaryAmbientAudioService";
+import { rosarySessionService } from "../services/rosarySessionService";
 import { routeForMode } from "../utils/routes";
 import type { RosaryIntentionKind } from "../types";
 
@@ -29,8 +30,14 @@ export const RosarioIntencion = () => {
   const [allowStore, setAllowStore] = useState(flow.intention?.allowStore ?? false);
 
   const beginRosary = () => {
-    if (flow.mode === "digital" || flow.mode === "physical") void rosaryAmbientAudioService.play();
-    else rosaryAmbientAudioService.stop();
+    const prefs = rosarySessionService.preferences();
+    if (flow.mode === "digital" || flow.mode === "physical") {
+      // La música arranca dentro del mismo gesto del botón Continuar para evitar
+      // el bloqueo de reproducción automática de los navegadores móviles.
+      void rosaryAmbientAudioService.play(prefs.musicVolume ?? 0.22);
+    } else {
+      rosaryAmbientAudioService.stop();
+    }
     const group = flow.group ?? rosaryTodayService.groupForDate();
     navigate(`${routeForMode(flow.mode)}?grupo=${group}`);
   };
