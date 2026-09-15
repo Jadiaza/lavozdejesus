@@ -1,12 +1,11 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Bookmark, ChevronLeft, ChevronRight, CircleDot, HandHeart, RefreshCcw, Volume2, VolumeX } from "lucide-react";
+import { Bookmark, ChevronLeft, ChevronRight, RefreshCcw, Volume2, VolumeX } from "lucide-react";
 import { RosaryLayout } from "../components/RosaryLayout";
 import { RosaryLoading } from "../components/RosaryStateViews";
 import { PrayerStepCard } from "../components/PrayerStepCard";
 import { RosaryProgress } from "../components/RosaryProgress";
 import { RosaryBeadRing } from "../components/RosaryBeadRing";
-import { RosaryFullRing } from "../components/RosaryFullRing";
 import { RosaryCompletion } from "../components/RosaryCompletion";
 import { useRosarySession } from "../hooks/useRosarySession";
 import { useRosaryPreferences } from "../hooks/useRosaryPreferences";
@@ -30,7 +29,6 @@ export const RosarioDigital = () => {
   const group: MysteryGroupId = isGroup(requestedGroup) ? requestedGroup : rosaryTodayService.groupForDate();
   const { prefs, update: updatePrefs } = useRosaryPreferences();
   const { flow } = useRosaryFlow();
-  const [fullRing, setFullRing] = useState(false);
   const session = useRosarySession({ group, mode: "digital", intention: flow.intention, haptics: prefs.haptics, decades: flow.scope === "decena" ? 1 : 5, startDecade: flow.startDecade });
   useKeepAwake(prefs.keepAwake && !session.completed);
   const mystery = useMemo(() => !session.section?.mysteryId ? null : mysteryGroups[group].mysteries.find((item) => item.id === session.section?.mysteryId) ?? null, [group, session.section]);
@@ -45,13 +43,11 @@ export const RosarioDigital = () => {
   const toggleAmbient = () => { const next = !prefs.backgroundMusic; updatePrefs({ backgroundMusic: next }); if (next) void rosaryAmbientAudioService.play(prefs.musicVolume); else rosaryAmbientAudioService.pause(); };
 
   return <RosaryLayout title="" focus fullScreen hideHeader>
-    {session.completed ? <div className="h-full overflow-hidden px-3 py-2"><RosaryCompletion onRestart={session.restart} intentionLabel={flow.intention?.label ?? null} group={group} /></div> : !session.definition || !session.section || !session.bead ? <div className="flex h-full items-center justify-center"><RosaryLoading label="Preparando el Rosario" /></div> : fullRing ? (
-      <div className="fixed inset-0 z-[65] h-dvh overflow-hidden bg-[#080604] text-[#fff7e8]"><div className="relative mx-auto flex h-full w-full max-w-[470px] flex-col px-3 pb-3 pt-3"><header className="shrink-0 text-center"><p className="text-[8px] font-semibold uppercase tracking-[0.3em] text-[#d5a343]">Santo Rosario</p><h2 className="font-display text-[1.45rem]">Rosario completo</h2></header><div className="min-h-0 flex-1"><RosaryFullRing definition={session.definition} currentOrder={session.bead.order} centerImage={currentMysteryImage} onSelectOrder={session.jumpToOrder} /></div><button type="button" onClick={() => setFullRing(false)} className="mx-auto flex min-h-11 w-[92%] items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#d79222] via-[#f5c751] to-[#bc7416] text-[#160d05]"><HandHeart className="h-5 w-5" />Volver a la oración</button></div></div>
-    ) : <div className="relative flex h-full min-h-0 flex-col overflow-hidden bg-[#020a12]">
+    {session.completed ? <div className="h-full overflow-hidden px-3 py-2"><RosaryCompletion onRestart={session.restart} intentionLabel={flow.intention?.label ?? null} group={group} /></div> : !session.definition || !session.section || !session.bead ? <div className="flex h-full items-center justify-center"><RosaryLoading label="Preparando el Rosario" /></div> : <div className="relative flex h-full min-h-0 flex-col overflow-hidden bg-[#020a12]">
       <section className="relative h-[clamp(285px,39dvh,380px)] shrink-0 overflow-hidden">
         <img src={currentMysteryImage} alt={mystery?.title ?? mysteryGroups[group].name} className="absolute inset-0 h-full w-full object-cover object-center" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,6,12,.08)_0%,rgba(0,6,12,.04)_38%,rgba(0,6,12,.22)_60%,rgba(0,7,13,.86)_91%,#020a12_100%)]" />
-        <div className="absolute right-4 top-[max(.85rem,env(safe-area-inset-top))] flex gap-2"><button type="button" onClick={toggleAmbient} aria-label="Música ambiental" className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/75 bg-[#06111c]/72 text-gold-bright shadow-[0_5px_18px_rgba(0,0,0,.65)] backdrop-blur-md">{prefs.backgroundMusic ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}</button><button type="button" onClick={() => setFullRing(true)} aria-label="Ver Rosario completo" className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/75 bg-[#06111c]/72 text-gold-bright shadow-[0_5px_18px_rgba(0,0,0,.65)] backdrop-blur-md"><CircleDot className="h-5 w-5" /></button></div>
+        <div className="absolute right-4 top-[max(.85rem,env(safe-area-inset-top))]"><button type="button" onClick={toggleAmbient} aria-label="Música ambiental" className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/75 bg-[#06111c]/72 text-gold-bright shadow-[0_5px_18px_rgba(0,0,0,.65)] backdrop-blur-md">{prefs.backgroundMusic ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}</button></div>
         <div className="absolute inset-x-5 bottom-6 [text-shadow:0_3px_12px_rgba(0,0,0,1),0_1px_4px_rgba(0,0,0,1)]">
           {mystery ? <><span className="inline-flex rounded-full border border-gold/80 bg-[#06111c]/72 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.13em] text-gold-bright shadow-lg backdrop-blur-sm">{mysteryGroups[group].name}</span><h2 className="mt-2 max-w-[94%] font-display text-[clamp(1.75rem,7.4vw,2.35rem)] font-semibold leading-[1.03] text-white">{mystery.title}</h2>{mystery.scriptureText ? <p className="mt-2 line-clamp-2 max-w-[94%] font-display text-[clamp(.94rem,3.8vw,1.05rem)] italic leading-snug text-white">«{mystery.scriptureText}»</p> : null}<p className="mt-1 text-[0.82rem] text-white/90">{mystery.scriptureRef}</p></> : <h2 className="font-display text-[clamp(1.9rem,7.5vw,2.45rem)] font-semibold text-white">Oraciones iniciales</h2>}
         </div>
