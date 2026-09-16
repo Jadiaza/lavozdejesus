@@ -12,6 +12,7 @@ import type { MysteryGroupId } from "../types";
 const GROUPS: MysteryGroupId[] = ["gozosos", "luminosos", "dolorosos", "gloriosos"];
 const ROMAN = ["I", "II", "III", "IV", "V"];
 const isGroup = (value: string | null): value is MysteryGroupId => Boolean(value) && GROUPS.includes(value as MysteryGroupId);
+const shortGroupName = (name: string) => name.replace(/^Misterios\s+/i, "").replace(/os$/i, "o");
 
 export const RosarioFisico = () => {
   const [params, setParams] = useSearchParams();
@@ -34,29 +35,20 @@ export const RosarioFisico = () => {
   };
 
   return (
-    <RosaryLayout title="Con mi Rosario" focus hideHeader>
+    <RosaryLayout title="" focus hideHeader>
       <div className="-mx-4 -mt-4 pb-4">
         <section className="relative min-h-[clamp(31rem,78vh,43rem)] w-full overflow-hidden border-b border-gold/25">
           <img src={mysteryArt[group]} alt={data.name} className="absolute inset-0 h-full w-full object-cover object-center" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/15 to-navy-deep" aria-hidden="true" />
-          <div className="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-black/60 to-transparent" aria-hidden="true" />
-
-          <div className="relative z-10 flex min-h-[clamp(31rem,78vh,43rem)] flex-col px-5 pb-8 pt-[calc(1.25rem+env(safe-area-inset-top))] text-white [text-shadow:0_2px_12px_rgba(0,0,0,.95)]">
-            <div className="flex items-start gap-4">
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-semibold uppercase tracking-[.32em] text-gold-bright">La Voz de Jesús</p>
-                <h1 className="mt-2 font-display text-[clamp(2rem,8vw,2.65rem)] font-medium leading-none">Con mi Rosario</h1>
-                <p className="mt-2 font-display text-[clamp(.85rem,3.5vw,1rem)] italic text-gold-bright/90">Reza a tu ritmo</p>
-              </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-navy-deep" aria-hidden="true" />
+          <div className="relative z-10 flex min-h-[clamp(31rem,78vh,43rem)] flex-col px-5 pb-9 pt-[calc(1.25rem+env(safe-area-inset-top))] text-white [text-shadow:0_2px_12px_rgba(0,0,0,.95)]">
+            <div className="flex justify-end">
               <button type="button" onClick={toggleAmbient} aria-pressed={prefs.backgroundMusic} aria-label={prefs.backgroundMusic ? "Silenciar música de fondo" : "Activar música de fondo"} className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-gold/45 bg-black/25 text-white backdrop-blur-sm">
                 {prefs.backgroundMusic ? <Volume2 className="h-6 w-6" /> : <VolumeX className="h-6 w-6" />}
               </button>
             </div>
-
             <div className="mt-auto text-center">
               <p className="text-[.7rem] font-semibold uppercase tracking-[.3em] text-gold-bright">{group === todayGroup ? "Misterios de hoy" : "Misterios seleccionados"}</p>
-              <h2 className="mt-2 font-display text-[clamp(1.9rem,7vw,2.7rem)] font-medium leading-tight">{data.name}</h2>
-              <p className="mt-2 font-display text-[clamp(.95rem,4vw,1.2rem)] italic text-gold-bright">{mysteryDays[group]}</p>
+              <h2 className="mt-2 font-display text-[clamp(2.1rem,8vw,2.9rem)] font-medium leading-tight">{shortGroupName(data.name)}</h2>
             </div>
           </div>
         </section>
