@@ -46,14 +46,14 @@ export const RosarioAudio = () => {
       <div className="relative flex h-full min-h-0 flex-col overflow-hidden bg-[#020a12]">
         <section className="relative h-[clamp(270px,39dvh,370px)] shrink-0 overflow-hidden">
           <img src={mysteryArt[group]} alt={groupData.name} className="absolute inset-0 h-full w-full object-cover object-center" />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,6,12,.04)_0%,rgba(0,6,12,.02)_38%,rgba(0,6,12,.24)_64%,rgba(0,7,13,.92)_94%,#020a12_100%)]" />
-          <div className="absolute inset-x-5 bottom-6 [text-shadow:0_3px_12px_rgba(0,0,0,1),0_1px_4px_rgba(0,0,0,1)]">
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,6,12,.04)_0%,rgba(0,6,12,.02)_38%,rgba(0,6,12,.24)_64%,rgba(0,7,13,.94)_96%,#020a12_100%)]" />
+          <div className="absolute inset-x-5 bottom-10 z-20 [text-shadow:0_3px_12px_rgba(0,0,0,1),0_1px_4px_rgba(0,0,0,1)]">
             <span className="inline-flex rounded-full border border-gold/80 bg-[#06111c]/72 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-gold-bright shadow-lg backdrop-blur-sm">{group === todayGroup ? "Misterios de hoy" : "Misterios seleccionados"}</span>
             <h1 className="mt-1 font-display text-[clamp(2rem,8vw,2.55rem)] font-semibold leading-none text-white">{displayName}</h1>
           </div>
         </section>
 
-        <div className="relative z-10 -mt-8 min-h-0 flex-1 px-3 pb-1">
+        <div className="relative z-10 -mt-4 min-h-0 flex-1 px-3 pb-1">
           <section className="flex h-full min-h-0 flex-col overflow-hidden rounded-[1.65rem] border border-gold/45 bg-[linear-gradient(145deg,rgba(12,31,47,.98),rgba(5,19,31,.98))] px-5 py-3 shadow-[0_18px_45px_rgba(0,0,0,.34)]">
             <div className="text-center">
               <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full border border-gold/60 text-gold-bright"><Headphones className="h-[18px] w-[18px]" aria-hidden="true" /></div>
