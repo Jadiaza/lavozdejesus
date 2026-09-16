@@ -42,6 +42,7 @@ export const RosarioDigital = () => {
   const currentMysteryImage = mystery?.imageUrl ?? mysteryArt[group];
   const canGoBack = Boolean(session.session) && ((session.session?.sectionIndex ?? 0) > 0 || (session.session?.beadIndex ?? 0) > 0);
   const toggleAmbient = () => { const next = !prefs.backgroundMusic; updatePrefs({ backgroundMusic: next }); if (next) void rosaryAmbientAudioService.play(prefs.musicVolume); else rosaryAmbientAudioService.pause(); };
+  const saveAndExit = () => { session.saveProgress(); navigate("/rosario"); };
 
   return <RosaryLayout title="" focus fullScreen hideHeader>
     {session.completed ? <div className="h-full overflow-hidden px-3 py-2"><RosaryCompletion onRestart={session.restart} intentionLabel={flow.intention?.label ?? null} group={group} /></div> : !session.definition || !session.section || !session.bead ? <div className="flex h-full items-center justify-center"><RosaryLoading label="Preparando el Rosario" /></div> : <div className="relative flex h-full min-h-0 flex-col overflow-hidden bg-[#020a12]">
@@ -58,7 +59,7 @@ export const RosarioDigital = () => {
         <div className="shrink-0 -my-1.5 scale-[0.93] origin-center"><RosaryBeadRing section={session.section} currentBeadId={session.bead.id} onSelect={session.jumpToBead} /></div>
         <div className="min-h-[125px] flex-1 overflow-hidden"><PrayerStepCard bead={session.bead} mystery={mystery} textSize="md" highContrast={prefs.highContrast} compact /></div>
         <div className="grid shrink-0 grid-cols-[48px_1fr] gap-2.5"><button type="button" onClick={session.prev} disabled={!canGoBack} className="flex h-12 w-12 items-center justify-center rounded-full border border-gold/55 text-gold"><ChevronLeft className="h-6 w-6" /></button><button type="button" onClick={session.next} className="flex min-h-12 items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#e5a92f] via-[#f7ca59] to-[#d99a28] font-display text-[1.05rem] font-bold uppercase tracking-[0.1em] text-[#11100b]">Continuar<ChevronRight className="h-5 w-5" /></button></div>
-        <div className="grid shrink-0 grid-cols-2 gap-2.5"><button type="button" onClick={() => navigate("/rosario")} className="flex min-h-9 items-center justify-center gap-2 rounded-xl border border-gold/30 text-[0.76rem] text-gold"><Bookmark className="h-4 w-4" />Guardar</button><button type="button" onClick={() => navigate("/rosario/seleccionar-misterios")} className="flex min-h-9 items-center justify-center gap-2 rounded-xl border border-gold/30 text-[0.76rem] text-gold"><RefreshCcw className="h-4 w-4" />Cambiar misterio</button></div>
+        <div className="grid shrink-0 grid-cols-2 gap-2.5"><button type="button" onClick={saveAndExit} className="flex min-h-9 items-center justify-center gap-2 rounded-xl border border-gold/30 text-[0.76rem] text-gold"><Bookmark className="h-4 w-4" />Guardar</button><button type="button" onClick={() => navigate("/rosario/seleccionar-misterios")} className="flex min-h-9 items-center justify-center gap-2 rounded-xl border border-gold/30 text-[0.76rem] text-gold"><RefreshCcw className="h-4 w-4" />Cambiar misterio</button></div>
       </div>
     </div>}
   </RosaryLayout>;
