@@ -18,6 +18,7 @@ import {
   savePrayerReminders,
   type PrayerReminder,
 } from "../services/prayerReminderService";
+import { sendPrayerPushTest, syncPrayerPush } from "../services/prayerPushService";
 
 const GOLD = "text-[#efbd52]";
 
@@ -224,6 +225,24 @@ export function PrayerReminders() {
   const [reminders, setReminders] = useState<PrayerReminder[]>(readPrayerReminders);
   const [permission, setPermission] = useState(prayerNotificationPermission);
   const [message, setMessage] = useState("");
+  const [syncing, setSyncing] = useState(false);
+
+  useEffect(() => {
+    const saved = readPrayerReminders();
+    if (prayerNotificationPermission() !== "granted" || !saved.some(({ enabled }) => enabled)) return;
+
+    let active = true;
+    setSyncing(true);
+    void syncPrayerPush(saved)
+      .catch(() => {
+        if (active) setMessage("Tus horarios siguen guardados. Abre esta pantalla con conexión para completar Web Push.");
+      })
+      .finally(() => {
+        if (active) setSyncing(false);
+      });
+
+    return () => { active = false; };
+  }, []);
 
   const toggleReminder = async (id: PrayerReminder["id"]) => {
     const reminder = reminders.find((item) => item.id === id);
@@ -247,9 +266,29 @@ export function PrayerReminders() {
     );
     setReminders(next);
     savePrayerReminders(next);
-    setMessage(!reminder.enabled
-      ? `${reminder.title} quedó programado para las ${reminder.time}.`
-      : `Recordatorio de ${reminder.title} desactivado.`);
+    setSyncing(true);
+    try {
+      await syncPrayerPush(next);
+      setMessage(!reminder.enabled
+        ? `${reminder.title} quedó programado para las ${reminder.time}, incluso con la app cerrada.`
+        : `Recordatorio de ${reminder.title} desactivado.`);
+    } catch (error) {
+      setMessage(`${error instanceof Error ? error.message : "No fue posible activar Web Push."} El recordatorio local quedará como respaldo mientras la app esté abierta.`);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const testNotification = async () => {
+    setSyncing(true);
+    try {
+      const result = await sendPrayerPushTest();
+      setMessage(result.message || "Notificación de prueba enviada.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "No fue posible enviar la prueba.");
+    } finally {
+      setSyncing(false);
+    }
   };
 
   return <Shell title="Recordatorios" active="Ajustes">
@@ -271,15 +310,19 @@ export function PrayerReminders() {
             <h3 className="text-sm font-bold text-white">{reminder.title}</h3>
             <p className="mt-0.5 text-xs font-semibold text-[#efbd52]">Todos los días · {reminder.time}</p>
           </div>
-          <button type="button" role="switch" aria-checked={reminder.enabled} aria-label={`${reminder.enabled ? "Desactivar" : "Activar"} recordatorio de ${reminder.title}`} onClick={() => void toggleReminder(reminder.id)} className={`relative h-7 w-12 shrink-0 rounded-full border transition ${reminder.enabled ? "border-[#efbd52] bg-[#efbd52]" : "border-white/20 bg-white/10"}`}><span className={`absolute top-0.5 h-5.5 w-5.5 rounded-full bg-white shadow transition-transform ${reminder.enabled ? "translate-x-[1.35rem]" : "translate-x-0.5"}`} /></button>
+          <button disabled={syncing} type="button" role="switch" aria-checked={reminder.enabled} aria-label={`${reminder.enabled ? "Desactivar" : "Activar"} recordatorio de ${reminder.title}`} onClick={() => void toggleReminder(reminder.id)} className={`relative h-7 w-12 shrink-0 rounded-full border transition disabled:opacity-50 ${reminder.enabled ? "border-[#efbd52] bg-[#efbd52]" : "border-white/20 bg-white/10"}`}><span className={`absolute top-0.5 h-5.5 w-5.5 rounded-full bg-white shadow transition-transform ${reminder.enabled ? "translate-x-[1.35rem]" : "translate-x-0.5"}`} /></button>
         </div>
         <p className="mt-3 text-xs leading-relaxed text-white/55">{reminder.description}</p>
       </article>)}
     </div>
 
+    <button type="button" disabled={syncing || !reminders.some(({ enabled }) => enabled)} onClick={() => void testNotification()} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full border border-[#efbd52]/60 bg-[#efbd52]/10 py-3 text-xs font-bold text-[#f6d676] disabled:cursor-not-allowed disabled:opacity-40">
+      <BellRing className="h-4 w-4" /> {syncing ? "CONFIGURANDO…" : "ENVIAR NOTIFICACIÓN DE PRUEBA"}
+    </button>
+
     <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-[11px] leading-relaxed text-white/50">
       <p className="font-semibold text-white/70">Importante</p>
-      <p className="mt-1">Para recibir estos avisos, conserva LVJPRAYER instalada y autoriza las notificaciones. Algunos dispositivos pueden detener recordatorios si cierran completamente la PWA o restringen su actividad.</p>
+      <p className="mt-1">Instala LVJPRAYER y autoriza las notificaciones. Web Push permite recibir los avisos seleccionados aunque la aplicación esté cerrada. En algunos teléfonos también debes permitir las notificaciones en los ajustes de Android.</p>
     </div>
   </Shell>;
 }

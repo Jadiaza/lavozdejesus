@@ -21,6 +21,7 @@ export type PrayerReminder = {
 
 const STORAGE_KEY = "lvj-prayer-reminders-v1";
 const LAST_SENT_KEY = "lvj-prayer-reminders-last-sent-v1";
+const PUSH_ACTIVE_KEY = "lvj-prayer-push-active-v1";
 
 export const DEFAULT_PRAYER_REMINDERS: PrayerReminder[] = [
   {
@@ -159,6 +160,9 @@ const readLastSent = (): Record<string, string> => {
 };
 
 export const pendingPrayerReminders = (date: Date = new Date()) => {
+  // Web Push despierta el service worker aun con la PWA cerrada. Esta revisión
+  // local queda únicamente como respaldo en dispositivos todavía no suscritos.
+  if (storageAvailable() && localStorage.getItem(PUSH_ACTIVE_KEY) === "true") return [];
   const current = bogotaDateAndTime(date);
   const lastSent = readLastSent();
   return readPrayerReminders().filter(

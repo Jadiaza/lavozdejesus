@@ -24,6 +24,12 @@ return [
   'bible_ai_unlimited_emails' => 'lavozdejesusco@gmail.com,lavozdejesus.co@gmail.com,lenis4842@gmail.com,llenis4842@gmail.com',
   'bible_version_platense' => 'SPAPLATENSE',
   'bible_version_torres_amat' => 'TORRESAMAT',
+  // Web Push: generar con `vendor/bin/web-push generate:vapid`.
+  'vapid_public_key' => '',
+  'vapid_private_key' => '',
+  'vapid_subject' => 'mailto:contacto@lavozdejesus.co',
+  // Secreto largo para invocar el cron por HTTPS cuando CLI no esté disponible.
+  'prayer_push_cron_token' => '',
 ];
 
 /*

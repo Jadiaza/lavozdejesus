@@ -37,4 +37,26 @@ describe("recordatorios de oración", () => {
     expect(pendingPrayerReminders(new Date("2026-09-17T11:00:15Z")).map(({ id }) => id)).toEqual(["laudes"]);
     expect(pendingPrayerReminders(new Date("2026-09-17T10:59:59Z"))).toEqual([]);
   });
+
+  it("activa Tercia a las nueve de la mañana de Colombia", () => {
+    const reminders = readPrayerReminders().map((reminder) => ({
+      ...reminder,
+      enabled: reminder.id === "tercia",
+    }));
+    savePrayerReminders(reminders);
+
+    expect(pendingPrayerReminders(new Date("2026-09-17T14:00:20Z")).map(({ id }) => id)).toEqual(["tercia"]);
+    expect(pendingPrayerReminders(new Date("2026-09-17T13:59:59Z"))).toEqual([]);
+  });
+
+  it("evita duplicar la comprobación local cuando Web Push está activo", () => {
+    const reminders = readPrayerReminders().map((reminder) => ({
+      ...reminder,
+      enabled: reminder.id === "tercia",
+    }));
+    savePrayerReminders(reminders);
+    localStorage.setItem("lvj-prayer-push-active-v1", "true");
+
+    expect(pendingPrayerReminders(new Date("2026-09-17T14:00:20Z"))).toEqual([]);
+  });
 });
