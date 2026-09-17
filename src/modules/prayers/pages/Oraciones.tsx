@@ -32,13 +32,13 @@ const recommendedLiturgyHour = () => {
     hour12: false,
   }).format(new Date()));
 
-  if (hour < 5) return { code: "oficio", name: "Oficio de Lectura", description: "Entra en el silencio de la Palabra y contempla la obra de Dios." };
-  if (hour < 9) return { code: "laudes", name: "Laudes", description: "Consagra la mañana y recibe el nuevo día como un don del Señor." };
-  if (hour < 12) return { code: "tercia", name: "Tercia", description: "Invoca al Espíritu Santo y encomienda a Dios el trabajo de esta mañana." };
-  if (hour < 15) return { code: "sexta", name: "Sexta", description: "Haz una pausa al mediodía y vuelve tu corazón a la presencia de Dios." };
-  if (hour < 18) return { code: "nona", name: "Nona", description: "Ofrece al Señor el cansancio, los frutos y las tareas de esta tarde." };
-  if (hour < 21) return { code: "visperas", name: "Vísperas", description: "Da gracias por el día vivido y eleva con la Iglesia tu oración de la tarde." };
-  return { code: "completas", name: "Completas", description: "Entrega al Padre tu jornada y descansa serenamente bajo su protección." };
+  if (hour < 5) return { code: "oficio", name: "Oficio de Lectura", description: "Escucha la Palabra de Dios y contempla con la Iglesia la enseñanza de la tradición." };
+  if (hour < 9) return { code: "laudes", name: "Laudes", description: "Alaba a Dios con los salmos y el cántico de Zacarías, y consagra a Él toda tu jornada." };
+  if (hour < 12) return { code: "tercia", name: "Tercia", description: "Invoca al Espíritu Santo con la salmodia y deja que la Palabra guíe tu mañana." };
+  if (hour < 15) return { code: "sexta", name: "Sexta", description: "Detén tus labores, escucha la Palabra y renueva en Dios las fuerzas del mediodía." };
+  if (hour < 18) return { code: "nona", name: "Nona", description: "Ora los salmos de la tarde y presenta al Señor el fruto y el cansancio de tu jornada." };
+  if (hour < 21) return { code: "visperas", name: "Vísperas", description: "Da gracias con los salmos y el Magníficat por la obra que Dios realizó en este día." };
+  return { code: "completas", name: "Completas", description: "Examina tu jornada, entona el cántico de Simeón y descansa bajo la protección de Dios." };
 };
 
 const categories = [
@@ -121,11 +121,11 @@ export default function Oraciones() {
       <main className="relative z-10 flex min-h-0 flex-1 flex-col px-[0.9rem] pb-[5.35rem]">
         <Link to={`/oraciones/liturgia/${recommendedHour.code}`} onClick={tactileFeedback} className="group relative block h-[clamp(14.5rem,38dvh,18.5rem)] shrink-0 transition active:scale-[.992]">
           <span className="absolute right-0 top-1 z-10 rounded-full border border-[#f1c34a]/50 bg-[#171109]/65 px-3 py-1.5 text-[9px] font-semibold tracking-wide text-[#f8d86e] shadow-[0_4px_14px_rgba(0,0,0,.35)] backdrop-blur-md">Ahora · {recommendedHour.name}</span>
-          <div className="relative z-10 flex h-full max-w-[91%] flex-col justify-end pb-[clamp(1.05rem,2.4dvh,1.35rem)]">
+          <div className="relative z-10 flex h-full max-w-[94%] translate-y-[clamp(2rem,5dvh,3.25rem)] flex-col justify-end pb-0">
             <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[.24em] text-[#efbd52]">Liturgia de las Horas</p>
-            <h2 className="font-display text-[clamp(2rem,8.4vw,2.6rem)] font-semibold leading-[.94] tracking-[-.025em] text-[#f8d575] drop-shadow-[0_3px_8px_rgba(0,0,0,.9)]">{recommendedHour.name}</h2>
-            <p className="mt-2.5 max-w-[20rem] text-[clamp(.78rem,3.5vw,.94rem)] font-medium leading-[1.45] text-white/90 drop-shadow-[0_2px_5px_rgba(0,0,0,.9)]">{recommendedHour.description}</p>
-            <span className="mt-3.5 inline-flex h-[clamp(2.45rem,5.6dvh,2.85rem)] w-fit items-center gap-2.5 rounded-full bg-gradient-to-r from-[#ffe083] via-[#f2c64e] to-[#daa029] px-[clamp(1.05rem,4.7vw,1.45rem)] text-[clamp(.72rem,3.2vw,.84rem)] font-extrabold text-[#17120a] shadow-[0_8px_20px_rgba(215,155,35,.24)] transition group-active:scale-[.98]">REZAR {recommendedHour.name.toUpperCase()} <ChevronRight className="h-5 w-5" strokeWidth={2.5} /></span>
+            <h2 className="font-display text-[clamp(2.35rem,10vw,3rem)] font-semibold leading-[.92] tracking-[-.03em] text-[#f8d575] drop-shadow-[0_3px_9px_rgba(0,0,0,.95)]">{recommendedHour.name}</h2>
+            <p className="mt-2.5 max-w-[21rem] text-[clamp(.82rem,3.7vw,1rem)] font-medium leading-[1.45] text-white/92 drop-shadow-[0_2px_6px_rgba(0,0,0,.95)]">{recommendedHour.description}</p>
+            <span className="mt-3.5 inline-flex h-[clamp(2.55rem,5.8dvh,3rem)] w-full max-w-[20rem] items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-[#ffe083] via-[#f2c64e] to-[#daa029] px-[clamp(1.05rem,4.7vw,1.45rem)] text-[clamp(.72rem,3.2vw,.84rem)] font-extrabold text-[#17120a] shadow-[0_10px_24px_rgba(215,155,35,.27)] transition group-active:scale-[.98]">REZAR {recommendedHour.name.toUpperCase()} <ChevronRight className="h-5 w-5" strokeWidth={2.5} /></span>
           </div>
         </Link>
 
