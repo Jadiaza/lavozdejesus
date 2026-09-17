@@ -1,11 +1,16 @@
-import { FormEvent, ReactNode, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
-  ArrowLeft, Bell, BookOpen, ChevronRight, Clock3, Cross, Download,
-  ExternalLink, Heart, Home, Menu, Moon, Play, Search, Send, Settings,
-  Shield, Sparkles, Sun, Volume2,
+  AlertCircle, ArrowLeft, Bell, BookOpen, ChevronRight, Clock3, Cross, Download,
+  Heart, Home, LoaderCircle, Menu, Moon, Play, RefreshCw, Search, Send, Settings,
+  Shield, SlidersHorizontal, Sparkles, Sun, Volume2,
 } from "lucide-react";
 import cathedralBg from "@/assets/cathedral-bg.jpg";
+import PrayerFormatSheet from "../components/PrayerFormatSheet";
+import { PrayerReader } from "../components/PrayerReader";
+import { usePrayerPreferences } from "../hooks/usePrayerPreferences";
+import { liturgyHoursService } from "../services/liturgyHoursService";
+import type { LiturgyHourResponse, LiturgyParagraph } from "../types/liturgyHours";
 
 const GOLD = "text-[#efbd52]";
 
@@ -39,17 +44,8 @@ const prayersText: Record<string, { title: string; text: string; source: string 
   contricion: { title: "Acto de contrición", text: "Señor mío Jesucristo, Dios y hombre verdadero, me pesa de todo corazón haberte ofendido. Propongo firmemente, con tu gracia, no volver a pecar y confiar siempre en tu infinita misericordia. Amén.", source: "Oración tradicional católica" },
 };
 
-function liturgyUrl(hour: string) {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"][now.getMonth()];
-  const day = String(now.getDate()).padStart(2, "0");
-  const page = hour === "oficio" ? "oficio.htm" : `${hour}.htm`;
-  return `https://liturgiadelashoras.github.io/sync/${year}/${month}/${day}/${page}`;
-}
-
 function todayLabel() {
-  return new Intl.DateTimeFormat("es-CO", { day: "numeric", month: "long" }).format(new Date());
+  return new Intl.DateTimeFormat("es-CO", { timeZone: "America/Bogota", day: "numeric", month: "long" }).format(new Date());
 }
 
 const Header = ({ title, back = true }: { title: string; back?: boolean }) => (
@@ -86,9 +82,44 @@ export function LiturgiaHoras() {
 export function LiturgiaReader() {
   const { hora = "laudes" } = useParams();
   const data = hours.find((item) => item[0] === hora) ?? hours[1];
-  return <Shell title={data[1]} active="Liturgia"><p className="-mt-3 mb-4 text-center text-xs text-white/65">Vista preliminar · {todayLabel()}</p>
-    <article className="rounded-2xl border border-white/10 bg-[#0c151d] p-5 leading-relaxed shadow-xl"><h2 className="font-serif text-lg font-bold text-[#efbd52]">Invitación</h2><p className="mt-1">Señor, abre mis labios,<br />y mi boca proclamará tu alabanza.</p><h2 className="mt-5 font-serif text-lg font-bold text-[#efbd52]">Oración de la Iglesia</h2><p className="mt-1">Continúa en la fuente diaria para rezar el texto completo correspondiente a esta hora.</p><div className="mt-5 h-1 overflow-hidden rounded bg-white/15"><div className="h-full w-1/4 bg-[#efbd52]" /></div><div className="mt-1 text-right text-[10px] text-white/50">Fuente externa</div></article>
-    <div className="mt-4 flex items-center gap-3"><button type="button" className="rounded-full border border-white/10 p-3" aria-label="Tamaño de texto">AA</button><button type="button" className="rounded-full border border-white/10 p-3" aria-label="Escuchar"><Volume2 className="h-5 w-5" /></button><a href={liturgyUrl(hora)} target="_blank" rel="noreferrer" className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#f6d574] to-[#d49a28] px-4 py-3 text-xs font-bold text-black">ABRIR LITURGIA <ExternalLink className="h-4 w-4" /></a></div>
+  const [content, setContent] = useState<LiturgyHourResponse | null>(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [reload, setReload] = useState(0);
+  const [formatOpen, setFormatOpen] = useState(false);
+  const { preferences, update, reset } = usePrayerPreferences();
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+    liturgyHoursService.getHour(hora, undefined, controller.signal)
+      .then(setContent)
+      .catch((reason) => { if (reason?.name !== "AbortError") setError("No fue posible cargar esta hora litúrgica. Comprueba tu conexión e inténtalo nuevamente."); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [hora, reload]);
+
+  const paragraphClass = (paragraph: LiturgyParagraph) => {
+    if (paragraph.tipo === "antifona") return "font-semibold text-[var(--prayer-accent)]";
+    if (paragraph.tipo === "respuesta") return "pl-3 font-semibold text-[var(--prayer-accent)]";
+    if (paragraph.tipo === "rubrica") return "text-sm italic text-[var(--prayer-accent)] opacity-80";
+    if (paragraph.tipo === "subtitulo") return "font-semibold uppercase tracking-wide text-[var(--prayer-accent)]";
+    return "";
+  };
+
+  return <Shell title={data[1]} active="Liturgia">
+    <div className="-mt-2 mb-4 flex items-center justify-between gap-3"><div><p className="text-xs capitalize text-white/65">{content?.fecha_texto || todayLabel()}</p>{content ? <p className="mt-1 text-[10px] uppercase tracking-wider text-[#efbd52]">{content.celebracion}</p> : null}</div><button type="button" onClick={() => setFormatOpen(true)} className="flex items-center gap-2 rounded-full border border-[#d8a740]/50 bg-[#111b23] px-3 py-2 text-xs font-semibold text-[#efbd52]"><SlidersHorizontal className="h-4 w-4" />Aa</button></div>
+
+    {loading ? <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-white/10 bg-[#0c151d]"><LoaderCircle className="h-8 w-8 animate-spin text-[#efbd52]" /><p className="mt-3 text-sm text-white/65">Preparando la oración de la Iglesia…</p></div> : null}
+    {!loading && error ? <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-red-400/25 bg-[#0c151d] p-6 text-center"><AlertCircle className="h-9 w-9 text-[#efbd52]" /><p className="mt-3 text-sm text-white/75">{error}</p><button type="button" onClick={() => setReload((value) => value + 1)} className="mt-5 flex items-center gap-2 rounded-full bg-gradient-to-r from-[#f6d574] to-[#d49a28] px-5 py-3 text-xs font-bold text-black"><RefreshCw className="h-4 w-4" />REINTENTAR</button></div> : null}
+    {!loading && content ? <PrayerReader preferences={preferences}>
+      <div className="mb-6 border-b border-current/15 pb-4 text-left"><p className="text-xs font-semibold uppercase tracking-[.18em] text-[var(--prayer-accent)]">{content.tiempo_liturgico}</p><h2 className="mt-2 text-xl font-bold">{content.celebracion}</h2>{content.detalle ? <p className="mt-1 text-sm opacity-65">{content.detalle}</p> : null}</div>
+      <div className="space-y-8">{content.secciones.map((section, index) => <section key={`${section.tipo}-${index}`}><h3 className="mb-3 border-b border-current/10 pb-2 text-left text-lg font-bold text-[var(--prayer-accent)]">{section.titulo}</h3><div className="space-y-3">{section.contenido.map((paragraph, paragraphIndex) => <p key={paragraphIndex} className={paragraphClass(paragraph)}>{paragraph.texto}</p>)}</div></section>)}</div>
+      <footer className="mt-8 border-t border-current/15 pt-4 text-center text-xs opacity-60">Fuente: {content.fuente.nombre} · Presentado por LVJPRAYER</footer>
+    </PrayerReader> : null}
+
+    <PrayerFormatSheet open={formatOpen} preferences={preferences} onChange={update} onReset={reset} onClose={() => setFormatOpen(false)} />
   </Shell>;
 }
 
@@ -105,7 +136,9 @@ export function OracionLista() {
 export function OracionDetalle() {
   const { id = "manana" } = useParams();
   const prayer = prayersText[id] ?? prayersText.manana;
-  return <Shell title={prayer.title}><article className="whitespace-pre-line font-serif text-lg leading-relaxed text-[#f6f0e6]">{prayer.text}</article><div className="mt-5 flex justify-between"><button type="button" className="text-xl">AA</button><Heart className="text-[#efbd52]" /><button type="button" className="rounded-full bg-[#efbd52] p-3 text-black"><Play className="h-5 w-5 fill-current" /></button><Send /></div><div className="mt-6 text-xs"><b>Fuente</b><p className="mt-1 text-white/60">{prayer.source}</p></div></Shell>;
+  const [formatOpen, setFormatOpen] = useState(false);
+  const { preferences, update, reset } = usePrayerPreferences();
+  return <Shell title={prayer.title}><div className="mb-3 flex justify-end"><button type="button" onClick={() => setFormatOpen(true)} className="flex items-center gap-2 rounded-full border border-[#d8a740]/50 bg-[#111b23] px-3 py-2 text-xs font-semibold text-[#efbd52]"><SlidersHorizontal className="h-4 w-4" />Aa</button></div><PrayerReader preferences={preferences}><div className="whitespace-pre-line">{prayer.text}</div></PrayerReader><div className="mt-5 flex justify-between"><Heart className="text-[#efbd52]" /><button type="button" className="rounded-full bg-[#efbd52] p-3 text-black"><Play className="h-5 w-5 fill-current" /></button><Send /></div><div className="mt-6 text-xs"><b>Fuente</b><p className="mt-1 text-white/60">{prayer.source}</p></div><PrayerFormatSheet open={formatOpen} preferences={preferences} onChange={update} onReset={reset} onClose={() => setFormatOpen(false)} /></Shell>;
 }
 
 export function DevocionesPage() {
