@@ -55,17 +55,19 @@ export function BibliaPassageGridSelector({ books, book, chapter, onBookChange, 
     return "border-[#D4AF37]/45 bg-[#D4AF37]/12 text-[#F2D27A]";
   };
 
-  return <div className="space-y-5">
+  const bookStage = stage === "book";
+
+  return <div className={bookStage ? "space-y-4" : "space-y-5"}>
     <section aria-labelledby="selector-libro-title" className={stage === "chapter" ? "hidden" : undefined}>
       <label className="relative mb-3 block"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#D4AF37]"/><span className="sr-only">Buscar libro bíblico</span><input value={query} onChange={(event)=>setQuery(event.target.value)} placeholder="Buscar libro bíblico…" className="h-12 w-full rounded-2xl border border-[#D4AF37]/35 bg-[#090909] pl-10 pr-4 text-sm text-[#F8F5EA] outline-none placeholder:text-[#706A5E] focus:border-[#D4AF37]"/></label>
       <div className="mb-3 grid grid-cols-2 rounded-xl border border-[#D4AF37]/35 bg-[#090909] p-1">
         {(["AT","NT"] as TestamentoBiblico[]).map((value)=><button key={value} type="button" onClick={()=>{setTestament(value);setQuery("");}} aria-pressed={testament===value} className={`min-h-10 rounded-lg px-3 text-xs font-semibold ${testament===value?"border border-[#D4AF37]/50 bg-[#D4AF37]/15 text-[#F2D27A]":"text-[#C9C3B3]"}`}>{value==="AT"?"Antiguo Testamento":"Nuevo Testamento"}</button>)}
       </div>
-      <div className="rounded-2xl border border-[#D4AF37]/30 bg-[#080808] p-3">
+      <div className={bookStage ? "bg-transparent px-0 py-1" : "rounded-2xl border border-[#D4AF37]/30 bg-[#080808] p-3"}>
         <div className="mb-3"><p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#D4AF37]">{testament==="AT"?"Antiguo Testamento":"Nuevo Testamento"}</p><div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">{groups.map((group)=><span key={group} className="inline-flex items-center gap-1 text-[9px] text-[#C9C3B3]"><i className={`h-2 w-2 rounded-full border ${groupTone(group)}`}/>{group}</span>)}</div></div>
         <h3 id="selector-libro-title" className="sr-only">{selectedBook?.nombre || "Selecciona un libro"}</h3>
-        <div className="grid max-h-[28rem] grid-cols-3 gap-2 overflow-y-auto pr-1 sm:grid-cols-4 lg:grid-cols-5">
-          {visibleBooks.map((item)=><button key={item.codigo} type="button" title={`${item.nombre} · ${visualGroup(item)}`} onClick={()=>onBookChange(item.codigo)} aria-pressed={book===item.codigo} className={`min-h-16 rounded-xl border px-1.5 py-2 text-center transition ${book===item.codigo?"border-[#F2D27A] bg-[#D4AF37] text-black ring-2 ring-[#F2D27A]/35":groupTone(visualGroup(item))}`}><span className="block truncate font-display text-base font-semibold">{item.abreviatura}</span><span className={`mt-0.5 block truncate text-[9px] ${book===item.codigo?"text-black/70":"opacity-80"}`}>{item.nombre}</span></button>)}
+        <div className={`grid gap-2.5 ${bookStage ? "grid-cols-3 min-[360px]:grid-cols-4" : "max-h-[28rem] grid-cols-3 overflow-y-auto pr-1 sm:grid-cols-4 lg:grid-cols-5"}`}>
+          {visibleBooks.map((item)=><button key={item.codigo} type="button" title={`${item.nombre} · ${visualGroup(item)}`} onClick={()=>onBookChange(item.codigo)} aria-pressed={book===item.codigo} className={`min-h-[4.8rem] rounded-xl border px-1.5 py-2 text-center transition ${book===item.codigo?"border-[#F2D27A] bg-[#D4AF37] text-black ring-2 ring-[#F2D27A]/35":groupTone(visualGroup(item))}`}><span className="block truncate font-display text-lg font-semibold">{item.abreviatura}</span><span className={`mt-1 block truncate text-[10px] ${book===item.codigo?"text-black/70":"opacity-80"}`}>{item.nombre}</span></button>)}
           {visibleBooks.length===0&&<p className="col-span-full py-8 text-center text-sm text-[#8F897C]">No se encontraron libros.</p>}
         </div>
       </div>
