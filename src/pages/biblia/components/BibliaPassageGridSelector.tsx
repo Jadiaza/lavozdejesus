@@ -75,8 +75,8 @@ export function BibliaPassageGridSelector({ books, book, chapter, onBookChange, 
 
     {stage!=="book"&&selectedBook&&<section aria-labelledby="selector-capitulo-title">
       <div className="mb-3"><p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#D4AF37]">Capítulo</p><h3 id="selector-capitulo-title" className="mt-0.5 text-sm font-semibold text-[#F8F5EA]">{chapter>0?`${selectedBook.nombre} ${chapter}`:"Selecciona un capítulo"}</h3></div>
-      <div data-biblia-scroll-panel="true" className="grid grid-cols-5 gap-2.5 min-[390px]:grid-cols-6 sm:grid-cols-7 md:grid-cols-8">
-        {chapters.map((value)=><button key={value} type="button" onClick={()=>onChapterChange(value)} aria-pressed={chapter===value} className={`aspect-square rounded-xl border text-sm font-semibold transition ${chapter===value?"border-[#F2D27A] bg-[#D4AF37] text-black":"border-[#D4AF37]/25 bg-[#111] text-[#F2D27A] hover:border-[#D4AF37]/60"}`}>{value}</button>)}
+      <div data-biblia-scroll-panel="true" className="grid grid-cols-7 gap-2 sm:grid-cols-8 md:grid-cols-9">
+        {chapters.map((value)=><button key={value} type="button" onClick={()=>onChapterChange(value)} aria-pressed={chapter===value} className={`h-12 rounded-xl border text-sm font-semibold transition sm:h-11 ${chapter===value?"border-[#F2D27A] bg-[#D4AF37] text-black":"border-[#D4AF37]/25 bg-[#111] text-[#F2D27A] hover:border-[#D4AF37]/60"}`}>{value}</button>)}
       </div>
     </section>}
   </div>;
