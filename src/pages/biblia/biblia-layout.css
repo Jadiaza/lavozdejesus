@@ -25,4 +25,28 @@
     overflow: visible !important;
     padding-right: 0 !important;
   }
+
+  /* Lector bíblico: los selectores de libro, capítulo y versículo usan
+     la pantalla completa en móvil, sin tarjeta/modal exterior. */
+  .biblia-layout-content div[class*="fixed"][class*="inset-0"][class*="z-[60]"] {
+    align-items: flex-start !important;
+    background: #050505 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: max(1rem, env(safe-area-inset-top)) 1rem 2rem !important;
+  }
+
+  .biblia-layout-content div[class*="fixed"][class*="inset-0"][class*="z-[60]"] > section[class*="max-w-[430px]"] {
+    width: 100% !important;
+    max-width: none !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  .biblia-layout-content div[class*="fixed"][class*="inset-0"][class*="z-[60]"] > section[class*="max-w-[430px]"] > div:first-child {
+    margin-bottom: 1.25rem !important;
+  }
 }
