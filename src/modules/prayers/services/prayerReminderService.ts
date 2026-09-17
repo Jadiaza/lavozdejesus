@@ -1,4 +1,13 @@
-export type PrayerReminderId = "laudes" | "angelus" | "divina_misericordia";
+export type PrayerReminderId =
+  | "oficio"
+  | "laudes"
+  | "tercia"
+  | "sexta"
+  | "nona"
+  | "visperas"
+  | "completas"
+  | "angelus"
+  | "divina_misericordia";
 
 export type PrayerReminder = {
   id: PrayerReminderId;
@@ -15,12 +24,30 @@ const LAST_SENT_KEY = "lvj-prayer-reminders-last-sent-v1";
 
 export const DEFAULT_PRAYER_REMINDERS: PrayerReminder[] = [
   {
+    id: "oficio",
+    title: "Oficio de Lectura",
+    time: "04:00",
+    description: "Medita la Palabra de Dios y la tradición espiritual de la Iglesia.",
+    message: "Es tiempo del Oficio de Lectura. Deja que la Palabra ilumine el comienzo de tu jornada.",
+    path: "/oraciones/liturgia/oficio",
+    enabled: false,
+  },
+  {
     id: "laudes",
     title: "Laudes",
     time: "06:00",
     description: "Comienza el día alabando al Señor con la oración de la Iglesia.",
     message: "Ha llegado el momento de ofrecer la mañana al Señor con la oración de Laudes.",
     path: "/oraciones/liturgia/laudes",
+    enabled: false,
+  },
+  {
+    id: "tercia",
+    title: "Tercia",
+    time: "09:00",
+    description: "Santifica las primeras horas del trabajo y pide la fuerza del Espíritu Santo.",
+    message: "Haz una pausa para la oración de Tercia y encomienda al Señor el trabajo de esta mañana.",
+    path: "/oraciones/liturgia/tercia",
     enabled: false,
   },
   {
@@ -33,12 +60,48 @@ export const DEFAULT_PRAYER_REMINDERS: PrayerReminder[] = [
     enabled: false,
   },
   {
+    id: "sexta",
+    title: "Sexta",
+    time: "12:00",
+    description: "Ora con la Iglesia en la mitad de la jornada.",
+    message: "Ha llegado la hora de Sexta. Detén por un momento tus labores y vuelve el corazón a Dios.",
+    path: "/oraciones/liturgia/sexta",
+    enabled: false,
+  },
+  {
     id: "divina_misericordia",
     title: "Divina Misericordia",
     time: "15:00",
     description: "Únete a la Hora de la Misericordia a las tres de la tarde.",
     message: "Son las tres de la tarde. Jesús misericordioso, en ti confío.",
     path: "/oraciones/devociones",
+    enabled: false,
+  },
+  {
+    id: "nona",
+    title: "Nona",
+    time: "15:00",
+    description: "Presenta al Señor el fruto y las cargas de la tarde.",
+    message: "Es tiempo de la oración de Nona. Permanece junto al Señor en esta hora de la tarde.",
+    path: "/oraciones/liturgia/nona",
+    enabled: false,
+  },
+  {
+    id: "visperas",
+    title: "Vísperas",
+    time: "18:00",
+    description: "Da gracias a Dios al caer la tarde con la oración de la Iglesia.",
+    message: "La tarde llega a su fin. Únete a la Iglesia en la oración de Vísperas.",
+    path: "/oraciones/liturgia/visperas",
+    enabled: false,
+  },
+  {
+    id: "completas",
+    title: "Completas",
+    time: "21:00",
+    description: "Entrega al Padre el día vivido y descansa bajo su protección.",
+    message: "Antes de descansar, encomienda tu vida y tu noche al Señor con la oración de Completas.",
+    path: "/oraciones/liturgia/completas",
     enabled: false,
   },
 ];

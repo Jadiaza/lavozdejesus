@@ -10,7 +10,14 @@ describe("recordatorios de oración", () => {
   beforeEach(() => localStorage.clear());
 
   it("inicia todos los recordatorios desactivados", () => {
-    expect(readPrayerReminders().every((reminder) => !reminder.enabled)).toBe(true);
+    const reminders = readPrayerReminders();
+    expect(reminders).toHaveLength(9);
+    expect(reminders.every((reminder) => !reminder.enabled)).toBe(true);
+  });
+
+  it("incluye las siete horas de la Liturgia de las Horas", () => {
+    const liturgyIds = ["oficio", "laudes", "tercia", "sexta", "nona", "visperas", "completas"];
+    expect(readPrayerReminders().filter(({ id }) => liturgyIds.includes(id)).map(({ id }) => id)).toEqual(liturgyIds);
   });
 
   it("usa siempre el horario de Colombia", () => {

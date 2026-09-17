@@ -252,12 +252,14 @@ export function PrayerReminders() {
     <section className="rounded-2xl border border-[#d8a740]/30 bg-[radial-gradient(circle_at_top,rgba(216,167,64,.14),transparent_65%),#0d1720] p-5 text-center">
       <BellRing className="mx-auto h-10 w-10 text-[#efbd52]" strokeWidth={1.6} />
       <h2 className="mt-3 font-serif text-xl text-[#f6d676]">Un momento para encontrarte con Dios</h2>
-      <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-white/65">Activa únicamente los momentos que desees. Todos los horarios corresponden a Colombia.</p>
+      <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-white/65">Activa únicamente los momentos que desees. Incluye las siete horas litúrgicas y devociones en horario de Colombia.</p>
     </section>
 
     {message ? <p role="status" className="mt-4 rounded-xl border border-[#d8a740]/25 bg-[#d8a740]/10 px-4 py-3 text-xs leading-relaxed text-[#f6d676]">{message}</p> : null}
 
-    <div className="mt-4 space-y-3">
+    <div className="mt-4 flex items-center gap-3"><span className="h-px flex-1 bg-[#d8a740]/20" /><p className="text-[10px] font-bold uppercase tracking-[.2em] text-[#efbd52]">Liturgia y devociones</p><span className="h-px flex-1 bg-[#d8a740]/20" /></div>
+
+    <div className="mt-3 space-y-3">
       {reminders.map((reminder) => <article key={reminder.id} className={`rounded-2xl border p-4 transition ${reminder.enabled ? "border-[#d8a740]/65 bg-[#d8a740]/[0.09]" : "border-white/10 bg-[#101a22]"}`}>
         <div className="flex items-center gap-3">
           <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${reminder.enabled ? "bg-[#efbd52] text-black" : "bg-white/[0.06] text-[#efbd52]"}`}><Bell className="h-5 w-5" /></div>
