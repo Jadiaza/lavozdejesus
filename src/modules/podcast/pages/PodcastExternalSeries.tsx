@@ -18,6 +18,13 @@ import {
   type ExternalPodcast,
   type ExternalPodcastEpisode,
 } from "@/modules/podcast/services/externalPodcastService";
+import {
+  bogotaCalendarDay,
+  calendarDistance,
+  formatCalendarDay,
+  rssCalendarDay,
+  sameCalendarDay,
+} from "@/modules/podcast/utils/podcastCalendar";
 
 const formatClock = (seconds: number) => {
   if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
@@ -30,34 +37,10 @@ const episodeTimestamp = (episode: ExternalPodcastEpisode) => {
   return Number.isFinite(timestamp) ? timestamp : 0;
 };
 
-const parseEpisodeDate = (value: string) => {
-  const timestamp = Date.parse(value || "");
-  return Number.isFinite(timestamp) ? new Date(timestamp) : null;
-};
-
-const calendarDayIndex = (date: Date) => {
-  const fixedYear = 2000;
-  const start = Date.UTC(fixedYear, 0, 1);
-  const current = Date.UTC(fixedYear, date.getMonth(), date.getDate());
-  return Math.floor((current - start) / 86400000);
-};
-
-const calendarDistance = (date: Date, reference: Date) => {
-  const yearLength = 366;
-  const direct = Math.abs(calendarDayIndex(date) - calendarDayIndex(reference));
-  return Math.min(direct, yearLength - direct);
-};
-
-const sameMonthAndDay = (date: Date, reference: Date) =>
-  date.getMonth() === reference.getMonth() && date.getDate() === reference.getDate();
-
 const formatDate = (value: string) => {
-  const date = parseEpisodeDate(value);
+  const date = rssCalendarDay(value);
   if (!date) return "Fecha no disponible";
-  return new Intl.DateTimeFormat("es-CO", {
-    day: "2-digit",
-    month: "short",
-  }).format(date);
+  return formatCalendarDay(date);
 };
 
 export default function PodcastExternalSeries() {
@@ -72,6 +55,12 @@ export default function PodcastExternalSeries() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [tab, setTab] = useState<"episodes" | "about">("episodes");
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -97,15 +86,15 @@ export default function PodcastExternalSeries() {
 
   const nearestEpisode = useMemo(() => {
     if (!episodes.length) return null;
-    const today = new Date();
+    const today = bogotaCalendarDay(now);
 
     return (
       episodes.reduce<ExternalPodcastEpisode | null>((nearest, episode) => {
-        const episodeDate = parseEpisodeDate(episode.pub_date);
+        const episodeDate = rssCalendarDay(episode.pub_date);
         if (!episodeDate) return nearest;
         if (!nearest) return episode;
 
-        const nearestDate = parseEpisodeDate(nearest.pub_date);
+        const nearestDate = rssCalendarDay(nearest.pub_date);
         if (!nearestDate) return episode;
 
         const episodeDistance = calendarDistance(episodeDate, today);
@@ -116,13 +105,13 @@ export default function PodcastExternalSeries() {
         return episodeTimestamp(episode) > episodeTimestamp(nearest) ? episode : nearest;
       }, null) ?? episodes[0]
     );
-  }, [episodes]);
+  }, [episodes, now]);
 
   const nearestMatchesToday = useMemo(() => {
     if (!nearestEpisode) return false;
-    const date = parseEpisodeDate(nearestEpisode.pub_date);
-    return date ? sameMonthAndDay(date, new Date()) : false;
-  }, [nearestEpisode]);
+    const date = rssCalendarDay(nearestEpisode.pub_date);
+    return date ? sameCalendarDay(date, bogotaCalendarDay(now)) : false;
+  }, [nearestEpisode, now]);
 
   const playEpisode = async (episode: ExternalPodcastEpisode) => {
     const audio = audioRef.current;
