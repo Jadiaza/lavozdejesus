@@ -32,13 +32,13 @@ const recommendedLiturgyHour = () => {
     hour12: false,
   }).format(new Date()));
 
-  if (hour < 5) return "Oficio de Lectura";
-  if (hour < 9) return "Laudes";
-  if (hour < 12) return "Tercia";
-  if (hour < 15) return "Sexta";
-  if (hour < 18) return "Nona";
-  if (hour < 21) return "Vísperas";
-  return "Completas";
+  if (hour < 5) return { code: "oficio", name: "Oficio de Lectura", description: "Entra en el silencio de la Palabra y contempla la obra de Dios." };
+  if (hour < 9) return { code: "laudes", name: "Laudes", description: "Consagra la mañana y recibe el nuevo día como un don del Señor." };
+  if (hour < 12) return { code: "tercia", name: "Tercia", description: "Invoca al Espíritu Santo y encomienda a Dios el trabajo de esta mañana." };
+  if (hour < 15) return { code: "sexta", name: "Sexta", description: "Haz una pausa al mediodía y vuelve tu corazón a la presencia de Dios." };
+  if (hour < 18) return { code: "nona", name: "Nona", description: "Ofrece al Señor el cansancio, los frutos y las tareas de esta tarde." };
+  if (hour < 21) return { code: "visperas", name: "Vísperas", description: "Da gracias por el día vivido y eleva con la Iglesia tu oración de la tarde." };
+  return { code: "completas", name: "Completas", description: "Entrega al Padre tu jornada y descansa serenamente bajo su protección." };
 };
 
 const categories = [
@@ -114,22 +114,22 @@ export default function Oraciones() {
 
   return <div className="min-h-dvh bg-[#02080d] text-[#f5f0e6]">
     <div className="relative mx-auto flex h-dvh min-h-[36rem] w-full max-w-[430px] flex-col overflow-hidden border-x border-white/[0.04] bg-[radial-gradient(circle_at_50%_-8%,rgba(32,83,101,.21),transparent_34%),radial-gradient(circle_at_50%_68%,rgba(190,133,30,.055),transparent_36%),linear-gradient(180deg,#06131b_0%,#02080d_100%)] shadow-[0_0_45px_rgba(0,0,0,.65)]">
+      <div aria-hidden="true" style={{ backgroundImage: `url(${liturgyHoursHero})` }} className="pointer-events-none absolute inset-x-0 top-0 h-[72dvh] bg-cover bg-[position:58%_center] opacity-80" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(2,9,14,.82)_0%,rgba(2,8,12,.36)_22%,rgba(2,8,12,.48)_47%,#02080d_73%,#02080d_100%)]" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(1,6,9,.83)_0%,rgba(2,7,10,.48)_50%,rgba(2,7,10,.12)_100%)]" />
       <PrayerHomeHeader />
-      <main className="flex min-h-0 flex-1 flex-col px-[0.9rem] pb-[5.35rem]">
-        <Link to="/oraciones/liturgia" onClick={tactileFeedback} style={{ backgroundImage: `url(${liturgyHoursHero})` }} className="group relative block h-[clamp(12rem,32.5dvh,16.2rem)] shrink-0 overflow-hidden rounded-[1rem] border border-[#e7b63c]/90 bg-cover bg-center shadow-[0_13px_34px_rgba(0,0,0,.55),0_0_0_1px_rgba(255,220,115,.06)] transition active:scale-[.992]">
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(1,6,9,.88)_0%,rgba(2,7,10,.58)_48%,rgba(2,7,10,.02)_82%)]" />
-          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/72 via-black/25 to-transparent" />
-          <div className="absolute inset-0 ring-1 ring-inset ring-white/[0.06]" />
-          <span className="absolute right-3 top-3 z-10 rounded-full border border-[#f1c34a]/50 bg-[#171109]/70 px-3 py-1.5 text-[9px] font-semibold tracking-wide text-[#f8d86e] shadow-[0_4px_14px_rgba(0,0,0,.35)] backdrop-blur-md">Ahora · {recommendedHour}</span>
-          <div className="relative z-10 flex h-full max-w-[82%] flex-col justify-end px-[clamp(.85rem,4vw,1.25rem)] pb-[clamp(1rem,3dvh,1.35rem)]">
-            <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[.24em] text-[#efbd52]">Oración de la Iglesia</p>
-            <h2 className="font-sans text-[clamp(1rem,4.7vw,1.22rem)] font-bold uppercase leading-tight tracking-[0.015em] text-white drop-shadow-[0_2px_5px_rgba(0,0,0,.9)]">Liturgia de las Horas</h2>
-            <p className="mt-1.5 text-[clamp(.78rem,3.5vw,.94rem)] font-medium leading-[1.4] text-white/95">La oración de la Iglesia,<br />actualizada cada día</p>
-            <span className="mt-3 inline-flex h-[clamp(2.45rem,5.6dvh,2.85rem)] w-fit items-center gap-2.5 rounded-full bg-gradient-to-r from-[#ffe083] via-[#f2c64e] to-[#daa029] px-[clamp(1.05rem,4.7vw,1.45rem)] text-[clamp(.72rem,3.2vw,.84rem)] font-extrabold text-[#17120a] shadow-[0_8px_20px_rgba(215,155,35,.24)] transition group-active:scale-[.98]">REZAR AHORA <ChevronRight className="h-5 w-5" strokeWidth={2.5} /></span>
+      <main className="relative z-10 flex min-h-0 flex-1 flex-col px-[0.9rem] pb-[5.35rem]">
+        <Link to={`/oraciones/liturgia/${recommendedHour.code}`} onClick={tactileFeedback} className="group relative block h-[clamp(14.5rem,38dvh,18.5rem)] shrink-0 transition active:scale-[.992]">
+          <span className="absolute right-0 top-1 z-10 rounded-full border border-[#f1c34a]/50 bg-[#171109]/65 px-3 py-1.5 text-[9px] font-semibold tracking-wide text-[#f8d86e] shadow-[0_4px_14px_rgba(0,0,0,.35)] backdrop-blur-md">Ahora · {recommendedHour.name}</span>
+          <div className="relative z-10 flex h-full max-w-[91%] flex-col justify-end pb-[clamp(1.05rem,2.4dvh,1.35rem)]">
+            <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[.24em] text-[#efbd52]">Liturgia de las Horas</p>
+            <h2 className="font-serif text-[clamp(1.8rem,7.8vw,2.35rem)] font-semibold leading-[.98] tracking-[-.02em] text-[#f8d575] drop-shadow-[0_3px_8px_rgba(0,0,0,.9)]">{recommendedHour.name}</h2>
+            <p className="mt-2.5 max-w-[20rem] text-[clamp(.78rem,3.5vw,.94rem)] font-medium leading-[1.45] text-white/90 drop-shadow-[0_2px_5px_rgba(0,0,0,.9)]">{recommendedHour.description}</p>
+            <span className="mt-3.5 inline-flex h-[clamp(2.45rem,5.6dvh,2.85rem)] w-fit items-center gap-2.5 rounded-full bg-gradient-to-r from-[#ffe083] via-[#f2c64e] to-[#daa029] px-[clamp(1.05rem,4.7vw,1.45rem)] text-[clamp(.72rem,3.2vw,.84rem)] font-extrabold text-[#17120a] shadow-[0_8px_20px_rgba(215,155,35,.24)] transition group-active:scale-[.98]">REZAR {recommendedHour.name.toUpperCase()} <ChevronRight className="h-5 w-5" strokeWidth={2.5} /></span>
           </div>
         </Link>
 
-        <div className="mt-3 grid min-h-0 flex-1 grid-cols-2 grid-rows-2 gap-3">{homeItems.map(([label, to, Icon]) => <Link key={label} to={to} onClick={tactileFeedback} className="group relative flex min-h-[4.25rem] items-center gap-3 overflow-hidden rounded-[0.9rem] border border-[#2b3b44] bg-[radial-gradient(circle_at_18%_30%,rgba(222,164,49,.08),transparent_35%),linear-gradient(145deg,#12212a_0%,#09131a_100%)] px-[clamp(.75rem,3.8vw,1.05rem)] py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,.035),0_7px_18px_rgba(0,0,0,.28)] transition hover:border-[#d8a740]/55 active:scale-[.975]"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#d8a740]/25 bg-[#d8a740]/[0.07] shadow-[0_0_18px_rgba(216,167,64,.07)]"><Icon className="h-7 w-7 text-[#f2c544] transition group-hover:drop-shadow-[0_0_8px_rgba(241,195,61,.4)]" strokeWidth={1.8} /></span><span className="min-w-0 text-[clamp(.68rem,3.15vw,.82rem)] font-semibold leading-[1.18] text-white/95">{label}</span><span className="absolute inset-x-5 bottom-0 h-px bg-gradient-to-r from-transparent via-[#d8a740]/25 to-transparent opacity-0 transition group-hover:opacity-100" /></Link>)}</div>
+        <div className="mt-1 grid grid-cols-2 gap-2.5">{homeItems.map(([label, to, Icon]) => <Link key={label} to={to} onClick={tactileFeedback} className="group relative flex min-h-[clamp(4rem,9.2dvh,4.75rem)] items-center gap-2.5 overflow-hidden rounded-[0.85rem] border border-[#2b3b44] bg-[linear-gradient(145deg,rgba(18,33,42,.94)_0%,rgba(9,19,26,.96)_100%)] px-[clamp(.7rem,3.5vw,.95rem)] py-2 shadow-[inset_0_1px_0_rgba(255,255,255,.035),0_7px_18px_rgba(0,0,0,.28)] backdrop-blur-md transition hover:border-[#d8a740]/55 active:scale-[.975]"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#d8a740]/25 bg-[#d8a740]/[0.07]"><Icon className="h-6 w-6 text-[#f2c544] transition group-hover:drop-shadow-[0_0_8px_rgba(241,195,61,.4)]" strokeWidth={1.8} /></span><span className="min-w-0 text-[clamp(.66rem,3vw,.79rem)] font-semibold leading-[1.16] text-white/95">{label}</span></Link>)}</div>
       </main>
       <PrayerNav active="Inicio" />
     </div>
