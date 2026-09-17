@@ -5,7 +5,7 @@ import {
   HandHeart, Heart, Home, LoaderCircle, Menu, Moon, Play, RefreshCw, Search, Send, Settings,
   Shield, ShieldCheck, SlidersHorizontal, Sparkles, Sun, Volume2,
 } from "lucide-react";
-import cathedralBg from "@/assets/cathedral-bg.jpg";
+import liturgyHoursHero from "@/assets/liturgy-hours-hero.webp";
 import PrayerFormatSheet from "../components/PrayerFormatSheet";
 import { PrayerReader } from "../components/PrayerReader";
 import { usePrayerPreferences } from "../hooks/usePrayerPreferences";
@@ -62,7 +62,7 @@ const PrayerHomeHeader = () => (
       <span className="absolute left-0 top-4 h-px w-2.5 rotate-[28deg] bg-[#f2c34f]" />
       <span className="absolute right-0 top-4 h-px w-2.5 -rotate-[28deg] bg-[#f2c34f]" />
     </div>
-    <h1 className="font-display text-[clamp(1.25rem,5.8vw,1.55rem)] font-semibold uppercase leading-none tracking-[0.045em] text-[#f4c64e]">Oraciones</h1>
+    <h1 className="font-sans text-[clamp(1.25rem,5.8vw,1.55rem)] font-bold uppercase leading-none tracking-[0.045em] text-[#f4c64e]">Oraciones</h1>
     <p className="mt-2 text-[clamp(.78rem,3.5vw,.93rem)] font-medium leading-none text-[#f5f2eb]">Ora, medita y encuentra fortaleza</p>
   </header>
 );
@@ -86,12 +86,11 @@ export default function Oraciones() {
     <div className="relative mx-auto flex min-h-dvh w-full max-w-[430px] flex-col overflow-x-hidden border-x border-white/[0.04] bg-[radial-gradient(circle_at_50%_-12%,rgba(28,70,87,.18),transparent_34%),linear-gradient(180deg,#061119_0%,#030a10_100%)] shadow-[0_0_45px_rgba(0,0,0,.65)]">
       <PrayerHomeHeader />
       <main className="flex-1 px-[0.9rem] pb-[6.4rem]">
-        <Link to="/oraciones/liturgia" style={{ backgroundImage: `url(${cathedralBg})` }} className="group relative block h-[clamp(13rem,36dvh,18rem)] overflow-hidden rounded-[0.85rem] border border-[#e1aa2b] bg-cover bg-[center_42%] shadow-[0_10px_28px_rgba(0,0,0,.45)]">
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,7,10,.92)_0%,rgba(3,8,11,.68)_52%,rgba(2,7,10,.16)_100%)]" />
-          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/75 to-transparent" />
-          <BookOpen className="absolute -bottom-3 right-1 h-[clamp(7rem,17dvh,9rem)] w-[clamp(8rem,22dvh,11rem)] text-[#f3dfb6]/80 drop-shadow-[0_0_15px_rgba(248,194,79,.7)]" strokeWidth={0.9} aria-hidden="true" />
+        <Link to="/oraciones/liturgia" style={{ backgroundImage: `url(${liturgyHoursHero})` }} className="group relative block h-[clamp(13rem,36dvh,18rem)] overflow-hidden rounded-[0.85rem] border border-[#e1aa2b] bg-cover bg-center shadow-[0_10px_28px_rgba(0,0,0,.45)]">
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,7,10,.74)_0%,rgba(3,8,11,.48)_46%,rgba(2,7,10,.05)_78%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
           <div className="relative z-10 flex h-full max-w-[80%] flex-col justify-end px-[clamp(.85rem,4vw,1.25rem)] pb-[clamp(1rem,3dvh,1.5rem)]">
-            <h2 className="font-display text-[clamp(1rem,4.7vw,1.22rem)] font-semibold uppercase leading-tight tracking-[0.01em] text-white drop-shadow-[0_2px_5px_rgba(0,0,0,.9)]">Liturgia de las Horas</h2>
+            <h2 className="font-sans text-[clamp(1rem,4.7vw,1.22rem)] font-bold uppercase leading-tight tracking-[0.01em] text-white drop-shadow-[0_2px_5px_rgba(0,0,0,.9)]">Liturgia de las Horas</h2>
             <p className="mt-1.5 text-[clamp(.78rem,3.5vw,.94rem)] font-medium leading-[1.4] text-white/95">La oración de la Iglesia,<br />actualizada cada día</p>
             <span className="mt-3 inline-flex h-[clamp(2.55rem,6dvh,3.05rem)] w-fit items-center gap-3 rounded-full bg-gradient-to-r from-[#ffdc72] via-[#f4c750] to-[#dca52e] px-[clamp(1.15rem,5vw,1.6rem)] text-[clamp(.72rem,3.2vw,.86rem)] font-extrabold text-[#17120a] shadow-[0_5px_12px_rgba(0,0,0,.35)] transition group-active:scale-[.98]">REZAR AHORA <ChevronRight className="h-5 w-5" strokeWidth={2.5} /></span>
           </div>
