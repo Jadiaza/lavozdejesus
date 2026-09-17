@@ -15,6 +15,7 @@ interface Props {
 export const BibliaLayout = ({ title, children, back, headerAction, hideHeader = false, hideBottomNav = false }: Props) => {
   const loc = useLocation();
   const isHome = loc.pathname === "/biblia" || loc.pathname === "/Biblia";
+  const isStudy = loc.pathname.toLowerCase().startsWith("/biblia/estudio");
 
   return (
     <div className="biblia-layout-shell relative min-h-screen overflow-x-hidden bg-[#050505] pb-[calc(6rem+env(safe-area-inset-bottom))] text-[#F8F5EA]">
@@ -50,9 +51,9 @@ export const BibliaLayout = ({ title, children, back, headerAction, hideHeader =
       )}
 
       <main
-        className={`relative z-10 mx-auto w-full max-w-[430px] px-4 pb-8 md:max-w-4xl ${
-          isHome ? "pt-0" : "pt-3"
-        }`}
+        className={`relative z-10 mx-auto w-full pb-8 md:max-w-4xl ${
+          isStudy ? "max-w-none px-2 sm:max-w-[430px] sm:px-4" : "max-w-[430px] px-4"
+        } ${isHome ? "pt-0" : "pt-3"}`}
       >
         {children}
       </main>
