@@ -98,7 +98,22 @@ export default function BibliaLibros() {
       {!cargando && !error && <div className="grid grid-cols-3 gap-2 min-[390px]:grid-cols-4 md:grid-cols-5">{visibles.map((book) => <button key={book.id} type="button" onClick={() => setSeleccionado(book)} className={`min-h-[4.55rem] rounded-xl border px-1.5 py-2 shadow-[inset_0_1px_rgba(255,255,255,0.08)] transition active:scale-95 ${estilos[grupoDe(book)]}`}><span className="font-display block text-xl leading-none text-[#FFF9E9]">{book.abreviatura}</span><span className="mt-1 line-clamp-2 block text-[10px] leading-tight text-[#F5F0E5]/90">{book.nombre}</span></button>)}</div>}
       {!cargando && !error && !visibles.length && <p className="py-10 text-center text-sm text-[#C9C3B3]">No encontramos ese libro.</p>}
     </section>
-    {seleccionado && <div className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-black/75 px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))] backdrop-blur-sm" onClick={() => setSeleccionado(null)}><div className="w-full max-w-[430px] rounded-[1.7rem] border border-[#D4AF37]/45 bg-[#0b0b0b] p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}><button type="button" onClick={() => setSeleccionado(null)} className="mb-3 inline-flex items-center gap-1 text-xs text-[#D4AF37]"><ChevronLeft className="h-4 w-4" /> Volver a los libros</button><h2 className="font-display text-2xl text-[#F8F5EA]">{seleccionado.nombre}</h2><p className="mb-4 mt-1 text-sm text-[#C9C3B3]">Elige un capítulo</p><div className="max-h-[calc(100dvh-13rem)] overflow-y-auto pr-1"><div className="grid grid-cols-6 gap-2">{Array.from({ length: seleccionado.capitulos }, (_, i) => i + 1).map((cap) => <button key={cap} type="button" onClick={() => navigate(`/biblia/leer?libro=${seleccionado.codigo}&cap=${cap}`)} className={`aspect-square rounded-lg border text-sm font-semibold hover:border-[#D4AF37] hover:bg-[#D4AF37]/15 ${cap === capituloConservado ? "border-[#F2D27A] bg-[#D4AF37] text-[#050505]" : "border-[#D4AF37]/30 bg-[#15130e] text-[#F2D27A]"}`}>{cap}</button>)}</div></div></div></div>}
+
+    {seleccionado && (
+      <div className="fixed inset-0 z-[70] overflow-y-auto bg-[#050505] pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))] md:bg-black/75 md:px-4 md:backdrop-blur-sm" onClick={() => setSeleccionado(null)}>
+        <div className="mx-auto w-full max-w-[760px] px-4 py-2 md:rounded-[1.7rem] md:border md:border-[#D4AF37]/45 md:bg-[#0b0b0b] md:p-5 md:shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <button type="button" onClick={() => setSeleccionado(null)} className="mb-6 inline-flex items-center gap-1 text-sm font-semibold text-[#D4AF37]"><ChevronLeft className="h-5 w-5" /> Volver a los libros</button>
+          <h2 className="font-display text-[34px] leading-tight text-[#F8F5EA]">{seleccionado.nombre}</h2>
+          <p className="mb-6 mt-2 text-lg text-[#C9C3B3]">Elige un capítulo</p>
+          <div className="grid grid-cols-6 gap-3 min-[420px]:grid-cols-7 sm:grid-cols-8 md:grid-cols-9">
+            {Array.from({ length: seleccionado.capitulos }, (_, i) => i + 1).map((cap) => (
+              <button key={cap} type="button" onClick={() => navigate(`/biblia/leer?libro=${seleccionado.codigo}&cap=${cap}`)} className={`aspect-square rounded-xl border text-base font-semibold transition hover:border-[#D4AF37] hover:bg-[#D4AF37]/15 ${cap === capituloConservado ? "border-[#F2D27A] bg-[#D4AF37] text-[#050505]" : "border-[#D4AF37]/30 bg-[#15130e] text-[#F2D27A]"}`}>{cap}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+    )}
+
     <p className="mt-4 text-center text-[11px] text-[#8f897d]">Canon católico · 73 libros</p>
   </BibliaLayout>;
 }
