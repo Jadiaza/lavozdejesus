@@ -1,0 +1,28 @@
+@media (max-width: 767px) {
+  .biblia-layout-content > section[class*="rounded-"],
+  .biblia-layout-content > div[class*="rounded-"] {
+    border-color: transparent !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .biblia-layout-content > section[aria-labelledby="study-level-heading"],
+  .biblia-layout-content > section[aria-labelledby="study-book-heading"],
+  .biblia-layout-content > section[aria-labelledby="study-passage-heading"] {
+    margin-bottom: 1rem;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  .biblia-layout-content [data-biblia-scroll-panel="true"] {
+    max-height: none !important;
+    overflow: visible !important;
+    padding-right: 0 !important;
+  }
+}
