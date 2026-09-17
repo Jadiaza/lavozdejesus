@@ -2,6 +2,7 @@ import { type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import { BottomNav } from "@/components/lvdj/BottomNav";
+import "./biblia-layout.css";
 
 interface Props {
   title?: string;
@@ -15,7 +16,6 @@ interface Props {
 export const BibliaLayout = ({ title, children, back, headerAction, hideHeader = false, hideBottomNav = false }: Props) => {
   const loc = useLocation();
   const isHome = loc.pathname === "/biblia" || loc.pathname === "/Biblia";
-  const isStudy = loc.pathname.toLowerCase().startsWith("/biblia/estudio");
 
   return (
     <div className="biblia-layout-shell relative min-h-screen overflow-x-hidden bg-[#050505] pb-[calc(6rem+env(safe-area-inset-bottom))] text-[#F8F5EA]">
@@ -24,7 +24,7 @@ export const BibliaLayout = ({ title, children, back, headerAction, hideHeader =
 
       {!isHome && !hideHeader && (
         <header className="sticky top-0 z-40 border-b border-[#D4AF37]/15 bg-[#050505]/92 shadow-[0_14px_38px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-          <div className="mx-auto flex w-full max-w-[430px] items-center gap-3 px-4 py-3 md:max-w-4xl">
+          <div className="mx-auto flex w-full items-center gap-3 px-4 py-3 sm:max-w-[640px] md:max-w-4xl">
             <Link
               to={back ?? "/biblia"}
               className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D4AF37]/30 bg-[#111111]/80 text-[#F2D27A] shadow-[0_0_20px_rgba(212,175,55,0.12)] transition hover:border-[#D4AF37]/60 hover:bg-[#171717]"
@@ -51,9 +51,9 @@ export const BibliaLayout = ({ title, children, back, headerAction, hideHeader =
       )}
 
       <main
-        className={`relative z-10 mx-auto w-full pb-8 md:max-w-4xl ${
-          isStudy ? "max-w-none px-2 sm:max-w-[430px] sm:px-4" : "max-w-[430px] px-4"
-        } ${isHome ? "pt-0" : "pt-3"}`}
+        className={`biblia-layout-content relative z-10 mx-auto w-full px-3 pb-8 sm:max-w-[640px] sm:px-4 md:max-w-4xl md:px-6 ${
+          isHome ? "pt-0" : "pt-3"
+        }`}
       >
         {children}
       </main>
