@@ -1,9 +1,9 @@
 import { FormEvent, ReactNode, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
-  AlertCircle, ArrowLeft, Bell, BookOpen, ChevronRight, Clock3, Cross, Download,
-  Heart, Home, LoaderCircle, Menu, Moon, Play, RefreshCw, Search, Send, Settings,
-  Shield, SlidersHorizontal, Sparkles, Sun, Volume2,
+  AlertCircle, ArrowLeft, Bell, Bird, BookOpen, ChevronRight, Clock3, Cross, Download,
+  HandHeart, Heart, Home, LoaderCircle, Menu, Moon, Play, RefreshCw, Search, Send, Settings,
+  Shield, ShieldCheck, SlidersHorizontal, Sparkles, Sun, Volume2,
 } from "lucide-react";
 import cathedralBg from "@/assets/cathedral-bg.jpg";
 import PrayerFormatSheet from "../components/PrayerFormatSheet";
@@ -55,21 +55,53 @@ const Header = ({ title, back = true }: { title: string; back?: boolean }) => (
   </header>
 );
 
+const PrayerHomeHeader = () => (
+  <header className="flex h-[7.1rem] shrink-0 flex-col items-center justify-end px-4 pb-3 pt-5 text-center">
+    <div className="relative mb-1.5 flex h-8 w-8 items-center justify-center text-[#f2c34f]" aria-hidden="true">
+      <Cross className="h-8 w-8 stroke-[1.55] drop-shadow-[0_0_9px_rgba(239,189,82,.35)]" />
+      <span className="absolute left-0 top-3 h-px w-2 rotate-[28deg] bg-[#f2c34f]" />
+      <span className="absolute right-0 top-3 h-px w-2 -rotate-[28deg] bg-[#f2c34f]" />
+    </div>
+    <h1 className="font-display text-[1.08rem] font-bold uppercase leading-none tracking-[0.055em] text-[#f4c64e]">Oraciones</h1>
+    <p className="mt-1.5 text-[0.72rem] font-medium leading-none text-[#f5f2eb]">Ora, medita y encuentra fortaleza</p>
+  </header>
+);
+
 const PrayerNav = ({ active = "Oraciones" }: { active?: string }) => {
   const items = [[Home, "Inicio", "/"], [Bell, "Oraciones", "/oraciones"], [Cross, "Liturgia", "/oraciones/liturgia"], [Heart, "Favoritos", "/oraciones/mis-oraciones"], [Settings, "Ajustes", "/oraciones"]] as const;
-  return <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[520px] border-t border-[#d8a740]/20 bg-[#071018]/95 px-2 pb-[max(.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur"><div className="flex justify-around">{items.map(([Icon, label, to]) => <Link key={label} to={to} className={`flex flex-col items-center gap-1 text-[9px] ${active === label ? GOLD : "text-white/55"}`}><Icon className="h-4 w-4" />{label}</Link>)}</div></nav>;
+  return <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[430px] border-t border-[#d8a740]/25 bg-[#061018]/98 px-2 pb-[max(.45rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur"><div className="flex justify-around">{items.map(([Icon, label, to]) => <Link key={label} to={to} className={`flex min-w-0 flex-1 flex-col items-center gap-1 text-[8.5px] font-medium ${active === label ? GOLD : "text-white/70"}`}><Icon className="h-[17px] w-[17px]" strokeWidth={active === label ? 2.3 : 1.65} />{label}</Link>)}</div></nav>;
 };
 
 const Shell = ({ children, title, active, back }: { children: ReactNode; title: string; active?: string; back?: boolean }) => <div className="min-h-screen bg-[#050b12] text-[#f5f0e6]"><div className="mx-auto min-h-screen max-w-[520px] border-x border-white/5 bg-[radial-gradient(circle_at_top,rgba(197,139,35,.10),transparent_30%)]"><Header title={title} back={back} /><main className="px-4 pb-24 pt-4">{children}</main><PrayerNav active={active} /></div></div>;
 
 export default function Oraciones() {
-  return <Shell title="Oraciones" back={false}>
-    <p className="-mt-3 mb-4 text-center text-xs text-white/70">Ora, medita y encuentra fortaleza</p>
-    <Link to="/oraciones/liturgia" style={{ backgroundImage: `url(${cathedralBg})` }} className="relative block min-h-48 overflow-hidden rounded-2xl border border-[#d8a740] bg-cover bg-center p-5 shadow-2xl">
-      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/65 to-black/20" /><div className="relative max-w-[75%] pt-6"><h2 className="font-serif text-xl font-bold">LITURGIA DE LAS HORAS</h2><p className="mt-2 text-sm">La oración de la Iglesia,<br />actualizada cada día</p><span className="mt-5 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#f6d574] to-[#d49a28] px-5 py-3 text-xs font-bold text-black">REZAR AHORA <ChevronRight className="h-4 w-4" /></span></div>
-    </Link>
-    <div className="mt-3 grid grid-cols-2 gap-3">{[["Oraciones del cristiano", "/oraciones/categoria/cristiano", Bell], ["Devociones", "/oraciones/devociones", Heart], ["Sanación y protección", "/oraciones/categorias", Shield], ["Liberación", "/oraciones/categorias", Send]].map(([label, to, Icon]) => <Link key={String(label)} to={String(to)} className="flex min-h-20 items-center gap-3 rounded-xl border border-white/10 bg-[#111b23] p-3 text-xs font-semibold"><Icon className="h-7 w-7 text-[#efbd52]" />{String(label)}</Link>)}</div>
-  </Shell>;
+  const homeItems = [
+    ["Oraciones del cristiano", "/oraciones/categoria/cristiano", HandHeart],
+    ["Devociones", "/oraciones/devociones", Heart],
+    ["Sanación y protección", "/oraciones/categorias", ShieldCheck],
+    ["Liberación", "/oraciones/categorias", Bird],
+  ] as const;
+
+  return <div className="min-h-dvh bg-[#02080d] text-[#f5f0e6]">
+    <div className="relative mx-auto flex min-h-dvh w-full max-w-[430px] flex-col overflow-x-hidden border-x border-white/[0.04] bg-[radial-gradient(circle_at_50%_-12%,rgba(28,70,87,.18),transparent_34%),linear-gradient(180deg,#061119_0%,#030a10_100%)] shadow-[0_0_45px_rgba(0,0,0,.65)]">
+      <PrayerHomeHeader />
+      <main className="flex-1 px-[0.9rem] pb-[5.4rem]">
+        <Link to="/oraciones/liturgia" style={{ backgroundImage: `url(${cathedralBg})` }} className="group relative block h-[10.1rem] overflow-hidden rounded-[0.72rem] border border-[#e1aa2b] bg-cover bg-[center_42%] shadow-[0_10px_28px_rgba(0,0,0,.45)]">
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,7,10,.92)_0%,rgba(3,8,11,.68)_52%,rgba(2,7,10,.16)_100%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/75 to-transparent" />
+          <BookOpen className="absolute -bottom-2 right-1 h-[5.8rem] w-[6.8rem] text-[#f3dfb6]/80 drop-shadow-[0_0_15px_rgba(248,194,79,.7)]" strokeWidth={0.9} aria-hidden="true" />
+          <div className="relative z-10 flex h-full max-w-[78%] flex-col justify-end px-3 pb-3.5">
+            <h2 className="font-display text-[0.92rem] font-semibold uppercase leading-tight tracking-[0.015em] text-white drop-shadow-[0_2px_5px_rgba(0,0,0,.9)]">Liturgia de las Horas</h2>
+            <p className="mt-1 text-[0.72rem] font-medium leading-[1.35] text-white/95">La oración de la Iglesia,<br />actualizada cada día</p>
+            <span className="mt-2.5 inline-flex h-9 w-fit items-center gap-2 rounded-full bg-gradient-to-r from-[#ffdc72] via-[#f4c750] to-[#dca52e] px-4 text-[0.67rem] font-extrabold text-[#17120a] shadow-[0_5px_12px_rgba(0,0,0,.35)] transition group-active:scale-[.98]">REZAR AHORA <ChevronRight className="h-4 w-4" strokeWidth={2.5} /></span>
+          </div>
+        </Link>
+
+        <div className="mt-2.5 grid grid-cols-2 gap-2.5">{homeItems.map(([label, to, Icon]) => <Link key={label} to={to} className="flex min-h-[3.15rem] items-center gap-2.5 rounded-[0.62rem] border border-[#26333b] bg-[linear-gradient(145deg,#111d25_0%,#0a141b_100%)] px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,.025),0_5px_12px_rgba(0,0,0,.2)] transition active:scale-[.98]"><Icon className="h-[1.65rem] w-[1.65rem] shrink-0 text-[#f1c33d]" strokeWidth={1.9} /><span className="text-[0.64rem] font-semibold leading-[1.15] text-white">{label}</span></Link>)}</div>
+      </main>
+      <PrayerNav active="Inicio" />
+    </div>
+  </div>;
 }
 
 export function LiturgiaHoras() {
