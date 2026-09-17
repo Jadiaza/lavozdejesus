@@ -66,7 +66,7 @@ export function BibliaPassageGridSelector({ books, book, chapter, onBookChange, 
       <div className={bookStage ? "bg-transparent px-0 py-1" : "rounded-2xl border border-[#D4AF37]/30 bg-[#080808] p-3"}>
         <div className="mb-3"><p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#D4AF37]">{testament==="AT"?"Antiguo Testamento":"Nuevo Testamento"}</p><div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">{groups.map((group)=><span key={group} className="inline-flex items-center gap-1 text-[9px] text-[#C9C3B3]"><i className={`h-2 w-2 rounded-full border ${groupTone(group)}`}/>{group}</span>)}</div></div>
         <h3 id="selector-libro-title" className="sr-only">{selectedBook?.nombre || "Selecciona un libro"}</h3>
-        <div className={`grid gap-2.5 ${bookStage ? "grid-cols-3 min-[360px]:grid-cols-4" : "max-h-[28rem] grid-cols-3 overflow-y-auto pr-1 sm:grid-cols-4 lg:grid-cols-5"}`}>
+        <div data-biblia-scroll-panel="true" className="grid grid-cols-3 gap-2.5 min-[360px]:grid-cols-4 md:grid-cols-5">
           {visibleBooks.map((item)=><button key={item.codigo} type="button" title={`${item.nombre} · ${visualGroup(item)}`} onClick={()=>onBookChange(item.codigo)} aria-pressed={book===item.codigo} className={`min-h-[4.8rem] rounded-xl border px-1.5 py-2 text-center transition ${book===item.codigo?"border-[#F2D27A] bg-[#D4AF37] text-black ring-2 ring-[#F2D27A]/35":groupTone(visualGroup(item))}`}><span className="block truncate font-display text-lg font-semibold">{item.abreviatura}</span><span className={`mt-1 block truncate text-[10px] ${book===item.codigo?"text-black/70":"opacity-80"}`}>{item.nombre}</span></button>)}
           {visibleBooks.length===0&&<p className="col-span-full py-8 text-center text-sm text-[#8F897C]">No se encontraron libros.</p>}
         </div>
@@ -74,8 +74,8 @@ export function BibliaPassageGridSelector({ books, book, chapter, onBookChange, 
     </section>
 
     {stage!=="book"&&selectedBook&&<section aria-labelledby="selector-capitulo-title">
-      <div className="mb-2"><p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#D4AF37]">Capítulo</p><h3 id="selector-capitulo-title" className="mt-0.5 text-sm font-semibold text-[#F8F5EA]">{chapter>0?`${selectedBook.nombre} ${chapter}`:"Selecciona un capítulo"}</h3></div>
-      <div className="grid max-h-52 grid-cols-6 gap-2 overflow-y-auto pr-1 sm:grid-cols-8">
+      <div className="mb-3"><p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#D4AF37]">Capítulo</p><h3 id="selector-capitulo-title" className="mt-0.5 text-sm font-semibold text-[#F8F5EA]">{chapter>0?`${selectedBook.nombre} ${chapter}`:"Selecciona un capítulo"}</h3></div>
+      <div data-biblia-scroll-panel="true" className="grid grid-cols-5 gap-2.5 min-[390px]:grid-cols-6 sm:grid-cols-7 md:grid-cols-8">
         {chapters.map((value)=><button key={value} type="button" onClick={()=>onChapterChange(value)} aria-pressed={chapter===value} className={`aspect-square rounded-xl border text-sm font-semibold transition ${chapter===value?"border-[#F2D27A] bg-[#D4AF37] text-black":"border-[#D4AF37]/25 bg-[#111] text-[#F2D27A] hover:border-[#D4AF37]/60"}`}>{value}</button>)}
       </div>
     </section>}
