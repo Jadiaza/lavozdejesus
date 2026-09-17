@@ -83,14 +83,16 @@ const Header = ({ title, back = true }: { title: string; back?: boolean }) => (
 );
 
 const PrayerHomeHeader = () => (
-  <header className="flex h-[clamp(8.1rem,18.5dvh,9.8rem)] shrink-0 flex-col items-center justify-end px-4 pb-[clamp(.65rem,1.5dvh,.9rem)] pt-4 text-center">
+  <header className="relative flex h-[clamp(7.8rem,17.5dvh,9.3rem)] shrink-0 flex-col items-center justify-end overflow-hidden px-4 pb-[clamp(.65rem,1.5dvh,.9rem)] pt-3 text-center">
+    <div className="pointer-events-none absolute left-1/2 top-4 h-28 w-56 -translate-x-1/2 rounded-full bg-[#d8a740]/[0.07] blur-3xl" />
     <div className="relative mb-2 flex h-10 w-10 items-center justify-center text-[#f2c34f]" aria-hidden="true">
-      <Cross className="h-10 w-10 stroke-[1.5] drop-shadow-[0_0_9px_rgba(239,189,82,.35)]" />
+      <span className="absolute h-12 w-12 rounded-full bg-[#efbd52]/[0.08] blur-md" />
+      <Cross className="relative h-10 w-10 stroke-[1.45] drop-shadow-[0_0_10px_rgba(239,189,82,.45)]" />
       <span className="absolute left-0 top-4 h-px w-2.5 rotate-[28deg] bg-[#f2c34f]" />
       <span className="absolute right-0 top-4 h-px w-2.5 -rotate-[28deg] bg-[#f2c34f]" />
     </div>
-    <h1 className="font-sans text-[clamp(1.25rem,5.8vw,1.55rem)] font-bold uppercase leading-none tracking-[0.045em] text-[#f4c64e]">Oraciones</h1>
-    <p className="mt-2 text-[clamp(.78rem,3.5vw,.93rem)] font-medium leading-none text-[#f5f2eb]">Ora, medita y encuentra fortaleza</p>
+    <h1 className="relative font-sans text-[clamp(1.25rem,5.8vw,1.55rem)] font-bold uppercase leading-none tracking-[0.075em] text-[#f4c64e] drop-shadow-[0_2px_8px_rgba(0,0,0,.7)]">Oraciones</h1>
+    <p className="relative mt-2 text-[clamp(.78rem,3.5vw,.93rem)] font-medium leading-none text-[#f5f2eb]/95">Ora, medita y encuentra fortaleza</p>
   </header>
 );
 
@@ -111,21 +113,23 @@ export default function Oraciones() {
   ] as const;
 
   return <div className="min-h-dvh bg-[#02080d] text-[#f5f0e6]">
-    <div className="relative mx-auto flex min-h-dvh w-full max-w-[430px] flex-col overflow-x-hidden border-x border-white/[0.04] bg-[radial-gradient(circle_at_50%_-12%,rgba(28,70,87,.18),transparent_34%),linear-gradient(180deg,#061119_0%,#030a10_100%)] shadow-[0_0_45px_rgba(0,0,0,.65)]">
+    <div className="relative mx-auto flex h-dvh min-h-[36rem] w-full max-w-[430px] flex-col overflow-hidden border-x border-white/[0.04] bg-[radial-gradient(circle_at_50%_-8%,rgba(32,83,101,.21),transparent_34%),radial-gradient(circle_at_50%_68%,rgba(190,133,30,.055),transparent_36%),linear-gradient(180deg,#06131b_0%,#02080d_100%)] shadow-[0_0_45px_rgba(0,0,0,.65)]">
       <PrayerHomeHeader />
-      <main className="flex-1 px-[0.9rem] pb-[6.4rem]">
-        <Link to="/oraciones/liturgia" onClick={tactileFeedback} style={{ backgroundImage: `url(${liturgyHoursHero})` }} className="group relative block h-[clamp(12.6rem,33.5dvh,16.8rem)] overflow-hidden rounded-[0.85rem] border border-[#e1aa2b] bg-cover bg-center shadow-[0_10px_28px_rgba(0,0,0,.45)] transition active:scale-[.992]">
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,7,10,.82)_0%,rgba(3,8,11,.56)_46%,rgba(2,7,10,.04)_80%)]" />
-          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/68 to-transparent" />
-          <span className="absolute right-3 top-3 z-10 rounded-full border border-[#f1c34a]/45 bg-black/45 px-2.5 py-1 text-[9px] font-semibold text-[#f7d46c] backdrop-blur-sm">Ahora · {recommendedHour}</span>
+      <main className="flex min-h-0 flex-1 flex-col px-[0.9rem] pb-[5.35rem]">
+        <Link to="/oraciones/liturgia" onClick={tactileFeedback} style={{ backgroundImage: `url(${liturgyHoursHero})` }} className="group relative block h-[clamp(12rem,32.5dvh,16.2rem)] shrink-0 overflow-hidden rounded-[1rem] border border-[#e7b63c]/90 bg-cover bg-center shadow-[0_13px_34px_rgba(0,0,0,.55),0_0_0_1px_rgba(255,220,115,.06)] transition active:scale-[.992]">
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(1,6,9,.88)_0%,rgba(2,7,10,.58)_48%,rgba(2,7,10,.02)_82%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/72 via-black/25 to-transparent" />
+          <div className="absolute inset-0 ring-1 ring-inset ring-white/[0.06]" />
+          <span className="absolute right-3 top-3 z-10 rounded-full border border-[#f1c34a]/50 bg-[#171109]/70 px-3 py-1.5 text-[9px] font-semibold tracking-wide text-[#f8d86e] shadow-[0_4px_14px_rgba(0,0,0,.35)] backdrop-blur-md">Ahora · {recommendedHour}</span>
           <div className="relative z-10 flex h-full max-w-[82%] flex-col justify-end px-[clamp(.85rem,4vw,1.25rem)] pb-[clamp(1rem,3dvh,1.35rem)]">
-            <h2 className="font-sans text-[clamp(1rem,4.7vw,1.22rem)] font-bold uppercase leading-tight tracking-[0.01em] text-white drop-shadow-[0_2px_5px_rgba(0,0,0,.9)]">Liturgia de las Horas</h2>
+            <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[.24em] text-[#efbd52]">Oración de la Iglesia</p>
+            <h2 className="font-sans text-[clamp(1rem,4.7vw,1.22rem)] font-bold uppercase leading-tight tracking-[0.015em] text-white drop-shadow-[0_2px_5px_rgba(0,0,0,.9)]">Liturgia de las Horas</h2>
             <p className="mt-1.5 text-[clamp(.78rem,3.5vw,.94rem)] font-medium leading-[1.4] text-white/95">La oración de la Iglesia,<br />actualizada cada día</p>
-            <span className="mt-3 inline-flex h-[clamp(2.5rem,5.8dvh,2.95rem)] w-fit items-center gap-2.5 rounded-full bg-gradient-to-r from-[#ffdc72] via-[#f4c750] to-[#dca52e] px-[clamp(1.05rem,4.7vw,1.45rem)] text-[clamp(.72rem,3.2vw,.84rem)] font-extrabold text-[#17120a] shadow-[0_6px_16px_rgba(210,150,32,.2)] transition group-active:scale-[.98]">REZAR AHORA <ChevronRight className="h-5 w-5" strokeWidth={2.5} /></span>
+            <span className="mt-3 inline-flex h-[clamp(2.45rem,5.6dvh,2.85rem)] w-fit items-center gap-2.5 rounded-full bg-gradient-to-r from-[#ffe083] via-[#f2c64e] to-[#daa029] px-[clamp(1.05rem,4.7vw,1.45rem)] text-[clamp(.72rem,3.2vw,.84rem)] font-extrabold text-[#17120a] shadow-[0_8px_20px_rgba(215,155,35,.24)] transition group-active:scale-[.98]">REZAR AHORA <ChevronRight className="h-5 w-5" strokeWidth={2.5} /></span>
           </div>
         </Link>
 
-        <div className="mt-3 grid grid-cols-2 gap-3">{homeItems.map(([label, to, Icon]) => <Link key={label} to={to} onClick={tactileFeedback} className="group flex min-h-[clamp(4.35rem,10.8dvh,5.45rem)] items-center gap-3 rounded-[0.75rem] border border-[#26333b] bg-[linear-gradient(145deg,#111d25_0%,#0a141b_100%)] px-[clamp(.8rem,4vw,1.15rem)] py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,.025),0_5px_12px_rgba(0,0,0,.2)] transition hover:border-[#d8a740]/45 hover:bg-[#14232c] active:scale-[.975]"><Icon className="h-8 w-8 shrink-0 text-[#f1c33d] transition group-hover:drop-shadow-[0_0_7px_rgba(241,195,61,.35)]" strokeWidth={1.9} /><span className="min-w-0 text-[clamp(.68rem,3.2vw,.82rem)] font-semibold leading-[1.18] text-white">{label}</span></Link>)}</div>
+        <div className="mt-3 grid min-h-0 flex-1 grid-cols-2 grid-rows-2 gap-3">{homeItems.map(([label, to, Icon]) => <Link key={label} to={to} onClick={tactileFeedback} className="group relative flex min-h-[4.25rem] items-center gap-3 overflow-hidden rounded-[0.9rem] border border-[#2b3b44] bg-[radial-gradient(circle_at_18%_30%,rgba(222,164,49,.08),transparent_35%),linear-gradient(145deg,#12212a_0%,#09131a_100%)] px-[clamp(.75rem,3.8vw,1.05rem)] py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,.035),0_7px_18px_rgba(0,0,0,.28)] transition hover:border-[#d8a740]/55 active:scale-[.975]"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#d8a740]/25 bg-[#d8a740]/[0.07] shadow-[0_0_18px_rgba(216,167,64,.07)]"><Icon className="h-7 w-7 text-[#f2c544] transition group-hover:drop-shadow-[0_0_8px_rgba(241,195,61,.4)]" strokeWidth={1.8} /></span><span className="min-w-0 text-[clamp(.68rem,3.15vw,.82rem)] font-semibold leading-[1.18] text-white/95">{label}</span><span className="absolute inset-x-5 bottom-0 h-px bg-gradient-to-r from-transparent via-[#d8a740]/25 to-transparent opacity-0 transition group-hover:opacity-100" /></Link>)}</div>
       </main>
       <PrayerNav active="Inicio" />
     </div>
