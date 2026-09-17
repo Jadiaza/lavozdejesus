@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { RadioPlayerProvider } from "@/context/RadioPlayerContext";
 import Index from "./pages/Index.tsx";
+import PrayerReminderScheduler from "@/modules/prayers/components/PrayerReminderScheduler";
 
 const RosarioHome = lazy(() => import("@/modules/rosary/pages/RosarioHome"));
 const RosarioModalidad = lazy(() => import("@/modules/rosary/pages/RosarioModalidad"));
@@ -31,6 +32,7 @@ const OracionDetalle = lazy(() => import("@/modules/prayers/pages/Oraciones").th
 const DevocionesOraciones = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.DevocionesPage })));
 const MisOraciones = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.MisOraciones })));
 const PeticionOracion = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.PeticionOracion })));
+const PrayerReminders = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.PrayerReminders })));
 
 const Contacto = lazy(() => import("./pages/Contacto.tsx"));
 const LecturasDelDia = lazy(() => import("./pages/LecturasDelDia.tsx"));
@@ -68,6 +70,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <RadioPlayerProvider>
+        <PrayerReminderScheduler />
         <BrowserRouter>
           <Suspense fallback={<div className="min-h-screen bg-background" aria-label="Cargando contenido" />}>
             <Routes>
@@ -110,6 +113,7 @@ const App = () => (
               <Route path="/oraciones/devociones" element={<DevocionesOraciones />} />
               <Route path="/oraciones/mis-oraciones" element={<MisOraciones />} />
               <Route path="/oraciones/peticion" element={<PeticionOracion />} />
+              <Route path="/oraciones/recordatorios" element={<PrayerReminders />} />
               <Route path="/eventos" element={<Eventos />} />
               <Route path="/donar" element={<Donar />} />
               <Route path="/acerca-de" element={<AcercaDe />} />

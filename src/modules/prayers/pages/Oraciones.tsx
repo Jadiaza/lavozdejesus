@@ -1,7 +1,7 @@
 import { FormEvent, ReactNode, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
-  AlertCircle, ArrowLeft, Bell, Bird, BookOpen, ChevronRight, Clock3, Cross, Download,
+  AlertCircle, ArrowLeft, Bell, BellRing, Bird, BookOpen, ChevronRight, Clock3, Cross, Download,
   HandHeart, Heart, Home, LoaderCircle, Menu, Moon, Play, RefreshCw, Search, Send, Settings,
   Shield, ShieldCheck, SlidersHorizontal, Sparkles, Sun, Volume2,
 } from "lucide-react";
@@ -11,6 +11,13 @@ import { PrayerReader } from "../components/PrayerReader";
 import { usePrayerPreferences } from "../hooks/usePrayerPreferences";
 import { liturgyHoursService } from "../services/liturgyHoursService";
 import type { LiturgyHourResponse, LiturgyParagraph } from "../types/liturgyHours";
+import {
+  prayerNotificationPermission,
+  readPrayerReminders,
+  requestPrayerNotificationPermission,
+  savePrayerReminders,
+  type PrayerReminder,
+} from "../services/prayerReminderService";
 
 const GOLD = "text-[#efbd52]";
 
@@ -88,7 +95,7 @@ const PrayerHomeHeader = () => (
 );
 
 const PrayerNav = ({ active = "Oraciones" }: { active?: string }) => {
-  const items = [[Home, "Inicio", "/"], [Bell, "Oraciones", "/oraciones"], [BookOpen, "Liturgia", "/oraciones/liturgia"], [Heart, "Favoritos", "/oraciones/mis-oraciones"], [Settings, "Ajustes", "/oraciones"]] as const;
+  const items = [[Home, "Inicio", "/"], [Bell, "Oraciones", "/oraciones"], [BookOpen, "Liturgia", "/oraciones/liturgia"], [Heart, "Favoritos", "/oraciones/mis-oraciones"], [Settings, "Ajustes", "/oraciones/recordatorios"]] as const;
   return <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto min-h-[4.4rem] max-w-[430px] border-t border-[#d8a740]/25 bg-[#061018]/98 px-2 pb-[max(.65rem,env(safe-area-inset-bottom))] pt-2.5 backdrop-blur"><div className="flex justify-around">{items.map(([Icon, label, to]) => <Link key={label} to={to} onClick={tactileFeedback} className={`flex min-w-0 flex-1 flex-col items-center gap-1 text-[9px] font-medium transition active:scale-95 ${active === label ? GOLD : "text-white/70"}`}><Icon className="h-[20px] w-[20px]" strokeWidth={active === label ? 2.3 : 1.65} />{label}</Link>)}</div></nav>;
 };
 
@@ -207,4 +214,66 @@ export function PeticionOracion() {
   const [sent, setSent] = useState(false);
   const submit = (event: FormEvent) => { event.preventDefault(); setSent(true); };
   return <Shell title="Petición de oración"><div className="text-center"><Bell className="mx-auto h-10 w-10 text-[#efbd52]" /><p className="mt-4 text-xs">Tu intención será tratada con respeto<br />y confidencialidad</p></div>{sent ? <div className="mt-8 rounded-2xl border border-[#d8a740]/40 bg-[#111b23] p-6 text-center"><Heart className="mx-auto text-[#efbd52]" /><h2 className="mt-3 font-semibold">Hemos recibido tu intención</h2><p className="mt-2 text-xs text-white/60">Vista de demostración; la conexión con el servicio se programará después.</p></div> : <form onSubmit={submit} className="mt-6 space-y-3"><input placeholder="Nombre (opcional)" className="h-12 w-full rounded-xl border border-white/15 bg-[#111b23] px-4 text-sm outline-none" /><textarea required maxLength={500} placeholder="Escribe tu intención" className="h-36 w-full rounded-xl border border-white/15 bg-[#111b23] p-4 text-sm outline-none" /><label className="flex items-center gap-2 text-xs"><input type="checkbox" /> Publicar de forma anónima</label><button className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#f6d574] to-[#d49a28] py-4 text-xs font-bold text-black">ENVIAR INTENCIÓN <Send className="h-4 w-4" /></button></form>}</Shell>;
+}
+
+export function PrayerReminders() {
+  const [reminders, setReminders] = useState<PrayerReminder[]>(readPrayerReminders);
+  const [permission, setPermission] = useState(prayerNotificationPermission);
+  const [message, setMessage] = useState("");
+
+  const toggleReminder = async (id: PrayerReminder["id"]) => {
+    const reminder = reminders.find((item) => item.id === id);
+    if (!reminder) return;
+
+    if (!reminder.enabled) {
+      const result = permission === "granted"
+        ? permission
+        : await requestPrayerNotificationPermission();
+      setPermission(result);
+      if (result !== "granted") {
+        setMessage(result === "unsupported"
+          ? "Este dispositivo no admite notificaciones web."
+          : "Debes permitir las notificaciones para activar el recordatorio.");
+        return;
+      }
+    }
+
+    const next = reminders.map((item) =>
+      item.id === id ? { ...item, enabled: !item.enabled } : item,
+    );
+    setReminders(next);
+    savePrayerReminders(next);
+    setMessage(!reminder.enabled
+      ? `${reminder.title} quedó programado para las ${reminder.time}.`
+      : `Recordatorio de ${reminder.title} desactivado.`);
+  };
+
+  return <Shell title="Recordatorios" active="Ajustes">
+    <section className="rounded-2xl border border-[#d8a740]/30 bg-[radial-gradient(circle_at_top,rgba(216,167,64,.14),transparent_65%),#0d1720] p-5 text-center">
+      <BellRing className="mx-auto h-10 w-10 text-[#efbd52]" strokeWidth={1.6} />
+      <h2 className="mt-3 font-serif text-xl text-[#f6d676]">Un momento para encontrarte con Dios</h2>
+      <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-white/65">Activa únicamente los momentos que desees. Todos los horarios corresponden a Colombia.</p>
+    </section>
+
+    {message ? <p role="status" className="mt-4 rounded-xl border border-[#d8a740]/25 bg-[#d8a740]/10 px-4 py-3 text-xs leading-relaxed text-[#f6d676]">{message}</p> : null}
+
+    <div className="mt-4 space-y-3">
+      {reminders.map((reminder) => <article key={reminder.id} className={`rounded-2xl border p-4 transition ${reminder.enabled ? "border-[#d8a740]/65 bg-[#d8a740]/[0.09]" : "border-white/10 bg-[#101a22]"}`}>
+        <div className="flex items-center gap-3">
+          <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${reminder.enabled ? "bg-[#efbd52] text-black" : "bg-white/[0.06] text-[#efbd52]"}`}><Bell className="h-5 w-5" /></div>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-sm font-bold text-white">{reminder.title}</h3>
+            <p className="mt-0.5 text-xs font-semibold text-[#efbd52]">Todos los días · {reminder.time}</p>
+          </div>
+          <button type="button" role="switch" aria-checked={reminder.enabled} aria-label={`${reminder.enabled ? "Desactivar" : "Activar"} recordatorio de ${reminder.title}`} onClick={() => void toggleReminder(reminder.id)} className={`relative h-7 w-12 shrink-0 rounded-full border transition ${reminder.enabled ? "border-[#efbd52] bg-[#efbd52]" : "border-white/20 bg-white/10"}`}><span className={`absolute top-0.5 h-5.5 w-5.5 rounded-full bg-white shadow transition-transform ${reminder.enabled ? "translate-x-[1.35rem]" : "translate-x-0.5"}`} /></button>
+        </div>
+        <p className="mt-3 text-xs leading-relaxed text-white/55">{reminder.description}</p>
+      </article>)}
+    </div>
+
+    <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-[11px] leading-relaxed text-white/50">
+      <p className="font-semibold text-white/70">Importante</p>
+      <p className="mt-1">Para recibir estos avisos, conserva LVJPRAYER instalada y autoriza las notificaciones. Algunos dispositivos pueden detener recordatorios si cierran completamente la PWA o restringen su actividad.</p>
+    </div>
+  </Shell>;
 }
