@@ -22,6 +22,15 @@ const RosarioInfo = lazy(() => import("@/modules/rosary/pages/RosarioInfo"));
 const Podcast = lazy(() => import("@/modules/podcast/pages/PodcastHome"));
 const PodcastSeries = lazy(() => import("@/modules/podcast/pages/PodcastSeries"));
 const PodcastExternalSeries = lazy(() => import("@/modules/podcast/pages/PodcastExternalSeries"));
+const Oraciones = lazy(() => import("@/modules/prayers/pages/Oraciones"));
+const LiturgiaHoras = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.LiturgiaHoras })));
+const LiturgiaReader = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.LiturgiaReader })));
+const OracionCategorias = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.OracionCategorias })));
+const OracionLista = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.OracionLista })));
+const OracionDetalle = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.OracionDetalle })));
+const DevocionesOraciones = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.DevocionesPage })));
+const MisOraciones = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.MisOraciones })));
+const PeticionOracion = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.PeticionOracion })));
 
 const Contacto = lazy(() => import("./pages/Contacto.tsx"));
 const LecturasDelDia = lazy(() => import("./pages/LecturasDelDia.tsx"));
@@ -92,6 +101,15 @@ const App = () => (
               <Route path="/podcast" element={<Podcast />} />
               <Route path="/podcast/santos-arcangeles-33-dias" element={<PodcastSeries />} />
               <Route path="/podcast/rss/:slug" element={<PodcastExternalSeries />} />
+              <Route path="/oraciones" element={<Oraciones />} />
+              <Route path="/oraciones/liturgia" element={<LiturgiaHoras />} />
+              <Route path="/oraciones/liturgia/:hora" element={<LiturgiaReader />} />
+              <Route path="/oraciones/categorias" element={<OracionCategorias />} />
+              <Route path="/oraciones/categoria/:categoria" element={<OracionLista />} />
+              <Route path="/oraciones/oracion/:id" element={<OracionDetalle />} />
+              <Route path="/oraciones/devociones" element={<DevocionesOraciones />} />
+              <Route path="/oraciones/mis-oraciones" element={<MisOraciones />} />
+              <Route path="/oraciones/peticion" element={<PeticionOracion />} />
               <Route path="/eventos" element={<Eventos />} />
               <Route path="/donar" element={<Donar />} />
               <Route path="/acerca-de" element={<AcercaDe />} />

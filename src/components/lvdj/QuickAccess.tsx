@@ -41,9 +41,9 @@ const items: QuickAccessItem[] = [
   },
   {
     image: "/icons/peticiones.png",
-    label: "Peticiones",
-    compactSubtitle: "eleva tu intención",
-    to: "/contacto",
+    label: "Oraciones",
+    compactSubtitle: "ora y medita",
+    to: "/oraciones",
   },
   {
     image: "/icons/biblia.png",

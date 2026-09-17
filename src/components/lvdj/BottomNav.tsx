@@ -24,7 +24,7 @@ import { Link } from "react-router-dom";
 const defaultItems = [
   { icon: Home, label: "Inicio", to: "/" },
   { icon: Radio, label: "Radio", to: "/radio" },
-  { icon: HandHeart, label: "Oracion", to: "/" },
+  { icon: HandHeart, label: "Oracion", to: "/oraciones" },
   { icon: CalendarRange, label: "Programas", to: "/programacion" },
   { icon: MoreHorizontal, label: "Mas", to: "/" },
 ];
