@@ -197,6 +197,8 @@ export const showPrayerNotification = async (reminder: PrayerReminder) => {
     icon: "/pwa-192.png",
     badge: "/pwa-192.png",
     tag: `lvj-prayer-${reminder.id}`,
+    renotify: true,
+    vibrate: [200, 100, 200],
     data: { url: reminder.path },
   };
 
