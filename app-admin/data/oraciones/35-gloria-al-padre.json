@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "gloria-al-padre",
+  "tipo": "independiente",
+  "titulo": "Gloria al Padre",
+  "subtitulo": "Alabanza a la Santísima Trinidad",
+  "categoria": "Devociones",
+  "subcategoria": "Santísima Trinidad",
+  "descripcion": "Doxología de alabanza al Padre, al Hijo y al Espíritu Santo.",
+  "texto_completo": "Gloria al Padre, y al Hijo, y al Espíritu Santo.\nComo era en el principio, y ahora y siempre, y por los siglos de los siglos. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Gloria al Padre, y al Hijo, y al Espíritu Santo.\nComo era en el principio, y ahora y siempre, y por los siglos de los siglos. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "oracion"
+    }
+  },
+  "tema_visual": "oracion",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)",
+  "pagina_fuente": "17",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 35,
+  "estado_revision": "revision"
+}

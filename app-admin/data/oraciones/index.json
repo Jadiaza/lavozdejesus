@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "coleccion": "Devocionario Católico",
-  "total": 33,
+  "total": 43,
   "estado_revision": "revision",
   "oraciones": [
     {
@@ -267,6 +267,86 @@
       "categoria": "Devociones",
       "subcategoria": "Santísima Trinidad",
       "archivo": "33-divinas-alabanzas.json"
+    },
+    {
+      "orden": 34,
+      "slug": "senal-de-la-cruz",
+      "titulo": "Señal de la Cruz",
+      "categoria": "Devociones",
+      "subcategoria": "Santísima Trinidad",
+      "archivo": "34-senal-de-la-cruz.json"
+    },
+    {
+      "orden": 35,
+      "slug": "gloria-al-padre",
+      "titulo": "Gloria al Padre",
+      "categoria": "Devociones",
+      "subcategoria": "Santísima Trinidad",
+      "archivo": "35-gloria-al-padre.json"
+    },
+    {
+      "orden": 36,
+      "slug": "oracion-de-los-misterios-del-rosario",
+      "titulo": "Oración de los misterios del Rosario",
+      "categoria": "Devociones",
+      "subcategoria": "Virgen María",
+      "archivo": "36-oracion-de-los-misterios-del-rosario.json"
+    },
+    {
+      "orden": 37,
+      "slug": "yo-confieso",
+      "titulo": "Yo confieso",
+      "categoria": "Oraciones del cristiano",
+      "subcategoria": "Vida diaria",
+      "archivo": "37-yo-confieso.json"
+    },
+    {
+      "orden": 38,
+      "slug": "senor-ten-piedad",
+      "titulo": "Señor, ten piedad",
+      "categoria": "Oraciones del cristiano",
+      "subcategoria": "Vida diaria",
+      "archivo": "38-senor-ten-piedad.json"
+    },
+    {
+      "orden": 39,
+      "slug": "gloria-a-dios-en-el-cielo",
+      "titulo": "Gloria a Dios en el cielo",
+      "categoria": "Devociones",
+      "subcategoria": "Santísima Trinidad",
+      "archivo": "39-gloria-a-dios-en-el-cielo.json"
+    },
+    {
+      "orden": 40,
+      "slug": "credo-niceno-constantinopolitano",
+      "titulo": "Credo niceno-constantinopolitano",
+      "categoria": "Oraciones del cristiano",
+      "subcategoria": "Vida diaria",
+      "archivo": "40-credo-niceno-constantinopolitano.json"
+    },
+    {
+      "orden": 41,
+      "slug": "credo-de-los-apostoles",
+      "titulo": "Credo de los Apóstoles",
+      "categoria": "Oraciones del cristiano",
+      "subcategoria": "Vida diaria",
+      "archivo": "41-credo-de-los-apostoles.json"
+    },
+    {
+      "orden": 42,
+      "slug": "santo",
+      "titulo": "Santo",
+      "categoria": "Devociones",
+      "subcategoria": "Santísima Trinidad",
+      "archivo": "42-santo.json"
+    },
+    {
+      "orden": 43,
+      "slug": "padre-nuestro",
+      "titulo": "Padre nuestro",
+      "categoria": "Oraciones del cristiano",
+      "subcategoria": "Vida diaria",
+      "archivo": "43-padre-nuestro.json"
     }
   ]
 }

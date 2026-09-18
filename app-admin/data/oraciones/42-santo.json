@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "santo",
+  "tipo": "independiente",
+  "titulo": "Santo",
+  "subtitulo": "Aclamar la santidad del Señor",
+  "categoria": "Devociones",
+  "subcategoria": "Santísima Trinidad",
+  "descripcion": "Aclamación de los fieles al final del prefacio, reproducida en el libro.",
+  "texto_completo": "Santo, Santo, Santo es el Señor,\nDios del universo.\nLlenos están el cielo y la tierra de tu gloria,\nHosanna en el cielo.\nBendito el que viene en el nombre del Señor,\nHosanna en el cielo.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Santo, Santo, Santo es el Señor,\nDios del universo.\nLlenos están el cielo y la tierra de tu gloria,\nHosanna en el cielo.\nBendito el que viene en el nombre del Señor,\nHosanna en el cielo."
+      }
+    ],
+    "apariencia": {
+      "tema": "oracion"
+    }
+  },
+  "tema_visual": "oracion",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)",
+  "pagina_fuente": "74",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 42,
+  "estado_revision": "revision"
+}

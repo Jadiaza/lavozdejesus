@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "padre-nuestro",
+  "tipo": "independiente",
+  "titulo": "Padre nuestro",
+  "subtitulo": "La oración que Jesús nos enseñó",
+  "categoria": "Oraciones del cristiano",
+  "subcategoria": "Vida diaria",
+  "descripcion": "Oración del Señor reproducida en el rito de la Comunión.",
+  "texto_completo": "Padre nuestro,\nque estás en el cielo,\nsantificado sea tu Nombre;\nvenga a nosotros tu reino;\nhágase tu voluntad\nen la tierra como en el cielo.\n\nDanos hoy nuestro pan de cada día;\nperdona nuestras ofensas,\ncomo también nosotros perdonamos\na los que nos ofenden;\nno nos dejes caer en la tentación,\ny líbranos del mal.\nAmén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Padre nuestro,\nque estás en el cielo,\nsantificado sea tu Nombre;\nvenga a nosotros tu reino;\nhágase tu voluntad\nen la tierra como en el cielo.\n\nDanos hoy nuestro pan de cada día;\nperdona nuestras ofensas,\ncomo también nosotros perdonamos\na los que nos ofenden;\nno nos dejes caer en la tentación,\ny líbranos del mal.\nAmén."
+      }
+    ],
+    "apariencia": {
+      "tema": "oracion"
+    }
+  },
+  "tema_visual": "oracion",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)",
+  "pagina_fuente": "75-76",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 43,
+  "estado_revision": "revision"
+}

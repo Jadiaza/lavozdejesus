@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "yo-confieso",
+  "tipo": "independiente",
+  "titulo": "Yo confieso",
+  "subtitulo": "Reconocer nuestros pecados ante Dios",
+  "categoria": "Oraciones del cristiano",
+  "subcategoria": "Vida diaria",
+  "descripcion": "Primera fórmula del acto penitencial reproducida en el devocionario.",
+  "texto_completo": "Yo confieso ante Dios Todopoderoso, y ante ustedes hermanos que he pecado mucho de pensamiento, palabra, obra y omisión; por mi culpa, por mi culpa, por mi gran culpa.\n\nPor eso ruego a Santa María siempre Virgen, a los ángeles, a los santos y a ustedes hermanos, que intercedan por mí ante Dios, Nuestro Señor.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Yo confieso ante Dios Todopoderoso, y ante ustedes hermanos que he pecado mucho de pensamiento, palabra, obra y omisión; por mi culpa, por mi culpa, por mi gran culpa.\n\nPor eso ruego a Santa María siempre Virgen, a los ángeles, a los santos y a ustedes hermanos, que intercedan por mí ante Dios, Nuestro Señor."
+      }
+    ],
+    "apariencia": {
+      "tema": "oracion"
+    }
+  },
+  "tema_visual": "oracion",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)",
+  "pagina_fuente": "63",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 37,
+  "estado_revision": "revision"
+}

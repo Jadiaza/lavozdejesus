@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "credo-de-los-apostoles",
+  "tipo": "independiente",
+  "titulo": "Credo de los Apóstoles",
+  "subtitulo": "Creo en Dios, Padre todopoderoso",
+  "categoria": "Oraciones del cristiano",
+  "subcategoria": "Vida diaria",
+  "descripcion": "Credo 2 reproducido en la sección de profesión de fe.",
+  "texto_completo": "Creo en Dios, Padre Todopoderoso,\nCreador del cielo y de la tierra.\n\nCreo en Jesucristo, su único Hijo,\nNuestro Señor,\nque fue concebido por obra y gracia\ndel Espíritu Santo.\nNació de Santa María Virgen,\npadeció bajo el poder de Poncio Pilato,\nfue crucificado, muerto y sepultado,\ndescendió a los infiernos,\nal tercer día resucitó de entre los muertos,\nsubió a los cielos\ny está sentado a la derecha de Dios,\nPadre todopoderoso.\nDesde allí ha de venir\na juzgar a vivos y muertos.\n\nCreo en el Espíritu Santo,\nla santa Iglesia católica,\nla comunión de los santos,\nel perdón de los pecados,\nla resurrección de la carne\ny la vida eterna. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Creo en Dios, Padre Todopoderoso,\nCreador del cielo y de la tierra.\n\nCreo en Jesucristo, su único Hijo,\nNuestro Señor,\nque fue concebido por obra y gracia\ndel Espíritu Santo.\nNació de Santa María Virgen,\npadeció bajo el poder de Poncio Pilato,\nfue crucificado, muerto y sepultado,\ndescendió a los infiernos,\nal tercer día resucitó de entre los muertos,\nsubió a los cielos\ny está sentado a la derecha de Dios,\nPadre todopoderoso.\nDesde allí ha de venir\na juzgar a vivos y muertos.\n\nCreo en el Espíritu Santo,\nla santa Iglesia católica,\nla comunión de los santos,\nel perdón de los pecados,\nla resurrección de la carne\ny la vida eterna. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "oracion"
+    }
+  },
+  "tema_visual": "oracion",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)",
+  "pagina_fuente": "70-71",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 41,
+  "estado_revision": "revision"
+}

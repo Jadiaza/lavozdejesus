@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "senal-de-la-cruz",
+  "tipo": "independiente",
+  "titulo": "Señal de la Cruz",
+  "subtitulo": "Comenzar la oración en el nombre de Dios",
+  "categoria": "Devociones",
+  "subcategoria": "Santísima Trinidad",
+  "descripcion": "Invocación a la Santísima Trinidad y petición de protección.",
+  "texto_completo": "Por la señal de la Santa Cruz, de nuestros enemigos líbranos, Señor, Dios nuestro.\n\nEn el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Por la señal de la Santa Cruz, de nuestros enemigos líbranos, Señor, Dios nuestro.\n\nEn el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "oracion"
+    }
+  },
+  "tema_visual": "oracion",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)",
+  "pagina_fuente": "22",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 34,
+  "estado_revision": "revision"
+}
