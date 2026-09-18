@@ -105,3 +105,50 @@ document.querySelectorAll("[data-content-section-tabs]").forEach((tabList) => {
 
   showSection(tabs[0].dataset.contentSectionTab);
 });
+
+document.querySelectorAll("[data-prayer-type]").forEach((typeSelect) => {
+  const form = typeSelect.closest("form");
+  const devotionSelect = form?.querySelector('[name="devocion_id"]');
+  if (!devotionSelect) return;
+  const devotionField = devotionSelect.closest("label");
+  const syncPrayerType = () => {
+    const linked = typeSelect.value === "devocion";
+    devotionField.hidden = !linked;
+    devotionSelect.required = linked;
+    if (!linked) devotionSelect.value = "";
+  };
+  typeSelect.addEventListener("change", syncPrayerType);
+  syncPrayerType();
+});
+
+document.querySelectorAll("[data-prayer-json]").forEach((textarea) => {
+  const status = textarea.parentElement?.querySelector("[data-json-validation]");
+  const validateJson = () => {
+    try {
+      const parsed = JSON.parse(textarea.value || "{}");
+      if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") throw new Error("Debe ser un objeto");
+      if (parsed.secciones !== undefined && !Array.isArray(parsed.secciones)) throw new Error("secciones debe ser una lista");
+      textarea.setCustomValidity("");
+      if (status) {
+        status.textContent = "JSON válido";
+        status.classList.remove("invalid");
+        status.classList.add("valid");
+      }
+    } catch (error) {
+      textarea.setCustomValidity(`JSON no válido: ${error.message}`);
+      if (status) {
+        status.textContent = `JSON no válido: ${error.message}`;
+        status.classList.remove("valid");
+        status.classList.add("invalid");
+      }
+    }
+  };
+  textarea.addEventListener("input", validateJson);
+  textarea.addEventListener("blur", () => {
+    validateJson();
+    if (!textarea.validationMessage) {
+      textarea.value = JSON.stringify(JSON.parse(textarea.value || "{}"), null, 2);
+    }
+  });
+  validateJson();
+});
