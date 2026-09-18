@@ -12,7 +12,8 @@ self.addEventListener("push", (event) => {
     icon: payload.icon || "/pwa-192.png",
     badge: payload.badge || "/pwa-192.png",
     tag: payload.tag || "lvj-prayer-reminder",
-    renotify: false,
+    renotify: true,
+    vibrate: [200, 100, 200],
     data: { url: payload.url || "/oraciones" },
   };
 
