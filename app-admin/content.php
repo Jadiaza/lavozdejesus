@@ -278,6 +278,16 @@ function content_label(string $column): string
     'review_status' => 'Estado de revisión',
     'generated_response' => 'Respuesta generada',
     'deployment_notes' => 'Notas del despliegue',
+    'devocion_id' => 'Devoción asociada (opcional)',
+    'tipo' => 'Tipo de oración',
+    'texto_completo' => 'Texto completo de la oración',
+    'contenido_json' => 'Contenido JSON',
+    'tema_visual' => 'Tema visual',
+    'fuente' => 'Fuente editorial',
+    'pagina_fuente' => 'Página(s) de la fuente',
+    'derechos_revisados' => 'Derechos de uso revisados',
+    'disponible_offline' => 'Disponible sin conexión',
+    'estado_revision' => 'Estado editorial',
   ];
 
   if (isset($labels[$column])) {
@@ -331,6 +341,14 @@ function content_editable_columns(array $columns, string $table = ''): array
 
 function content_list_columns(array $columns, string $table = ''): array
 {
+  if ($table === 'lvj_ora_oraciones') {
+    $map = content_column_map($columns);
+    $preferred = ['id', 'titulo', 'categoria', 'tipo', 'estado_revision', 'destacada', 'orden'];
+    $ordered = [];
+    foreach ($preferred as $field) if (isset($map[$field])) $ordered[] = $map[$field];
+    return $ordered;
+  }
+
   if ($table === 'lvj_com_usuarios') {
     $map = content_column_map($columns);
     $preferred = ['id', 'nombre', 'correo', 'email', 'email_verificado', 'estado', 'ia_autorizado', 'ultimo_acceso_at'];
@@ -365,6 +383,11 @@ function content_list_columns(array $columns, string $table = ''): array
 
 function content_search_columns(array $columns, string $table): array
 {
+  if ($table === 'lvj_ora_oraciones') {
+    $map = content_column_map($columns);
+    return array_values(array_filter([$map['titulo'] ?? null, $map['subtitulo'] ?? null, $map['categoria'] ?? null, $map['descripcion'] ?? null]));
+  }
+
   if ($table === 'lvj_com_usuarios') {
     $map = content_column_map($columns);
     return array_values(array_filter([$map['nombre'] ?? null, $map['correo'] ?? null, $map['email'] ?? null]));
@@ -417,6 +440,12 @@ function content_order_columns_for_form(array $columns, string $table): array
       'paso_concreto',
       'oracion_intercesion',
     ],
+    'lvj_ora_oraciones' => [
+      'tipo', 'devocion_id', 'titulo', 'subtitulo', 'categoria', 'descripcion',
+      'texto_completo', 'contenido_json', 'tema_visual', 'imagen', 'imagen_url',
+      'audio_url', 'fuente', 'pagina_fuente', 'derechos_revisados', 'destacada',
+      'disponible_offline', 'orden', 'estado_revision', 'estado',
+    ],
   ];
 
   if (!isset($orders[$table])) {
@@ -466,11 +495,27 @@ function content_form_sections(string $table): array
     ];
   }
 
+  if ($table === 'lvj_ora_oraciones') {
+    return [
+      'identidad' => 'Información',
+      'contenido' => 'Oración',
+      'apariencia' => 'Apariencia',
+      'publicacion' => 'Publicación',
+    ];
+  }
+
   return [];
 }
 
 function content_field_section(string $table, string $field): string
 {
+  if ($table === 'lvj_ora_oraciones') {
+    if (in_array($field, ['tipo', 'devocion_id', 'titulo', 'subtitulo', 'categoria', 'descripcion'], true)) return 'identidad';
+    if (in_array($field, ['texto_completo', 'contenido_json'], true)) return 'contenido';
+    if (in_array($field, ['tema_visual', 'imagen', 'imagen_url', 'audio_url'], true)) return 'apariencia';
+    return 'publicacion';
+  }
+
   if ($table === 'lvj_capillas') {
     if (in_array($field, ['nombre', 'subtitulo', 'descripcion', 'pais', 'ciudad'], true)) {
       return 'identidad';
@@ -630,6 +675,7 @@ function content_foreign_key_fallback(string $table, string $field): ?array
     'libro_id' => ['table' => 'lvj_bib_libros', 'column' => 'id'],
     'version_id' => ['table' => 'lvj_bib_versiones', 'column' => 'id'],
     'rosario_id' => ['table' => 'lvj_ora_rosarios', 'column' => 'id'],
+    'devocion_id' => ['table' => 'lvj_ora_devociones', 'column' => 'id'],
     'novena_id' => ['table' => 'lvj_ora_novenas', 'column' => 'id'],
     'profile_id' => ['table' => 'lvj_ai_profiles', 'column' => 'id'],
     'prompt_version_id' => ['table' => 'lvj_ai_prompt_versions', 'column' => 'id'],
@@ -855,6 +901,18 @@ function content_status_label($value): array
 
 function content_cell_html(string $table, string $field, $value): string
 {
+  if ($table === 'lvj_ora_oraciones' && $field === 'estado_revision') {
+    [$label, $state] = content_status_label($value);
+    if ((string) $value === 'revision') [$label, $state] = ['En revisión', 'draft'];
+    if ((string) $value === 'aprobada') [$label, $state] = ['Aprobada', 'active'];
+    if ((string) $value === 'publicada') [$label, $state] = ['Publicada', 'active'];
+    return '<span class="status-pill status-' . e($state) . '">' . e($label) . '</span>';
+  }
+
+  if ($table === 'lvj_ora_oraciones' && $field === 'destacada') {
+    return (int) $value === 1 ? '<span class="status-pill status-active">Sí</span>' : '<span class="muted">No</span>';
+  }
+
   if ($table === 'lvj_com_usuarios' && in_array($field, ['email_verificado', 'ia_autorizado'], true)) {
     $active = (int) $value === 1;
     $label = $field === 'email_verificado'
@@ -921,6 +979,57 @@ function content_field_html(PDO $pdo, string $table, array $column, array $row =
   }
   $required = $isRequired ? ' required' : '';
   $fieldClass = content_field_class($field, $type);
+
+  if ($table === 'lvj_ora_oraciones' && $field === 'tipo') {
+    return content_select_html($field, $label, $value ?: 'independiente', [
+      ['value' => 'independiente', 'label' => 'Oración independiente'],
+      ['value' => 'devocion', 'label' => 'Vinculada a una devoción'],
+    ], true, 'content-field relation-field', ' data-prayer-type');
+  }
+
+  if ($table === 'lvj_ora_oraciones' && $field === 'categoria') {
+    $categories = ['Oraciones fundamentales', 'Vida diaria', 'Santísima Trinidad', 'Jesucristo', 'Espíritu Santo', 'Virgen María', 'Santos y ángeles', 'Sanación y protección', 'Intercesión', 'Liberación'];
+    $options = array_map(static fn($category) => ['value' => $category, 'label' => $category], $categories);
+    if ($value && !in_array((string) $value, $categories, true)) {
+      array_unshift($options, ['value' => (string) $value, 'label' => (string) $value . ' (actual)']);
+    }
+    return content_select_html($field, $label, $value, $options, false, 'content-field relation-field');
+  }
+
+  if ($table === 'lvj_ora_oraciones' && $field === 'tema_visual') {
+    $themes = [
+      'oracion' => 'Oración · oro y azul',
+      'amanecer' => 'Amanecer · oración de la mañana',
+      'noche' => 'Noche · descanso y completas',
+      'mariano' => 'Mariano · Virgen María',
+      'cristologico' => 'Cristológico · Jesús y Eucaristía',
+      'espiritu_santo' => 'Espíritu Santo · discernimiento',
+      'sanacion' => 'Sanación · consuelo',
+      'proteccion' => 'Protección espiritual',
+      'intercesion' => 'Intercesión · peticiones',
+    ];
+    $options = [];
+    foreach ($themes as $themeValue => $themeLabel) $options[] = ['value' => $themeValue, 'label' => $themeLabel];
+    return content_select_html($field, $label, $value ?: 'oracion', $options, true, 'content-field relation-field');
+  }
+
+  if ($table === 'lvj_ora_oraciones' && $field === 'estado_revision') {
+    return content_select_html($field, $label, $value ?: 'borrador', [
+      ['value' => 'borrador', 'label' => 'Borrador'],
+      ['value' => 'revision', 'label' => 'En revisión'],
+      ['value' => 'aprobada', 'label' => 'Aprobada'],
+      ['value' => 'publicada', 'label' => 'Publicada'],
+    ], true, 'content-field status-field');
+  }
+
+  if ($table === 'lvj_ora_oraciones' && $field === 'contenido_json') {
+    $jsonValue = trim((string) $value);
+    if ($jsonValue === '') $jsonValue = "{\n  \"version\": 1,\n  \"secciones\": []\n}";
+    return '<label class="content-field full prayer-json-field">' . e($label)
+      . '<span class="field-help">Configuración avanzada de secciones y presentación. Se validará antes de guardar.</span>'
+      . '<textarea name="' . e($field) . '" rows="18" spellcheck="false" data-prayer-json>' . e($jsonValue) . '</textarea>'
+      . '<span class="json-validation" data-json-validation>JSON preparado para validar.</span></label>';
+  }
 
   if ($table === 'lvj_san_santo_dia' && $field === 'mes') {
     return content_select_html($field, $label, $value, content_month_options(), true, 'content-field relation-field');
@@ -1084,6 +1193,43 @@ function content_capilla_validate(array $columns, array &$data): string
     $data['es_principal'] = 0;
   }
 
+  return '';
+}
+
+function content_prayer_validate(array $columns, array &$data): string
+{
+  $map = content_column_map($columns);
+  $title = trim((string) ($data['titulo'] ?? ''));
+  if ($title === '') return 'El título de la oración es obligatorio.';
+  $data['titulo'] = $title;
+
+  $type = (string) ($data['tipo'] ?? 'independiente');
+  if (!in_array($type, ['independiente', 'devocion'], true)) return 'Selecciona un tipo de oración válido.';
+  if ($type === 'devocion' && (int) ($data['devocion_id'] ?? 0) <= 0) return 'Selecciona la devoción a la que pertenece la oración.';
+  if ($type === 'independiente' && isset($map['devocion_id'])) $data['devocion_id'] = null;
+
+  if (isset($map['contenido_json'])) {
+    $rawJson = trim((string) ($data['contenido_json'] ?? ''));
+    if ($rawJson === '') $rawJson = '{"version":1,"secciones":[]}';
+    try {
+      $decoded = json_decode($rawJson, true, 512, JSON_THROW_ON_ERROR);
+    } catch (Throwable $error) {
+      return 'El contenido JSON no es válido: ' . $error->getMessage();
+    }
+    if (!is_array($decoded)) return 'El contenido JSON debe ser un objeto.';
+    if (!isset($decoded['version'])) $decoded['version'] = 1;
+    if (!isset($decoded['secciones'])) $decoded['secciones'] = [];
+    if (!is_array($decoded['secciones'])) return 'El campo secciones del JSON debe ser una lista.';
+    $data['contenido_json'] = json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+  }
+
+  if (isset($map['estado_revision'])) {
+    $allowed = ['borrador', 'revision', 'aprobada', 'publicada'];
+    if (!in_array((string) $data['estado_revision'], $allowed, true)) return 'Selecciona un estado editorial válido.';
+    if ($data['estado_revision'] === 'publicada' && trim((string) ($data['texto_completo'] ?? '')) === '') {
+      return 'Una oración publicada debe tener texto completo.';
+    }
+  }
   return '';
 }
 
@@ -1527,6 +1673,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $error = content_capilla_validate($columns, $data);
     }
 
+    if (!$error && $table === 'lvj_ora_oraciones') {
+      $error = content_prayer_validate($columns, $data);
+    }
+
     if (!$error && $table === 'lvj_capilla_config') {
       $error = content_capilla_config_validate($pdo, $columns, $data);
     }
@@ -1689,7 +1839,7 @@ try {
 
 $shownFrom = $totalRows > 0 ? (($page - 1) * $perPage) + 1 : 0;
 $shownTo = $totalRows > 0 ? min($totalRows, $page * $perPage) : 0;
-$visibleListColumns = in_array($table, ['lvj_capillas', 'lvj_com_usuarios'], true) ? $listColumns : array_slice($listColumns, 0, 6);
+$visibleListColumns = in_array($table, ['lvj_capillas', 'lvj_com_usuarios', 'lvj_ora_oraciones'], true) ? $listColumns : array_slice($listColumns, 0, 6);
 
 $pageTitle = $module['title'];
 $pageSubtitle = $module['subtitle'];
@@ -1724,7 +1874,9 @@ require __DIR__ . '/includes/header.php';
       <h2><?php echo e($module['tables'][$table]); ?></h2>
       <p class="muted"><?php echo $table === 'lvj_com_usuarios'
         ? 'Consulta las cuentas registradas, su confirmacion de correo y controla el acceso al estudio biblico con IA.'
-        : 'Gestiona el contenido que luego consumira la app. La vista principal muestra registros; los formularios se abren solo para crear o editar.'; ?></p>
+        : ($table === 'lvj_ora_oraciones'
+          ? 'Administra oraciones independientes o vinculadas a una devoción. El texto, la presentación y el estado editorial quedan preparados para LVJPRAYER.'
+          : 'Gestiona el contenido que luego consumira la app. La vista principal muestra registros; los formularios se abren solo para crear o editar.'); ?></p>
     </div>
     <div class="content-actions-bar">
       <?php if ($table === 'lvj_com_usuarios' && $columns): ?>
@@ -1757,6 +1909,13 @@ require __DIR__ . '/includes/header.php';
 
     <?php if ($table === 'lvj_com_usuarios'): ?>
       <div class="alert alert-success">La contraseña se administra de forma segura en Supabase Auth. Este panel no la muestra, no la recibe y no la almacena en MySQL.</div>
+    <?php endif; ?>
+
+    <?php if ($table === 'lvj_ora_oraciones'): ?>
+      <div class="prayer-editor-intro">
+        <strong>Biblioteca de oraciones</strong>
+        <span>Completa primero la información y el texto. El JSON queda para secciones o ajustes avanzados; no necesitas escribir colores manualmente.</span>
+      </div>
     <?php endif; ?>
 
     <form method="post" class="content-form">
