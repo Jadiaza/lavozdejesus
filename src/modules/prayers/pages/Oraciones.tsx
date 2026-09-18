@@ -18,7 +18,7 @@ import {
   savePrayerReminders,
   type PrayerReminder,
 } from "../services/prayerReminderService";
-import { sendPrayerPushTest, syncPrayerPush } from "../services/prayerPushService";
+import { prayerPushActive, sendPrayerPushTest, syncPrayerPush } from "../services/prayerPushService";
 
 const GOLD = "text-[#efbd52]";
 
@@ -291,6 +291,10 @@ export function PrayerReminders() {
     }
   };
 
+  const webPushEnabled = permission === "granted"
+    && reminders.some(({ enabled }) => enabled)
+    && prayerPushActive();
+
   return <Shell title="Recordatorios" active="Ajustes">
     <section className="rounded-2xl border border-[#d8a740]/30 bg-[radial-gradient(circle_at_top,rgba(216,167,64,.14),transparent_65%),#0d1720] p-5 text-center">
       <BellRing className="mx-auto h-10 w-10 text-[#efbd52]" strokeWidth={1.6} />
@@ -316,9 +320,9 @@ export function PrayerReminders() {
       </article>)}
     </div>
 
-    <button type="button" disabled={syncing || !reminders.some(({ enabled }) => enabled)} onClick={() => void testNotification()} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full border border-[#efbd52]/60 bg-[#efbd52]/10 py-3 text-xs font-bold text-[#f6d676] disabled:cursor-not-allowed disabled:opacity-40">
-      <BellRing className="h-4 w-4" /> {syncing ? "CONFIGURANDO…" : "ENVIAR NOTIFICACIÓN DE PRUEBA"}
-    </button>
+    {webPushEnabled ? <button type="button" disabled={syncing} onClick={() => void testNotification()} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full border border-[#efbd52]/60 bg-[#efbd52]/10 py-3 text-xs font-bold text-[#f6d676] disabled:cursor-not-allowed disabled:opacity-40">
+      <BellRing className="h-4 w-4" /> {syncing ? "ENVIANDO…" : "PROBAR NOTIFICACIÓN"}
+    </button> : null}
 
     <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-[11px] leading-relaxed text-white/50">
       <p className="font-semibold text-white/70">Importante</p>
