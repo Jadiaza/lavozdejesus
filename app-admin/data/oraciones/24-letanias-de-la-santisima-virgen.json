@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "letanias-de-la-santisima-virgen",
+  "tipo": "independiente",
+  "titulo": "Letanías de la Santísima Virgen",
+  "subtitulo": "Invocar a María bajo sus títulos de amor",
+  "categoria": "Devociones",
+  "subcategoria": "Virgen María",
+  "descripcion": "Letanía tradicional para pedir la intercesión maternal de la Virgen.",
+  "texto_completo": "Señor, ten piedad. Cristo, ten piedad. Señor, ten piedad. Cristo, óyenos. Cristo, escúchanos. Dios Padre celestial, ten piedad de nosotros. Dios Hijo, Redentor del mundo, ten piedad de nosotros. Dios Espíritu Santo, ten piedad de nosotros. Santísima Trinidad, un solo Dios, ten piedad de nosotros. Santa María, Santa Madre de Dios, Santa Virgen de las vírgenes, Madre de Cristo, Madre de la Iglesia, Madre de misericordia, Virgen prudentísima, Virgen digna de veneración, Rosa mística, Torre de David, Casa de oro, Arca de la Alianza, Puerta del cielo, Estrella de la mañana, Salud de los enfermos, Refugio de los pecadores, Consuelo de los migrantes, Consoladora de los afligidos, Auxilio de los cristianos, Reina de los ángeles, Reina de todos los santos, Reina de la familia y Reina de la paz, ruega por nosotros. Cordero de Dios, que quitas el pecado del mundo, perdónanos, Señor; escúchanos, Señor; ten misericordia de nosotros. Ruega por nosotros, santa Madre de Dios, para que seamos dignos de las promesas de Cristo. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Señor, ten piedad. Cristo, ten piedad. Señor, ten piedad. Cristo, óyenos. Cristo, escúchanos. Dios Padre celestial, ten piedad de nosotros. Dios Hijo, Redentor del mundo, ten piedad de nosotros. Dios Espíritu Santo, ten piedad de nosotros. Santísima Trinidad, un solo Dios, ten piedad de nosotros. Santa María, Santa Madre de Dios, Santa Virgen de las vírgenes, Madre de Cristo, Madre de la Iglesia, Madre de misericordia, Virgen prudentísima, Virgen digna de veneración, Rosa mística, Torre de David, Casa de oro, Arca de la Alianza, Puerta del cielo, Estrella de la mañana, Salud de los enfermos, Refugio de los pecadores, Consuelo de los migrantes, Consoladora de los afligidos, Auxilio de los cristianos, Reina de los ángeles, Reina de todos los santos, Reina de la familia y Reina de la paz, ruega por nosotros. Cordero de Dios, que quitas el pecado del mundo, perdónanos, Señor; escúchanos, Señor; ten misericordia de nosotros. Ruega por nosotros, santa Madre de Dios, para que seamos dignos de las promesas de Cristo. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "mariano"
+    }
+  },
+  "tema_visual": "mariano",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico",
+  "pagina_fuente": "27-30",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 24,
+  "estado_revision": "revision"
+}

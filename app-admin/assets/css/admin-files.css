@@ -48,6 +48,77 @@
 .json-validation.valid { color: #147a50; }
 .json-validation.invalid { color: #b42318; }
 
+.prayer-editor-mode {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 14px;
+  background: #eaf0f5;
+  padding: 5px;
+}
+
+.prayer-editor-mode button {
+  min-height: 40px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #344054;
+  font-weight: 800;
+}
+
+.prayer-editor-mode button.active {
+  border-color: rgba(212, 175, 55, 0.22);
+  background: #fff;
+  color: #07182a;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.prayer-json-editor {
+  display: grid;
+  gap: 14px;
+}
+
+.prayer-json-editor[hidden] {
+  display: none !important;
+}
+
+.prayer-json-guide {
+  display: grid;
+  gap: 7px;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 16px;
+  background: linear-gradient(135deg, #fff8de, #fffdf5);
+  color: #6f5311;
+  padding: 15px 17px;
+}
+
+.prayer-json-guide span {
+  color: #735f30;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.prayer-json-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.prayer-json-actions [data-prayer-json-count] {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.prayer-json-editor .prayer-json-field {
+  display: grid;
+}
+
+.prayer-json-editor .prayer-json-field textarea {
+  min-height: 460px;
+}
+
 * {
   box-sizing: border-box;
 }

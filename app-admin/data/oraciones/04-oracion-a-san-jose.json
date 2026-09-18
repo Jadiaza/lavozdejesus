@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "oracion-a-san-jose",
+  "tipo": "independiente",
+  "titulo": "Oración a san José",
+  "subtitulo": "Intercesión del custodio de Jesús y María",
+  "categoria": "Devociones",
+  "subcategoria": "Santos y ángeles",
+  "descripcion": "Súplica confiada a san José por una necesidad particular.",
+  "texto_completo": "Glorioso patriarca san José, que viviste junto al Hijo de Dios y a su madre, la Virgen María, y te consagraste a servirlos con cuidado, amor y diligencia: me acerco a ti lleno de confianza y te pido que intercedas para que Dios me conceda la gracia que en este momento necesito. Atiende nuestras peticiones, oriéntalas y hazlas agradables a los ojos de Dios. Ruega para que mi vida sea digna y consecuente con mi condición de hijo de Dios, se realice según sus designios y pueda gozar eternamente en su compañía. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Glorioso patriarca san José, que viviste junto al Hijo de Dios y a su madre, la Virgen María, y te consagraste a servirlos con cuidado, amor y diligencia: me acerco a ti lleno de confianza y te pido que intercedas para que Dios me conceda la gracia que en este momento necesito. Atiende nuestras peticiones, oriéntalas y hazlas agradables a los ojos de Dios. Ruega para que mi vida sea digna y consecuente con mi condición de hijo de Dios, se realice según sus designios y pueda gozar eternamente en su compañía. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "proteccion"
+    }
+  },
+  "tema_visual": "proteccion",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico",
+  "pagina_fuente": "6-7",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 4,
+  "estado_revision": "revision"
+}

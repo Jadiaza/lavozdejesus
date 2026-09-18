@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "oracion-para-proteger-la-habitacion",
+  "tipo": "independiente",
+  "titulo": "Oración para proteger la habitación",
+  "subtitulo": "Pedir paz y custodia para el hogar",
+  "categoria": "Sanación y protección",
+  "subcategoria": "Sanación y protección",
+  "descripcion": "Súplica a Dios para que su bendición permanezca en la habitación y en quienes descansan.",
+  "texto_completo": "Te suplico, Señor, que visites esta habitación y alejes de ella toda acechanza del enemigo. Habiten en ella tus santos ángeles, para que nos guarden en paz, y tu bendición permanezca siempre con nosotros. Aparta el temor, concede un descanso reparador y haz que despertemos dispuestos a servirte. Por Jesucristo nuestro Señor. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Te suplico, Señor, que visites esta habitación y alejes de ella toda acechanza del enemigo. Habiten en ella tus santos ángeles, para que nos guarden en paz, y tu bendición permanezca siempre con nosotros. Aparta el temor, concede un descanso reparador y haz que despertemos dispuestos a servirte. Por Jesucristo nuestro Señor. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "proteccion"
+    }
+  },
+  "tema_visual": "proteccion",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico",
+  "pagina_fuente": "12",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 13,
+  "estado_revision": "revision"
+}

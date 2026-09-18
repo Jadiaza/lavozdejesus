@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "oracion-al-senor-crucificado",
+  "tipo": "independiente",
+  "titulo": "Oración al Señor crucificado",
+  "subtitulo": "Confiar una necesidad a Cristo sufriente",
+  "categoria": "Devociones",
+  "subcategoria": "Jesucristo",
+  "descripcion": "Acción de gracias, conversión y petición ante la cruz del Señor.",
+  "texto_completo": "Señor crucificado, vengo con sencillez y amor a darte gracias por todo lo que has padecido por mi salvación. Cambia mi corazón, conviérteme y aléjame de todo pecado. Tú conoces el sufrimiento humano y comprendes la necesidad que hoy pongo ante ti. Si esta petición conviene al bien de mi alma y a mi salvación, concédemela conforme a tu voluntad. Que la Santísima Virgen María interceda por mí ante el Padre. Me despido confiado, ofreciéndote permanecer fiel a tu amor. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Señor crucificado, vengo con sencillez y amor a darte gracias por todo lo que has padecido por mi salvación. Cambia mi corazón, conviérteme y aléjame de todo pecado. Tú conoces el sufrimiento humano y comprendes la necesidad que hoy pongo ante ti. Si esta petición conviene al bien de mi alma y a mi salvación, concédemela conforme a tu voluntad. Que la Santísima Virgen María interceda por mí ante el Padre. Me despido confiado, ofreciéndote permanecer fiel a tu amor. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "cristologico"
+    }
+  },
+  "tema_visual": "cristologico",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico",
+  "pagina_fuente": "19",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 22,
+  "estado_revision": "revision"
+}

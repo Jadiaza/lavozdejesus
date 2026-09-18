@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "himno-antes-de-terminar-el-dia",
+  "tipo": "independiente",
+  "titulo": "Himno antes de terminar el día",
+  "subtitulo": "Pedir la custodia de Dios durante la noche",
+  "categoria": "Oraciones del cristiano",
+  "subcategoria": "Vida diaria",
+  "descripcion": "Himno nocturno inspirado en la tradición de san Ambrosio.",
+  "texto_completo": "Antes que termine el día, te pedimos, Creador excelso, que por tu clemencia seas nuestro custodio y defensor. Aleja los temores de la noche y los malos sueños; enfrenta al enemigo para que no manche nuestros cuerpos ni perturbe nuestras almas. Concédenos descansar en tu paz. Te lo pedimos, Padre piadosísimo, por Jesucristo, tu Hijo, que contigo y el Espíritu Santo vive y reina por los siglos eternos. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Antes que termine el día, te pedimos, Creador excelso, que por tu clemencia seas nuestro custodio y defensor. Aleja los temores de la noche y los malos sueños; enfrenta al enemigo para que no manche nuestros cuerpos ni perturbe nuestras almas. Concédenos descansar en tu paz. Te lo pedimos, Padre piadosísimo, por Jesucristo, tu Hijo, que contigo y el Espíritu Santo vive y reina por los siglos eternos. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "noche"
+    }
+  },
+  "tema_visual": "noche",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico",
+  "pagina_fuente": "11",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 11,
+  "estado_revision": "revision"
+}

@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "adoremos-reverentes",
+  "tipo": "independiente",
+  "titulo": "Adoremos reverentes",
+  "subtitulo": "Adoración a Cristo en el Santísimo Sacramento",
+  "categoria": "Devociones",
+  "subcategoria": "Jesucristo",
+  "descripcion": "Himno eucarístico de alabanza y veneración.",
+  "texto_completo": "Adoremos reverentes al Señor sacramentado. Ceda el antiguo rito ante el nuevo sacramento, y la fe complete lo que los sentidos no alcanzan. Al Padre y al Hijo sean dadas alabanza, júbilo, honor, poder y bendición; y al Espíritu que procede de ambos, igual gloria. Les diste el pan del cielo, que contiene en sí todo deleite. Oh Dios, que bajo este sacramento admirable nos dejaste el memorial de tu pasión, concédenos venerar de tal modo los sagrados misterios de tu Cuerpo y de tu Sangre que experimentemos constantemente el fruto de tu redención. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Adoremos reverentes al Señor sacramentado. Ceda el antiguo rito ante el nuevo sacramento, y la fe complete lo que los sentidos no alcanzan. Al Padre y al Hijo sean dadas alabanza, júbilo, honor, poder y bendición; y al Espíritu que procede de ambos, igual gloria. Les diste el pan del cielo, que contiene en sí todo deleite. Oh Dios, que bajo este sacramento admirable nos dejaste el memorial de tu pasión, concédenos venerar de tal modo los sagrados misterios de tu Cuerpo y de tu Sangre que experimentemos constantemente el fruto de tu redención. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "cristologico"
+    }
+  },
+  "tema_visual": "cristologico",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico",
+  "pagina_fuente": "40-41",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 32,
+  "estado_revision": "revision"
+}

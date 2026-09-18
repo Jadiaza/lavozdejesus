@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "al-angel-de-la-guarda",
+  "tipo": "independiente",
+  "titulo": "Al Ángel de la Guarda",
+  "subtitulo": "Compañía y custodia en el camino",
+  "categoria": "Devociones",
+  "subcategoria": "Santos y ángeles",
+  "descripcion": "Breve oración tradicional al santo ángel custodio.",
+  "texto_completo": "Ángel de mi guarda, dulce compañía, no me desampares ni de noche ni de día. No me dejes solo, pues me perdería. Acompaña mis pasos, ilumina mis decisiones y condúceme siempre hacia Dios. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Ángel de mi guarda, dulce compañía, no me desampares ni de noche ni de día. No me dejes solo, pues me perdería. Acompaña mis pasos, ilumina mis decisiones y condúceme siempre hacia Dios. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "proteccion"
+    }
+  },
+  "tema_visual": "proteccion",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico",
+  "pagina_fuente": "9",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 6,
+  "estado_revision": "revision"
+}

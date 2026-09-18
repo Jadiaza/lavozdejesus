@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "oracion-para-los-viajes",
+  "tipo": "independiente",
+  "titulo": "Oración para los viajes",
+  "subtitulo": "Caminar bajo la protección de la Sagrada Familia",
+  "categoria": "Sanación y protección",
+  "subcategoria": "Sanación y protección",
+  "descripcion": "Encomienda del camino y del destino a la providencia de Dios.",
+  "texto_completo": "Señor Dios, al comenzar este viaje me pongo bajo tu cuidado. Así como san José caminó acompañado de Jesús y de María, acompáñame también en mi salida, en el camino y en el regreso. Líbrame de todo peligro, dame prudencia y serenidad, protege a quienes viajan conmigo y permite que lleguemos con bien a nuestro destino. Que la Santísima Trinidad nos guarde y nos conduzca siempre por caminos de paz. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Señor Dios, al comenzar este viaje me pongo bajo tu cuidado. Así como san José caminó acompañado de Jesús y de María, acompáñame también en mi salida, en el camino y en el regreso. Líbrame de todo peligro, dame prudencia y serenidad, protege a quienes viajan conmigo y permite que lleguemos con bien a nuestro destino. Que la Santísima Trinidad nos guarde y nos conduzca siempre por caminos de paz. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "proteccion"
+    }
+  },
+  "tema_visual": "proteccion",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico",
+  "pagina_fuente": "15",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 17,
+  "estado_revision": "revision"
+}

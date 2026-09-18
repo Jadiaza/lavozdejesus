@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "me-haces-falta-tu",
+  "tipo": "independiente",
+  "titulo": "Me haces falta Tú",
+  "subtitulo": "Visita a Jesús presente en la Eucaristía",
+  "categoria": "Devociones",
+  "subcategoria": "Jesucristo",
+  "descripcion": "Meditación para reconocer que Cristo es el centro y sentido de la vida.",
+  "texto_completo": "Jesús Eucaristía, lejos de ti la vida pierde su sentido y el corazón se cansa bajo el peso de sus miserias. Sin tu luz el camino se vuelve oscuro, el deber pesado y la fidelidad difícil. Pero cerca de ti todo cambia: la noche cede ante el amanecer y mi pobreza encuentra refugio. Tú eres más íntimo a mí que mi propio interior y, cuando te haces mi todo, nada esencial me falta. Quédate conmigo, renueva mis nobles anhelos y enséñame a vivir cada responsabilidad unido a tu presencia. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Jesús Eucaristía, lejos de ti la vida pierde su sentido y el corazón se cansa bajo el peso de sus miserias. Sin tu luz el camino se vuelve oscuro, el deber pesado y la fidelidad difícil. Pero cerca de ti todo cambia: la noche cede ante el amanecer y mi pobreza encuentra refugio. Tú eres más íntimo a mí que mi propio interior y, cuando te haces mi todo, nada esencial me falta. Quédate conmigo, renueva mis nobles anhelos y enséñame a vivir cada responsabilidad unido a tu presencia. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "cristologico"
+    }
+  },
+  "tema_visual": "cristologico",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico",
+  "pagina_fuente": "32-33",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 26,
+  "estado_revision": "revision"
+}

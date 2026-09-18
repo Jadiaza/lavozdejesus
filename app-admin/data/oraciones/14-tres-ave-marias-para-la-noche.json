@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "tres-ave-marias-para-la-noche",
+  "tipo": "independiente",
+  "titulo": "Tres Ave Marías para la noche",
+  "subtitulo": "Descansar junto a Jesús, José y María",
+  "categoria": "Devociones",
+  "subcategoria": "Virgen María",
+  "descripcion": "Invocaciones tradicionales para encomendar el corazón y el alma antes de dormir.",
+  "texto_completo": "Jesús, José y María, les doy el corazón y el alma mía. Jesús, José y María, asístanme en mi última agonía. Jesús, José y María, con ustedes descanse en paz el alma mía. Que el auxilio divino permanezca siempre con nosotros. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Jesús, José y María, les doy el corazón y el alma mía. Jesús, José y María, asístanme en mi última agonía. Jesús, José y María, con ustedes descanse en paz el alma mía. Que el auxilio divino permanezca siempre con nosotros. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "noche"
+    }
+  },
+  "tema_visual": "noche",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico",
+  "pagina_fuente": "12",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 14,
+  "estado_revision": "revision"
+}

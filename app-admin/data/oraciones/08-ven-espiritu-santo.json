@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "ven-espiritu-santo",
+  "tipo": "independiente",
+  "titulo": "Ven, Espíritu Santo",
+  "subtitulo": "Pedir luz, consuelo y renovación",
+  "categoria": "Devociones",
+  "subcategoria": "Espíritu Santo",
+  "descripcion": "Invocación tradicional al Espíritu Santo antes de orar o reunirse.",
+  "texto_completo": "Ven, Espíritu Santo, llena los corazones de tus fieles y enciende en ellos el fuego de tu amor. Envía tu Espíritu y serán creados, y renovarás la faz de la tierra. Oh Dios, que has instruido los corazones de tus fieles con la luz del Espíritu Santo, concédenos sentir rectamente según el mismo Espíritu y gozar siempre de su consuelo. Por Cristo nuestro Señor. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Ven, Espíritu Santo, llena los corazones de tus fieles y enciende en ellos el fuego de tu amor. Envía tu Espíritu y serán creados, y renovarás la faz de la tierra. Oh Dios, que has instruido los corazones de tus fieles con la luz del Espíritu Santo, concédenos sentir rectamente según el mismo Espíritu y gozar siempre de su consuelo. Por Cristo nuestro Señor. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "espiritu_santo"
+    }
+  },
+  "tema_visual": "espiritu_santo",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico",
+  "pagina_fuente": "9-10",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 8,
+  "estado_revision": "revision"
+}

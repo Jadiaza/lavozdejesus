@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "acto-de-contricion",
+  "tipo": "independiente",
+  "titulo": "Acto de contrición",
+  "subtitulo": "Volver al Señor con corazón arrepentido",
+  "categoria": "Oraciones del cristiano",
+  "subcategoria": "Vida diaria",
+  "descripcion": "Oración de arrepentimiento y propósito de conversión.",
+  "texto_completo": "Me arrepiento de todo corazón de haberte ofendido. Me pesa porque, al pecar, ofendí a un Dios tan bueno y digno de ser amado sobre todas las cosas. Propongo firmemente, con la ayuda de tu gracia, no volver a pecar y evitar las ocasiones de pecado. Jesús mío, misericordia. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Me arrepiento de todo corazón de haberte ofendido. Me pesa porque, al pecar, ofendí a un Dios tan bueno y digno de ser amado sobre todas las cosas. Propongo firmemente, con la ayuda de tu gracia, no volver a pecar y evitar las ocasiones de pecado. Jesús mío, misericordia. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "sanacion"
+    }
+  },
+  "tema_visual": "sanacion",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico",
+  "pagina_fuente": "15",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 16,
+  "estado_revision": "revision"
+}

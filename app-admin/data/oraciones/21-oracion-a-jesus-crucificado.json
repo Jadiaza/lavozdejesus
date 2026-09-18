@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "oracion-a-jesus-crucificado",
+  "tipo": "independiente",
+  "titulo": "Oración a Jesús crucificado",
+  "subtitulo": "Contemplar las llagas del Señor",
+  "categoria": "Devociones",
+  "subcategoria": "Jesucristo",
+  "descripcion": "Súplica de fe, esperanza, caridad y conversión ante Cristo crucificado.",
+  "texto_completo": "Oh amado y buen Jesús, postrado en tu presencia te ruego con fervor que imprimas en mi corazón vivos sentimientos de fe, esperanza y caridad, verdadero dolor de mis pecados y firme propósito de enmienda. Mientras contemplo con amor y compasión tus cinco llagas, recuerdo que por nosotros fueron traspasadas tus manos y tus pies. Hazme permanecer junto a tu cruz y responder con una vida nueva al amor que allí me manifestaste. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Oh amado y buen Jesús, postrado en tu presencia te ruego con fervor que imprimas en mi corazón vivos sentimientos de fe, esperanza y caridad, verdadero dolor de mis pecados y firme propósito de enmienda. Mientras contemplo con amor y compasión tus cinco llagas, recuerdo que por nosotros fueron traspasadas tus manos y tus pies. Hazme permanecer junto a tu cruz y responder con una vida nueva al amor que allí me manifestaste. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "cristologico"
+    }
+  },
+  "tema_visual": "cristologico",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico",
+  "pagina_fuente": "18-19",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 21,
+  "estado_revision": "revision"
+}

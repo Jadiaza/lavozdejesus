@@ -988,7 +988,7 @@ function content_field_html(PDO $pdo, string $table, array $column, array $row =
   }
 
   if ($table === 'lvj_ora_oraciones' && $field === 'categoria') {
-    $categories = ['Oraciones fundamentales', 'Vida diaria', 'Santísima Trinidad', 'Jesucristo', 'Espíritu Santo', 'Virgen María', 'Santos y ángeles', 'Sanación y protección', 'Intercesión', 'Liberación'];
+    $categories = ['Oraciones del cristiano', 'Devociones', 'Sanación y protección', 'Liberación', 'Oraciones fundamentales', 'Vida diaria', 'Santísima Trinidad', 'Jesucristo', 'Espíritu Santo', 'Virgen María', 'Santos y ángeles', 'Intercesión'];
     $options = array_map(static fn($category) => ['value' => $category, 'label' => $category], $categories);
     if ($value && !in_array((string) $value, $categories, true)) {
       array_unshift($options, ['value' => (string) $value, 'label' => (string) $value . ' (actual)']);
@@ -1196,9 +1196,56 @@ function content_capilla_validate(array $columns, array &$data): string
   return '';
 }
 
+function content_prayer_apply_json(array $columns, array &$data): string
+{
+  $map = content_column_map($columns);
+  if (!isset($map['contenido_json'])) return '';
+
+  $rawJson = trim((string) ($data['contenido_json'] ?? ''));
+  if ($rawJson === '') return '';
+
+  try {
+    $decoded = json_decode($rawJson, true, 512, JSON_THROW_ON_ERROR);
+  } catch (Throwable $error) {
+    return 'El contenido JSON no es válido: ' . $error->getMessage();
+  }
+  if (!is_array($decoded)) return 'El contenido JSON debe ser un objeto.';
+
+  $fieldMap = [
+    'devocion_id', 'tipo', 'titulo', 'subtitulo', 'categoria', 'descripcion',
+    'texto_completo', 'tema_visual', 'imagen', 'imagen_url', 'audio_url',
+    'fuente', 'pagina_fuente', 'derechos_revisados', 'destacada',
+    'disponible_offline', 'orden', 'estado_revision',
+  ];
+  foreach ($fieldMap as $field) {
+    if (isset($map[$field]) && array_key_exists($field, $decoded)) {
+      $value = $decoded[$field];
+      if (is_scalar($value) || $value === null) $data[$field] = $value;
+    }
+  }
+
+  $nestedContent = isset($decoded['contenido_json']) && is_array($decoded['contenido_json'])
+    ? $decoded['contenido_json']
+    : $decoded;
+  if ((!isset($data['texto_completo']) || trim((string) $data['texto_completo']) === '') && isset($nestedContent['secciones'][0]['texto'])) {
+    $data['texto_completo'] = trim((string) $nestedContent['secciones'][0]['texto']);
+  }
+  if (isset($nestedContent['apariencia']['tema']) && (!isset($decoded['tema_visual']) || trim((string) $decoded['tema_visual']) === '')) {
+    $data['tema_visual'] = trim((string) $nestedContent['apariencia']['tema']);
+  }
+  if (!isset($nestedContent['version'])) $nestedContent['version'] = 1;
+  if (!isset($nestedContent['secciones'])) $nestedContent['secciones'] = [];
+  if (!is_array($nestedContent['secciones'])) return 'El campo secciones del JSON debe ser una lista.';
+  $data['contenido_json'] = json_encode($nestedContent, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+
+  return '';
+}
+
 function content_prayer_validate(array $columns, array &$data): string
 {
   $map = content_column_map($columns);
+  $jsonError = content_prayer_apply_json($columns, $data);
+  if ($jsonError !== '') return $jsonError;
   $title = trim((string) ($data['titulo'] ?? ''));
   if ($title === '') return 'El título de la oración es obligatorio.';
   $data['titulo'] = $title;
@@ -1887,6 +1934,9 @@ require __DIR__ . '/includes/header.php';
           <button class="btn btn-gold" type="submit">Sincronizar registros</button>
         </form>
       <?php elseif ($columns && !$readOnly): ?>
+        <?php if ($table === 'lvj_ora_oraciones'): ?>
+          <a class="btn btn-soft" href="importar-oraciones-devocionario.php">Importar colección</a>
+        <?php endif; ?>
         <a class="btn btn-gold add-record-button" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&action=new"><span>+</span> Agregar registro</a>
       <?php endif; ?>
     </div>
@@ -1914,7 +1964,7 @@ require __DIR__ . '/includes/header.php';
     <?php if ($table === 'lvj_ora_oraciones'): ?>
       <div class="prayer-editor-intro">
         <strong>Biblioteca de oraciones</strong>
-        <span>Completa primero la información y el texto. El JSON queda para secciones o ajustes avanzados; no necesitas escribir colores manualmente.</span>
+        <span>Pega un JSON completo y el formulario actualizará automáticamente Información, Oración, Apariencia y Publicación. También puedes ajustar cualquier campo manualmente antes de guardar.</span>
       </div>
     <?php endif; ?>
 
@@ -1924,8 +1974,15 @@ require __DIR__ . '/includes/header.php';
       <input type="hidden" name="table" value="<?php echo e($table); ?>">
       <input type="hidden" name="id" value="<?php echo (int) ($editRow['id'] ?? 0); ?>">
 
+      <?php if ($table === 'lvj_ora_oraciones'): ?>
+        <div class="prayer-editor-mode" data-prayer-editor-mode>
+          <button type="button" class="active" data-prayer-mode="form">▣ Formulario</button>
+          <button type="button" data-prayer-mode="json">{ } JSON</button>
+        </div>
+      <?php endif; ?>
+
       <?php if ($formSections): ?>
-        <div class="content-step-tabs" data-content-section-tabs>
+        <div class="content-step-tabs" data-content-section-tabs<?php echo $table === 'lvj_ora_oraciones' ? ' data-prayer-form-view' : ''; ?>>
           <?php foreach ($formSections as $sectionKey => $sectionLabel): ?>
             <button type="button" class="<?php echo $sectionKey === $firstFormSection ? 'active' : ''; ?>" data-content-section-tab="<?php echo e($sectionKey); ?>">
               <?php echo e($sectionLabel); ?>
@@ -1934,12 +1991,13 @@ require __DIR__ . '/includes/header.php';
         </div>
       <?php endif; ?>
 
-      <div class="content-form-grid">
+      <div class="content-form-grid"<?php echo $table === 'lvj_ora_oraciones' ? ' data-prayer-form-view' : ''; ?>>
         <?php foreach ($editableColumns as $column): ?>
           <?php
             $field = (string) $column['Field'];
             $section = content_field_section($table, $field);
           ?>
+          <?php if ($table === 'lvj_ora_oraciones' && $field === 'contenido_json') continue; ?>
           <?php if ($section): ?>
             <div class="content-section-shell" data-content-section="<?php echo e($section); ?>" <?php echo $section !== $firstFormSection ? 'hidden' : ''; ?>>
               <?php echo content_field_html($pdo, $table, $column, $editRow); ?>
@@ -1949,6 +2007,23 @@ require __DIR__ . '/includes/header.php';
           <?php endif; ?>
         <?php endforeach; ?>
       </div>
+
+      <?php if ($table === 'lvj_ora_oraciones' && isset(content_column_map($editableColumns)['contenido_json'])): ?>
+        <?php $prayerJsonColumn = content_column_map($editableColumns)['contenido_json']; ?>
+        <div class="prayer-json-editor" data-prayer-json-view hidden>
+          <div class="prayer-json-guide">
+            <strong>Editor estructurado de la oración</strong>
+            <span>Al pegar un JSON válido se actualizan todos los campos del formulario. Al regresar a JSON se incorporan también los cambios hechos manualmente.</span>
+          </div>
+          <div class="prayer-json-actions">
+            <button type="button" class="btn btn-soft" data-prayer-json-format>✣ Formatear</button>
+            <button type="button" class="btn btn-soft" data-prayer-json-copy>▣ Copiar</button>
+            <button type="button" class="btn btn-soft" data-prayer-json-restore>↶ Restaurar</button>
+            <span data-prayer-json-count></span>
+          </div>
+          <?php echo content_field_html($pdo, $table, $prayerJsonColumn, $editRow); ?>
+        </div>
+      <?php endif; ?>
 
       <div class="form-actions">
         <button class="btn btn-gold" type="submit"><?php echo $editRow ? 'Actualizar registro' : 'Crear registro'; ?></button>

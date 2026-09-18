@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "senor-no-soy-digno",
+  "tipo": "independiente",
+  "titulo": "Señor, no soy digno",
+  "subtitulo": "Acercarse humildemente a Jesús Eucaristía",
+  "categoria": "Devociones",
+  "subcategoria": "Jesucristo",
+  "descripcion": "Visita eucarística de humildad, arrepentimiento y confianza.",
+  "texto_completo": "Jesús Eucaristía, te miro y descubro la distancia entre mi fragilidad y tu santidad. Reconozco mis infidelidades, mis pecados, mi soberbia y mi egoísmo. No soy digno de permanecer ante ti, pero sé que tu misericordia y tu compasión no tienen límites. Por eso me acerco sin ocultar mi pobreza y te digo con confianza: Señor, no soy digno de que entres en mi casa, pero una palabra tuya bastará para sanarme. Perdona mis pecados, purifica mi corazón y hazme vivir en tu amistad. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Jesús Eucaristía, te miro y descubro la distancia entre mi fragilidad y tu santidad. Reconozco mis infidelidades, mis pecados, mi soberbia y mi egoísmo. No soy digno de permanecer ante ti, pero sé que tu misericordia y tu compasión no tienen límites. Por eso me acerco sin ocultar mi pobreza y te digo con confianza: Señor, no soy digno de que entres en mi casa, pero una palabra tuya bastará para sanarme. Perdona mis pecados, purifica mi corazón y hazme vivir en tu amistad. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "cristologico"
+    }
+  },
+  "tema_visual": "cristologico",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico",
+  "pagina_fuente": "34-35",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 28,
+  "estado_revision": "revision"
+}

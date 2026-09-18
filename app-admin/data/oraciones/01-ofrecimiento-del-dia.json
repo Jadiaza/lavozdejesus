@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "ofrecimiento-del-dia",
+  "tipo": "independiente",
+  "titulo": "Ofrecimiento del día",
+  "subtitulo": "Entrega al Señor todo lo que vivirás hoy",
+  "categoria": "Oraciones del cristiano",
+  "subcategoria": "Vida diaria",
+  "descripcion": "Oración para consagrar a Dios pensamientos, palabras, obras y responsabilidades.",
+  "texto_completo": "Padre, tú que me has hecho llegar al comienzo de este día, fortaléceme con tu gracia para que no caiga en pecado alguno, sino que todas mis palabras, pensamientos y obras se dirijan al cumplimiento de tu santa voluntad. Unido, por la gracia, a todos los miembros de tu Iglesia universal, te ofrezco, Señor, mi ser y mi obrar, mi pensar, sentir y querer, para que todo sirva a tu gloria, a la extensión de tu Reino y a la reparación de las ofensas cometidas contra ti. Dígnate dirigir, santificar, regir y gobernar durante este día mi alma y mi cuerpo, mis sentidos, palabras y obras, según tu ley y por el camino de tus mandamientos. Por Jesucristo, Salvador del mundo. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Padre, tú que me has hecho llegar al comienzo de este día, fortaléceme con tu gracia para que no caiga en pecado alguno, sino que todas mis palabras, pensamientos y obras se dirijan al cumplimiento de tu santa voluntad. Unido, por la gracia, a todos los miembros de tu Iglesia universal, te ofrezco, Señor, mi ser y mi obrar, mi pensar, sentir y querer, para que todo sirva a tu gloria, a la extensión de tu Reino y a la reparación de las ofensas cometidas contra ti. Dígnate dirigir, santificar, regir y gobernar durante este día mi alma y mi cuerpo, mis sentidos, palabras y obras, según tu ley y por el camino de tus mandamientos. Por Jesucristo, Salvador del mundo. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "amanecer"
+    }
+  },
+  "tema_visual": "amanecer",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico",
+  "pagina_fuente": "4-5",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 1,
+  "estado_revision": "revision"
+}

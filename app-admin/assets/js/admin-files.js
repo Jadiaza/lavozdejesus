@@ -123,14 +123,55 @@ document.querySelectorAll("[data-prayer-type]").forEach((typeSelect) => {
 
 document.querySelectorAll("[data-prayer-json]").forEach((textarea) => {
   const status = textarea.parentElement?.querySelector("[data-json-validation]");
+  const form = textarea.closest("form");
+  const originalJson = textarea.value;
+  const setFieldValue = (name, value) => {
+    if (!form || value === undefined) return;
+    const field = form.elements.namedItem(name);
+    if (!field) return;
+    if (field instanceof RadioNodeList) {
+      field.value = value == null ? "" : String(value);
+      return;
+    }
+    if (field.type === "checkbox") {
+      field.checked = value === true || value === 1 || value === "1" || value === "true";
+      return;
+    }
+    field.value = value == null ? "" : String(value);
+    field.dispatchEvent(new Event("change", { bubbles: true }));
+  };
+  const syncPrayerFields = (parsed) => {
+    const fields = [
+      "devocion_id", "tipo", "titulo", "subtitulo", "categoria", "descripcion",
+      "texto_completo", "tema_visual", "imagen", "imagen_url", "audio_url",
+      "fuente", "pagina_fuente", "derechos_revisados", "destacada",
+      "disponible_offline", "orden", "estado_revision",
+    ];
+    fields.forEach((name) => {
+      if (Object.prototype.hasOwnProperty.call(parsed, name)) setFieldValue(name, parsed[name]);
+    });
+
+    const nested = parsed.contenido_json && typeof parsed.contenido_json === "object"
+      ? parsed.contenido_json
+      : parsed;
+    if (!Object.prototype.hasOwnProperty.call(parsed, "texto_completo")) {
+      const sectionText = nested?.secciones?.find((section) => section && typeof section.texto === "string")?.texto;
+      if (sectionText) setFieldValue("texto_completo", sectionText);
+    }
+    if (!Object.prototype.hasOwnProperty.call(parsed, "tema_visual") && nested?.apariencia?.tema) {
+      setFieldValue("tema_visual", nested.apariencia.tema);
+    }
+  };
   const validateJson = () => {
     try {
       const parsed = JSON.parse(textarea.value || "{}");
       if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") throw new Error("Debe ser un objeto");
-      if (parsed.secciones !== undefined && !Array.isArray(parsed.secciones)) throw new Error("secciones debe ser una lista");
+      const nested = parsed.contenido_json && typeof parsed.contenido_json === "object" ? parsed.contenido_json : parsed;
+      if (nested.secciones !== undefined && !Array.isArray(nested.secciones)) throw new Error("secciones debe ser una lista");
+      syncPrayerFields(parsed);
       textarea.setCustomValidity("");
       if (status) {
-        status.textContent = "JSON válido";
+        status.textContent = "JSON válido · todos los campos fueron actualizados";
         status.classList.remove("invalid");
         status.classList.add("valid");
       }
@@ -143,7 +184,71 @@ document.querySelectorAll("[data-prayer-json]").forEach((textarea) => {
       }
     }
   };
+  const updateCount = () => {
+    const count = form?.querySelector("[data-prayer-json-count]");
+    if (!count) return;
+    const lines = textarea.value ? textarea.value.split(/\r?\n/).length : 0;
+    count.textContent = `${lines} líneas · ${textarea.value.length} caracteres`;
+  };
+  const readFieldValue = (name) => {
+    if (!form) return undefined;
+    const field = form.elements.namedItem(name);
+    if (!field) return undefined;
+    if (field instanceof RadioNodeList) return field.value;
+    if (field.type === "checkbox") return field.checked;
+    return field.value;
+  };
+  const syncJsonFromForm = () => {
+    let parsed = {};
+    try { parsed = JSON.parse(textarea.value || "{}"); } catch (_) { parsed = {}; }
+    const fields = [
+      "devocion_id", "tipo", "titulo", "subtitulo", "categoria", "descripcion",
+      "texto_completo", "tema_visual", "imagen", "imagen_url", "audio_url",
+      "fuente", "pagina_fuente", "derechos_revisados", "destacada",
+      "disponible_offline", "orden", "estado_revision",
+    ];
+    fields.forEach((name) => {
+      const value = readFieldValue(name);
+      if (value !== undefined) parsed[name] = value;
+    });
+    const nested = parsed.contenido_json && typeof parsed.contenido_json === "object"
+      ? parsed.contenido_json
+      : (parsed.contenido_json = { version: 1, secciones: [] });
+    nested.version ||= 1;
+    nested.secciones = [{ tipo: "oracion", texto: String(readFieldValue("texto_completo") || "") }];
+    nested.apariencia = { ...(nested.apariencia || {}), tema: String(readFieldValue("tema_visual") || "oracion") };
+    textarea.value = JSON.stringify(parsed, null, 2);
+    validateJson();
+    updateCount();
+  };
+
+  form?.querySelectorAll("[data-prayer-mode]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const jsonMode = button.dataset.prayerMode === "json";
+      if (jsonMode) syncJsonFromForm();
+      form.querySelectorAll("[data-prayer-mode]").forEach((item) => item.classList.toggle("active", item === button));
+      form.querySelectorAll("[data-prayer-form-view]").forEach((item) => { item.hidden = jsonMode; });
+      const jsonView = form.querySelector("[data-prayer-json-view]");
+      if (jsonView) jsonView.hidden = !jsonMode;
+    });
+  });
+  form?.querySelector("[data-prayer-json-format]")?.addEventListener("click", () => {
+    try { textarea.value = JSON.stringify(JSON.parse(textarea.value || "{}"), null, 2); } catch (_) { /* validateJson muestra el error */ }
+    validateJson(); updateCount();
+  });
+  form?.querySelector("[data-prayer-json-copy]")?.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(textarea.value);
+      if (status) status.textContent = "JSON copiado al portapapeles";
+    } catch (_) {
+      textarea.select(); document.execCommand("copy");
+    }
+  });
+  form?.querySelector("[data-prayer-json-restore]")?.addEventListener("click", () => {
+    textarea.value = originalJson; validateJson(); updateCount();
+  });
   textarea.addEventListener("input", validateJson);
+  textarea.addEventListener("input", updateCount);
   textarea.addEventListener("blur", () => {
     validateJson();
     if (!textarea.validationMessage) {
@@ -151,4 +256,5 @@ document.querySelectorAll("[data-prayer-json]").forEach((textarea) => {
     }
   });
   validateJson();
+  updateCount();
 });

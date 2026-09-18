@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "letania-por-los-sacerdotes",
+  "tipo": "independiente",
+  "titulo": "Letanía por los sacerdotes",
+  "subtitulo": "Súplica por cada necesidad del ministerio sacerdotal",
+  "categoria": "Oraciones del cristiano",
+  "subcategoria": "Intercesión",
+  "descripcion": "Intercesión extensa por el Papa, los obispos, sacerdotes y seminaristas.",
+  "texto_completo": "A nuestro Santo Padre el Papa, llénalo de tus dones, Señor. A los cardenales y representantes pontificios, dales tu luz. A los arzobispos y obispos, dales tu gracia. A los párrocos, dales celo por tu gloria. A los vicarios, guíalos. A los formadores de seminarios, ilumínalos. A los sacerdotes religiosos, perfecciónalos; a los diocesanos, santifícalos. A los confesores y directores espirituales, hazlos dóciles instrumentos del Espíritu Santo. A los predicadores, instrúyelos; a los misioneros, sostenlos. A quienes sirven a jóvenes, trabajadores, campesinos, pobres y enfermos, dales amor y abnegación. A los sacerdotes enfermos y ancianos, dales paciencia; a los aislados, acompáñalos; a los turbados, dales paz; a los jóvenes, cuídalos; a los que están en peligro o tentación, fortalécelos; a los difuntos, dales la gloria. A los seminaristas, concédeles perseverancia. A todos los sacerdotes, transfórmalos en ti, Señor. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "A nuestro Santo Padre el Papa, llénalo de tus dones, Señor. A los cardenales y representantes pontificios, dales tu luz. A los arzobispos y obispos, dales tu gracia. A los párrocos, dales celo por tu gloria. A los vicarios, guíalos. A los formadores de seminarios, ilumínalos. A los sacerdotes religiosos, perfecciónalos; a los diocesanos, santifícalos. A los confesores y directores espirituales, hazlos dóciles instrumentos del Espíritu Santo. A los predicadores, instrúyelos; a los misioneros, sostenlos. A quienes sirven a jóvenes, trabajadores, campesinos, pobres y enfermos, dales amor y abnegación. A los sacerdotes enfermos y ancianos, dales paciencia; a los aislados, acompáñalos; a los turbados, dales paz; a los jóvenes, cuídalos; a los que están en peligro o tentación, fortalécelos; a los difuntos, dales la gloria. A los seminaristas, concédeles perseverancia. A todos los sacerdotes, transfórmalos en ti, Señor. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "intercesion"
+    }
+  },
+  "tema_visual": "intercesion",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico",
+  "pagina_fuente": "38-39",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 31,
+  "estado_revision": "revision"
+}

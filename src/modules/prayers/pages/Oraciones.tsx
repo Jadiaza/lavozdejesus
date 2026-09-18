@@ -19,6 +19,7 @@ import {
   type PrayerReminder,
 } from "../services/prayerReminderService";
 import { prayerPushActive, sendPrayerPushTest, syncPrayerPush } from "../services/prayerPushService";
+import { prayerLibraryService, type LibraryPrayer } from "../services/prayerLibraryService";
 
 const GOLD = "text-[#efbd52]";
 
@@ -51,26 +52,12 @@ const categories = [
   ["Adoración", "adoracion", "☀"], ["Peticiones de oración", "peticion", "♙"],
 ] as const;
 
-const prayers = [
-  { id: "ofrecimiento", title: "Ofrecimiento del día", icon: Bell },
-  { id: "manana", title: "Oración de la mañana", icon: Sun },
-  { id: "noche", title: "Oración de la noche", icon: Moon },
-  { id: "contricion", title: "Acto de contrición", icon: Bell },
-];
-
 const hours = [
   ["oficio", "Oficio de Lectura", "04:00", BookOpen], ["laudes", "Laudes", "06:00", Sun],
   ["tercia", "Tercia", "09:00", Shield], ["sexta", "Sexta", "12:00", Bell],
   ["nona", "Nona", "15:00", Clock3], ["visperas", "Vísperas", "18:00", Sun],
   ["completas", "Completas", "21:00", Moon],
 ] as const;
-
-const prayersText: Record<string, { title: string; text: string; source: string }> = {
-  manana: { title: "Oración de la mañana", text: "Señor, en el silencio de este día que nace, me presento ante ti con un corazón agradecido. Te ofrezco mis pensamientos, mis palabras y mis obras. Dame la luz de tu Espíritu para caminar en tu voluntad. Que hoy pueda ser instrumento de tu paz, llevar tu amor a quienes me rodean y vivir cada momento como un regalo de tu misericordia.\n\nAmén.", source: "Oración de ejemplo para revisión editorial" },
-  ofrecimiento: { title: "Ofrecimiento del día", text: "Señor Dios, te ofrezco todo lo que soy y todo cuanto viviré en este día. Une mis alegrías, trabajos y dificultades a la ofrenda de Jesucristo para tu gloria y para el bien de mis hermanos. Amén.", source: "Oración tradicional católica" },
-  noche: { title: "Oración de la noche", text: "Padre bueno, al terminar este día te doy gracias por tu presencia y tu cuidado. Perdona mis faltas, recibe mis esfuerzos y concede descanso a quienes amo. En tus manos encomiendo mi espíritu. Amén.", source: "Oración tradicional católica" },
-  contricion: { title: "Acto de contrición", text: "Señor mío Jesucristo, Dios y hombre verdadero, me pesa de todo corazón haberte ofendido. Propongo firmemente, con tu gracia, no volver a pecar y confiar siempre en tu infinita misericordia. Amén.", source: "Oración tradicional católica" },
-};
 
 function todayLabel() {
   return new Intl.DateTimeFormat("es-CO", { timeZone: "America/Bogota", day: "numeric", month: "long" }).format(new Date());
@@ -108,9 +95,9 @@ export default function Oraciones() {
   const recommendedHour = recommendedLiturgyHour();
   const homeItems = [
     ["Oraciones del cristiano", "/oraciones/categoria/cristiano", HandHeart],
-    ["Devociones", "/oraciones/devociones", Heart],
-    ["Sanación y protección", "/oraciones/categorias", ShieldCheck],
-    ["Liberación", "/oraciones/categorias", Bird],
+    ["Devociones", "/oraciones/categoria/devociones", Heart],
+    ["Sanación y protección", "/oraciones/categoria/sanacion", ShieldCheck],
+    ["Liberación", "/oraciones/categoria/liberacion", Bird],
   ] as const;
 
   return <div className="min-h-dvh bg-[#02080d] text-[#f5f0e6]">
@@ -189,21 +176,46 @@ export function LiturgiaReader() {
 }
 
 export function OracionCategorias() {
-  return <Shell title="Categorías"><div className="grid grid-cols-3 gap-2">{categories.map(([label, id, icon]) => <Link key={id} to={id === "peticion" ? "/oraciones/peticion" : id === "devociones" ? "/oraciones/devociones" : `/oraciones/categoria/${id}`} className="flex aspect-square flex-col items-center justify-center rounded-xl border border-white/10 bg-[#111b23] p-2 text-center"><span className="text-3xl text-[#efbd52]">{icon}</span><span className="mt-2 text-[9px] font-semibold leading-tight">{label}</span></Link>)}</div></Shell>;
+  return <Shell title="Categorías"><div className="grid grid-cols-3 gap-2">{categories.map(([label, id, icon]) => <Link key={id} to={id === "peticion" ? "/oraciones/peticion" : `/oraciones/categoria/${id}`} className="flex aspect-square flex-col items-center justify-center rounded-xl border border-white/10 bg-[#111b23] p-2 text-center"><span className="text-3xl text-[#efbd52]">{icon}</span><span className="mt-2 text-[9px] font-semibold leading-tight">{label}</span></Link>)}</div></Shell>;
 }
 
 export function OracionLista() {
+  const { categoria = "cristiano" } = useParams();
   const [query, setQuery] = useState("");
-  const filtered = prayers.filter((prayer) => prayer.title.toLowerCase().includes(query.toLowerCase()));
-  return <Shell title="Oraciones del cristiano"><div className="mb-4 flex items-center gap-2 rounded-full border border-white/10 bg-[#121c24] px-3"><Search className="h-4 w-4 text-white/50" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar una oración" className="h-11 min-w-0 flex-1 bg-transparent text-sm outline-none" /></div><div className="space-y-3">{filtered.map(({ id, title, icon: Icon }) => <Link key={id} to={`/oraciones/oracion/${id}`} className="flex items-center rounded-xl border border-white/10 bg-[#111b23] p-4"><Icon className="mr-3 h-6 w-6 text-[#efbd52]" /><span className="flex-1 text-sm">{title}</span><Heart className="mr-4 h-5 w-5" /><Download className="h-5 w-5" /></Link>)}</div></Shell>;
+  const [items, setItems] = useState<LibraryPrayer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true); setError("");
+    prayerLibraryService.list(categoria, controller.signal)
+      .then(setItems)
+      .catch((reason) => { if (reason?.name !== "AbortError") setError("No fue posible cargar esta biblioteca de oraciones."); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [categoria]);
+  const filtered = items.filter((prayer) => `${prayer.titulo} ${prayer.subtitulo}`.toLowerCase().includes(query.toLowerCase()));
+  const title = prayerLibraryService.categoryName(categoria);
+  return <Shell title={title}><div className="mb-4 flex items-center gap-2 rounded-full border border-white/10 bg-[#121c24] px-3"><Search className="h-4 w-4 text-white/50" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar una oración" className="h-11 min-w-0 flex-1 bg-transparent text-sm outline-none" /></div>{loading ? <div className="flex min-h-48 items-center justify-center"><LoaderCircle className="h-7 w-7 animate-spin text-[#efbd52]" /></div> : null}{error ? <div className="rounded-xl border border-red-400/25 bg-[#111b23] p-5 text-center text-sm text-white/70">{error}</div> : null}{!loading && !error && filtered.length === 0 ? <div className="rounded-xl border border-white/10 bg-[#111b23] p-6 text-center text-sm text-white/60">Todavía no hay oraciones publicadas en esta categoría.</div> : null}<div className="space-y-3">{filtered.map((prayer) => <Link key={prayer.id} to={`/oraciones/oracion/${prayer.id}`} className="flex items-center rounded-xl border border-white/10 bg-[#111b23] p-4"><Bell className="mr-3 h-6 w-6 text-[#efbd52]" /><span className="min-w-0 flex-1"><b className="block text-sm">{prayer.titulo}</b>{prayer.subtitulo ? <small className="mt-1 block text-[10px] text-white/50">{prayer.subtitulo}</small> : null}</span><ChevronRight className="h-5 w-5 text-[#efbd52]" /></Link>)}</div></Shell>;
 }
 
 export function OracionDetalle() {
-  const { id = "manana" } = useParams();
-  const prayer = prayersText[id] ?? prayersText.manana;
+  const { id = "" } = useParams();
+  const [prayer, setPrayer] = useState<LibraryPrayer | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [formatOpen, setFormatOpen] = useState(false);
   const { preferences, update, reset } = usePrayerPreferences();
-  return <Shell title={prayer.title}><div className="mb-3 flex justify-end"><button type="button" onClick={() => setFormatOpen(true)} className="flex items-center gap-2 rounded-full border border-[#d8a740]/50 bg-[#111b23] px-3 py-2 text-xs font-semibold text-[#efbd52]"><SlidersHorizontal className="h-4 w-4" />Aa</button></div><PrayerReader preferences={preferences}><div className="whitespace-pre-line">{prayer.text}</div></PrayerReader><div className="mt-5 flex justify-between"><Heart className="text-[#efbd52]" /><button type="button" className="rounded-full bg-[#efbd52] p-3 text-black"><Play className="h-5 w-5 fill-current" /></button><Send /></div><div className="mt-6 text-xs"><b>Fuente</b><p className="mt-1 text-white/60">{prayer.source}</p></div><PrayerFormatSheet open={formatOpen} preferences={preferences} onChange={update} onReset={reset} onClose={() => setFormatOpen(false)} /></Shell>;
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true); setError("");
+    prayerLibraryService.get(id, controller.signal)
+      .then(setPrayer)
+      .catch((reason) => { if (reason?.name !== "AbortError") setError("No fue posible abrir esta oración."); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [id]);
+  return <Shell title={prayer?.titulo || "Oración"}>{loading ? <div className="flex min-h-64 items-center justify-center"><LoaderCircle className="h-8 w-8 animate-spin text-[#efbd52]" /></div> : null}{error ? <div className="rounded-xl border border-red-400/25 bg-[#111b23] p-6 text-center text-sm text-white/70">{error}</div> : null}{prayer ? <><div className="mb-3 flex items-center justify-between gap-3"><div>{prayer.subtitulo ? <p className="text-xs text-white/60">{prayer.subtitulo}</p> : null}</div><button type="button" onClick={() => setFormatOpen(true)} className="flex shrink-0 items-center gap-2 rounded-full border border-[#d8a740]/50 bg-[#111b23] px-3 py-2 text-xs font-semibold text-[#efbd52]"><SlidersHorizontal className="h-4 w-4" />Aa</button></div><PrayerReader preferences={preferences}><div className="whitespace-pre-line">{prayer.texto_completo}</div></PrayerReader><div className="mt-5 flex justify-between"><Heart className="text-[#efbd52]" />{prayer.audio_url ? <a href={prayer.audio_url} className="rounded-full bg-[#efbd52] p-3 text-black"><Play className="h-5 w-5 fill-current" /></a> : <span />}<Send /></div><div className="mt-6 text-xs"><b>Fuente</b><p className="mt-1 text-white/60">{prayer.fuente}{prayer.pagina_fuente ? ` · p. ${prayer.pagina_fuente}` : ""}</p></div></> : null}<PrayerFormatSheet open={formatOpen} preferences={preferences} onChange={update} onReset={reset} onClose={() => setFormatOpen(false)} /></Shell>;
 }
 
 export function DevocionesPage() {
@@ -212,7 +224,7 @@ export function DevocionesPage() {
 }
 
 export function MisOraciones() {
-  return <Shell title="Mis oraciones" active="Favoritos"><div className="mb-4 grid grid-cols-3 rounded-xl bg-[#111b23] p-1 text-center text-xs"><span className="rounded-lg bg-[#efd078] px-2 py-3 font-bold text-black">Favoritas</span><span className="px-2 py-3">Descargadas</span><span className="px-2 py-3">Recientes</span></div><div className="space-y-3">{prayers.map((prayer, index) => <div key={prayer.id} className="rounded-xl border border-white/10 bg-[#111b23] p-4"><div className="flex items-center"><prayer.icon className="mr-3 text-[#efbd52]" /><div className="flex-1"><b className="text-xs">{prayer.title}</b><p className="text-[10px] text-white/50">Contenido de muestra</p></div><Menu className="h-4 w-4" /></div><div className="mt-3 flex items-center gap-2"><div className="h-1 flex-1 bg-white/15"><div className="h-full bg-[#efbd52]" style={{ width: `${[80, 100, 45, 20][index]}%` }} /></div></div></div>)}</div></Shell>;
+  return <Shell title="Mis oraciones" active="Favoritos"><div className="mb-4 grid grid-cols-3 rounded-xl bg-[#111b23] p-1 text-center text-xs"><span className="rounded-lg bg-[#efd078] px-2 py-3 font-bold text-black">Favoritas</span><span className="px-2 py-3">Descargadas</span><span className="px-2 py-3">Recientes</span></div><div className="rounded-xl border border-white/10 bg-[#111b23] p-6 text-center text-sm text-white/60">Tus oraciones guardadas aparecerán aquí.</div></Shell>;
 }
 
 export function PeticionOracion() {

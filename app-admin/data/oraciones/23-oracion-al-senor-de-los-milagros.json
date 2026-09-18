@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "oracion-al-senor-de-los-milagros",
+  "tipo": "independiente",
+  "titulo": "Oración al Señor de los Milagros",
+  "subtitulo": "Abrir la vida al poder salvador de Cristo",
+  "categoria": "Devociones",
+  "subcategoria": "Jesucristo",
+  "descripcion": "Oración de fe, conversión e intercesión al Señor de los Milagros.",
+  "texto_completo": "Señor de los Milagros, aquí vengo lleno de fe y de amor, porque eres mi Dios y mi Redentor. Reconozco tu poder de Creador y mis limitaciones de criatura, pero me alegra saber que has querido ser mi amigo y mi hermano. Abro ante ti mi cuerpo y mi alma para que toda mi vida permanezca dentro de tu plan de salvación. Hazme discípulo fiel, capaz de reconocerte y servirte en mis hermanos. Te pido por la Iglesia, por el Papa, por quienes nos conducen hacia ti, por los necesitados, los oprimidos, los enfermos y los agonizantes. Atiende también mis necesidades materiales y espirituales y dame perseverancia para seguirte cada día. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Señor de los Milagros, aquí vengo lleno de fe y de amor, porque eres mi Dios y mi Redentor. Reconozco tu poder de Creador y mis limitaciones de criatura, pero me alegra saber que has querido ser mi amigo y mi hermano. Abro ante ti mi cuerpo y mi alma para que toda mi vida permanezca dentro de tu plan de salvación. Hazme discípulo fiel, capaz de reconocerte y servirte en mis hermanos. Te pido por la Iglesia, por el Papa, por quienes nos conducen hacia ti, por los necesitados, los oprimidos, los enfermos y los agonizantes. Atiende también mis necesidades materiales y espirituales y dame perseverancia para seguirte cada día. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "cristologico"
+    }
+  },
+  "tema_visual": "cristologico",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico",
+  "pagina_fuente": "20-21",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 23,
+  "estado_revision": "revision"
+}

@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "slug": "divinas-alabanzas",
+  "tipo": "independiente",
+  "titulo": "Divinas alabanzas",
+  "subtitulo": "Bendecir el santo nombre de Dios",
+  "categoria": "Devociones",
+  "subcategoria": "Santísima Trinidad",
+  "descripcion": "Alabanzas tradicionales después de la bendición con el Santísimo Sacramento.",
+  "texto_completo": "Bendito sea Dios. Bendito sea su santo nombre. Bendito sea Jesucristo, verdadero Dios y verdadero hombre. Bendito sea el nombre de Jesús. Bendito sea su Sacratísimo Corazón. Bendita sea su Preciosísima Sangre. Bendito sea Jesús en el Santísimo Sacramento del altar. Bendito sea el Espíritu Santo Paráclito. Bendita sea la excelsa Madre de Dios, María Santísima. Bendita sea su santa e inmaculada Concepción. Bendita sea su gloriosa Asunción. Bendito sea el nombre de María, Virgen y Madre. Bendito sea san José, su castísimo esposo. Bendito sea Dios en sus ángeles y en sus santos. Amén.",
+  "contenido_json": {
+    "version": 1,
+    "secciones": [
+      {
+        "tipo": "oracion",
+        "texto": "Bendito sea Dios. Bendito sea su santo nombre. Bendito sea Jesucristo, verdadero Dios y verdadero hombre. Bendito sea el nombre de Jesús. Bendito sea su Sacratísimo Corazón. Bendita sea su Preciosísima Sangre. Bendito sea Jesús en el Santísimo Sacramento del altar. Bendito sea el Espíritu Santo Paráclito. Bendita sea la excelsa Madre de Dios, María Santísima. Bendita sea su santa e inmaculada Concepción. Bendita sea su gloriosa Asunción. Bendito sea el nombre de María, Virgen y Madre. Bendito sea san José, su castísimo esposo. Bendito sea Dios en sus ángeles y en sus santos. Amén."
+      }
+    ],
+    "apariencia": {
+      "tema": "cristologico"
+    }
+  },
+  "tema_visual": "cristologico",
+  "imagen": null,
+  "audio_url": null,
+  "fuente": "Devocionario Católico",
+  "pagina_fuente": "41",
+  "derechos_revisados": false,
+  "destacada": false,
+  "disponible_offline": true,
+  "orden": 33,
+  "estado_revision": "revision"
+}
