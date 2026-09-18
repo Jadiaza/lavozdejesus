@@ -24,8 +24,10 @@ const categoryMap: Record<string, string> = {
   liberacion: "Liberación",
 };
 
+const apiBase = ((import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "https://lavozdejesus.co").trim().replace(/\/+$/, "");
+
 const request = async (query: string, signal?: AbortSignal) => {
-  const response = await fetch(`/api/oraciones${query}`, { signal });
+  const response = await fetch(`${apiBase}/api/oraciones.php${query}`, { signal });
   const body = await response.json().catch(() => null);
   if (!response.ok || !body?.success) throw new Error(body?.error || "No fue posible cargar las oraciones");
   return body;
