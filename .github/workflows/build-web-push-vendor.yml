@@ -1,0 +1,58 @@
+name: Build Web Push vendor package
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - composer.json
+      - composer.lock
+      - .github/workflows/build-web-push-vendor.yml
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: curl, mbstring, openssl
+          tools: composer:v2
+          coverage: none
+
+      - name: Install production dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: Verify Web Push package
+        run: |
+          test -f vendor/autoload.php
+          test -d vendor/minishlink/web-push
+          php -r "require 'vendor/autoload.php'; echo class_exists('Minishlink\\WebPush\\WebPush') ? 'Web Push OK' : exit(1);"
+
+      - name: Create hosting package
+        run: zip -qr vendor-web-push.zip vendor composer.json composer.lock
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vendor-web-push
+          path: vendor-web-push.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish hosting package
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: web-push-vendor
+          name: Web Push vendor para hosting
+          body: Paquete de dependencias PHP para activar los recordatorios Web Push de LVJPRAYER.
+          files: vendor-web-push.zip
+          make_latest: false
+          prerelease: true
+          overwrite_files: true
