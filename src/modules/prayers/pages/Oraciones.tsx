@@ -1,7 +1,7 @@
 import { FormEvent, ReactNode, useEffect, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
-  AlertCircle, ArrowLeft, Bell, BellRing, Bird, BookOpen, ChevronRight, Clock3, Cross, Download,
+  AlertCircle, ArrowLeft, Bell, BellRing, Bird, BookOpen, Check, ChevronRight, Clock3, Cross, Download,
   HandHeart, Heart, Home, LoaderCircle, Menu, Moon, Play, RefreshCw, Search, Send, Settings,
   Shield, ShieldCheck, SlidersHorizontal, Sparkles, Sun, Volume2,
 } from "lucide-react";
@@ -232,10 +232,14 @@ export function OracionLista() {
 
 export function OracionDetalle() {
   const { id = "" } = useParams();
+  const navigate = useNavigate();
   const [prayer, setPrayer] = useState<LibraryPrayer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [formatOpen, setFormatOpen] = useState(false);
+  const [favorite, setFavorite] = useState(false);
+  const [prayedToday, setPrayedToday] = useState(false);
+  const [dailyCount, setDailyCount] = useState(0);
   const { preferences, update, reset } = usePrayerPreferences();
   useEffect(() => {
     const controller = new AbortController();
@@ -246,7 +250,77 @@ export function OracionDetalle() {
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [id]);
-  return <Shell title={prayer?.titulo || "Oración"}>{loading ? <div className="flex min-h-64 items-center justify-center"><LoaderCircle className="h-8 w-8 animate-spin text-[#efbd52]" /></div> : null}{error ? <div className="rounded-xl border border-red-400/25 bg-[#111b23] p-6 text-center text-sm text-white/70">{error}</div> : null}{prayer ? <><div className="mb-3 flex items-center justify-between gap-3"><div>{prayer.subtitulo ? <p className="text-xs text-white/60">{prayer.subtitulo}</p> : null}</div><button type="button" onClick={() => setFormatOpen(true)} className="flex shrink-0 items-center gap-2 rounded-full border border-[#d8a740]/50 bg-[#111b23] px-3 py-2 text-xs font-semibold text-[#efbd52]"><SlidersHorizontal className="h-4 w-4" />Aa</button></div><PrayerReader preferences={preferences}><div className="whitespace-pre-line">{prayer.texto_completo}</div></PrayerReader><div className="mt-5 flex justify-between"><Heart className="text-[#efbd52]" />{prayer.audio_url ? <a href={prayer.audio_url} className="rounded-full bg-[#efbd52] p-3 text-black"><Play className="h-5 w-5 fill-current" /></a> : <span />}<Send /></div><div className="mt-6 text-xs"><b>Fuente</b><p className="mt-1 text-white/60">{prayer.fuente}{prayer.pagina_fuente ? ` · p. ${prayer.pagina_fuente}` : ""}</p></div></> : null}<PrayerFormatSheet open={formatOpen} preferences={preferences} onChange={update} onReset={reset} onClose={() => setFormatOpen(false)} /></Shell>;
+  useEffect(() => {
+    const day = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota" }).format(new Date());
+    try {
+      const favorites = JSON.parse(localStorage.getItem("lvj-prayer-favorites-v1") || "[]") as string[];
+      const progress = JSON.parse(localStorage.getItem("lvj-prayer-daily-v1") || "{}") as { day?: string; ids?: string[] };
+      const ids = progress.day === day && Array.isArray(progress.ids) ? progress.ids : [];
+      setFavorite(favorites.includes(id));
+      setPrayedToday(ids.includes(id));
+      setDailyCount(ids.length);
+    } catch { /* Conserva los valores iniciales si el almacenamiento está dañado. */ }
+  }, [id]);
+
+  const toggleFavorite = () => {
+    const key = "lvj-prayer-favorites-v1";
+    let ids: string[] = [];
+    try { ids = JSON.parse(localStorage.getItem(key) || "[]"); } catch { ids = []; }
+    const next = ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id];
+    localStorage.setItem(key, JSON.stringify(next));
+    setFavorite(next.includes(id));
+    tactileFeedback();
+  };
+
+  const markPrayed = () => {
+    const day = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota" }).format(new Date());
+    let saved: { day?: string; ids?: string[] } = {};
+    try { saved = JSON.parse(localStorage.getItem("lvj-prayer-daily-v1") || "{}"); } catch { saved = {}; }
+    const current = saved.day === day && Array.isArray(saved.ids) ? saved.ids : [];
+    const ids = current.includes(id) ? current : [...current, id];
+    localStorage.setItem("lvj-prayer-daily-v1", JSON.stringify({ day, ids }));
+    setPrayedToday(true); setDailyCount(ids.length); tactileFeedback();
+  };
+
+  const sharePrayer = async () => {
+    if (!prayer) return;
+    const data = { title: prayer.titulo, text: `${prayer.titulo}\n\n${prayer.texto_completo}`, url: window.location.href };
+    try {
+      if (navigator.share) await navigator.share(data);
+      else await navigator.clipboard.writeText(`${data.text}\n\n${data.url}`);
+    } catch { /* El usuario puede cancelar el diálogo nativo. */ }
+  };
+
+  return <div className="min-h-dvh bg-[#030a10] text-[#f7f1e6]">
+    <div className="mx-auto min-h-dvh max-w-[430px] border-x border-white/[0.04] bg-[radial-gradient(circle_at_50%_-5%,rgba(32,83,101,.18),transparent_34%),linear-gradient(180deg,#06131b_0%,#030a10_100%)]">
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between bg-[#041019]/90 px-4 backdrop-blur-xl">
+        <button type="button" onClick={() => navigate(-1)} aria-label="Volver" className="flex h-11 w-11 items-center justify-center text-[#efbd52]"><ArrowLeft className="h-7 w-7" /></button>
+        <button type="button" onClick={() => setFormatOpen(true)} aria-label="Formato de lectura" className="flex h-11 min-w-11 items-center justify-center font-serif text-2xl font-semibold text-[#efbd52]">Aa</button>
+      </header>
+      <main className="px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-2">
+        {loading ? <div className="flex min-h-[65dvh] items-center justify-center"><LoaderCircle className="h-8 w-8 animate-spin text-[#efbd52]" /></div> : null}
+        {error ? <div className="rounded-xl border border-red-400/25 bg-[#111b23] p-6 text-center text-sm text-white/70">{error}</div> : null}
+        {prayer ? <>
+          <section className="mb-6 text-center">
+            <Sparkles className="mx-auto h-6 w-6 text-[#efbd52]" strokeWidth={1.5} />
+            <h1 className="mt-3 font-serif text-[clamp(2rem,9vw,2.65rem)] font-semibold leading-tight tracking-[-.025em] text-[#f7f1e6]">{prayer.titulo}</h1>
+            <div className="mx-auto mt-4 flex w-28 items-center gap-2 text-[#efbd52]" aria-hidden="true"><span className="h-px flex-1 bg-current" /><span className="rotate-45 text-[10px]">◆</span><span className="h-px flex-1 bg-current" /></div>
+          </section>
+          <PrayerReader preferences={preferences} integrated><div className="whitespace-pre-line">{prayer.texto_completo}</div></PrayerReader>
+          <div className="mt-8 grid grid-cols-3 gap-2 text-center text-xs">
+            <button type="button" onClick={toggleFavorite} className="flex min-h-16 flex-col items-center justify-center gap-1.5"><Heart className={`h-7 w-7 text-[#efbd52] ${favorite ? "fill-current" : ""}`} /><span>{favorite ? "Guardada" : "Favorito"}</span></button>
+            {prayer.audio_url ? <a href={prayer.audio_url} className="flex min-h-16 flex-col items-center justify-center gap-1.5"><Volume2 className="h-7 w-7 text-[#efbd52]" /><span>Escuchar</span></a> : <button type="button" disabled className="flex min-h-16 flex-col items-center justify-center gap-1.5 opacity-45"><Volume2 className="h-7 w-7 text-[#efbd52]" /><span>Sin audio</span></button>}
+            <button type="button" onClick={sharePrayer} className="flex min-h-16 flex-col items-center justify-center gap-1.5"><Send className="h-7 w-7 text-[#efbd52]" /><span>Compartir</span></button>
+          </div>
+          <button type="button" onClick={markPrayed} disabled={prayedToday} className={`mt-5 flex min-h-14 w-full items-center justify-center gap-3 rounded-full border text-sm font-bold transition ${prayedToday ? "border-emerald-400/45 bg-emerald-400/10 text-emerald-200" : "border-[#efbd52] text-[#efbd52] active:bg-[#efbd52]/10"}`}><Check className="h-6 w-6" />{prayedToday ? "Oración completada hoy" : "Terminé mi oración"}</button>
+          <p className="mt-3 text-center text-xs text-white/55">Hoy has rezado {dailyCount} {dailyCount === 1 ? "oración" : "oraciones"}</p>
+          <details className="mt-7 border-y border-white/15 py-4 text-xs"><summary className="cursor-pointer list-none text-center"><b>Fuente:</b> <span className="text-white/65">{prayer.fuente || "Devocionario Católico"}</span> <span className="ml-1 text-[#efbd52]">· Ver referencia</span></summary>{prayer.pagina_fuente ? <p className="mt-3 text-center text-white/55">Página {prayer.pagina_fuente}</p> : null}</details>
+        </> : null}
+      </main>
+      <PrayerNav active="Oraciones" />
+    </div>
+    <PrayerFormatSheet open={formatOpen} preferences={preferences} onChange={update} onReset={reset} onClose={() => setFormatOpen(false)} />
+  </div>;
 }
 
 export function DevocionesPage() {
