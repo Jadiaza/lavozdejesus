@@ -14,7 +14,7 @@ const fonts = {
   sans: "Inter, ui-sans-serif, system-ui, sans-serif",
 };
 
-export function PrayerReader({ preferences, children }: { preferences: PrayerPreferences; children: ReactNode }) {
+export function PrayerReader({ preferences, children, integrated = false }: { preferences: PrayerPreferences; children: ReactNode; integrated?: boolean }) {
   const theme = themes[preferences.theme];
   const style = {
     "--prayer-accent": theme.accent,
@@ -27,5 +27,5 @@ export function PrayerReader({ preferences, children }: { preferences: PrayerPre
     maxWidth: preferences.focusedWidth ? "38rem" : "none",
   } as CSSProperties;
 
-  return <article style={style} className="mx-auto rounded-2xl border border-white/10 p-5 shadow-xl transition-colors">{children}</article>;
+  return <article style={style} className={`mx-auto transition-colors ${integrated ? "w-full px-1 py-2" : "rounded-2xl border border-white/10 p-5 shadow-xl"}`}>{children}</article>;
 }
