@@ -219,8 +219,31 @@ export function OracionDetalle() {
 }
 
 export function DevocionesPage() {
-  const items = [["Divina Misericordia", "9 minutos", "✨"], ["Preciosísima Sangre", "12 minutos", "✦"], ["Sagrado Corazón", "10 minutos", "♡"], ["Vía Crucis", "14 minutos", "✝"]];
-  return <Shell title="Devociones"><div className="grid grid-cols-2 gap-3">{items.map(([name, time, icon]) => <div key={name} className="overflow-hidden rounded-xl border border-[#d8a740]/70 bg-[#111b23]"><div className="flex aspect-[4/3] items-center justify-center bg-[radial-gradient(circle,rgba(223,164,55,.38),transparent_70%)] text-6xl text-[#efbd52]">{icon}</div><div className="p-3 text-center"><h2 className="text-xs font-semibold">{name}</h2><p className="text-[10px] text-white/60">{time}</p><button type="button" className="mt-2 w-full rounded-full bg-gradient-to-r from-[#f6d574] to-[#d49a28] py-2 text-[10px] font-bold text-black">PRÓXIMAMENTE</button></div></div>)}</div></Shell>;
+  const [items, setItems] = useState<Awaited<ReturnType<typeof prayerLibraryService.devotions>>>([]);
+  const [query, setQuery] = useState("");
+  useEffect(() => { const controller = new AbortController(); prayerLibraryService.devotions(controller.signal).then(setItems).catch(() => setItems([])); return () => controller.abort(); }, []);
+  const fallback = [
+    ["san-jose", "San José", "Custodio de Jesús y protector de las familias", "SJ"],
+    ["sangre-de-cristo", "Sangre de Cristo", "Redención, entrega y protección en Cristo", "SC"],
+    ["san-miguel-arcangel", "San Miguel Arcángel", "Fidelidad a Dios y protección espiritual", "SM"],
+    ["maria-santisima", "María Santísima", "Madre de Jesús y Madre de la Iglesia", "M"],
+    ["espiritu-santo", "Espíritu Santo", "Luz, consuelo y renovación interior", "ES"],
+    ["sagrado-corazon-de-jesus", "Sagrado Corazón de Jesús", "Amor, reparación y consagración", "SCJ"],
+    ["santisimo-sacramento", "Santísimo Sacramento", "Adoración y encuentro con Jesús Eucaristía", "IHS"],
+    ["divina-misericordia", "Divina Misericordia", "Confianza en el amor misericordioso de Jesús", "DM"],
+  ].map(([slug, titulo, subtitulo, monogram]) => ({ id: "", slug, titulo, subtitulo, imagen: "", total_oraciones: 0, monogram }));
+  const cards = (items.length ? items.map((item) => ({ ...item, monogram: item.titulo.split(" ").map((word) => word[0]).join("").slice(0, 3) })) : fallback)
+    .filter((item) => item.titulo.toLowerCase().includes(query.toLowerCase()));
+  return <Shell title="Devociones"><p className="-mt-1 mb-4 text-center text-xs text-white/60">Camina junto a Dios de la mano de los santos</p><div className="mb-5 flex items-center gap-3 rounded-full border border-white/15 bg-[#101b24] px-4"><Search className="h-5 w-5 text-white/55" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar una devoción" className="h-12 min-w-0 flex-1 bg-transparent text-sm outline-none" /></div><div className="grid grid-cols-2 gap-3">{cards.map((item) => <Link key={item.slug} to={`/oraciones/devociones/${item.slug}`} className="group overflow-hidden rounded-2xl border border-[#d8a740]/65 bg-[#0d1922] shadow-[0_8px_20px_rgba(0,0,0,.28)] active:scale-[.98]">{item.imagen ? <img src={item.imagen} alt="" className="aspect-[1.2] w-full object-cover" /> : <div className="flex aspect-[1.2] items-center justify-center bg-[radial-gradient(circle_at_50%_38%,rgba(239,189,82,.36),rgba(8,19,27,.3)_42%,#08131b_78%)]"><span className="flex h-16 w-16 items-center justify-center rounded-full border border-[#efbd52]/55 font-display text-xl text-[#f4cf70] shadow-[0_0_30px_rgba(239,189,82,.18)]">{item.monogram}</span></div>}<div className="min-h-[6.2rem] p-3"><div className="flex items-start gap-1"><h2 className="flex-1 text-sm font-bold leading-tight">{item.titulo}</h2><ChevronRight className="h-5 w-5 shrink-0 text-[#efbd52]" /></div><p className="mt-1.5 line-clamp-2 text-[10px] leading-relaxed text-white/55">{item.subtitulo}</p><p className="mt-2 text-[9px] font-semibold text-[#efbd52]/85">{item.total_oraciones ? `${item.total_oraciones} oraciones` : "Rosario · Oraciones · Novena"}</p></div></Link>)}</div></Shell>;
+}
+
+export function DevocionDetalle() {
+  const { slug = "" } = useParams();
+  const [items, setItems] = useState<LibraryPrayer[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => { const controller = new AbortController(); setLoading(true); prayerLibraryService.devotion(slug, controller.signal).then(setItems).finally(() => { if (!controller.signal.aborted) setLoading(false); }); return () => controller.abort(); }, [slug]);
+  const title = slug.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
+  return <Shell title={title}>{loading ? <div className="flex min-h-48 items-center justify-center"><LoaderCircle className="h-7 w-7 animate-spin text-[#efbd52]" /></div> : items.length ? <div className="space-y-3">{items.map((prayer) => <Link key={prayer.id} to={`/oraciones/oracion/${prayer.id}`} className="flex items-center rounded-xl border border-white/10 bg-[#111b23] p-4"><HandHeart className="mr-3 h-6 w-6 text-[#efbd52]" /><span className="min-w-0 flex-1"><b className="block text-sm">{prayer.titulo}</b><small className="mt-1 block text-[10px] text-white/50">{prayer.subtitulo}</small></span><ChevronRight className="h-5 w-5 text-[#efbd52]" /></Link>)}</div> : <div className="rounded-2xl border border-[#d8a740]/25 bg-[#111b23] p-7 text-center text-sm text-white/60">Esta colección está preparada para recibir sus oraciones, rosarios, letanías y novenas.</div>}</Shell>;
 }
 
 export function MisOraciones() {
