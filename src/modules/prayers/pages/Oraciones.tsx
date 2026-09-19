@@ -241,6 +241,13 @@ export function OracionDetalle() {
   const [prayedToday, setPrayedToday] = useState(false);
   const [dailyCount, setDailyCount] = useState(0);
   const { preferences, update, reset } = usePrayerPreferences();
+  const titleColor = preferences.theme === "light"
+    ? "#8a6112"
+    : preferences.theme === "sepia"
+      ? "#7c5416"
+      : preferences.theme === "contrast"
+        ? "#ffd54f"
+        : "#efbd52";
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true); setError("");
@@ -302,8 +309,8 @@ export function OracionDetalle() {
         {error ? <div className="rounded-xl border border-red-400/25 bg-[#111b23] p-6 text-center text-sm text-white/70">{error}</div> : null}
         {prayer ? <>
           <section className="mb-5 pt-1 text-center">
-            <h1 className="font-serif text-[clamp(2rem,9vw,2.65rem)] font-semibold leading-tight tracking-[-.025em] text-[#f7f1e6]">{prayer.titulo}</h1>
-            <div className="mx-auto mt-2 flex w-28 items-center gap-2 text-[#efbd52]" aria-hidden="true"><span className="h-px flex-1 bg-current" /><span className="rotate-45 text-[9px]">◆</span><span className="h-px flex-1 bg-current" /></div>
+            <h1 style={{ color: titleColor }} className="font-serif text-[clamp(2rem,9vw,2.65rem)] font-semibold leading-tight tracking-[-.025em]">{prayer.titulo}</h1>
+            <div style={{ color: titleColor }} className="mx-auto mt-0.5 flex w-28 items-center gap-2" aria-hidden="true"><span className="h-px flex-1 bg-current" /><span className="rotate-45 text-[9px]">◆</span><span className="h-px flex-1 bg-current" /></div>
           </section>
           <PrayerReader preferences={preferences} integrated><div className="whitespace-pre-line">{prayer.texto_completo}</div></PrayerReader>
           <div className="mt-8 grid grid-cols-3 gap-2 text-center text-xs">
