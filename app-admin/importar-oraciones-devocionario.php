@@ -68,9 +68,16 @@ try {
       $theme = trim((string) ($prayer['tema_visual'] ?? 'oracion')) ?: 'oracion';
       $sourceCategory = trim((string) ($prayer['categoria'] ?? 'Vida diaria'));
       $appCategory = prayer_app_category($sourceCategory);
+      $devotionSlug = trim((string) ($prayer['devocion_slug'] ?? ''));
+      $devotionId = null;
+      if ($devotionSlug !== '' && isset($columns['devocion_id'])) {
+        $devotionQuery = $pdo->prepare('SELECT id FROM lvj_ora_devociones WHERE slug = :slug LIMIT 1');
+        $devotionQuery->execute(['slug' => $devotionSlug]);
+        $devotionId = $devotionQuery->fetchColumn() ?: null;
+      }
       $payload = [
-        'devocion_id' => null,
-        'tipo' => 'independiente',
+        'devocion_id' => $devotionId,
+        'tipo' => $devotionId ? 'devocion' : 'independiente',
         'titulo' => $title,
         'subtitulo' => trim((string) ($prayer['subtitulo'] ?? '')),
         'categoria' => $appCategory,
@@ -79,6 +86,7 @@ try {
         'contenido_json' => json_encode([
           'version' => 1,
           'subcategoria' => $sourceCategory,
+          'devocion_slug' => $devotionSlug,
           'secciones' => [['tipo' => 'oracion', 'texto' => $text]],
           'apariencia' => ['tema' => $theme],
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
