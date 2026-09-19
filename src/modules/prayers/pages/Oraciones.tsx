@@ -95,7 +95,7 @@ export default function Oraciones() {
   const recommendedHour = recommendedLiturgyHour();
   const homeItems = [
     ["Oraciones del cristiano", "/oraciones/categoria/cristiano", HandHeart],
-    ["Devociones", "/oraciones/categoria/devociones", Heart],
+    ["Devociones", "/oraciones/devociones", Heart],
     ["Sanación y protección", "/oraciones/categoria/sanacion", ShieldCheck],
     ["Liberación", "/oraciones/categoria/liberacion", Bird],
   ] as const;
@@ -198,16 +198,35 @@ export function OracionLista() {
   }, [categoria, subcategory]);
   const filtered = items.filter((prayer) => `${prayer.titulo} ${prayer.subtitulo}`.toLowerCase().includes(query.toLowerCase()));
   const title = subcategory || prayerLibraryService.categoryName(categoria);
-  const christianSections = [
-    ["Oraciones fundamentales", "Las plegarias esenciales de nuestra fe", Cross],
-    ["Mañana y ofrecimiento", "Consagra a Dios el comienzo de tu jornada", Sun],
-    ["Noche y descanso", "Agradece, examina tu día y descansa en el Señor", Moon],
-    ["Fe, confianza y discernimiento", "Entrégate a Dios y busca su voluntad", BookOpen],
-    ["Familia y relaciones", "Presenta ante Dios a quienes amas", Heart],
-    ["Intercesión", "Ora por la Iglesia y por las necesidades del mundo", HandHeart],
-    ["Momentos y necesidades", "Encuentra una oración para cada circunstancia", ShieldCheck],
-  ] as const;
-  if (categoria === "cristiano" && !subcategory) return <Shell title="Oraciones del cristiano"><p className="-mt-1 mb-5 text-center text-xs text-white/60">Oraciones para vivir cada jornada en la presencia de Dios</p><div className="space-y-3">{christianSections.map(([name, description, Icon]) => <Link key={name} to={`/oraciones/categoria/cristiano?subcategoria=${encodeURIComponent(name)}`} className="group flex min-h-[5.5rem] items-center rounded-2xl border border-[#d8a740]/35 bg-[linear-gradient(135deg,#12202a,#0b151d)] p-4 shadow-[0_8px_18px_rgba(0,0,0,.24)] active:scale-[.985]"><span className="mr-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#d8a740]/35 bg-[#d8a740]/10"><Icon className="h-6 w-6 text-[#efbd52]" strokeWidth={1.7} /></span><span className="min-w-0 flex-1"><b className="block text-sm text-white/95">{name}</b><small className="mt-1 block text-[10px] leading-relaxed text-white/50">{description}</small></span><ChevronRight className="ml-2 h-5 w-5 shrink-0 text-[#efbd52]" /></Link>)}</div></Shell>;
+  const sectionGroups = {
+    cristiano: {
+      title: "Oraciones del cristiano", subtitle: "Oraciones para vivir cada jornada en la presencia de Dios",
+      sections: [
+        ["Oraciones fundamentales", "Las plegarias esenciales de nuestra fe", Cross], ["Mañana y ofrecimiento", "Consagra a Dios el comienzo de tu jornada", Sun],
+        ["Noche y descanso", "Agradece, examina tu día y descansa en el Señor", Moon], ["Fe, confianza y discernimiento", "Entrégate a Dios y busca su voluntad", BookOpen],
+        ["Familia y relaciones", "Presenta ante Dios a quienes amas", Heart], ["Intercesión", "Ora por la Iglesia y las necesidades del mundo", HandHeart],
+        ["Momentos y necesidades", "Encuentra una oración para cada circunstancia", Clock3],
+      ],
+    },
+    sanacion: {
+      title: "Sanación y protección", subtitle: "Permite que Cristo acompañe tus heridas, temores y necesidades",
+      sections: [
+        ["Sanación interior", "Recuerdos, heridas y restauración del corazón", Heart], ["Perdón y reconciliación", "Pedir perdón, perdonar y reconstruir vínculos", HandHeart],
+        ["Enfermedad y sufrimiento", "Oraciones por enfermos, cuidadores y tratamientos", Cross], ["Duelo y consuelo", "Esperanza cristiana ante la pérdida y la soledad", Bird],
+        ["Protección personal y familiar", "Encomienda a Dios tu vida, hogar, hijos y viajes", ShieldCheck], ["Paz emocional", "Entrega al Señor la ansiedad, el miedo y el desánimo", Sparkles],
+      ],
+    },
+    liberacion: {
+      title: "Liberación", subtitle: "Un camino de conversión, renuncia al pecado y libertad en Jesucristo",
+      sections: [
+        ["Renuncia al pecado", "Renueva tu decisión de vivir en la gracia de Dios", Cross], ["Combate espiritual", "Permanece firme con la armadura de Dios", Shield],
+        ["Libertad interior", "Entrega resentimientos, culpas, miedos y ataduras", Bird], ["Hábitos y dependencias", "Pide fortaleza para perseverar y comenzar de nuevo", RefreshCw],
+        ["Protección ante el mal", "Confía tu vida y tu hogar al cuidado de Dios", ShieldCheck], ["Acompañamiento pastoral", "Orientación para buscar ayuda sacramental y profesional", HandHeart],
+      ],
+    },
+  } as const;
+  const group = sectionGroups[categoria as keyof typeof sectionGroups];
+  if (group && !subcategory) return <Shell title={group.title}><p className="-mt-1 mb-5 text-center text-xs leading-relaxed text-white/60">{group.subtitle}</p><div className="space-y-3">{group.sections.map(([name, description, Icon]) => <Link key={name} to={`/oraciones/categoria/${categoria}?subcategoria=${encodeURIComponent(name)}`} className="group flex min-h-[5.5rem] items-center rounded-2xl border border-[#d8a740]/35 bg-[linear-gradient(135deg,#12202a,#0b151d)] p-4 shadow-[0_8px_18px_rgba(0,0,0,.24)] active:scale-[.985]"><span className="mr-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#d8a740]/35 bg-[#d8a740]/10"><Icon className="h-6 w-6 text-[#efbd52]" strokeWidth={1.7} /></span><span className="min-w-0 flex-1"><b className="block text-sm text-white/95">{name}</b><small className="mt-1 block text-[10px] leading-relaxed text-white/50">{description}</small></span><ChevronRight className="ml-2 h-5 w-5 shrink-0 text-[#efbd52]" /></Link>)}</div>{categoria === "liberacion" ? <p className="mt-5 rounded-xl border border-[#d8a740]/20 bg-[#111b23] p-4 text-[10px] leading-relaxed text-white/55">Estas oraciones acompañan la vida cristiana y no sustituyen la confesión, la Eucaristía, el acompañamiento sacerdotal ni la atención médica o psicológica.</p> : null}</Shell>;
   return <Shell title={title}><div className="mb-4 flex items-center gap-2 rounded-full border border-white/10 bg-[#121c24] px-3"><Search className="h-4 w-4 text-white/50" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar una oración" className="h-11 min-w-0 flex-1 bg-transparent text-sm outline-none" /></div>{loading ? <div className="flex min-h-48 items-center justify-center"><LoaderCircle className="h-7 w-7 animate-spin text-[#efbd52]" /></div> : null}{error ? <div className="rounded-xl border border-red-400/25 bg-[#111b23] p-5 text-center text-sm text-white/70">{error}</div> : null}{!loading && !error && filtered.length === 0 ? <div className="rounded-xl border border-white/10 bg-[#111b23] p-6 text-center text-sm text-white/60">Esta sección está preparada para recibir nuevas oraciones.</div> : null}<div className="space-y-3">{filtered.map((prayer) => <Link key={prayer.id} to={`/oraciones/oracion/${prayer.id}`} className="flex items-center rounded-xl border border-white/10 bg-[#111b23] p-4"><HandHeart className="mr-3 h-6 w-6 text-[#efbd52]" /><span className="min-w-0 flex-1"><b className="block text-sm">{prayer.titulo}</b>{prayer.subtitulo ? <small className="mt-1 block text-[10px] text-white/50">{prayer.subtitulo}</small> : null}</span><ChevronRight className="h-5 w-5 text-[#efbd52]" /></Link>)}</div></Shell>;
 }
 
