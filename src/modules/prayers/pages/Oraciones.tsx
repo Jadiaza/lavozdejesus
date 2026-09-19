@@ -84,9 +84,16 @@ const PrayerHomeHeader = () => (
   </header>
 );
 
-const PrayerNav = ({ active = "Oraciones" }: { active?: string }) => {
+const PrayerNav = ({ active = "Oraciones", theme = "dark" }: { active?: string; theme?: "dark" | "light" | "sepia" | "contrast" }) => {
   const items = [[Home, "Inicio", "/"], [Bell, "Oraciones", "/oraciones"], [BookOpen, "Liturgia", "/oraciones/liturgia"], [Heart, "Favoritos", "/oraciones/mis-oraciones"], [Settings, "Ajustes", "/oraciones/recordatorios"]] as const;
-  return <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto min-h-[4.4rem] max-w-[430px] border-t border-[#d8a740]/25 bg-[#061018]/98 px-2 pb-[max(.65rem,env(safe-area-inset-bottom))] pt-2.5 backdrop-blur"><div className="flex justify-around">{items.map(([Icon, label, to]) => <Link key={label} to={to} onClick={tactileFeedback} className={`flex min-w-0 flex-1 flex-col items-center gap-1 text-[9px] font-medium transition active:scale-95 ${active === label ? GOLD : "text-white/70"}`}><Icon className="h-[20px] w-[20px]" strokeWidth={active === label ? 2.3 : 1.65} />{label}</Link>)}</div></nav>;
+  const palette = theme === "light"
+    ? { background: "#f3eee3", inactive: "#4b5563", active: "#9a6a10", border: "rgba(138,97,18,.28)" }
+    : theme === "sepia"
+      ? { background: "#e4d3b2", inactive: "#554938", active: "#7c5416", border: "rgba(124,84,22,.32)" }
+      : theme === "contrast"
+        ? { background: "#000000", inactive: "#ffffff", active: "#ffd54f", border: "rgba(255,213,79,.38)" }
+        : { background: "#061018", inactive: "rgba(255,255,255,.70)", active: "#efbd52", border: "rgba(216,167,64,.25)" };
+  return <nav style={{ backgroundColor: palette.background, borderColor: palette.border }} className="fixed inset-x-0 bottom-0 z-30 mx-auto min-h-[4.4rem] max-w-[430px] border-t px-2 pb-[max(.65rem,env(safe-area-inset-bottom))] pt-2.5 shadow-[0_-8px_24px_rgba(0,0,0,.12)]"><div className="flex justify-around">{items.map(([Icon, label, to]) => <Link key={label} to={to} onClick={tactileFeedback} style={{ color: active === label ? palette.active : palette.inactive }} className="flex min-w-0 flex-1 flex-col items-center gap-1 text-[9px] font-medium transition active:scale-95"><Icon className="h-[20px] w-[20px]" strokeWidth={active === label ? 2.3 : 1.65} />{label}</Link>)}</div></nav>;
 };
 
 const Shell = ({ children, title, active, back }: { children: ReactNode; title: string; active?: string; back?: boolean }) => <div className="min-h-screen bg-[#050b12] text-[#f5f0e6]"><div className="mx-auto min-h-screen max-w-[520px] border-x border-white/5 bg-[radial-gradient(circle_at_top,rgba(197,139,35,.10),transparent_30%)]"><Header title={title} back={back} /><main className="px-4 pb-24 pt-4">{children}</main><PrayerNav active={active} /></div></div>;
@@ -308,8 +315,8 @@ export function OracionDetalle() {
   return <div style={{ backgroundColor: readingTheme.background, color: readingTheme.color }} className="min-h-dvh transition-colors duration-300">
     <div style={{ backgroundColor: readingTheme.background }} className="mx-auto min-h-dvh max-w-[430px] border-x border-current/[0.04] transition-colors duration-300">
       <header style={{ backgroundColor: readingTheme.header }} className="sticky top-0 z-30 flex h-16 items-center justify-between px-4 backdrop-blur-xl transition-colors duration-300">
-        <button type="button" onClick={() => navigate(-1)} aria-label="Volver" className="flex h-11 w-11 items-center justify-center text-[#efbd52]"><ArrowLeft className="h-7 w-7" /></button>
-        <button type="button" onClick={() => setFormatOpen(true)} aria-label="Formato de lectura" className="flex h-11 min-w-11 items-center justify-center font-serif text-2xl font-semibold text-[#efbd52]">Aa</button>
+        <button type="button" onClick={() => navigate(-1)} aria-label="Volver" style={{ color: titleColor }} className="flex h-11 w-11 items-center justify-center"><ArrowLeft className="h-7 w-7" /></button>
+        <button type="button" onClick={() => setFormatOpen(true)} aria-label="Formato de lectura" style={{ color: titleColor }} className="flex h-11 min-w-11 items-center justify-center font-serif text-2xl font-semibold">Aa</button>
       </header>
       <main className="px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-2">
         {loading ? <div className="flex min-h-[65dvh] items-center justify-center"><LoaderCircle className="h-8 w-8 animate-spin text-[#efbd52]" /></div> : null}
@@ -329,7 +336,7 @@ export function OracionDetalle() {
           <p className="mt-3 text-center text-xs opacity-60">Hoy has rezado {dailyCount} {dailyCount === 1 ? "oración" : "oraciones"}</p>
         </> : null}
       </main>
-      <PrayerNav active="Oraciones" />
+      <PrayerNav active="Oraciones" theme={preferences.theme} />
     </div>
     <PrayerFormatSheet open={formatOpen} preferences={preferences} onChange={update} onReset={reset} onClose={() => setFormatOpen(false)} />
   </div>;
