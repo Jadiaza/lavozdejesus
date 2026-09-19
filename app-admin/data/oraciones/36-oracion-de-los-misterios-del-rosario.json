@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "oracion-de-los-misterios-del-rosario",
-  "tipo": "independiente",
+  "tipo": "devocion",
   "titulo": "Oración de los misterios del Rosario",
   "subtitulo": "Contemplar la vida, muerte y resurrección de Jesús",
   "categoria": "Devociones",
-  "subcategoria": "Virgen María",
+  "subcategoria": "María Santísima",
+  "devocion_slug": "maria-santisima",
   "descripcion": "Oración que acompaña la meditación de los misterios del Rosario.",
   "texto_completo": "Oh Dios, cuyo Unigénito por su Vida, Muerte y Resurrección, nos mereció los premios de la vida eterna, concédenos que meditando estos misterios en el Rosario de la Santísima Virgen, alcancemos la gloria que prometen. Por Cristo nuestro Señor. Amén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Devociones",
+    "subcategoria": "María Santísima",
+    "devocion_slug": "maria-santisima",
     "secciones": [
       {
         "tipo": "oracion",

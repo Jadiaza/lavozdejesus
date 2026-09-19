@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "jesus-manso-y-humilde-de-corazon",
-  "tipo": "independiente",
+  "tipo": "devocion",
   "titulo": "Jesús, manso y humilde de corazón",
   "subtitulo": "Pedir un corazón semejante al de Cristo",
-  "categoria": "Sanación y protección",
-  "subcategoria": "Sanación y protección",
+  "categoria": "Devociones",
+  "subcategoria": "Sagrado Corazón de Jesús",
+  "devocion_slug": "sagrado-corazon-de-jesus",
   "descripcion": "Visita eucarística para pedir humildad, mansedumbre y dominio propio.",
   "texto_completo": "Jesús Eucaristía, manso y humilde de corazón, me acerco lleno de confianza para que transformes mi vida. Suaviza mis iras, mis rebeldías y los movimientos desordenados que nacen de mi egoísmo. Derriba mis actitudes soberbias, mi autosuficiencia y el deseo de vanagloria. Que tu presencia sacramental dulcifique mis sentimientos y despierte en mí compasión por quienes sufren. Transforma las fuerzas que luchan contra ti y úsalas para trabajar por ti, en ti y contigo. Jesús, manso y humilde de corazón, haz mi corazón semejante al tuyo. Amén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Devociones",
+    "subcategoria": "Sagrado Corazón de Jesús",
+    "devocion_slug": "sagrado-corazon-de-jesus",
     "secciones": [
       {
         "tipo": "oracion",

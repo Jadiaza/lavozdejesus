@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "oracion-al-senor-de-los-milagros",
   "tipo": "independiente",
   "titulo": "Oración al Señor de los Milagros",
   "subtitulo": "Abrir la vida al poder salvador de Cristo",
   "categoria": "Devociones",
   "subcategoria": "Jesucristo",
+  "devocion_slug": null,
   "descripcion": "Oración de fe, conversión e intercesión al Señor de los Milagros.",
   "texto_completo": "Señor de los Milagros, aquí vengo lleno de fe y de amor, porque eres mi Dios y mi Redentor. Reconozco tu poder de Creador y mis limitaciones de criatura, pero me alegra saber que has querido ser mi amigo y mi hermano. Abro ante ti mi cuerpo y mi alma para que toda mi vida permanezca dentro de tu plan de salvación. Hazme discípulo fiel, capaz de reconocerte y servirte en mis hermanos. Te pido por la Iglesia, por el Papa, por quienes nos conducen hacia ti, por los necesitados, los oprimidos, los enfermos y los agonizantes. Atiende también mis necesidades materiales y espirituales y dame perseverancia para seguirte cada día. Amén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Devociones",
+    "subcategoria": "Jesucristo",
+    "devocion_slug": null,
     "secciones": [
       {
         "tipo": "oracion",

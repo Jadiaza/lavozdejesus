@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "oracion-para-el-examen-de-conciencia",
   "tipo": "independiente",
   "titulo": "Oración para el examen de conciencia",
   "subtitulo": "Pedir luz para revisar el día ante Dios",
   "categoria": "Oraciones del cristiano",
-  "subcategoria": "Vida diaria",
+  "subcategoria": "Noche y descanso",
+  "devocion_slug": null,
   "descripcion": "Preparación para reconocer agradecidamente las gracias y faltas de la jornada.",
   "texto_completo": "Creo, Señor, que estás aquí presente. Te adoro y te amo. Dame luz para reconocer tu paso por mi jornada, agradecer el bien que me permitiste realizar y descubrir con sinceridad mis pecados, omisiones y actitudes contrarias a tu amor. Concédeme dolor verdadero por haberte ofendido, confianza en tu misericordia y gracia para reparar el daño y comenzar de nuevo. Amén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Oraciones del cristiano",
+    "subcategoria": "Noche y descanso",
+    "devocion_slug": null,
     "secciones": [
       {
         "tipo": "oracion",

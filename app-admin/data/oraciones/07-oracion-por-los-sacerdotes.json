@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "oracion-por-los-sacerdotes",
   "tipo": "independiente",
   "titulo": "Oración por los sacerdotes",
   "subtitulo": "Por la santidad y fidelidad de los ministros de Dios",
   "categoria": "Oraciones del cristiano",
   "subcategoria": "Intercesión",
+  "devocion_slug": null,
   "descripcion": "Intercesión por todos los sacerdotes y por el fruto de su ministerio.",
   "texto_completo": "Padre santo, te pedimos por todos tus sacerdotes. Llénalos de fe, esperanza y caridad; configúralos cada día más con tu Hijo Jesucristo, sumo y eterno Sacerdote, por la acción del Espíritu Santo, para tu mayor gloria, el bien de tu Iglesia y la salvación de todos tus hijos. Te lo pedimos por la intercesión maternal de María, Madre de Cristo y Madre de la Iglesia, y por los méritos de Cristo Sacerdote, que vive y reina contigo por los siglos de los siglos. Amén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Oraciones del cristiano",
+    "subcategoria": "Intercesión",
+    "devocion_slug": null,
     "secciones": [
       {
         "tipo": "oracion",

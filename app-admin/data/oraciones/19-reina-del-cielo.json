@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "reina-del-cielo",
-  "tipo": "independiente",
+  "tipo": "devocion",
   "titulo": "Reina del Cielo",
   "subtitulo": "Alegrarse con María por la Resurrección",
   "categoria": "Devociones",
-  "subcategoria": "Virgen María",
+  "subcategoria": "María Santísima",
+  "devocion_slug": "maria-santisima",
   "descripcion": "Antífona mariana propia del tiempo pascual.",
   "texto_completo": "Alégrate, Reina del cielo, aleluya. Porque aquel a quien mereciste llevar en tu seno, aleluya, ha resucitado, según predijo, aleluya. Ruega por nosotros a Dios, aleluya. Gózate y alégrate, Virgen María, aleluya, porque verdaderamente ha resucitado el Señor, aleluya. Oremos: Oh Dios, que por la resurrección de tu Hijo, nuestro Señor Jesucristo, te dignaste alegrar al mundo, concédenos que, por intercesión de su Madre, la Virgen María, alcancemos los gozos de la vida eterna. Por Jesucristo nuestro Señor. Amén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Devociones",
+    "subcategoria": "María Santísima",
+    "devocion_slug": "maria-santisima",
     "secciones": [
       {
         "tipo": "oracion",

@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "coleccion": "Devocionario Católico",
   "total": 43,
   "estado_revision": "revision",
@@ -9,7 +9,8 @@
       "slug": "ofrecimiento-del-dia",
       "titulo": "Ofrecimiento del día",
       "categoria": "Oraciones del cristiano",
-      "subcategoria": "Vida diaria",
+      "subcategoria": "Mañana y ofrecimiento",
+      "devocion_slug": null,
       "archivo": "01-ofrecimiento-del-dia.json"
     },
     {
@@ -17,7 +18,8 @@
       "slug": "oracion-de-abandono",
       "titulo": "Oración de abandono",
       "categoria": "Oraciones del cristiano",
-      "subcategoria": "Vida diaria",
+      "subcategoria": "Fe, confianza y discernimiento",
+      "devocion_slug": null,
       "archivo": "02-oracion-de-abandono.json"
     },
     {
@@ -25,7 +27,8 @@
       "slug": "consagracion-cotidiana-a-la-virgen-maria",
       "titulo": "Consagración cotidiana a la Virgen María",
       "categoria": "Devociones",
-      "subcategoria": "Virgen María",
+      "subcategoria": "María Santísima",
+      "devocion_slug": "maria-santisima",
       "archivo": "03-consagracion-cotidiana-a-la-virgen-maria.json"
     },
     {
@@ -33,7 +36,8 @@
       "slug": "oracion-a-san-jose",
       "titulo": "Oración a san José",
       "categoria": "Devociones",
-      "subcategoria": "Santos y ángeles",
+      "subcategoria": "San José",
+      "devocion_slug": "san-jose",
       "archivo": "04-oracion-a-san-jose.json"
     },
     {
@@ -41,7 +45,8 @@
       "slug": "letanias-de-san-jose",
       "titulo": "Letanías de san José",
       "categoria": "Devociones",
-      "subcategoria": "Santos y ángeles",
+      "subcategoria": "San José",
+      "devocion_slug": "san-jose",
       "archivo": "05-letanias-de-san-jose.json"
     },
     {
@@ -50,6 +55,7 @@
       "titulo": "Al Ángel de la Guarda",
       "categoria": "Devociones",
       "subcategoria": "Santos y ángeles",
+      "devocion_slug": null,
       "archivo": "06-al-angel-de-la-guarda.json"
     },
     {
@@ -58,6 +64,7 @@
       "titulo": "Oración por los sacerdotes",
       "categoria": "Oraciones del cristiano",
       "subcategoria": "Intercesión",
+      "devocion_slug": null,
       "archivo": "07-oracion-por-los-sacerdotes.json"
     },
     {
@@ -66,6 +73,7 @@
       "titulo": "Ven, Espíritu Santo",
       "categoria": "Devociones",
       "subcategoria": "Espíritu Santo",
+      "devocion_slug": "espiritu-santo",
       "archivo": "08-ven-espiritu-santo.json"
     },
     {
@@ -73,7 +81,8 @@
       "slug": "oracion-antes-de-la-meditacion",
       "titulo": "Oración antes de la meditación",
       "categoria": "Oraciones del cristiano",
-      "subcategoria": "Vida diaria",
+      "subcategoria": "Fe, confianza y discernimiento",
+      "devocion_slug": null,
       "archivo": "09-oracion-antes-de-la-meditacion.json"
     },
     {
@@ -81,7 +90,8 @@
       "slug": "accion-de-gracias",
       "titulo": "Acción de gracias",
       "categoria": "Oraciones del cristiano",
-      "subcategoria": "Vida diaria",
+      "subcategoria": "Momentos y necesidades",
+      "devocion_slug": null,
       "archivo": "10-accion-de-gracias.json"
     },
     {
@@ -89,7 +99,8 @@
       "slug": "himno-antes-de-terminar-el-dia",
       "titulo": "Himno antes de terminar el día",
       "categoria": "Oraciones del cristiano",
-      "subcategoria": "Vida diaria",
+      "subcategoria": "Noche y descanso",
+      "devocion_slug": null,
       "archivo": "11-himno-antes-de-terminar-el-dia.json"
     },
     {
@@ -97,7 +108,8 @@
       "slug": "invocacion-para-la-noche",
       "titulo": "Invocación para la noche",
       "categoria": "Oraciones del cristiano",
-      "subcategoria": "Vida diaria",
+      "subcategoria": "Noche y descanso",
+      "devocion_slug": null,
       "archivo": "12-invocacion-para-la-noche.json"
     },
     {
@@ -105,7 +117,8 @@
       "slug": "oracion-para-proteger-la-habitacion",
       "titulo": "Oración para proteger la habitación",
       "categoria": "Sanación y protección",
-      "subcategoria": "Sanación y protección",
+      "subcategoria": "Protección personal y familiar",
+      "devocion_slug": null,
       "archivo": "13-oracion-para-proteger-la-habitacion.json"
     },
     {
@@ -113,7 +126,8 @@
       "slug": "tres-ave-marias-para-la-noche",
       "titulo": "Tres Ave Marías para la noche",
       "categoria": "Devociones",
-      "subcategoria": "Virgen María",
+      "subcategoria": "María Santísima",
+      "devocion_slug": "maria-santisima",
       "archivo": "14-tres-ave-marias-para-la-noche.json"
     },
     {
@@ -121,7 +135,8 @@
       "slug": "oracion-para-el-examen-de-conciencia",
       "titulo": "Oración para el examen de conciencia",
       "categoria": "Oraciones del cristiano",
-      "subcategoria": "Vida diaria",
+      "subcategoria": "Noche y descanso",
+      "devocion_slug": null,
       "archivo": "15-oracion-para-el-examen-de-conciencia.json"
     },
     {
@@ -129,7 +144,8 @@
       "slug": "acto-de-contricion",
       "titulo": "Acto de contrición",
       "categoria": "Oraciones del cristiano",
-      "subcategoria": "Vida diaria",
+      "subcategoria": "Oraciones fundamentales",
+      "devocion_slug": null,
       "archivo": "16-acto-de-contricion.json"
     },
     {
@@ -137,7 +153,8 @@
       "slug": "oracion-para-los-viajes",
       "titulo": "Oración para los viajes",
       "categoria": "Sanación y protección",
-      "subcategoria": "Sanación y protección",
+      "subcategoria": "Protección personal y familiar",
+      "devocion_slug": null,
       "archivo": "17-oracion-para-los-viajes.json"
     },
     {
@@ -145,7 +162,8 @@
       "slug": "angelus",
       "titulo": "Ángelus",
       "categoria": "Devociones",
-      "subcategoria": "Virgen María",
+      "subcategoria": "María Santísima",
+      "devocion_slug": "maria-santisima",
       "archivo": "18-angelus.json"
     },
     {
@@ -153,7 +171,8 @@
       "slug": "reina-del-cielo",
       "titulo": "Reina del Cielo",
       "categoria": "Devociones",
-      "subcategoria": "Virgen María",
+      "subcategoria": "María Santísima",
+      "devocion_slug": "maria-santisima",
       "archivo": "19-reina-del-cielo.json"
     },
     {
@@ -161,7 +180,8 @@
       "slug": "alma-de-cristo",
       "titulo": "Alma de Cristo",
       "categoria": "Devociones",
-      "subcategoria": "Jesucristo",
+      "subcategoria": "Santísimo Sacramento",
+      "devocion_slug": "santisimo-sacramento",
       "archivo": "20-alma-de-cristo.json"
     },
     {
@@ -169,7 +189,8 @@
       "slug": "oracion-a-jesus-crucificado",
       "titulo": "Oración a Jesús crucificado",
       "categoria": "Devociones",
-      "subcategoria": "Jesucristo",
+      "subcategoria": "Sangre de Cristo",
+      "devocion_slug": "sangre-de-cristo",
       "archivo": "21-oracion-a-jesus-crucificado.json"
     },
     {
@@ -177,7 +198,8 @@
       "slug": "oracion-al-senor-crucificado",
       "titulo": "Oración al Señor crucificado",
       "categoria": "Devociones",
-      "subcategoria": "Jesucristo",
+      "subcategoria": "Sangre de Cristo",
+      "devocion_slug": "sangre-de-cristo",
       "archivo": "22-oracion-al-senor-crucificado.json"
     },
     {
@@ -186,6 +208,7 @@
       "titulo": "Oración al Señor de los Milagros",
       "categoria": "Devociones",
       "subcategoria": "Jesucristo",
+      "devocion_slug": null,
       "archivo": "23-oracion-al-senor-de-los-milagros.json"
     },
     {
@@ -193,7 +216,8 @@
       "slug": "letanias-de-la-santisima-virgen",
       "titulo": "Letanías de la Santísima Virgen",
       "categoria": "Devociones",
-      "subcategoria": "Virgen María",
+      "subcategoria": "María Santísima",
+      "devocion_slug": "maria-santisima",
       "archivo": "24-letanias-de-la-santisima-virgen.json"
     },
     {
@@ -201,7 +225,8 @@
       "slug": "salve",
       "titulo": "Salve",
       "categoria": "Devociones",
-      "subcategoria": "Virgen María",
+      "subcategoria": "María Santísima",
+      "devocion_slug": "maria-santisima",
       "archivo": "25-salve.json"
     },
     {
@@ -209,7 +234,8 @@
       "slug": "me-haces-falta-tu",
       "titulo": "Me haces falta Tú",
       "categoria": "Devociones",
-      "subcategoria": "Jesucristo",
+      "subcategoria": "Santísimo Sacramento",
+      "devocion_slug": "santisimo-sacramento",
       "archivo": "26-me-haces-falta-tu.json"
     },
     {
@@ -217,7 +243,8 @@
       "slug": "como-un-pobre-ante-quien-lo-tiene-todo",
       "titulo": "Como un pobre ante quien lo tiene todo",
       "categoria": "Devociones",
-      "subcategoria": "Jesucristo",
+      "subcategoria": "Santísimo Sacramento",
+      "devocion_slug": "santisimo-sacramento",
       "archivo": "27-como-un-pobre-ante-quien-lo-tiene-todo.json"
     },
     {
@@ -225,15 +252,17 @@
       "slug": "senor-no-soy-digno",
       "titulo": "Señor, no soy digno",
       "categoria": "Devociones",
-      "subcategoria": "Jesucristo",
+      "subcategoria": "Santísimo Sacramento",
+      "devocion_slug": "santisimo-sacramento",
       "archivo": "28-senor-no-soy-digno.json"
     },
     {
       "orden": 29,
       "slug": "jesus-manso-y-humilde-de-corazon",
       "titulo": "Jesús, manso y humilde de corazón",
-      "categoria": "Sanación y protección",
-      "subcategoria": "Sanación y protección",
+      "categoria": "Devociones",
+      "subcategoria": "Sagrado Corazón de Jesús",
+      "devocion_slug": "sagrado-corazon-de-jesus",
       "archivo": "29-jesus-manso-y-humilde-de-corazon.json"
     },
     {
@@ -241,7 +270,8 @@
       "slug": "el-gozo-de-estar-junto-a-ti",
       "titulo": "El gozo de estar junto a Ti",
       "categoria": "Devociones",
-      "subcategoria": "Jesucristo",
+      "subcategoria": "Santísimo Sacramento",
+      "devocion_slug": "santisimo-sacramento",
       "archivo": "30-el-gozo-de-estar-junto-a-ti.json"
     },
     {
@@ -250,6 +280,7 @@
       "titulo": "Letanía por los sacerdotes",
       "categoria": "Oraciones del cristiano",
       "subcategoria": "Intercesión",
+      "devocion_slug": null,
       "archivo": "31-letania-por-los-sacerdotes.json"
     },
     {
@@ -257,7 +288,8 @@
       "slug": "adoremos-reverentes",
       "titulo": "Adoremos reverentes",
       "categoria": "Devociones",
-      "subcategoria": "Jesucristo",
+      "subcategoria": "Santísimo Sacramento",
+      "devocion_slug": "santisimo-sacramento",
       "archivo": "32-adoremos-reverentes.json"
     },
     {
@@ -265,23 +297,26 @@
       "slug": "divinas-alabanzas",
       "titulo": "Divinas alabanzas",
       "categoria": "Devociones",
-      "subcategoria": "Santísima Trinidad",
+      "subcategoria": "Santísimo Sacramento",
+      "devocion_slug": "santisimo-sacramento",
       "archivo": "33-divinas-alabanzas.json"
     },
     {
       "orden": 34,
       "slug": "senal-de-la-cruz",
       "titulo": "Señal de la Cruz",
-      "categoria": "Devociones",
-      "subcategoria": "Santísima Trinidad",
+      "categoria": "Oraciones del cristiano",
+      "subcategoria": "Oraciones fundamentales",
+      "devocion_slug": null,
       "archivo": "34-senal-de-la-cruz.json"
     },
     {
       "orden": 35,
       "slug": "gloria-al-padre",
       "titulo": "Gloria al Padre",
-      "categoria": "Devociones",
-      "subcategoria": "Santísima Trinidad",
+      "categoria": "Oraciones del cristiano",
+      "subcategoria": "Oraciones fundamentales",
+      "devocion_slug": null,
       "archivo": "35-gloria-al-padre.json"
     },
     {
@@ -289,7 +324,8 @@
       "slug": "oracion-de-los-misterios-del-rosario",
       "titulo": "Oración de los misterios del Rosario",
       "categoria": "Devociones",
-      "subcategoria": "Virgen María",
+      "subcategoria": "María Santísima",
+      "devocion_slug": "maria-santisima",
       "archivo": "36-oracion-de-los-misterios-del-rosario.json"
     },
     {
@@ -297,7 +333,8 @@
       "slug": "yo-confieso",
       "titulo": "Yo confieso",
       "categoria": "Oraciones del cristiano",
-      "subcategoria": "Vida diaria",
+      "subcategoria": "Oraciones fundamentales",
+      "devocion_slug": null,
       "archivo": "37-yo-confieso.json"
     },
     {
@@ -305,15 +342,17 @@
       "slug": "senor-ten-piedad",
       "titulo": "Señor, ten piedad",
       "categoria": "Oraciones del cristiano",
-      "subcategoria": "Vida diaria",
+      "subcategoria": "Oraciones fundamentales",
+      "devocion_slug": null,
       "archivo": "38-senor-ten-piedad.json"
     },
     {
       "orden": 39,
       "slug": "gloria-a-dios-en-el-cielo",
       "titulo": "Gloria a Dios en el cielo",
-      "categoria": "Devociones",
-      "subcategoria": "Santísima Trinidad",
+      "categoria": "Oraciones del cristiano",
+      "subcategoria": "Oraciones fundamentales",
+      "devocion_slug": null,
       "archivo": "39-gloria-a-dios-en-el-cielo.json"
     },
     {
@@ -321,7 +360,8 @@
       "slug": "credo-niceno-constantinopolitano",
       "titulo": "Credo niceno-constantinopolitano",
       "categoria": "Oraciones del cristiano",
-      "subcategoria": "Vida diaria",
+      "subcategoria": "Oraciones fundamentales",
+      "devocion_slug": null,
       "archivo": "40-credo-niceno-constantinopolitano.json"
     },
     {
@@ -329,15 +369,17 @@
       "slug": "credo-de-los-apostoles",
       "titulo": "Credo de los Apóstoles",
       "categoria": "Oraciones del cristiano",
-      "subcategoria": "Vida diaria",
+      "subcategoria": "Oraciones fundamentales",
+      "devocion_slug": null,
       "archivo": "41-credo-de-los-apostoles.json"
     },
     {
       "orden": 42,
       "slug": "santo",
       "titulo": "Santo",
-      "categoria": "Devociones",
-      "subcategoria": "Santísima Trinidad",
+      "categoria": "Oraciones del cristiano",
+      "subcategoria": "Oraciones fundamentales",
+      "devocion_slug": null,
       "archivo": "42-santo.json"
     },
     {
@@ -345,7 +387,8 @@
       "slug": "padre-nuestro",
       "titulo": "Padre nuestro",
       "categoria": "Oraciones del cristiano",
-      "subcategoria": "Vida diaria",
+      "subcategoria": "Oraciones fundamentales",
+      "devocion_slug": null,
       "archivo": "43-padre-nuestro.json"
     }
   ]

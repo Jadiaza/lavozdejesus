@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "alma-de-cristo",
-  "tipo": "independiente",
+  "tipo": "devocion",
   "titulo": "Alma de Cristo",
   "subtitulo": "Permanecer escondido en las llagas del Salvador",
   "categoria": "Devociones",
-  "subcategoria": "Jesucristo",
+  "subcategoria": "Santísimo Sacramento",
+  "devocion_slug": "santisimo-sacramento",
   "descripcion": "Oración tradicional de unión profunda con Cristo.",
   "texto_completo": "Alma de Cristo, santifícame. Cuerpo de Cristo, sálvame. Sangre de Cristo, embriágame. Agua del costado de Cristo, lávame. Pasión de Cristo, confórtame. ¡Oh buen Jesús!, óyeme. Dentro de tus llagas, escóndeme. No permitas que me aparte de ti. Del enemigo malo, defiéndeme. En la hora de mi muerte, llámame y mándame ir a ti, para que con tus santos te alabe por los siglos de los siglos. Amén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Devociones",
+    "subcategoria": "Santísimo Sacramento",
+    "devocion_slug": "santisimo-sacramento",
     "secciones": [
       {
         "tipo": "oracion",

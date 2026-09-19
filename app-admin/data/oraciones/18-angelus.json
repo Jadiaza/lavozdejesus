@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "angelus",
-  "tipo": "independiente",
+  "tipo": "devocion",
   "titulo": "Ángelus",
   "subtitulo": "Contemplar la Encarnación del Hijo de Dios",
   "categoria": "Devociones",
-  "subcategoria": "Virgen María",
+  "subcategoria": "María Santísima",
+  "devocion_slug": "maria-santisima",
   "descripcion": "Oración mariana tradicional para la mañana, el mediodía y la tarde.",
   "texto_completo": "El ángel del Señor anunció a María. Y concibió por obra del Espíritu Santo. Dios te salve, María... He aquí la esclava del Señor. Hágase en mí según tu palabra. Dios te salve, María... Y el Verbo se hizo carne. Y habitó entre nosotros. Dios te salve, María... Ruega por nosotros, santa Madre de Dios, para que seamos dignos de alcanzar las promesas de nuestro Señor Jesucristo. Oremos: Infunde, Señor, tu gracia en nuestros corazones, para que quienes hemos conocido, por el anuncio del ángel, la encarnación de Cristo, tu Hijo, lleguemos por su pasión y su cruz a la gloria de la resurrección. Por Jesucristo nuestro Señor. Amén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Devociones",
+    "subcategoria": "María Santísima",
+    "devocion_slug": "maria-santisima",
     "secciones": [
       {
         "tipo": "oracion",

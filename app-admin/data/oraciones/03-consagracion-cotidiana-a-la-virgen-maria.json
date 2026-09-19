@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "consagracion-cotidiana-a-la-virgen-maria",
-  "tipo": "independiente",
+  "tipo": "devocion",
   "titulo": "Consagración cotidiana a la Virgen María",
   "subtitulo": "Ponerse cada día bajo el cuidado de la Madre",
   "categoria": "Devociones",
-  "subcategoria": "Virgen María",
+  "subcategoria": "María Santísima",
+  "devocion_slug": "maria-santisima",
   "descripcion": "Entrega filial de toda la persona a la Santísima Virgen.",
   "texto_completo": "¡Señora y Madre mía! Yo me ofrezco enteramente a ti y, en prueba de mi filial afecto, te consagro en este día mis ojos, mis oídos, mi lengua, mi corazón; en una palabra, todo mi ser. Ya que soy todo tuyo, Madre de bondad, guárdame y defiéndeme como posesión tuya. Llévame siempre a Jesús y enséñame a cumplir con alegría la voluntad del Padre. Amén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Devociones",
+    "subcategoria": "María Santísima",
+    "devocion_slug": "maria-santisima",
     "secciones": [
       {
         "tipo": "oracion",

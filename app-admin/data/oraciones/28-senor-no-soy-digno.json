@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "senor-no-soy-digno",
-  "tipo": "independiente",
+  "tipo": "devocion",
   "titulo": "Señor, no soy digno",
   "subtitulo": "Acercarse humildemente a Jesús Eucaristía",
   "categoria": "Devociones",
-  "subcategoria": "Jesucristo",
+  "subcategoria": "Santísimo Sacramento",
+  "devocion_slug": "santisimo-sacramento",
   "descripcion": "Visita eucarística de humildad, arrepentimiento y confianza.",
   "texto_completo": "Jesús Eucaristía, te miro y descubro la distancia entre mi fragilidad y tu santidad. Reconozco mis infidelidades, mis pecados, mi soberbia y mi egoísmo. No soy digno de permanecer ante ti, pero sé que tu misericordia y tu compasión no tienen límites. Por eso me acerco sin ocultar mi pobreza y te digo con confianza: Señor, no soy digno de que entres en mi casa, pero una palabra tuya bastará para sanarme. Perdona mis pecados, purifica mi corazón y hazme vivir en tu amistad. Amén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Devociones",
+    "subcategoria": "Santísimo Sacramento",
+    "devocion_slug": "santisimo-sacramento",
     "secciones": [
       {
         "tipo": "oracion",

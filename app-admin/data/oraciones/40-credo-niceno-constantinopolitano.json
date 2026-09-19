@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "credo-niceno-constantinopolitano",
   "tipo": "independiente",
   "titulo": "Credo niceno-constantinopolitano",
   "subtitulo": "Profesión de fe de la Iglesia",
   "categoria": "Oraciones del cristiano",
-  "subcategoria": "Vida diaria",
+  "subcategoria": "Oraciones fundamentales",
+  "devocion_slug": null,
   "descripcion": "Credo 1 del libro; conserva la formulación plural de esta edición.",
   "texto_completo": "Creemos en un solo Dios,\nPadre Todopoderoso,\nCreador del cielo y de la tierra,\nde todo lo visible y lo invisible.\n\nCreemos en un solo Señor, Jesucristo,\nHijo único de Dios,\nnacido del Padre antes de todos los siglos:\nDios de Dios, Luz de Luz,\nDios verdadero de Dios verdadero,\nengendrado, no creado,\nde la misma naturaleza del Padre,\npor quien todo fue hecho;\nque por nosotros, los hombres,\ny por nuestra salvación bajó del cielo,\ny por obra del Espíritu Santo\nse encarnó de María, la Virgen,\ny se hizo hombre;\ny por nuestra causa fue crucificado\nen tiempos de Poncio Pilato;\npadeció y fue sepultado,\ny resucitó al tercer día, según las Escrituras,\ny subió al cielo, y está sentado a la derecha del Padre;\ny de nuevo vendrá con gloria\npara juzgar a vivos y muertos,\ny su reino no tendrá fin.\n\nCreemos en el Espíritu Santo,\nSeñor y dador de vida,\nque procede del Padre y del Hijo,\nque con el Padre y el Hijo recibe\nuna misma adoración y gloria,\ny que habló por los profetas.\nY en la Iglesia, que es una,\nsanta, católica y apostólica.\nReconocemos un solo Bautismo\npara el perdón de los pecados.\nEsperamos la resurrección de los muertos\ny la vida del mundo futuro. Amén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Oraciones del cristiano",
+    "subcategoria": "Oraciones fundamentales",
+    "devocion_slug": null,
     "secciones": [
       {
         "tipo": "oracion",

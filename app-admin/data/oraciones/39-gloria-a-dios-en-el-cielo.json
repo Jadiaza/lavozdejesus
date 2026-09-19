@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "gloria-a-dios-en-el-cielo",
   "tipo": "independiente",
   "titulo": "Gloria a Dios en el cielo",
   "subtitulo": "Himno de alabanza y acción de gracias",
-  "categoria": "Devociones",
-  "subcategoria": "Santísima Trinidad",
+  "categoria": "Oraciones del cristiano",
+  "subcategoria": "Oraciones fundamentales",
+  "devocion_slug": null,
   "descripcion": "Himno Gloria reproducido en la sección Cena del Señor.",
   "texto_completo": "Gloria a Dios en el cielo,\ny en la tierra paz a los hombres que ama el Señor.\n\nPor tu inmensa gloria\nte alabamos, te bendecimos,\nte adoramos, te glorificamos,\nte damos gracias,\nSeñor Dios, Rey celestial,\nDios Padre todopoderoso.\n\nSeñor, Hijo único, Jesucristo.\nSeñor Dios, Cordero de Dios, Hijo del Padre;\ntú que quitas el pecado del mundo,\nten piedad de nosotros;\ntú que quitas el pecado del mundo,\natiende nuestra súplica;\ntú que estás sentado a la derecha del Padre,\nten piedad de nosotros;\nporque sólo tú eres Santo,\nsólo tú Señor, sólo tú Altísimo, Jesucristo,\ncon el Espíritu Santo en la gloria de Dios Padre.\nAmén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Oraciones del cristiano",
+    "subcategoria": "Oraciones fundamentales",
+    "devocion_slug": null,
     "secciones": [
       {
         "tipo": "oracion",

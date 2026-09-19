@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "padre-nuestro",
   "tipo": "independiente",
   "titulo": "Padre nuestro",
   "subtitulo": "La oración que Jesús nos enseñó",
   "categoria": "Oraciones del cristiano",
-  "subcategoria": "Vida diaria",
+  "subcategoria": "Oraciones fundamentales",
+  "devocion_slug": null,
   "descripcion": "Oración del Señor reproducida en el rito de la Comunión.",
   "texto_completo": "Padre nuestro,\nque estás en el cielo,\nsantificado sea tu Nombre;\nvenga a nosotros tu reino;\nhágase tu voluntad\nen la tierra como en el cielo.\n\nDanos hoy nuestro pan de cada día;\nperdona nuestras ofensas,\ncomo también nosotros perdonamos\na los que nos ofenden;\nno nos dejes caer en la tentación,\ny líbranos del mal.\nAmén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Oraciones del cristiano",
+    "subcategoria": "Oraciones fundamentales",
+    "devocion_slug": null,
     "secciones": [
       {
         "tipo": "oracion",

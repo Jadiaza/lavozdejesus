@@ -6,6 +6,7 @@ const sourcePath = path.join(root, 'app-admin/data/oraciones-devocionario-catoli
 const outputDirectory = path.join(root, 'app-admin/data/oraciones');
 
 const categoryForApp = (sourceCategory) => {
+  if (['Oraciones del cristiano', 'Devociones', 'Sanación y protección', 'Liberación'].includes(sourceCategory)) return sourceCategory;
   if (['Vida diaria', 'Intercesión'].includes(sourceCategory)) return 'Oraciones del cristiano';
   if (sourceCategory === 'Sanación y protección') return 'Sanación y protección';
   if (sourceCategory === 'Liberación') return 'Liberación';
@@ -27,17 +28,21 @@ const index = source.oraciones.map((prayer, position) => {
   const slug = slugify(prayer.titulo);
   const filename = `${String(order).padStart(2, '0')}-${slug}.json`;
   const record = {
-    schema_version: 1,
+    schema_version: 2,
     slug,
-    tipo: 'independiente',
+    tipo: prayer.devocion_slug ? 'devocion' : 'independiente',
     titulo: prayer.titulo,
     subtitulo: prayer.subtitulo,
     categoria: categoryForApp(prayer.categoria),
-    subcategoria: prayer.categoria,
+    subcategoria: prayer.subcategoria || prayer.subcategoria_app || '',
+    devocion_slug: prayer.devocion_slug || null,
     descripcion: prayer.descripcion,
     texto_completo: prayer.texto_completo,
     contenido_json: {
-      version: 1,
+      version: 2,
+      categoria: categoryForApp(prayer.categoria),
+      subcategoria: prayer.subcategoria || prayer.subcategoria_app || '',
+      devocion_slug: prayer.devocion_slug || null,
       secciones: [
         {
           tipo: 'oracion',
@@ -67,12 +72,13 @@ const index = source.oraciones.map((prayer, position) => {
     titulo: prayer.titulo,
     categoria: record.categoria,
     subcategoria: record.subcategoria,
+    devocion_slug: record.devocion_slug,
     archivo: filename,
   };
 });
 
 fs.writeFileSync(path.join(outputDirectory, 'index.json'), `${JSON.stringify({
-  schema_version: 1,
+  schema_version: 2,
   coleccion: source.coleccion,
   total: index.length,
   estado_revision: 'revision',

@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "accion-de-gracias",
   "tipo": "independiente",
   "titulo": "Acción de gracias",
   "subtitulo": "Reconocer los beneficios recibidos de Dios",
   "categoria": "Oraciones del cristiano",
-  "subcategoria": "Vida diaria",
+  "subcategoria": "Momentos y necesidades",
+  "devocion_slug": null,
   "descripcion": "Oración breve para agradecer al Señor al terminar la oración o la jornada.",
   "texto_completo": "Te damos gracias, Dios omnipotente, por todos los beneficios que nos has concedido. A ti, que vives y reinas por los siglos de los siglos. Santa María, Madre bendita, intercede para que todas nuestras intenciones, acciones y obras se dirijan a la mayor honra y gloria del Señor. Que la gracia de Dios viva siempre en nosotros y que su voluntad sea nuestro alimento diario. Amén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Oraciones del cristiano",
+    "subcategoria": "Momentos y necesidades",
+    "devocion_slug": null,
     "secciones": [
       {
         "tipo": "oracion",

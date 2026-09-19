@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "oracion-antes-de-la-meditacion",
   "tipo": "independiente",
   "titulo": "Oración antes de la meditación",
   "subtitulo": "Disponerse a escuchar la voz de Dios",
   "categoria": "Oraciones del cristiano",
-  "subcategoria": "Vida diaria",
+  "subcategoria": "Fe, confianza y discernimiento",
+  "devocion_slug": null,
   "descripcion": "Preparación interior para meditar la Palabra y responder al Señor.",
   "texto_completo": "Creo, Señor, que estás aquí presente. Aunque mis ojos no te vean, mi fe te reconoce. Aparta de mí los pensamientos extraños. Haz que comprenda las verdades que quieres enseñarme en esta meditación y que me decida a practicarlas. Habla, Señor, que tu siervo escucha. Santa María, intercede para que escuche y siga la voz del Señor. Amén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Oraciones del cristiano",
+    "subcategoria": "Fe, confianza y discernimiento",
+    "devocion_slug": null,
     "secciones": [
       {
         "tipo": "oracion",

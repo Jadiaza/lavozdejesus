@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "senor-ten-piedad",
   "tipo": "independiente",
   "titulo": "Señor, ten piedad",
   "subtitulo": "Acudir a la misericordia de Cristo",
   "categoria": "Oraciones del cristiano",
-  "subcategoria": "Vida diaria",
+  "subcategoria": "Oraciones fundamentales",
+  "devocion_slug": null,
   "descripcion": "Invocaciones de la tercera fórmula del acto penitencial.",
   "texto_completo": "Tú que has sido enviado a sanar los corazones afligidos: Señor, ten piedad.\nSeñor, ten piedad.\n\nTú que has venido a llamar a los pecadores: Cristo, ten piedad.\nCristo, ten piedad.\n\nTú que estás sentado a la derecha del Padre para interceder por nosotros: Señor, ten piedad.\nSeñor, ten piedad.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Oraciones del cristiano",
+    "subcategoria": "Oraciones fundamentales",
+    "devocion_slug": null,
     "secciones": [
       {
         "tipo": "oracion",

@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "salve",
-  "tipo": "independiente",
+  "tipo": "devocion",
   "titulo": "Salve",
   "subtitulo": "Clamar a la Madre de misericordia",
   "categoria": "Devociones",
-  "subcategoria": "Virgen María",
+  "subcategoria": "María Santísima",
+  "devocion_slug": "maria-santisima",
   "descripcion": "Antífona mariana tradicional de confianza y esperanza.",
   "texto_completo": "Dios te salve, Reina y Madre de misericordia, vida, dulzura y esperanza nuestra. Dios te salve. A ti clamamos los desterrados hijos de Eva; a ti suspiramos, gimiendo y llorando en este valle de lágrimas. Ea, pues, Señora, abogada nuestra, vuelve a nosotros esos tus ojos misericordiosos y, después de este destierro, muéstranos a Jesús, fruto bendito de tu vientre. ¡Oh clementísima, oh piadosa, oh dulce Virgen María! Ruega por nosotros, santa Madre de Dios, para que seamos dignos de alcanzar las promesas de nuestro Señor Jesucristo. Amén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Devociones",
+    "subcategoria": "María Santísima",
+    "devocion_slug": "maria-santisima",
     "secciones": [
       {
         "tipo": "oracion",

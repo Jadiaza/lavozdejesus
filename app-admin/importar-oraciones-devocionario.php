@@ -17,6 +17,7 @@ $prayers = [];
 function prayer_app_category(string $sourceCategory): string
 {
   return match (trim($sourceCategory)) {
+    'Oraciones del cristiano', 'Devociones', 'Sanación y protección', 'Liberación' => trim($sourceCategory),
     'Vida diaria', 'Intercesión' => 'Oraciones del cristiano',
     'Sanación y protección' => 'Sanación y protección',
     'Liberación' => 'Liberación',
@@ -84,12 +85,12 @@ try {
         'titulo' => $title,
         'subtitulo' => trim((string) ($prayer['subtitulo'] ?? '')),
         'categoria' => $appCategory,
-        'subcategoria' => trim((string) ($prayer['subcategoria_app'] ?? '')),
+        'subcategoria' => trim((string) ($prayer['subcategoria'] ?? $prayer['subcategoria_app'] ?? '')),
         'descripcion' => trim((string) ($prayer['descripcion'] ?? '')),
         'texto_completo' => $text,
         'contenido_json' => json_encode([
           'version' => 1,
-          'subcategoria' => $sourceCategory,
+          'subcategoria' => trim((string) ($prayer['subcategoria'] ?? $prayer['subcategoria_app'] ?? '')),
           'devocion_slug' => $devotionSlug,
           'secciones' => [['tipo' => 'oracion', 'texto' => $text]],
           'apariencia' => ['tema' => $theme],

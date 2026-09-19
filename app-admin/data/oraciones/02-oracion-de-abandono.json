@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "oracion-de-abandono",
   "tipo": "independiente",
   "titulo": "Oración de abandono",
   "subtitulo": "Confiar la vida enteramente al Padre",
   "categoria": "Oraciones del cristiano",
-  "subcategoria": "Vida diaria",
+  "subcategoria": "Fe, confianza y discernimiento",
+  "devocion_slug": null,
   "descripcion": "Acto de entrega confiada a la voluntad amorosa de Dios.",
   "texto_completo": "Padre, me abandono en ti. Haz de mí lo que quieras. Por todo lo que hagas de mí, te doy gracias. Estoy dispuesto a todo y lo acepto todo, con tal de que tu voluntad se cumpla en mí y en todas tus criaturas. No deseo nada más, Padre. Pongo mi alma en tus manos; te la entrego, Dios mío, con todo el amor de mi corazón, porque te amo. Para mí es una necesidad de amor darme y entregarme en tus manos sin medida y con infinita confianza, porque tú eres mi Padre.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Oraciones del cristiano",
+    "subcategoria": "Fe, confianza y discernimiento",
+    "devocion_slug": null,
     "secciones": [
       {
         "tipo": "oracion",

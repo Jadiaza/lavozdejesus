@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "invocacion-para-la-noche",
   "tipo": "independiente",
   "titulo": "Invocación para la noche",
   "subtitulo": "Velar con Cristo y descansar en paz",
   "categoria": "Oraciones del cristiano",
-  "subcategoria": "Vida diaria",
+  "subcategoria": "Noche y descanso",
+  "devocion_slug": null,
   "descripcion": "Antífona breve para encomendar a Dios el descanso nocturno.",
   "texto_completo": "Sálvanos, Señor, mientras velamos; guárdanos mientras dormimos, para que velemos con Cristo y descansemos en paz. En ti, Señor, he esperado y no seré jamás confundido. Señor, escucha mi oración y llegue a ti mi clamor. Amén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Oraciones del cristiano",
+    "subcategoria": "Noche y descanso",
+    "devocion_slug": null,
     "secciones": [
       {
         "tipo": "oracion",

@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "santo",
   "tipo": "independiente",
   "titulo": "Santo",
   "subtitulo": "Aclamar la santidad del Señor",
-  "categoria": "Devociones",
-  "subcategoria": "Santísima Trinidad",
+  "categoria": "Oraciones del cristiano",
+  "subcategoria": "Oraciones fundamentales",
+  "devocion_slug": null,
   "descripcion": "Aclamación de los fieles al final del prefacio, reproducida en el libro.",
   "texto_completo": "Santo, Santo, Santo es el Señor,\nDios del universo.\nLlenos están el cielo y la tierra de tu gloria,\nHosanna en el cielo.\nBendito el que viene en el nombre del Señor,\nHosanna en el cielo.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Oraciones del cristiano",
+    "subcategoria": "Oraciones fundamentales",
+    "devocion_slug": null,
     "secciones": [
       {
         "tipo": "oracion",

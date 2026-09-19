@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "el-gozo-de-estar-junto-a-ti",
-  "tipo": "independiente",
+  "tipo": "devocion",
   "titulo": "El gozo de estar junto a Ti",
   "subtitulo": "Alegría de permanecer ante Jesús Eucaristía",
   "categoria": "Devociones",
-  "subcategoria": "Jesucristo",
+  "subcategoria": "Santísimo Sacramento",
+  "devocion_slug": "santisimo-sacramento",
   "descripcion": "Acción de gracias por el consuelo y la alegría de la presencia sacramental.",
   "texto_completo": "Jesús Eucaristía, venir a visitarte llena mi alma de una alegría profunda. Es conversar con el Amigo, recibir luz, paz y un gozo que no cabe en el corazón. Me siento favorecido porque tú, Señor del universo, me recibes con bondad y te agrada que permanezca ante ti. Cerca de ti encuentro al Redentor que conoce mis heridas, alivia mis males y derrama consuelo. Gracias por estos momentos bajo la acción de tu amor misericordioso, que me purifica y santifica. Un momento junto a ti vale más que largos años lejos de tu presencia. Amén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Devociones",
+    "subcategoria": "Santísimo Sacramento",
+    "devocion_slug": "santisimo-sacramento",
     "secciones": [
       {
         "tipo": "oracion",

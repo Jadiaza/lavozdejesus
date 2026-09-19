@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "como-un-pobre-ante-quien-lo-tiene-todo",
-  "tipo": "independiente",
+  "tipo": "devocion",
   "titulo": "Como un pobre ante quien lo tiene todo",
   "subtitulo": "Presentarse ante la misericordia de Jesús",
   "categoria": "Devociones",
-  "subcategoria": "Jesucristo",
+  "subcategoria": "Santísimo Sacramento",
+  "devocion_slug": "santisimo-sacramento",
   "descripcion": "Visita eucarística desde la conciencia de la propia pobreza espiritual.",
   "texto_completo": "A ti me acerco, Señor, como un pobre consciente de su indigencia, que siente la fragilidad, la miseria y el rechazo. Vengo porque sé que tu misericordia no se cansa y tu bondad se entrega sin medida. No tengo otro mérito ni recomendación que mi propia pobreza. Me reconozco pobre de virtudes, de nobles sentimientos y de obras buenas; pero incluso reconocerlo es una gracia que me impulsa hacia ti. Jesús Eucaristía, rico en misericordia y omnipotente en bondad, alivia mi pobreza espiritual con tu presencia transformadora y siembra en mí la semilla de tu Palabra. Amén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Devociones",
+    "subcategoria": "Santísimo Sacramento",
+    "devocion_slug": "santisimo-sacramento",
     "secciones": [
       {
         "tipo": "oracion",

@@ -1,15 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "slug": "gloria-al-padre",
   "tipo": "independiente",
   "titulo": "Gloria al Padre",
   "subtitulo": "Alabanza a la Santísima Trinidad",
-  "categoria": "Devociones",
-  "subcategoria": "Santísima Trinidad",
+  "categoria": "Oraciones del cristiano",
+  "subcategoria": "Oraciones fundamentales",
+  "devocion_slug": null,
   "descripcion": "Doxología de alabanza al Padre, al Hijo y al Espíritu Santo.",
   "texto_completo": "Gloria al Padre, y al Hijo, y al Espíritu Santo.\nComo era en el principio, y ahora y siempre, y por los siglos de los siglos. Amén.",
   "contenido_json": {
-    "version": 1,
+    "version": 2,
+    "categoria": "Oraciones del cristiano",
+    "subcategoria": "Oraciones fundamentales",
+    "devocion_slug": null,
     "secciones": [
       {
         "tipo": "oracion",
