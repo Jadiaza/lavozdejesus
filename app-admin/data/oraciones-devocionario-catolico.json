@@ -3,49 +3,422 @@
   "coleccion": "Devocionario Católico",
   "nota_editorial": "Fórmulas tradicionales y adaptaciones pastorales preparadas para revisión antes de publicación.",
   "oraciones": [
-    {"titulo":"Ofrecimiento del día","subtitulo":"Entrega al Señor todo lo que vivirás hoy","categoria":"Vida diaria","descripcion":"Oración para consagrar a Dios pensamientos, palabras, obras y responsabilidades.","texto_completo":"Padre, tú que me has hecho llegar al comienzo de este día, fortaléceme con tu gracia para que no caiga en pecado alguno, sino que todas mis palabras, pensamientos y obras se dirijan al cumplimiento de tu santa voluntad. Unido, por la gracia, a todos los miembros de tu Iglesia universal, te ofrezco, Señor, mi ser y mi obrar, mi pensar, sentir y querer, para que todo sirva a tu gloria, a la extensión de tu Reino y a la reparación de las ofensas cometidas contra ti. Dígnate dirigir, santificar, regir y gobernar durante este día mi alma y mi cuerpo, mis sentidos, palabras y obras, según tu ley y por el camino de tus mandamientos. Por Jesucristo, Salvador del mundo. Amén.","tema_visual":"amanecer","pagina_fuente":"4-5"},
-    {"titulo":"Oración de abandono","subtitulo":"Confiar la vida enteramente al Padre","categoria":"Vida diaria","descripcion":"Acto de entrega confiada a la voluntad amorosa de Dios.","texto_completo":"Padre, me abandono en ti. Haz de mí lo que quieras. Por todo lo que hagas de mí, te doy gracias. Estoy dispuesto a todo y lo acepto todo, con tal de que tu voluntad se cumpla en mí y en todas tus criaturas. No deseo nada más, Padre. Pongo mi alma en tus manos; te la entrego, Dios mío, con todo el amor de mi corazón, porque te amo. Para mí es una necesidad de amor darme y entregarme en tus manos sin medida y con infinita confianza, porque tú eres mi Padre.","tema_visual":"oracion","pagina_fuente":"5"},
-    {"titulo":"Consagración cotidiana a la Virgen María","subtitulo":"Ponerse cada día bajo el cuidado de la Madre","categoria":"Virgen María","descripcion":"Entrega filial de toda la persona a la Santísima Virgen.","texto_completo":"¡Señora y Madre mía! Yo me ofrezco enteramente a ti y, en prueba de mi filial afecto, te consagro en este día mis ojos, mis oídos, mi lengua, mi corazón; en una palabra, todo mi ser. Ya que soy todo tuyo, Madre de bondad, guárdame y defiéndeme como posesión tuya. Llévame siempre a Jesús y enséñame a cumplir con alegría la voluntad del Padre. Amén.","tema_visual":"mariano","pagina_fuente":"6"},
-    {"titulo":"Oración a san José","subtitulo":"Intercesión del custodio de Jesús y María","categoria":"Santos y ángeles","descripcion":"Súplica confiada a san José por una necesidad particular.","texto_completo":"Glorioso patriarca san José, que viviste junto al Hijo de Dios y a su madre, la Virgen María, y te consagraste a servirlos con cuidado, amor y diligencia: me acerco a ti lleno de confianza y te pido que intercedas para que Dios me conceda la gracia que en este momento necesito. Atiende nuestras peticiones, oriéntalas y hazlas agradables a los ojos de Dios. Ruega para que mi vida sea digna y consecuente con mi condición de hijo de Dios, se realice según sus designios y pueda gozar eternamente en su compañía. Amén.","tema_visual":"proteccion","pagina_fuente":"6-7"},
-    {"titulo":"Letanías de san José","subtitulo":"Invocaciones al patrono de la Iglesia universal","categoria":"Santos y ángeles","descripcion":"Letanía tradicional para pedir la intercesión y protección de san José.","texto_completo":"Señor, ten piedad de nosotros. Cristo, ten piedad de nosotros. Señor, ten piedad de nosotros. Cristo, óyenos. Cristo, escúchanos. Dios Padre celestial, ten piedad de nosotros. Dios Hijo, Redentor del mundo, ten piedad de nosotros. Dios Espíritu Santo, ten piedad de nosotros. Santísima Trinidad, un solo Dios, ten piedad de nosotros. Santa María, ruega por nosotros. San José, ruega por nosotros. Ilustre descendiente de David, luz de los patriarcas, esposo de la Madre de Dios, custodio purísimo de la Virgen, padre nutricio del Hijo de Dios, protector diligente de Cristo, jefe de la Sagrada Familia, José justísimo, castísimo, prudentísimo, fortísimo, obedientísimo y fidelísimo, ruega por nosotros. Espejo de paciencia, amante de la pobreza, modelo de los trabajadores, gloria de la vida doméstica, custodio de las vírgenes, sostén de las familias, consuelo de los afligidos, esperanza de los enfermos, patrono de los moribundos, terror de los demonios y protector de la santa Iglesia, ruega por nosotros. Oh Dios, que con inefable providencia elegiste a san José como esposo de la Santísima Virgen, concédenos tener por intercesor en el cielo a quien veneramos como protector en la tierra. Por Jesucristo nuestro Señor. Amén.","tema_visual":"proteccion","pagina_fuente":"7-9"},
-    {"titulo":"Al Ángel de la Guarda","subtitulo":"Compañía y custodia en el camino","categoria":"Santos y ángeles","descripcion":"Breve oración tradicional al santo ángel custodio.","texto_completo":"Ángel de mi guarda, dulce compañía, no me desampares ni de noche ni de día. No me dejes solo, pues me perdería. Acompaña mis pasos, ilumina mis decisiones y condúceme siempre hacia Dios. Amén.","tema_visual":"proteccion","pagina_fuente":"9"},
-    {"titulo":"Oración por los sacerdotes","subtitulo":"Por la santidad y fidelidad de los ministros de Dios","categoria":"Intercesión","descripcion":"Intercesión por todos los sacerdotes y por el fruto de su ministerio.","texto_completo":"Padre santo, te pedimos por todos tus sacerdotes. Llénalos de fe, esperanza y caridad; configúralos cada día más con tu Hijo Jesucristo, sumo y eterno Sacerdote, por la acción del Espíritu Santo, para tu mayor gloria, el bien de tu Iglesia y la salvación de todos tus hijos. Te lo pedimos por la intercesión maternal de María, Madre de Cristo y Madre de la Iglesia, y por los méritos de Cristo Sacerdote, que vive y reina contigo por los siglos de los siglos. Amén.","tema_visual":"intercesion","pagina_fuente":"9"},
-    {"titulo":"Ven, Espíritu Santo","subtitulo":"Pedir luz, consuelo y renovación","categoria":"Espíritu Santo","descripcion":"Invocación tradicional al Espíritu Santo antes de orar o reunirse.","texto_completo":"Ven, Espíritu Santo, llena los corazones de tus fieles y enciende en ellos el fuego de tu amor. Envía tu Espíritu y serán creados, y renovarás la faz de la tierra. Oh Dios, que has instruido los corazones de tus fieles con la luz del Espíritu Santo, concédenos sentir rectamente según el mismo Espíritu y gozar siempre de su consuelo. Por Cristo nuestro Señor. Amén.","tema_visual":"espiritu_santo","pagina_fuente":"9-10"},
-    {"titulo":"Oración antes de la meditación","subtitulo":"Disponerse a escuchar la voz de Dios","categoria":"Vida diaria","descripcion":"Preparación interior para meditar la Palabra y responder al Señor.","texto_completo":"Creo, Señor, que estás aquí presente. Aunque mis ojos no te vean, mi fe te reconoce. Aparta de mí los pensamientos extraños. Haz que comprenda las verdades que quieres enseñarme en esta meditación y que me decida a practicarlas. Habla, Señor, que tu siervo escucha. Santa María, intercede para que escuche y siga la voz del Señor. Amén.","tema_visual":"oracion","pagina_fuente":"10"},
-    {"titulo":"Acción de gracias","subtitulo":"Reconocer los beneficios recibidos de Dios","categoria":"Vida diaria","descripcion":"Oración breve para agradecer al Señor al terminar la oración o la jornada.","texto_completo":"Te damos gracias, Dios omnipotente, por todos los beneficios que nos has concedido. A ti, que vives y reinas por los siglos de los siglos. Santa María, Madre bendita, intercede para que todas nuestras intenciones, acciones y obras se dirijan a la mayor honra y gloria del Señor. Que la gracia de Dios viva siempre en nosotros y que su voluntad sea nuestro alimento diario. Amén.","tema_visual":"oracion","pagina_fuente":"10-11"},
-    {"titulo":"Himno antes de terminar el día","subtitulo":"Pedir la custodia de Dios durante la noche","categoria":"Vida diaria","descripcion":"Himno nocturno inspirado en la tradición de san Ambrosio.","texto_completo":"Antes que termine el día, te pedimos, Creador excelso, que por tu clemencia seas nuestro custodio y defensor. Aleja los temores de la noche y los malos sueños; enfrenta al enemigo para que no manche nuestros cuerpos ni perturbe nuestras almas. Concédenos descansar en tu paz. Te lo pedimos, Padre piadosísimo, por Jesucristo, tu Hijo, que contigo y el Espíritu Santo vive y reina por los siglos eternos. Amén.","tema_visual":"noche","pagina_fuente":"11"},
-    {"titulo":"Invocación para la noche","subtitulo":"Velar con Cristo y descansar en paz","categoria":"Vida diaria","descripcion":"Antífona breve para encomendar a Dios el descanso nocturno.","texto_completo":"Sálvanos, Señor, mientras velamos; guárdanos mientras dormimos, para que velemos con Cristo y descansemos en paz. En ti, Señor, he esperado y no seré jamás confundido. Señor, escucha mi oración y llegue a ti mi clamor. Amén.","tema_visual":"noche","pagina_fuente":"11-12"},
-    {"titulo":"Oración para proteger la habitación","subtitulo":"Pedir paz y custodia para el hogar","categoria":"Sanación y protección","descripcion":"Súplica a Dios para que su bendición permanezca en la habitación y en quienes descansan.","texto_completo":"Te suplico, Señor, que visites esta habitación y alejes de ella toda acechanza del enemigo. Habiten en ella tus santos ángeles, para que nos guarden en paz, y tu bendición permanezca siempre con nosotros. Aparta el temor, concede un descanso reparador y haz que despertemos dispuestos a servirte. Por Jesucristo nuestro Señor. Amén.","tema_visual":"proteccion","pagina_fuente":"12"},
-    {"titulo":"Tres Ave Marías para la noche","subtitulo":"Descansar junto a Jesús, José y María","categoria":"Virgen María","descripcion":"Invocaciones tradicionales para encomendar el corazón y el alma antes de dormir.","texto_completo":"Jesús, José y María, les doy el corazón y el alma mía. Jesús, José y María, asístanme en mi última agonía. Jesús, José y María, con ustedes descanse en paz el alma mía. Que el auxilio divino permanezca siempre con nosotros. Amén.","tema_visual":"noche","pagina_fuente":"12"},
-    {"titulo":"Oración para el examen de conciencia","subtitulo":"Pedir luz para revisar el día ante Dios","categoria":"Vida diaria","descripcion":"Preparación para reconocer agradecidamente las gracias y faltas de la jornada.","texto_completo":"Creo, Señor, que estás aquí presente. Te adoro y te amo. Dame luz para reconocer tu paso por mi jornada, agradecer el bien que me permitiste realizar y descubrir con sinceridad mis pecados, omisiones y actitudes contrarias a tu amor. Concédeme dolor verdadero por haberte ofendido, confianza en tu misericordia y gracia para reparar el daño y comenzar de nuevo. Amén.","tema_visual":"noche","pagina_fuente":"13-15"},
-    {"titulo":"Acto de contrición","subtitulo":"Volver al Señor con corazón arrepentido","categoria":"Vida diaria","descripcion":"Oración de arrepentimiento y propósito de conversión.","texto_completo":"Me arrepiento de todo corazón de haberte ofendido. Me pesa porque, al pecar, ofendí a un Dios tan bueno y digno de ser amado sobre todas las cosas. Propongo firmemente, con la ayuda de tu gracia, no volver a pecar y evitar las ocasiones de pecado. Jesús mío, misericordia. Amén.","tema_visual":"sanacion","pagina_fuente":"15"},
-    {"titulo":"Oración para los viajes","subtitulo":"Caminar bajo la protección de la Sagrada Familia","categoria":"Sanación y protección","descripcion":"Encomienda del camino y del destino a la providencia de Dios.","texto_completo":"Señor Dios, al comenzar este viaje me pongo bajo tu cuidado. Así como san José caminó acompañado de Jesús y de María, acompáñame también en mi salida, en el camino y en el regreso. Líbrame de todo peligro, dame prudencia y serenidad, protege a quienes viajan conmigo y permite que lleguemos con bien a nuestro destino. Que la Santísima Trinidad nos guarde y nos conduzca siempre por caminos de paz. Amén.","tema_visual":"proteccion","pagina_fuente":"15"},
-    {"titulo":"Ángelus","subtitulo":"Contemplar la Encarnación del Hijo de Dios","categoria":"Virgen María","descripcion":"Oración mariana tradicional para la mañana, el mediodía y la tarde.","texto_completo":"El ángel del Señor anunció a María. Y concibió por obra del Espíritu Santo. Dios te salve, María... He aquí la esclava del Señor. Hágase en mí según tu palabra. Dios te salve, María... Y el Verbo se hizo carne. Y habitó entre nosotros. Dios te salve, María... Ruega por nosotros, santa Madre de Dios, para que seamos dignos de alcanzar las promesas de nuestro Señor Jesucristo. Oremos: Infunde, Señor, tu gracia en nuestros corazones, para que quienes hemos conocido, por el anuncio del ángel, la encarnación de Cristo, tu Hijo, lleguemos por su pasión y su cruz a la gloria de la resurrección. Por Jesucristo nuestro Señor. Amén.","tema_visual":"mariano","pagina_fuente":"16-17"},
-    {"titulo":"Reina del Cielo","subtitulo":"Alegrarse con María por la Resurrección","categoria":"Virgen María","descripcion":"Antífona mariana propia del tiempo pascual.","texto_completo":"Alégrate, Reina del cielo, aleluya. Porque aquel a quien mereciste llevar en tu seno, aleluya, ha resucitado, según predijo, aleluya. Ruega por nosotros a Dios, aleluya. Gózate y alégrate, Virgen María, aleluya, porque verdaderamente ha resucitado el Señor, aleluya. Oremos: Oh Dios, que por la resurrección de tu Hijo, nuestro Señor Jesucristo, te dignaste alegrar al mundo, concédenos que, por intercesión de su Madre, la Virgen María, alcancemos los gozos de la vida eterna. Por Jesucristo nuestro Señor. Amén.","tema_visual":"mariano","pagina_fuente":"17"},
-    {"titulo":"Alma de Cristo","subtitulo":"Permanecer escondido en las llagas del Salvador","categoria":"Jesucristo","descripcion":"Oración tradicional de unión profunda con Cristo.","texto_completo":"Alma de Cristo, santifícame. Cuerpo de Cristo, sálvame. Sangre de Cristo, embriágame. Agua del costado de Cristo, lávame. Pasión de Cristo, confórtame. ¡Oh buen Jesús!, óyeme. Dentro de tus llagas, escóndeme. No permitas que me aparte de ti. Del enemigo malo, defiéndeme. En la hora de mi muerte, llámame y mándame ir a ti, para que con tus santos te alabe por los siglos de los siglos. Amén.","tema_visual":"cristologico","pagina_fuente":"18"},
-    {"titulo":"Oración a Jesús crucificado","subtitulo":"Contemplar las llagas del Señor","categoria":"Jesucristo","descripcion":"Súplica de fe, esperanza, caridad y conversión ante Cristo crucificado.","texto_completo":"Oh amado y buen Jesús, postrado en tu presencia te ruego con fervor que imprimas en mi corazón vivos sentimientos de fe, esperanza y caridad, verdadero dolor de mis pecados y firme propósito de enmienda. Mientras contemplo con amor y compasión tus cinco llagas, recuerdo que por nosotros fueron traspasadas tus manos y tus pies. Hazme permanecer junto a tu cruz y responder con una vida nueva al amor que allí me manifestaste. Amén.","tema_visual":"cristologico","pagina_fuente":"18-19"},
-    {"titulo":"Oración al Señor crucificado","subtitulo":"Confiar una necesidad a Cristo sufriente","categoria":"Jesucristo","descripcion":"Acción de gracias, conversión y petición ante la cruz del Señor.","texto_completo":"Señor crucificado, vengo con sencillez y amor a darte gracias por todo lo que has padecido por mi salvación. Cambia mi corazón, conviérteme y aléjame de todo pecado. Tú conoces el sufrimiento humano y comprendes la necesidad que hoy pongo ante ti. Si esta petición conviene al bien de mi alma y a mi salvación, concédemela conforme a tu voluntad. Que la Santísima Virgen María interceda por mí ante el Padre. Me despido confiado, ofreciéndote permanecer fiel a tu amor. Amén.","tema_visual":"cristologico","pagina_fuente":"19"},
-    {"titulo":"Oración al Señor de los Milagros","subtitulo":"Abrir la vida al poder salvador de Cristo","categoria":"Jesucristo","descripcion":"Oración de fe, conversión e intercesión al Señor de los Milagros.","texto_completo":"Señor de los Milagros, aquí vengo lleno de fe y de amor, porque eres mi Dios y mi Redentor. Reconozco tu poder de Creador y mis limitaciones de criatura, pero me alegra saber que has querido ser mi amigo y mi hermano. Abro ante ti mi cuerpo y mi alma para que toda mi vida permanezca dentro de tu plan de salvación. Hazme discípulo fiel, capaz de reconocerte y servirte en mis hermanos. Te pido por la Iglesia, por el Papa, por quienes nos conducen hacia ti, por los necesitados, los oprimidos, los enfermos y los agonizantes. Atiende también mis necesidades materiales y espirituales y dame perseverancia para seguirte cada día. Amén.","tema_visual":"cristologico","pagina_fuente":"20-21"},
-    {"titulo":"Letanías de la Santísima Virgen","subtitulo":"Invocar a María bajo sus títulos de amor","categoria":"Virgen María","descripcion":"Letanía tradicional para pedir la intercesión maternal de la Virgen.","texto_completo":"Señor, ten piedad. Cristo, ten piedad. Señor, ten piedad. Cristo, óyenos. Cristo, escúchanos. Dios Padre celestial, ten piedad de nosotros. Dios Hijo, Redentor del mundo, ten piedad de nosotros. Dios Espíritu Santo, ten piedad de nosotros. Santísima Trinidad, un solo Dios, ten piedad de nosotros. Santa María, Santa Madre de Dios, Santa Virgen de las vírgenes, Madre de Cristo, Madre de la Iglesia, Madre de misericordia, Virgen prudentísima, Virgen digna de veneración, Rosa mística, Torre de David, Casa de oro, Arca de la Alianza, Puerta del cielo, Estrella de la mañana, Salud de los enfermos, Refugio de los pecadores, Consuelo de los migrantes, Consoladora de los afligidos, Auxilio de los cristianos, Reina de los ángeles, Reina de todos los santos, Reina de la familia y Reina de la paz, ruega por nosotros. Cordero de Dios, que quitas el pecado del mundo, perdónanos, Señor; escúchanos, Señor; ten misericordia de nosotros. Ruega por nosotros, santa Madre de Dios, para que seamos dignos de las promesas de Cristo. Amén.","tema_visual":"mariano","pagina_fuente":"27-30"},
-    {"titulo":"Salve","subtitulo":"Clamar a la Madre de misericordia","categoria":"Virgen María","descripcion":"Antífona mariana tradicional de confianza y esperanza.","texto_completo":"Dios te salve, Reina y Madre de misericordia, vida, dulzura y esperanza nuestra. Dios te salve. A ti clamamos los desterrados hijos de Eva; a ti suspiramos, gimiendo y llorando en este valle de lágrimas. Ea, pues, Señora, abogada nuestra, vuelve a nosotros esos tus ojos misericordiosos y, después de este destierro, muéstranos a Jesús, fruto bendito de tu vientre. ¡Oh clementísima, oh piadosa, oh dulce Virgen María! Ruega por nosotros, santa Madre de Dios, para que seamos dignos de alcanzar las promesas de nuestro Señor Jesucristo. Amén.","tema_visual":"mariano","pagina_fuente":"31"},
-    {"titulo":"Me haces falta Tú","subtitulo":"Visita a Jesús presente en la Eucaristía","categoria":"Jesucristo","descripcion":"Meditación para reconocer que Cristo es el centro y sentido de la vida.","texto_completo":"Jesús Eucaristía, lejos de ti la vida pierde su sentido y el corazón se cansa bajo el peso de sus miserias. Sin tu luz el camino se vuelve oscuro, el deber pesado y la fidelidad difícil. Pero cerca de ti todo cambia: la noche cede ante el amanecer y mi pobreza encuentra refugio. Tú eres más íntimo a mí que mi propio interior y, cuando te haces mi todo, nada esencial me falta. Quédate conmigo, renueva mis nobles anhelos y enséñame a vivir cada responsabilidad unido a tu presencia. Amén.","tema_visual":"cristologico","pagina_fuente":"32-33"},
-    {"titulo":"Como un pobre ante quien lo tiene todo","subtitulo":"Presentarse ante la misericordia de Jesús","categoria":"Jesucristo","descripcion":"Visita eucarística desde la conciencia de la propia pobreza espiritual.","texto_completo":"A ti me acerco, Señor, como un pobre consciente de su indigencia, que siente la fragilidad, la miseria y el rechazo. Vengo porque sé que tu misericordia no se cansa y tu bondad se entrega sin medida. No tengo otro mérito ni recomendación que mi propia pobreza. Me reconozco pobre de virtudes, de nobles sentimientos y de obras buenas; pero incluso reconocerlo es una gracia que me impulsa hacia ti. Jesús Eucaristía, rico en misericordia y omnipotente en bondad, alivia mi pobreza espiritual con tu presencia transformadora y siembra en mí la semilla de tu Palabra. Amén.","tema_visual":"cristologico","pagina_fuente":"33-34"},
-    {"titulo":"Señor, no soy digno","subtitulo":"Acercarse humildemente a Jesús Eucaristía","categoria":"Jesucristo","descripcion":"Visita eucarística de humildad, arrepentimiento y confianza.","texto_completo":"Jesús Eucaristía, te miro y descubro la distancia entre mi fragilidad y tu santidad. Reconozco mis infidelidades, mis pecados, mi soberbia y mi egoísmo. No soy digno de permanecer ante ti, pero sé que tu misericordia y tu compasión no tienen límites. Por eso me acerco sin ocultar mi pobreza y te digo con confianza: Señor, no soy digno de que entres en mi casa, pero una palabra tuya bastará para sanarme. Perdona mis pecados, purifica mi corazón y hazme vivir en tu amistad. Amén.","tema_visual":"cristologico","pagina_fuente":"34-35"},
-    {"titulo":"Jesús, manso y humilde de corazón","subtitulo":"Pedir un corazón semejante al de Cristo","categoria":"Sanación y protección","descripcion":"Visita eucarística para pedir humildad, mansedumbre y dominio propio.","texto_completo":"Jesús Eucaristía, manso y humilde de corazón, me acerco lleno de confianza para que transformes mi vida. Suaviza mis iras, mis rebeldías y los movimientos desordenados que nacen de mi egoísmo. Derriba mis actitudes soberbias, mi autosuficiencia y el deseo de vanagloria. Que tu presencia sacramental dulcifique mis sentimientos y despierte en mí compasión por quienes sufren. Transforma las fuerzas que luchan contra ti y úsalas para trabajar por ti, en ti y contigo. Jesús, manso y humilde de corazón, haz mi corazón semejante al tuyo. Amén.","tema_visual":"sanacion","pagina_fuente":"35-36"},
-    {"titulo":"El gozo de estar junto a Ti","subtitulo":"Alegría de permanecer ante Jesús Eucaristía","categoria":"Jesucristo","descripcion":"Acción de gracias por el consuelo y la alegría de la presencia sacramental.","texto_completo":"Jesús Eucaristía, venir a visitarte llena mi alma de una alegría profunda. Es conversar con el Amigo, recibir luz, paz y un gozo que no cabe en el corazón. Me siento favorecido porque tú, Señor del universo, me recibes con bondad y te agrada que permanezca ante ti. Cerca de ti encuentro al Redentor que conoce mis heridas, alivia mis males y derrama consuelo. Gracias por estos momentos bajo la acción de tu amor misericordioso, que me purifica y santifica. Un momento junto a ti vale más que largos años lejos de tu presencia. Amén.","tema_visual":"cristologico","pagina_fuente":"36-37"},
-    {"titulo":"Letanía por los sacerdotes","subtitulo":"Súplica por cada necesidad del ministerio sacerdotal","categoria":"Intercesión","descripcion":"Intercesión extensa por el Papa, los obispos, sacerdotes y seminaristas.","texto_completo":"A nuestro Santo Padre el Papa, llénalo de tus dones, Señor. A los cardenales y representantes pontificios, dales tu luz. A los arzobispos y obispos, dales tu gracia. A los párrocos, dales celo por tu gloria. A los vicarios, guíalos. A los formadores de seminarios, ilumínalos. A los sacerdotes religiosos, perfecciónalos; a los diocesanos, santifícalos. A los confesores y directores espirituales, hazlos dóciles instrumentos del Espíritu Santo. A los predicadores, instrúyelos; a los misioneros, sostenlos. A quienes sirven a jóvenes, trabajadores, campesinos, pobres y enfermos, dales amor y abnegación. A los sacerdotes enfermos y ancianos, dales paciencia; a los aislados, acompáñalos; a los turbados, dales paz; a los jóvenes, cuídalos; a los que están en peligro o tentación, fortalécelos; a los difuntos, dales la gloria. A los seminaristas, concédeles perseverancia. A todos los sacerdotes, transfórmalos en ti, Señor. Amén.","tema_visual":"intercesion","pagina_fuente":"38-39"},
-    {"titulo":"Adoremos reverentes","subtitulo":"Adoración a Cristo en el Santísimo Sacramento","categoria":"Jesucristo","descripcion":"Himno eucarístico de alabanza y veneración.","texto_completo":"Adoremos reverentes al Señor sacramentado. Ceda el antiguo rito ante el nuevo sacramento, y la fe complete lo que los sentidos no alcanzan. Al Padre y al Hijo sean dadas alabanza, júbilo, honor, poder y bendición; y al Espíritu que procede de ambos, igual gloria. Les diste el pan del cielo, que contiene en sí todo deleite. Oh Dios, que bajo este sacramento admirable nos dejaste el memorial de tu pasión, concédenos venerar de tal modo los sagrados misterios de tu Cuerpo y de tu Sangre que experimentemos constantemente el fruto de tu redención. Amén.","tema_visual":"cristologico","pagina_fuente":"40-41"},
-    {"titulo":"Divinas alabanzas","subtitulo":"Bendecir el santo nombre de Dios","categoria":"Santísima Trinidad","descripcion":"Alabanzas tradicionales después de la bendición con el Santísimo Sacramento.","texto_completo":"Bendito sea Dios. Bendito sea su santo nombre. Bendito sea Jesucristo, verdadero Dios y verdadero hombre. Bendito sea el nombre de Jesús. Bendito sea su Sacratísimo Corazón. Bendita sea su Preciosísima Sangre. Bendito sea Jesús en el Santísimo Sacramento del altar. Bendito sea el Espíritu Santo Paráclito. Bendita sea la excelsa Madre de Dios, María Santísima. Bendita sea su santa e inmaculada Concepción. Bendita sea su gloriosa Asunción. Bendito sea el nombre de María, Virgen y Madre. Bendito sea san José, su castísimo esposo. Bendito sea Dios en sus ángeles y en sus santos. Amén.","tema_visual":"cristologico","pagina_fuente":"41"}
-    ,
-    {"titulo":"Señal de la Cruz","subtitulo":"Comenzar la oración en el nombre de Dios","categoria":"Santísima Trinidad","descripcion":"Invocación a la Santísima Trinidad y petición de protección.","texto_completo":"Por la señal de la Santa Cruz, de nuestros enemigos líbranos, Señor, Dios nuestro.\n\nEn el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.","tema_visual":"oracion","fuente":"Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)","pagina_fuente":"22"},
-    {"titulo":"Gloria al Padre","subtitulo":"Alabanza a la Santísima Trinidad","categoria":"Santísima Trinidad","descripcion":"Doxología de alabanza al Padre, al Hijo y al Espíritu Santo.","texto_completo":"Gloria al Padre, y al Hijo, y al Espíritu Santo.\nComo era en el principio, y ahora y siempre, y por los siglos de los siglos. Amén.","tema_visual":"oracion","fuente":"Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)","pagina_fuente":"17"},
-    {"titulo":"Oración de los misterios del Rosario","subtitulo":"Contemplar la vida, muerte y resurrección de Jesús","categoria":"Virgen María","descripcion":"Oración que acompaña la meditación de los misterios del Rosario.","texto_completo":"Oh Dios, cuyo Unigénito por su Vida, Muerte y Resurrección, nos mereció los premios de la vida eterna, concédenos que meditando estos misterios en el Rosario de la Santísima Virgen, alcancemos la gloria que prometen. Por Cristo nuestro Señor. Amén.","tema_visual":"mariano","fuente":"Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)","pagina_fuente":"24"},
-    {"titulo":"Yo confieso","subtitulo":"Reconocer nuestros pecados ante Dios","categoria":"Vida diaria","descripcion":"Primera fórmula del acto penitencial reproducida en el devocionario.","texto_completo":"Yo confieso ante Dios Todopoderoso, y ante ustedes hermanos que he pecado mucho de pensamiento, palabra, obra y omisión; por mi culpa, por mi culpa, por mi gran culpa.\n\nPor eso ruego a Santa María siempre Virgen, a los ángeles, a los santos y a ustedes hermanos, que intercedan por mí ante Dios, Nuestro Señor.","tema_visual":"oracion","fuente":"Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)","pagina_fuente":"63"},
-    {"titulo":"Señor, ten piedad","subtitulo":"Acudir a la misericordia de Cristo","categoria":"Vida diaria","descripcion":"Invocaciones de la tercera fórmula del acto penitencial.","texto_completo":"Tú que has sido enviado a sanar los corazones afligidos: Señor, ten piedad.\nSeñor, ten piedad.\n\nTú que has venido a llamar a los pecadores: Cristo, ten piedad.\nCristo, ten piedad.\n\nTú que estás sentado a la derecha del Padre para interceder por nosotros: Señor, ten piedad.\nSeñor, ten piedad.","tema_visual":"oracion","fuente":"Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)","pagina_fuente":"64"},
-    {"titulo":"Gloria a Dios en el cielo","subtitulo":"Himno de alabanza y acción de gracias","categoria":"Santísima Trinidad","descripcion":"Himno Gloria reproducido en la sección Cena del Señor.","texto_completo":"Gloria a Dios en el cielo,\ny en la tierra paz a los hombres que ama el Señor.\n\nPor tu inmensa gloria\nte alabamos, te bendecimos,\nte adoramos, te glorificamos,\nte damos gracias,\nSeñor Dios, Rey celestial,\nDios Padre todopoderoso.\n\nSeñor, Hijo único, Jesucristo.\nSeñor Dios, Cordero de Dios, Hijo del Padre;\ntú que quitas el pecado del mundo,\nten piedad de nosotros;\ntú que quitas el pecado del mundo,\natiende nuestra súplica;\ntú que estás sentado a la derecha del Padre,\nten piedad de nosotros;\nporque sólo tú eres Santo,\nsólo tú Señor, sólo tú Altísimo, Jesucristo,\ncon el Espíritu Santo en la gloria de Dios Padre.\nAmén.","tema_visual":"oracion","fuente":"Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)","pagina_fuente":"65-66"},
-    {"titulo":"Credo niceno-constantinopolitano","subtitulo":"Profesión de fe de la Iglesia","categoria":"Vida diaria","descripcion":"Credo 1 del libro; conserva la formulación plural de esta edición.","texto_completo":"Creemos en un solo Dios,\nPadre Todopoderoso,\nCreador del cielo y de la tierra,\nde todo lo visible y lo invisible.\n\nCreemos en un solo Señor, Jesucristo,\nHijo único de Dios,\nnacido del Padre antes de todos los siglos:\nDios de Dios, Luz de Luz,\nDios verdadero de Dios verdadero,\nengendrado, no creado,\nde la misma naturaleza del Padre,\npor quien todo fue hecho;\nque por nosotros, los hombres,\ny por nuestra salvación bajó del cielo,\ny por obra del Espíritu Santo\nse encarnó de María, la Virgen,\ny se hizo hombre;\ny por nuestra causa fue crucificado\nen tiempos de Poncio Pilato;\npadeció y fue sepultado,\ny resucitó al tercer día, según las Escrituras,\ny subió al cielo, y está sentado a la derecha del Padre;\ny de nuevo vendrá con gloria\npara juzgar a vivos y muertos,\ny su reino no tendrá fin.\n\nCreemos en el Espíritu Santo,\nSeñor y dador de vida,\nque procede del Padre y del Hijo,\nque con el Padre y el Hijo recibe\nuna misma adoración y gloria,\ny que habló por los profetas.\nY en la Iglesia, que es una,\nsanta, católica y apostólica.\nReconocemos un solo Bautismo\npara el perdón de los pecados.\nEsperamos la resurrección de los muertos\ny la vida del mundo futuro. Amén.","tema_visual":"oracion","fuente":"Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)","pagina_fuente":"68-70"},
-    {"titulo":"Credo de los Apóstoles","subtitulo":"Creo en Dios, Padre todopoderoso","categoria":"Vida diaria","descripcion":"Credo 2 reproducido en la sección de profesión de fe.","texto_completo":"Creo en Dios, Padre Todopoderoso,\nCreador del cielo y de la tierra.\n\nCreo en Jesucristo, su único Hijo,\nNuestro Señor,\nque fue concebido por obra y gracia\ndel Espíritu Santo.\nNació de Santa María Virgen,\npadeció bajo el poder de Poncio Pilato,\nfue crucificado, muerto y sepultado,\ndescendió a los infiernos,\nal tercer día resucitó de entre los muertos,\nsubió a los cielos\ny está sentado a la derecha de Dios,\nPadre todopoderoso.\nDesde allí ha de venir\na juzgar a vivos y muertos.\n\nCreo en el Espíritu Santo,\nla santa Iglesia católica,\nla comunión de los santos,\nel perdón de los pecados,\nla resurrección de la carne\ny la vida eterna. Amén.","tema_visual":"oracion","fuente":"Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)","pagina_fuente":"70-71"},
-    {"titulo":"Santo","subtitulo":"Aclamar la santidad del Señor","categoria":"Santísima Trinidad","descripcion":"Aclamación de los fieles al final del prefacio, reproducida en el libro.","texto_completo":"Santo, Santo, Santo es el Señor,\nDios del universo.\nLlenos están el cielo y la tierra de tu gloria,\nHosanna en el cielo.\nBendito el que viene en el nombre del Señor,\nHosanna en el cielo.","tema_visual":"oracion","fuente":"Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)","pagina_fuente":"74"},
-    {"titulo":"Padre nuestro","subtitulo":"La oración que Jesús nos enseñó","categoria":"Vida diaria","descripcion":"Oración del Señor reproducida en el rito de la Comunión.","texto_completo":"Padre nuestro,\nque estás en el cielo,\nsantificado sea tu Nombre;\nvenga a nosotros tu reino;\nhágase tu voluntad\nen la tierra como en el cielo.\n\nDanos hoy nuestro pan de cada día;\nperdona nuestras ofensas,\ncomo también nosotros perdonamos\na los que nos ofenden;\nno nos dejes caer en la tentación,\ny líbranos del mal.\nAmén.","tema_visual":"oracion","fuente":"Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)","pagina_fuente":"75-76"}
+    {
+      "titulo": "Ofrecimiento del día",
+      "subtitulo": "Entrega al Señor todo lo que vivirás hoy",
+      "categoria": "Vida diaria",
+      "descripcion": "Oración para consagrar a Dios pensamientos, palabras, obras y responsabilidades.",
+      "texto_completo": "Padre, tú que me has hecho llegar al comienzo de este día, fortaléceme con tu gracia para que no caiga en pecado alguno, sino que todas mis palabras, pensamientos y obras se dirijan al cumplimiento de tu santa voluntad. Unido, por la gracia, a todos los miembros de tu Iglesia universal, te ofrezco, Señor, mi ser y mi obrar, mi pensar, sentir y querer, para que todo sirva a tu gloria, a la extensión de tu Reino y a la reparación de las ofensas cometidas contra ti. Dígnate dirigir, santificar, regir y gobernar durante este día mi alma y mi cuerpo, mis sentidos, palabras y obras, según tu ley y por el camino de tus mandamientos. Por Jesucristo, Salvador del mundo. Amén.",
+      "tema_visual": "amanecer",
+      "pagina_fuente": "4-5"
+    },
+    {
+      "titulo": "Oración de abandono",
+      "subtitulo": "Confiar la vida enteramente al Padre",
+      "categoria": "Vida diaria",
+      "descripcion": "Acto de entrega confiada a la voluntad amorosa de Dios.",
+      "texto_completo": "Padre, me abandono en ti. Haz de mí lo que quieras. Por todo lo que hagas de mí, te doy gracias. Estoy dispuesto a todo y lo acepto todo, con tal de que tu voluntad se cumpla en mí y en todas tus criaturas. No deseo nada más, Padre. Pongo mi alma en tus manos; te la entrego, Dios mío, con todo el amor de mi corazón, porque te amo. Para mí es una necesidad de amor darme y entregarme en tus manos sin medida y con infinita confianza, porque tú eres mi Padre.",
+      "tema_visual": "oracion",
+      "pagina_fuente": "5"
+    },
+    {
+      "titulo": "Consagración cotidiana a la Virgen María",
+      "subtitulo": "Ponerse cada día bajo el cuidado de la Madre",
+      "categoria": "Virgen María",
+      "descripcion": "Entrega filial de toda la persona a la Santísima Virgen.",
+      "texto_completo": "¡Señora y Madre mía! Yo me ofrezco enteramente a ti y, en prueba de mi filial afecto, te consagro en este día mis ojos, mis oídos, mi lengua, mi corazón; en una palabra, todo mi ser. Ya que soy todo tuyo, Madre de bondad, guárdame y defiéndeme como posesión tuya. Llévame siempre a Jesús y enséñame a cumplir con alegría la voluntad del Padre. Amén.",
+      "tema_visual": "mariano",
+      "pagina_fuente": "6",
+      "devocion_slug": "maria-santisima"
+    },
+    {
+      "titulo": "Oración a san José",
+      "subtitulo": "Intercesión del custodio de Jesús y María",
+      "categoria": "Santos y ángeles",
+      "descripcion": "Súplica confiada a san José por una necesidad particular.",
+      "texto_completo": "Glorioso patriarca san José, que viviste junto al Hijo de Dios y a su madre, la Virgen María, y te consagraste a servirlos con cuidado, amor y diligencia: me acerco a ti lleno de confianza y te pido que intercedas para que Dios me conceda la gracia que en este momento necesito. Atiende nuestras peticiones, oriéntalas y hazlas agradables a los ojos de Dios. Ruega para que mi vida sea digna y consecuente con mi condición de hijo de Dios, se realice según sus designios y pueda gozar eternamente en su compañía. Amén.",
+      "tema_visual": "proteccion",
+      "pagina_fuente": "6-7",
+      "devocion_slug": "san-jose"
+    },
+    {
+      "titulo": "Letanías de san José",
+      "subtitulo": "Invocaciones al patrono de la Iglesia universal",
+      "categoria": "Santos y ángeles",
+      "descripcion": "Letanía tradicional para pedir la intercesión y protección de san José.",
+      "texto_completo": "Señor, ten piedad de nosotros. Cristo, ten piedad de nosotros. Señor, ten piedad de nosotros. Cristo, óyenos. Cristo, escúchanos. Dios Padre celestial, ten piedad de nosotros. Dios Hijo, Redentor del mundo, ten piedad de nosotros. Dios Espíritu Santo, ten piedad de nosotros. Santísima Trinidad, un solo Dios, ten piedad de nosotros. Santa María, ruega por nosotros. San José, ruega por nosotros. Ilustre descendiente de David, luz de los patriarcas, esposo de la Madre de Dios, custodio purísimo de la Virgen, padre nutricio del Hijo de Dios, protector diligente de Cristo, jefe de la Sagrada Familia, José justísimo, castísimo, prudentísimo, fortísimo, obedientísimo y fidelísimo, ruega por nosotros. Espejo de paciencia, amante de la pobreza, modelo de los trabajadores, gloria de la vida doméstica, custodio de las vírgenes, sostén de las familias, consuelo de los afligidos, esperanza de los enfermos, patrono de los moribundos, terror de los demonios y protector de la santa Iglesia, ruega por nosotros. Oh Dios, que con inefable providencia elegiste a san José como esposo de la Santísima Virgen, concédenos tener por intercesor en el cielo a quien veneramos como protector en la tierra. Por Jesucristo nuestro Señor. Amén.",
+      "tema_visual": "proteccion",
+      "pagina_fuente": "7-9",
+      "devocion_slug": "san-jose"
+    },
+    {
+      "titulo": "Al Ángel de la Guarda",
+      "subtitulo": "Compañía y custodia en el camino",
+      "categoria": "Santos y ángeles",
+      "descripcion": "Breve oración tradicional al santo ángel custodio.",
+      "texto_completo": "Ángel de mi guarda, dulce compañía, no me desampares ni de noche ni de día. No me dejes solo, pues me perdería. Acompaña mis pasos, ilumina mis decisiones y condúceme siempre hacia Dios. Amén.",
+      "tema_visual": "proteccion",
+      "pagina_fuente": "9"
+    },
+    {
+      "titulo": "Oración por los sacerdotes",
+      "subtitulo": "Por la santidad y fidelidad de los ministros de Dios",
+      "categoria": "Intercesión",
+      "descripcion": "Intercesión por todos los sacerdotes y por el fruto de su ministerio.",
+      "texto_completo": "Padre santo, te pedimos por todos tus sacerdotes. Llénalos de fe, esperanza y caridad; configúralos cada día más con tu Hijo Jesucristo, sumo y eterno Sacerdote, por la acción del Espíritu Santo, para tu mayor gloria, el bien de tu Iglesia y la salvación de todos tus hijos. Te lo pedimos por la intercesión maternal de María, Madre de Cristo y Madre de la Iglesia, y por los méritos de Cristo Sacerdote, que vive y reina contigo por los siglos de los siglos. Amén.",
+      "tema_visual": "intercesion",
+      "pagina_fuente": "9"
+    },
+    {
+      "titulo": "Ven, Espíritu Santo",
+      "subtitulo": "Pedir luz, consuelo y renovación",
+      "categoria": "Espíritu Santo",
+      "descripcion": "Invocación tradicional al Espíritu Santo antes de orar o reunirse.",
+      "texto_completo": "Ven, Espíritu Santo, llena los corazones de tus fieles y enciende en ellos el fuego de tu amor. Envía tu Espíritu y serán creados, y renovarás la faz de la tierra. Oh Dios, que has instruido los corazones de tus fieles con la luz del Espíritu Santo, concédenos sentir rectamente según el mismo Espíritu y gozar siempre de su consuelo. Por Cristo nuestro Señor. Amén.",
+      "tema_visual": "espiritu_santo",
+      "pagina_fuente": "9-10",
+      "devocion_slug": "espiritu-santo"
+    },
+    {
+      "titulo": "Oración antes de la meditación",
+      "subtitulo": "Disponerse a escuchar la voz de Dios",
+      "categoria": "Vida diaria",
+      "descripcion": "Preparación interior para meditar la Palabra y responder al Señor.",
+      "texto_completo": "Creo, Señor, que estás aquí presente. Aunque mis ojos no te vean, mi fe te reconoce. Aparta de mí los pensamientos extraños. Haz que comprenda las verdades que quieres enseñarme en esta meditación y que me decida a practicarlas. Habla, Señor, que tu siervo escucha. Santa María, intercede para que escuche y siga la voz del Señor. Amén.",
+      "tema_visual": "oracion",
+      "pagina_fuente": "10"
+    },
+    {
+      "titulo": "Acción de gracias",
+      "subtitulo": "Reconocer los beneficios recibidos de Dios",
+      "categoria": "Vida diaria",
+      "descripcion": "Oración breve para agradecer al Señor al terminar la oración o la jornada.",
+      "texto_completo": "Te damos gracias, Dios omnipotente, por todos los beneficios que nos has concedido. A ti, que vives y reinas por los siglos de los siglos. Santa María, Madre bendita, intercede para que todas nuestras intenciones, acciones y obras se dirijan a la mayor honra y gloria del Señor. Que la gracia de Dios viva siempre en nosotros y que su voluntad sea nuestro alimento diario. Amén.",
+      "tema_visual": "oracion",
+      "pagina_fuente": "10-11"
+    },
+    {
+      "titulo": "Himno antes de terminar el día",
+      "subtitulo": "Pedir la custodia de Dios durante la noche",
+      "categoria": "Vida diaria",
+      "descripcion": "Himno nocturno inspirado en la tradición de san Ambrosio.",
+      "texto_completo": "Antes que termine el día, te pedimos, Creador excelso, que por tu clemencia seas nuestro custodio y defensor. Aleja los temores de la noche y los malos sueños; enfrenta al enemigo para que no manche nuestros cuerpos ni perturbe nuestras almas. Concédenos descansar en tu paz. Te lo pedimos, Padre piadosísimo, por Jesucristo, tu Hijo, que contigo y el Espíritu Santo vive y reina por los siglos eternos. Amén.",
+      "tema_visual": "noche",
+      "pagina_fuente": "11"
+    },
+    {
+      "titulo": "Invocación para la noche",
+      "subtitulo": "Velar con Cristo y descansar en paz",
+      "categoria": "Vida diaria",
+      "descripcion": "Antífona breve para encomendar a Dios el descanso nocturno.",
+      "texto_completo": "Sálvanos, Señor, mientras velamos; guárdanos mientras dormimos, para que velemos con Cristo y descansemos en paz. En ti, Señor, he esperado y no seré jamás confundido. Señor, escucha mi oración y llegue a ti mi clamor. Amén.",
+      "tema_visual": "noche",
+      "pagina_fuente": "11-12"
+    },
+    {
+      "titulo": "Oración para proteger la habitación",
+      "subtitulo": "Pedir paz y custodia para el hogar",
+      "categoria": "Sanación y protección",
+      "descripcion": "Súplica a Dios para que su bendición permanezca en la habitación y en quienes descansan.",
+      "texto_completo": "Te suplico, Señor, que visites esta habitación y alejes de ella toda acechanza del enemigo. Habiten en ella tus santos ángeles, para que nos guarden en paz, y tu bendición permanezca siempre con nosotros. Aparta el temor, concede un descanso reparador y haz que despertemos dispuestos a servirte. Por Jesucristo nuestro Señor. Amén.",
+      "tema_visual": "proteccion",
+      "pagina_fuente": "12"
+    },
+    {
+      "titulo": "Tres Ave Marías para la noche",
+      "subtitulo": "Descansar junto a Jesús, José y María",
+      "categoria": "Virgen María",
+      "descripcion": "Invocaciones tradicionales para encomendar el corazón y el alma antes de dormir.",
+      "texto_completo": "Jesús, José y María, les doy el corazón y el alma mía. Jesús, José y María, asístanme en mi última agonía. Jesús, José y María, con ustedes descanse en paz el alma mía. Que el auxilio divino permanezca siempre con nosotros. Amén.",
+      "tema_visual": "noche",
+      "pagina_fuente": "12",
+      "devocion_slug": "maria-santisima"
+    },
+    {
+      "titulo": "Oración para el examen de conciencia",
+      "subtitulo": "Pedir luz para revisar el día ante Dios",
+      "categoria": "Vida diaria",
+      "descripcion": "Preparación para reconocer agradecidamente las gracias y faltas de la jornada.",
+      "texto_completo": "Creo, Señor, que estás aquí presente. Te adoro y te amo. Dame luz para reconocer tu paso por mi jornada, agradecer el bien que me permitiste realizar y descubrir con sinceridad mis pecados, omisiones y actitudes contrarias a tu amor. Concédeme dolor verdadero por haberte ofendido, confianza en tu misericordia y gracia para reparar el daño y comenzar de nuevo. Amén.",
+      "tema_visual": "noche",
+      "pagina_fuente": "13-15"
+    },
+    {
+      "titulo": "Acto de contrición",
+      "subtitulo": "Volver al Señor con corazón arrepentido",
+      "categoria": "Vida diaria",
+      "descripcion": "Oración de arrepentimiento y propósito de conversión.",
+      "texto_completo": "Me arrepiento de todo corazón de haberte ofendido. Me pesa porque, al pecar, ofendí a un Dios tan bueno y digno de ser amado sobre todas las cosas. Propongo firmemente, con la ayuda de tu gracia, no volver a pecar y evitar las ocasiones de pecado. Jesús mío, misericordia. Amén.",
+      "tema_visual": "sanacion",
+      "pagina_fuente": "15"
+    },
+    {
+      "titulo": "Oración para los viajes",
+      "subtitulo": "Caminar bajo la protección de la Sagrada Familia",
+      "categoria": "Sanación y protección",
+      "descripcion": "Encomienda del camino y del destino a la providencia de Dios.",
+      "texto_completo": "Señor Dios, al comenzar este viaje me pongo bajo tu cuidado. Así como san José caminó acompañado de Jesús y de María, acompáñame también en mi salida, en el camino y en el regreso. Líbrame de todo peligro, dame prudencia y serenidad, protege a quienes viajan conmigo y permite que lleguemos con bien a nuestro destino. Que la Santísima Trinidad nos guarde y nos conduzca siempre por caminos de paz. Amén.",
+      "tema_visual": "proteccion",
+      "pagina_fuente": "15"
+    },
+    {
+      "titulo": "Ángelus",
+      "subtitulo": "Contemplar la Encarnación del Hijo de Dios",
+      "categoria": "Virgen María",
+      "descripcion": "Oración mariana tradicional para la mañana, el mediodía y la tarde.",
+      "texto_completo": "El ángel del Señor anunció a María. Y concibió por obra del Espíritu Santo. Dios te salve, María... He aquí la esclava del Señor. Hágase en mí según tu palabra. Dios te salve, María... Y el Verbo se hizo carne. Y habitó entre nosotros. Dios te salve, María... Ruega por nosotros, santa Madre de Dios, para que seamos dignos de alcanzar las promesas de nuestro Señor Jesucristo. Oremos: Infunde, Señor, tu gracia en nuestros corazones, para que quienes hemos conocido, por el anuncio del ángel, la encarnación de Cristo, tu Hijo, lleguemos por su pasión y su cruz a la gloria de la resurrección. Por Jesucristo nuestro Señor. Amén.",
+      "tema_visual": "mariano",
+      "pagina_fuente": "16-17",
+      "devocion_slug": "maria-santisima"
+    },
+    {
+      "titulo": "Reina del Cielo",
+      "subtitulo": "Alegrarse con María por la Resurrección",
+      "categoria": "Virgen María",
+      "descripcion": "Antífona mariana propia del tiempo pascual.",
+      "texto_completo": "Alégrate, Reina del cielo, aleluya. Porque aquel a quien mereciste llevar en tu seno, aleluya, ha resucitado, según predijo, aleluya. Ruega por nosotros a Dios, aleluya. Gózate y alégrate, Virgen María, aleluya, porque verdaderamente ha resucitado el Señor, aleluya. Oremos: Oh Dios, que por la resurrección de tu Hijo, nuestro Señor Jesucristo, te dignaste alegrar al mundo, concédenos que, por intercesión de su Madre, la Virgen María, alcancemos los gozos de la vida eterna. Por Jesucristo nuestro Señor. Amén.",
+      "tema_visual": "mariano",
+      "pagina_fuente": "17",
+      "devocion_slug": "maria-santisima"
+    },
+    {
+      "titulo": "Alma de Cristo",
+      "subtitulo": "Permanecer escondido en las llagas del Salvador",
+      "categoria": "Jesucristo",
+      "descripcion": "Oración tradicional de unión profunda con Cristo.",
+      "texto_completo": "Alma de Cristo, santifícame. Cuerpo de Cristo, sálvame. Sangre de Cristo, embriágame. Agua del costado de Cristo, lávame. Pasión de Cristo, confórtame. ¡Oh buen Jesús!, óyeme. Dentro de tus llagas, escóndeme. No permitas que me aparte de ti. Del enemigo malo, defiéndeme. En la hora de mi muerte, llámame y mándame ir a ti, para que con tus santos te alabe por los siglos de los siglos. Amén.",
+      "tema_visual": "cristologico",
+      "pagina_fuente": "18",
+      "devocion_slug": "santisimo-sacramento"
+    },
+    {
+      "titulo": "Oración a Jesús crucificado",
+      "subtitulo": "Contemplar las llagas del Señor",
+      "categoria": "Jesucristo",
+      "descripcion": "Súplica de fe, esperanza, caridad y conversión ante Cristo crucificado.",
+      "texto_completo": "Oh amado y buen Jesús, postrado en tu presencia te ruego con fervor que imprimas en mi corazón vivos sentimientos de fe, esperanza y caridad, verdadero dolor de mis pecados y firme propósito de enmienda. Mientras contemplo con amor y compasión tus cinco llagas, recuerdo que por nosotros fueron traspasadas tus manos y tus pies. Hazme permanecer junto a tu cruz y responder con una vida nueva al amor que allí me manifestaste. Amén.",
+      "tema_visual": "cristologico",
+      "pagina_fuente": "18-19",
+      "devocion_slug": "sangre-de-cristo"
+    },
+    {
+      "titulo": "Oración al Señor crucificado",
+      "subtitulo": "Confiar una necesidad a Cristo sufriente",
+      "categoria": "Jesucristo",
+      "descripcion": "Acción de gracias, conversión y petición ante la cruz del Señor.",
+      "texto_completo": "Señor crucificado, vengo con sencillez y amor a darte gracias por todo lo que has padecido por mi salvación. Cambia mi corazón, conviérteme y aléjame de todo pecado. Tú conoces el sufrimiento humano y comprendes la necesidad que hoy pongo ante ti. Si esta petición conviene al bien de mi alma y a mi salvación, concédemela conforme a tu voluntad. Que la Santísima Virgen María interceda por mí ante el Padre. Me despido confiado, ofreciéndote permanecer fiel a tu amor. Amén.",
+      "tema_visual": "cristologico",
+      "pagina_fuente": "19",
+      "devocion_slug": "sangre-de-cristo"
+    },
+    {
+      "titulo": "Oración al Señor de los Milagros",
+      "subtitulo": "Abrir la vida al poder salvador de Cristo",
+      "categoria": "Jesucristo",
+      "descripcion": "Oración de fe, conversión e intercesión al Señor de los Milagros.",
+      "texto_completo": "Señor de los Milagros, aquí vengo lleno de fe y de amor, porque eres mi Dios y mi Redentor. Reconozco tu poder de Creador y mis limitaciones de criatura, pero me alegra saber que has querido ser mi amigo y mi hermano. Abro ante ti mi cuerpo y mi alma para que toda mi vida permanezca dentro de tu plan de salvación. Hazme discípulo fiel, capaz de reconocerte y servirte en mis hermanos. Te pido por la Iglesia, por el Papa, por quienes nos conducen hacia ti, por los necesitados, los oprimidos, los enfermos y los agonizantes. Atiende también mis necesidades materiales y espirituales y dame perseverancia para seguirte cada día. Amén.",
+      "tema_visual": "cristologico",
+      "pagina_fuente": "20-21"
+    },
+    {
+      "titulo": "Letanías de la Santísima Virgen",
+      "subtitulo": "Invocar a María bajo sus títulos de amor",
+      "categoria": "Virgen María",
+      "descripcion": "Letanía tradicional para pedir la intercesión maternal de la Virgen.",
+      "texto_completo": "Señor, ten piedad. Cristo, ten piedad. Señor, ten piedad. Cristo, óyenos. Cristo, escúchanos. Dios Padre celestial, ten piedad de nosotros. Dios Hijo, Redentor del mundo, ten piedad de nosotros. Dios Espíritu Santo, ten piedad de nosotros. Santísima Trinidad, un solo Dios, ten piedad de nosotros. Santa María, Santa Madre de Dios, Santa Virgen de las vírgenes, Madre de Cristo, Madre de la Iglesia, Madre de misericordia, Virgen prudentísima, Virgen digna de veneración, Rosa mística, Torre de David, Casa de oro, Arca de la Alianza, Puerta del cielo, Estrella de la mañana, Salud de los enfermos, Refugio de los pecadores, Consuelo de los migrantes, Consoladora de los afligidos, Auxilio de los cristianos, Reina de los ángeles, Reina de todos los santos, Reina de la familia y Reina de la paz, ruega por nosotros. Cordero de Dios, que quitas el pecado del mundo, perdónanos, Señor; escúchanos, Señor; ten misericordia de nosotros. Ruega por nosotros, santa Madre de Dios, para que seamos dignos de las promesas de Cristo. Amén.",
+      "tema_visual": "mariano",
+      "pagina_fuente": "27-30",
+      "devocion_slug": "maria-santisima"
+    },
+    {
+      "titulo": "Salve",
+      "subtitulo": "Clamar a la Madre de misericordia",
+      "categoria": "Virgen María",
+      "descripcion": "Antífona mariana tradicional de confianza y esperanza.",
+      "texto_completo": "Dios te salve, Reina y Madre de misericordia, vida, dulzura y esperanza nuestra. Dios te salve. A ti clamamos los desterrados hijos de Eva; a ti suspiramos, gimiendo y llorando en este valle de lágrimas. Ea, pues, Señora, abogada nuestra, vuelve a nosotros esos tus ojos misericordiosos y, después de este destierro, muéstranos a Jesús, fruto bendito de tu vientre. ¡Oh clementísima, oh piadosa, oh dulce Virgen María! Ruega por nosotros, santa Madre de Dios, para que seamos dignos de alcanzar las promesas de nuestro Señor Jesucristo. Amén.",
+      "tema_visual": "mariano",
+      "pagina_fuente": "31",
+      "devocion_slug": "maria-santisima"
+    },
+    {
+      "titulo": "Me haces falta Tú",
+      "subtitulo": "Visita a Jesús presente en la Eucaristía",
+      "categoria": "Jesucristo",
+      "descripcion": "Meditación para reconocer que Cristo es el centro y sentido de la vida.",
+      "texto_completo": "Jesús Eucaristía, lejos de ti la vida pierde su sentido y el corazón se cansa bajo el peso de sus miserias. Sin tu luz el camino se vuelve oscuro, el deber pesado y la fidelidad difícil. Pero cerca de ti todo cambia: la noche cede ante el amanecer y mi pobreza encuentra refugio. Tú eres más íntimo a mí que mi propio interior y, cuando te haces mi todo, nada esencial me falta. Quédate conmigo, renueva mis nobles anhelos y enséñame a vivir cada responsabilidad unido a tu presencia. Amén.",
+      "tema_visual": "cristologico",
+      "pagina_fuente": "32-33",
+      "devocion_slug": "santisimo-sacramento"
+    },
+    {
+      "titulo": "Como un pobre ante quien lo tiene todo",
+      "subtitulo": "Presentarse ante la misericordia de Jesús",
+      "categoria": "Jesucristo",
+      "descripcion": "Visita eucarística desde la conciencia de la propia pobreza espiritual.",
+      "texto_completo": "A ti me acerco, Señor, como un pobre consciente de su indigencia, que siente la fragilidad, la miseria y el rechazo. Vengo porque sé que tu misericordia no se cansa y tu bondad se entrega sin medida. No tengo otro mérito ni recomendación que mi propia pobreza. Me reconozco pobre de virtudes, de nobles sentimientos y de obras buenas; pero incluso reconocerlo es una gracia que me impulsa hacia ti. Jesús Eucaristía, rico en misericordia y omnipotente en bondad, alivia mi pobreza espiritual con tu presencia transformadora y siembra en mí la semilla de tu Palabra. Amén.",
+      "tema_visual": "cristologico",
+      "pagina_fuente": "33-34",
+      "devocion_slug": "santisimo-sacramento"
+    },
+    {
+      "titulo": "Señor, no soy digno",
+      "subtitulo": "Acercarse humildemente a Jesús Eucaristía",
+      "categoria": "Jesucristo",
+      "descripcion": "Visita eucarística de humildad, arrepentimiento y confianza.",
+      "texto_completo": "Jesús Eucaristía, te miro y descubro la distancia entre mi fragilidad y tu santidad. Reconozco mis infidelidades, mis pecados, mi soberbia y mi egoísmo. No soy digno de permanecer ante ti, pero sé que tu misericordia y tu compasión no tienen límites. Por eso me acerco sin ocultar mi pobreza y te digo con confianza: Señor, no soy digno de que entres en mi casa, pero una palabra tuya bastará para sanarme. Perdona mis pecados, purifica mi corazón y hazme vivir en tu amistad. Amén.",
+      "tema_visual": "cristologico",
+      "pagina_fuente": "34-35",
+      "devocion_slug": "santisimo-sacramento"
+    },
+    {
+      "titulo": "Jesús, manso y humilde de corazón",
+      "subtitulo": "Pedir un corazón semejante al de Cristo",
+      "categoria": "Sanación y protección",
+      "descripcion": "Visita eucarística para pedir humildad, mansedumbre y dominio propio.",
+      "texto_completo": "Jesús Eucaristía, manso y humilde de corazón, me acerco lleno de confianza para que transformes mi vida. Suaviza mis iras, mis rebeldías y los movimientos desordenados que nacen de mi egoísmo. Derriba mis actitudes soberbias, mi autosuficiencia y el deseo de vanagloria. Que tu presencia sacramental dulcifique mis sentimientos y despierte en mí compasión por quienes sufren. Transforma las fuerzas que luchan contra ti y úsalas para trabajar por ti, en ti y contigo. Jesús, manso y humilde de corazón, haz mi corazón semejante al tuyo. Amén.",
+      "tema_visual": "sanacion",
+      "pagina_fuente": "35-36",
+      "devocion_slug": "sagrado-corazon-de-jesus"
+    },
+    {
+      "titulo": "El gozo de estar junto a Ti",
+      "subtitulo": "Alegría de permanecer ante Jesús Eucaristía",
+      "categoria": "Jesucristo",
+      "descripcion": "Acción de gracias por el consuelo y la alegría de la presencia sacramental.",
+      "texto_completo": "Jesús Eucaristía, venir a visitarte llena mi alma de una alegría profunda. Es conversar con el Amigo, recibir luz, paz y un gozo que no cabe en el corazón. Me siento favorecido porque tú, Señor del universo, me recibes con bondad y te agrada que permanezca ante ti. Cerca de ti encuentro al Redentor que conoce mis heridas, alivia mis males y derrama consuelo. Gracias por estos momentos bajo la acción de tu amor misericordioso, que me purifica y santifica. Un momento junto a ti vale más que largos años lejos de tu presencia. Amén.",
+      "tema_visual": "cristologico",
+      "pagina_fuente": "36-37",
+      "devocion_slug": "santisimo-sacramento"
+    },
+    {
+      "titulo": "Letanía por los sacerdotes",
+      "subtitulo": "Súplica por cada necesidad del ministerio sacerdotal",
+      "categoria": "Intercesión",
+      "descripcion": "Intercesión extensa por el Papa, los obispos, sacerdotes y seminaristas.",
+      "texto_completo": "A nuestro Santo Padre el Papa, llénalo de tus dones, Señor. A los cardenales y representantes pontificios, dales tu luz. A los arzobispos y obispos, dales tu gracia. A los párrocos, dales celo por tu gloria. A los vicarios, guíalos. A los formadores de seminarios, ilumínalos. A los sacerdotes religiosos, perfecciónalos; a los diocesanos, santifícalos. A los confesores y directores espirituales, hazlos dóciles instrumentos del Espíritu Santo. A los predicadores, instrúyelos; a los misioneros, sostenlos. A quienes sirven a jóvenes, trabajadores, campesinos, pobres y enfermos, dales amor y abnegación. A los sacerdotes enfermos y ancianos, dales paciencia; a los aislados, acompáñalos; a los turbados, dales paz; a los jóvenes, cuídalos; a los que están en peligro o tentación, fortalécelos; a los difuntos, dales la gloria. A los seminaristas, concédeles perseverancia. A todos los sacerdotes, transfórmalos en ti, Señor. Amén.",
+      "tema_visual": "intercesion",
+      "pagina_fuente": "38-39"
+    },
+    {
+      "titulo": "Adoremos reverentes",
+      "subtitulo": "Adoración a Cristo en el Santísimo Sacramento",
+      "categoria": "Jesucristo",
+      "descripcion": "Himno eucarístico de alabanza y veneración.",
+      "texto_completo": "Adoremos reverentes al Señor sacramentado. Ceda el antiguo rito ante el nuevo sacramento, y la fe complete lo que los sentidos no alcanzan. Al Padre y al Hijo sean dadas alabanza, júbilo, honor, poder y bendición; y al Espíritu que procede de ambos, igual gloria. Les diste el pan del cielo, que contiene en sí todo deleite. Oh Dios, que bajo este sacramento admirable nos dejaste el memorial de tu pasión, concédenos venerar de tal modo los sagrados misterios de tu Cuerpo y de tu Sangre que experimentemos constantemente el fruto de tu redención. Amén.",
+      "tema_visual": "cristologico",
+      "pagina_fuente": "40-41",
+      "devocion_slug": "santisimo-sacramento"
+    },
+    {
+      "titulo": "Divinas alabanzas",
+      "subtitulo": "Bendecir el santo nombre de Dios",
+      "categoria": "Santísima Trinidad",
+      "descripcion": "Alabanzas tradicionales después de la bendición con el Santísimo Sacramento.",
+      "texto_completo": "Bendito sea Dios. Bendito sea su santo nombre. Bendito sea Jesucristo, verdadero Dios y verdadero hombre. Bendito sea el nombre de Jesús. Bendito sea su Sacratísimo Corazón. Bendita sea su Preciosísima Sangre. Bendito sea Jesús en el Santísimo Sacramento del altar. Bendito sea el Espíritu Santo Paráclito. Bendita sea la excelsa Madre de Dios, María Santísima. Bendita sea su santa e inmaculada Concepción. Bendita sea su gloriosa Asunción. Bendito sea el nombre de María, Virgen y Madre. Bendito sea san José, su castísimo esposo. Bendito sea Dios en sus ángeles y en sus santos. Amén.",
+      "tema_visual": "cristologico",
+      "pagina_fuente": "41",
+      "devocion_slug": "santisimo-sacramento"
+    },
+    {
+      "titulo": "Señal de la Cruz",
+      "subtitulo": "Comenzar la oración en el nombre de Dios",
+      "categoria": "Santísima Trinidad",
+      "descripcion": "Invocación a la Santísima Trinidad y petición de protección.",
+      "texto_completo": "Por la señal de la Santa Cruz, de nuestros enemigos líbranos, Señor, Dios nuestro.\n\nEn el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.",
+      "tema_visual": "oracion",
+      "fuente": "Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)",
+      "pagina_fuente": "22"
+    },
+    {
+      "titulo": "Gloria al Padre",
+      "subtitulo": "Alabanza a la Santísima Trinidad",
+      "categoria": "Santísima Trinidad",
+      "descripcion": "Doxología de alabanza al Padre, al Hijo y al Espíritu Santo.",
+      "texto_completo": "Gloria al Padre, y al Hijo, y al Espíritu Santo.\nComo era en el principio, y ahora y siempre, y por los siglos de los siglos. Amén.",
+      "tema_visual": "oracion",
+      "fuente": "Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)",
+      "pagina_fuente": "17"
+    },
+    {
+      "titulo": "Oración de los misterios del Rosario",
+      "subtitulo": "Contemplar la vida, muerte y resurrección de Jesús",
+      "categoria": "Virgen María",
+      "descripcion": "Oración que acompaña la meditación de los misterios del Rosario.",
+      "texto_completo": "Oh Dios, cuyo Unigénito por su Vida, Muerte y Resurrección, nos mereció los premios de la vida eterna, concédenos que meditando estos misterios en el Rosario de la Santísima Virgen, alcancemos la gloria que prometen. Por Cristo nuestro Señor. Amén.",
+      "tema_visual": "mariano",
+      "fuente": "Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)",
+      "pagina_fuente": "24",
+      "devocion_slug": "maria-santisima"
+    },
+    {
+      "titulo": "Yo confieso",
+      "subtitulo": "Reconocer nuestros pecados ante Dios",
+      "categoria": "Vida diaria",
+      "descripcion": "Primera fórmula del acto penitencial reproducida en el devocionario.",
+      "texto_completo": "Yo confieso ante Dios Todopoderoso, y ante ustedes hermanos que he pecado mucho de pensamiento, palabra, obra y omisión; por mi culpa, por mi culpa, por mi gran culpa.\n\nPor eso ruego a Santa María siempre Virgen, a los ángeles, a los santos y a ustedes hermanos, que intercedan por mí ante Dios, Nuestro Señor.",
+      "tema_visual": "oracion",
+      "fuente": "Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)",
+      "pagina_fuente": "63"
+    },
+    {
+      "titulo": "Señor, ten piedad",
+      "subtitulo": "Acudir a la misericordia de Cristo",
+      "categoria": "Vida diaria",
+      "descripcion": "Invocaciones de la tercera fórmula del acto penitencial.",
+      "texto_completo": "Tú que has sido enviado a sanar los corazones afligidos: Señor, ten piedad.\nSeñor, ten piedad.\n\nTú que has venido a llamar a los pecadores: Cristo, ten piedad.\nCristo, ten piedad.\n\nTú que estás sentado a la derecha del Padre para interceder por nosotros: Señor, ten piedad.\nSeñor, ten piedad.",
+      "tema_visual": "oracion",
+      "fuente": "Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)",
+      "pagina_fuente": "64"
+    },
+    {
+      "titulo": "Gloria a Dios en el cielo",
+      "subtitulo": "Himno de alabanza y acción de gracias",
+      "categoria": "Santísima Trinidad",
+      "descripcion": "Himno Gloria reproducido en la sección Cena del Señor.",
+      "texto_completo": "Gloria a Dios en el cielo,\ny en la tierra paz a los hombres que ama el Señor.\n\nPor tu inmensa gloria\nte alabamos, te bendecimos,\nte adoramos, te glorificamos,\nte damos gracias,\nSeñor Dios, Rey celestial,\nDios Padre todopoderoso.\n\nSeñor, Hijo único, Jesucristo.\nSeñor Dios, Cordero de Dios, Hijo del Padre;\ntú que quitas el pecado del mundo,\nten piedad de nosotros;\ntú que quitas el pecado del mundo,\natiende nuestra súplica;\ntú que estás sentado a la derecha del Padre,\nten piedad de nosotros;\nporque sólo tú eres Santo,\nsólo tú Señor, sólo tú Altísimo, Jesucristo,\ncon el Espíritu Santo en la gloria de Dios Padre.\nAmén.",
+      "tema_visual": "oracion",
+      "fuente": "Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)",
+      "pagina_fuente": "65-66"
+    },
+    {
+      "titulo": "Credo niceno-constantinopolitano",
+      "subtitulo": "Profesión de fe de la Iglesia",
+      "categoria": "Vida diaria",
+      "descripcion": "Credo 1 del libro; conserva la formulación plural de esta edición.",
+      "texto_completo": "Creemos en un solo Dios,\nPadre Todopoderoso,\nCreador del cielo y de la tierra,\nde todo lo visible y lo invisible.\n\nCreemos en un solo Señor, Jesucristo,\nHijo único de Dios,\nnacido del Padre antes de todos los siglos:\nDios de Dios, Luz de Luz,\nDios verdadero de Dios verdadero,\nengendrado, no creado,\nde la misma naturaleza del Padre,\npor quien todo fue hecho;\nque por nosotros, los hombres,\ny por nuestra salvación bajó del cielo,\ny por obra del Espíritu Santo\nse encarnó de María, la Virgen,\ny se hizo hombre;\ny por nuestra causa fue crucificado\nen tiempos de Poncio Pilato;\npadeció y fue sepultado,\ny resucitó al tercer día, según las Escrituras,\ny subió al cielo, y está sentado a la derecha del Padre;\ny de nuevo vendrá con gloria\npara juzgar a vivos y muertos,\ny su reino no tendrá fin.\n\nCreemos en el Espíritu Santo,\nSeñor y dador de vida,\nque procede del Padre y del Hijo,\nque con el Padre y el Hijo recibe\nuna misma adoración y gloria,\ny que habló por los profetas.\nY en la Iglesia, que es una,\nsanta, católica y apostólica.\nReconocemos un solo Bautismo\npara el perdón de los pecados.\nEsperamos la resurrección de los muertos\ny la vida del mundo futuro. Amén.",
+      "tema_visual": "oracion",
+      "fuente": "Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)",
+      "pagina_fuente": "68-70"
+    },
+    {
+      "titulo": "Credo de los Apóstoles",
+      "subtitulo": "Creo en Dios, Padre todopoderoso",
+      "categoria": "Vida diaria",
+      "descripcion": "Credo 2 reproducido en la sección de profesión de fe.",
+      "texto_completo": "Creo en Dios, Padre Todopoderoso,\nCreador del cielo y de la tierra.\n\nCreo en Jesucristo, su único Hijo,\nNuestro Señor,\nque fue concebido por obra y gracia\ndel Espíritu Santo.\nNació de Santa María Virgen,\npadeció bajo el poder de Poncio Pilato,\nfue crucificado, muerto y sepultado,\ndescendió a los infiernos,\nal tercer día resucitó de entre los muertos,\nsubió a los cielos\ny está sentado a la derecha de Dios,\nPadre todopoderoso.\nDesde allí ha de venir\na juzgar a vivos y muertos.\n\nCreo en el Espíritu Santo,\nla santa Iglesia católica,\nla comunión de los santos,\nel perdón de los pecados,\nla resurrección de la carne\ny la vida eterna. Amén.",
+      "tema_visual": "oracion",
+      "fuente": "Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)",
+      "pagina_fuente": "70-71"
+    },
+    {
+      "titulo": "Santo",
+      "subtitulo": "Aclamar la santidad del Señor",
+      "categoria": "Santísima Trinidad",
+      "descripcion": "Aclamación de los fieles al final del prefacio, reproducida en el libro.",
+      "texto_completo": "Santo, Santo, Santo es el Señor,\nDios del universo.\nLlenos están el cielo y la tierra de tu gloria,\nHosanna en el cielo.\nBendito el que viene en el nombre del Señor,\nHosanna en el cielo.",
+      "tema_visual": "oracion",
+      "fuente": "Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)",
+      "pagina_fuente": "74"
+    },
+    {
+      "titulo": "Padre nuestro",
+      "subtitulo": "La oración que Jesús nos enseñó",
+      "categoria": "Vida diaria",
+      "descripcion": "Oración del Señor reproducida en el rito de la Comunión.",
+      "texto_completo": "Padre nuestro,\nque estás en el cielo,\nsantificado sea tu Nombre;\nvenga a nosotros tu reino;\nhágase tu voluntad\nen la tierra como en el cielo.\n\nDanos hoy nuestro pan de cada día;\nperdona nuestras ofensas,\ncomo también nosotros perdonamos\na los que nos ofenden;\nno nos dejes caer en la tentación,\ny líbranos del mal.\nAmén.",
+      "tema_visual": "oracion",
+      "fuente": "Devocionario Católico — José Hugo Garaycoa Hawkins (24.ª edición, reimpresión febrero de 2012)",
+      "pagina_fuente": "75-76"
+    }
   ]
 }
