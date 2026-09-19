@@ -75,6 +75,9 @@ try {
         $devotionQuery->execute(['slug' => $devotionSlug]);
         $devotionId = $devotionQuery->fetchColumn() ?: null;
       }
+      if ($devotionId) {
+        $appCategory = 'Devociones';
+      }
       $payload = [
         'devocion_id' => $devotionId,
         'tipo' => $devotionId ? 'devocion' : 'independiente',
