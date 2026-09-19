@@ -1,5 +1,7 @@
 export type LibraryPrayer = {
   id: string;
+  devocion_id: string;
+  devocion_slug: string;
   titulo: string;
   subtitulo: string;
   categoria: string;
@@ -33,6 +35,15 @@ const request = async (query: string, signal?: AbortSignal) => {
   return body;
 };
 
+export type PrayerDevotion = {
+  id: string;
+  slug: string;
+  titulo: string;
+  subtitulo: string;
+  imagen: string;
+  total_oraciones: number;
+};
+
 export const prayerLibraryService = {
   categoryName(slug: string) {
     return categoryMap[slug] || "Oraciones del cristiano";
@@ -45,5 +56,13 @@ export const prayerLibraryService = {
   async get(id: string, signal?: AbortSignal): Promise<LibraryPrayer> {
     const body = await request(`?id=${encodeURIComponent(id)}`, signal);
     return body.oracion as LibraryPrayer;
+  },
+  async devotions(signal?: AbortSignal): Promise<PrayerDevotion[]> {
+    const body = await request("?vista=devociones", signal);
+    return Array.isArray(body.devociones) ? body.devociones : [];
+  },
+  async devotion(slug: string, signal?: AbortSignal): Promise<LibraryPrayer[]> {
+    const body = await request(`?devocion=${encodeURIComponent(slug)}`, signal);
+    return Array.isArray(body.oraciones) ? body.oraciones : [];
   },
 };
