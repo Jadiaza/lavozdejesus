@@ -26,7 +26,7 @@ function lvj_prayer_normalize(array $row): array
     }
     $body = implode("\n\n", $parts);
   }
-  $result = ['id' => $read('id'), 'devocion_id' => $read('devocion_id'), 'devocion_slug' => $read('devocion_slug'), 'titulo' => $read('titulo', 'nombre'),
+  $result = ['id' => $read('id'), 'devocion_id' => $read('devocion_id'), 'devocion_slug' => $read('devocion_slug'), 'subcategoria' => $read('subcategoria'), 'titulo' => $read('titulo', 'nombre'),
     'categoria' => $read('categoria') ?: 'Oraciones del cristiano', 'texto_completo' => $body];
   foreach (['subtitulo', 'descripcion', 'fuente', 'pagina_fuente', 'estado_revision'] as $field) $result[$field] = $read($field);
   $result['tema_visual'] = $read('tema_visual') ?: 'oracion';
@@ -54,6 +54,7 @@ try {
   }
   $id = is_string($_GET['id'] ?? null) ? trim($_GET['id']) : '';
   $category = is_string($_GET['categoria'] ?? null) ? trim($_GET['categoria']) : '';
+  $subcategory = is_string($_GET['subcategoria'] ?? null) ? trim($_GET['subcategoria']) : '';
   $devotion = is_string($_GET['devocion'] ?? null) ? trim($_GET['devocion']) : '';
   $view = is_string($_GET['vista'] ?? null) ? trim($_GET['vista']) : '';
   if ($view === 'devociones') {
@@ -68,6 +69,9 @@ try {
   }
   if ($category !== '') {
     $records = array_values(array_filter($records, static fn(array $prayer): bool => mb_strtolower($prayer['categoria'], 'UTF-8') === mb_strtolower($category, 'UTF-8')));
+  }
+  if ($subcategory !== '') {
+    $records = array_values(array_filter($records, static fn(array $prayer): bool => $prayer['subcategoria'] === $subcategory));
   }
   if ($devotion !== '') {
     $records = array_values(array_filter($records, static fn(array $prayer): bool => $prayer['devocion_slug'] === $devotion));
