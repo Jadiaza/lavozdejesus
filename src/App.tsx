@@ -30,6 +30,7 @@ const OracionCategorias = lazy(() => import("@/modules/prayers/pages/Oraciones")
 const OracionLista = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.OracionLista })));
 const OracionDetalle = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.OracionDetalle })));
 const DevocionesOraciones = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.DevocionesPage })));
+const DevocionDetalle = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.DevocionDetalle })));
 const MisOraciones = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.MisOraciones })));
 const PeticionOracion = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.PeticionOracion })));
 const PrayerReminders = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.PrayerReminders })));
@@ -111,6 +112,7 @@ const App = () => (
               <Route path="/oraciones/categoria/:categoria" element={<OracionLista />} />
               <Route path="/oraciones/oracion/:id" element={<OracionDetalle />} />
               <Route path="/oraciones/devociones" element={<DevocionesOraciones />} />
+              <Route path="/oraciones/devociones/:slug" element={<DevocionDetalle />} />
               <Route path="/oraciones/mis-oraciones" element={<MisOraciones />} />
               <Route path="/oraciones/peticion" element={<PeticionOracion />} />
               <Route path="/oraciones/recordatorios" element={<PrayerReminders />} />
