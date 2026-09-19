@@ -18,7 +18,7 @@ export function PrayerReader({ preferences, children, integrated = false }: { pr
   const theme = themes[preferences.theme];
   const style = {
     "--prayer-accent": theme.accent,
-    background: theme.background,
+    background: integrated ? "transparent" : theme.background,
     color: theme.color,
     fontFamily: fonts[preferences.font],
     fontSize: `${preferences.fontSize}px`,
@@ -27,5 +27,5 @@ export function PrayerReader({ preferences, children, integrated = false }: { pr
     maxWidth: preferences.focusedWidth ? "38rem" : "none",
   } as CSSProperties;
 
-  return <article style={style} className={`mx-auto transition-colors ${integrated ? "w-full px-1 py-2" : "rounded-2xl border border-white/10 p-5 shadow-xl"}`}>{children}</article>;
+  return <article style={style} className={`mx-auto transition-colors ${integrated ? "w-full px-1 py-0" : "rounded-2xl border border-white/10 p-5 shadow-xl"}`}>{children}</article>;
 }
