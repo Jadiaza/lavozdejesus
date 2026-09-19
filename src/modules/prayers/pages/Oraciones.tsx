@@ -301,10 +301,9 @@ export function OracionDetalle() {
         {loading ? <div className="flex min-h-[65dvh] items-center justify-center"><LoaderCircle className="h-8 w-8 animate-spin text-[#efbd52]" /></div> : null}
         {error ? <div className="rounded-xl border border-red-400/25 bg-[#111b23] p-6 text-center text-sm text-white/70">{error}</div> : null}
         {prayer ? <>
-          <section className="mb-6 text-center">
-            <Sparkles className="mx-auto h-6 w-6 text-[#efbd52]" strokeWidth={1.5} />
-            <h1 className="mt-3 font-serif text-[clamp(2rem,9vw,2.65rem)] font-semibold leading-tight tracking-[-.025em] text-[#f7f1e6]">{prayer.titulo}</h1>
-            <div className="mx-auto mt-4 flex w-28 items-center gap-2 text-[#efbd52]" aria-hidden="true"><span className="h-px flex-1 bg-current" /><span className="rotate-45 text-[10px]">◆</span><span className="h-px flex-1 bg-current" /></div>
+          <section className="mb-5 pt-1 text-center">
+            <h1 className="font-serif text-[clamp(2rem,9vw,2.65rem)] font-semibold leading-tight tracking-[-.025em] text-[#f7f1e6]">{prayer.titulo}</h1>
+            <div className="mx-auto mt-2 flex w-28 items-center gap-2 text-[#efbd52]" aria-hidden="true"><span className="h-px flex-1 bg-current" /><span className="rotate-45 text-[9px]">◆</span><span className="h-px flex-1 bg-current" /></div>
           </section>
           <PrayerReader preferences={preferences} integrated><div className="whitespace-pre-line">{prayer.texto_completo}</div></PrayerReader>
           <div className="mt-8 grid grid-cols-3 gap-2 text-center text-xs">
@@ -314,7 +313,6 @@ export function OracionDetalle() {
           </div>
           <button type="button" onClick={markPrayed} disabled={prayedToday} className={`mt-5 flex min-h-14 w-full items-center justify-center gap-3 rounded-full border text-sm font-bold transition ${prayedToday ? "border-emerald-400/45 bg-emerald-400/10 text-emerald-200" : "border-[#efbd52] text-[#efbd52] active:bg-[#efbd52]/10"}`}><Check className="h-6 w-6" />{prayedToday ? "Oración completada hoy" : "Terminé mi oración"}</button>
           <p className="mt-3 text-center text-xs text-white/55">Hoy has rezado {dailyCount} {dailyCount === 1 ? "oración" : "oraciones"}</p>
-          <details className="mt-7 border-y border-white/15 py-4 text-xs"><summary className="cursor-pointer list-none text-center"><b>Fuente:</b> <span className="text-white/65">{prayer.fuente || "Devocionario Católico"}</span> <span className="ml-1 text-[#efbd52]">· Ver referencia</span></summary>{prayer.pagina_fuente ? <p className="mt-3 text-center text-white/55">Página {prayer.pagina_fuente}</p> : null}</details>
         </> : null}
       </main>
       <PrayerNav active="Oraciones" />
