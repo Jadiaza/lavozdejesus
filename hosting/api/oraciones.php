@@ -26,7 +26,7 @@ function lvj_prayer_normalize(array $row): array
     }
     $body = implode("\n\n", $parts);
   }
-  $result = ['id' => $read('id'), 'titulo' => $read('titulo', 'nombre'),
+  $result = ['id' => $read('id'), 'devocion_id' => $read('devocion_id'), 'devocion_slug' => $read('devocion_slug'), 'titulo' => $read('titulo', 'nombre'),
     'categoria' => $read('categoria') ?: 'Oraciones del cristiano', 'texto_completo' => $body];
   foreach (['subtitulo', 'descripcion', 'fuente', 'pagina_fuente', 'estado_revision'] as $field) $result[$field] = $read($field);
   $result['tema_visual'] = $read('tema_visual') ?: 'oracion';
@@ -41,7 +41,8 @@ function lvj_prayer_normalize(array $row): array
 }
 
 try {
-  $rows = lvj_db()->query('SELECT * FROM lvj_ora_oraciones ORDER BY orden ASC, id ASC')->fetchAll();
+  $pdo = lvj_db();
+  $rows = $pdo->query('SELECT o.*, d.slug AS devocion_slug FROM lvj_ora_oraciones o LEFT JOIN lvj_ora_devociones d ON d.id = o.devocion_id ORDER BY o.orden ASC, o.id ASC')->fetchAll();
   $records = [];
   foreach ($rows as $row) {
     $status = strtolower(trim((string) ($row['estado'] ?? $row['activo'] ?? 'activo')));
@@ -53,6 +54,12 @@ try {
   }
   $id = is_string($_GET['id'] ?? null) ? trim($_GET['id']) : '';
   $category = is_string($_GET['categoria'] ?? null) ? trim($_GET['categoria']) : '';
+  $devotion = is_string($_GET['devocion'] ?? null) ? trim($_GET['devocion']) : '';
+  $view = is_string($_GET['vista'] ?? null) ? trim($_GET['vista']) : '';
+  if ($view === 'devociones') {
+    $devotions = $pdo->query("SELECT d.id, d.slug, d.titulo, COALESCE(d.subtitulo, d.descripcion, '') AS subtitulo, COALESCE(d.imagen, '') AS imagen, COUNT(o.id) AS total_oraciones FROM lvj_ora_devociones d LEFT JOIN lvj_ora_oraciones o ON o.devocion_id = d.id AND o.estado_revision IN ('publicada','publicado','published') WHERE d.estado NOT IN ('inactivo','eliminado') GROUP BY d.id, d.slug, d.titulo, d.subtitulo, d.descripcion, d.imagen, d.orden ORDER BY d.orden ASC, d.id ASC")->fetchAll();
+    lvj_json_response(['success' => true, 'total' => count($devotions), 'devociones' => $devotions]);
+  }
   if ($id !== '') {
     foreach ($records as $prayer) {
       if ($prayer['id'] === $id) lvj_json_response(['success' => true, 'oracion' => $prayer]);
@@ -61,6 +68,9 @@ try {
   }
   if ($category !== '') {
     $records = array_values(array_filter($records, static fn(array $prayer): bool => mb_strtolower($prayer['categoria'], 'UTF-8') === mb_strtolower($category, 'UTF-8')));
+  }
+  if ($devotion !== '') {
+    $records = array_values(array_filter($records, static fn(array $prayer): bool => $prayer['devocion_slug'] === $devotion));
   }
   lvj_json_response(['success' => true, 'total' => count($records), 'oraciones' => $records]);
 } catch (Throwable $error) {
