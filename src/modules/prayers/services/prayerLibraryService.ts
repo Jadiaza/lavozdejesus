@@ -2,6 +2,7 @@ export type LibraryPrayer = {
   id: string;
   devocion_id: string;
   devocion_slug: string;
+  subcategoria: string;
   titulo: string;
   subtitulo: string;
   categoria: string;
@@ -48,9 +49,10 @@ export const prayerLibraryService = {
   categoryName(slug: string) {
     return categoryMap[slug] || "Oraciones del cristiano";
   },
-  async list(slug: string, signal?: AbortSignal): Promise<LibraryPrayer[]> {
+  async list(slug: string, signal?: AbortSignal, subcategory = ""): Promise<LibraryPrayer[]> {
     const category = this.categoryName(slug);
-    const body = await request(`?categoria=${encodeURIComponent(category)}`, signal);
+    const extra = subcategory ? `&subcategoria=${encodeURIComponent(subcategory)}` : "";
+    const body = await request(`?categoria=${encodeURIComponent(category)}${extra}`, signal);
     return Array.isArray(body.oraciones) ? body.oraciones : [];
   },
   async get(id: string, signal?: AbortSignal): Promise<LibraryPrayer> {
