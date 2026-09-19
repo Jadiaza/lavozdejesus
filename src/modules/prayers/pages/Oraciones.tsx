@@ -248,6 +248,13 @@ export function OracionDetalle() {
       : preferences.theme === "contrast"
         ? "#ffd54f"
         : "#efbd52";
+  const readingTheme = preferences.theme === "light"
+    ? { background: "#fffdf7", color: "#1f2933", header: "rgba(255,253,247,.94)" }
+    : preferences.theme === "sepia"
+      ? { background: "#f2e6cc", color: "#3f3124", header: "rgba(242,230,204,.94)" }
+      : preferences.theme === "contrast"
+        ? { background: "#000000", color: "#ffffff", header: "rgba(0,0,0,.94)" }
+        : { background: "#030a10", color: "#f6f0e6", header: "rgba(4,16,25,.90)" };
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true); setError("");
@@ -298,9 +305,9 @@ export function OracionDetalle() {
     } catch { /* El usuario puede cancelar el diálogo nativo. */ }
   };
 
-  return <div className="min-h-dvh bg-[#030a10] text-[#f7f1e6]">
-    <div className="mx-auto min-h-dvh max-w-[430px] border-x border-white/[0.04] bg-[radial-gradient(circle_at_50%_-5%,rgba(32,83,101,.18),transparent_34%),linear-gradient(180deg,#06131b_0%,#030a10_100%)]">
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between bg-[#041019]/90 px-4 backdrop-blur-xl">
+  return <div style={{ backgroundColor: readingTheme.background, color: readingTheme.color }} className="min-h-dvh transition-colors duration-300">
+    <div style={{ backgroundColor: readingTheme.background }} className="mx-auto min-h-dvh max-w-[430px] border-x border-current/[0.04] transition-colors duration-300">
+      <header style={{ backgroundColor: readingTheme.header }} className="sticky top-0 z-30 flex h-16 items-center justify-between px-4 backdrop-blur-xl transition-colors duration-300">
         <button type="button" onClick={() => navigate(-1)} aria-label="Volver" className="flex h-11 w-11 items-center justify-center text-[#efbd52]"><ArrowLeft className="h-7 w-7" /></button>
         <button type="button" onClick={() => setFormatOpen(true)} aria-label="Formato de lectura" className="flex h-11 min-w-11 items-center justify-center font-serif text-2xl font-semibold text-[#efbd52]">Aa</button>
       </header>
@@ -310,7 +317,7 @@ export function OracionDetalle() {
         {prayer ? <>
           <section className="mb-5 pt-1 text-center">
             <h1 style={{ color: titleColor }} className="font-serif text-[clamp(2rem,9vw,2.65rem)] font-semibold leading-tight tracking-[-.025em]">{prayer.titulo}</h1>
-            <div style={{ color: titleColor }} className="mx-auto mt-0.5 flex w-28 items-center gap-2" aria-hidden="true"><span className="h-px flex-1 bg-current" /><span className="rotate-45 text-[9px]">◆</span><span className="h-px flex-1 bg-current" /></div>
+            <div style={{ color: readingTheme.color }} className="mx-auto -mt-1 flex w-28 items-center gap-2 opacity-80" aria-hidden="true"><span className="h-px flex-1 bg-current" /><span className="rotate-45 text-[9px]">◆</span><span className="h-px flex-1 bg-current" /></div>
           </section>
           <PrayerReader preferences={preferences} integrated><div className="whitespace-pre-line">{prayer.texto_completo}</div></PrayerReader>
           <div className="mt-8 grid grid-cols-3 gap-2 text-center text-xs">
@@ -319,7 +326,7 @@ export function OracionDetalle() {
             <button type="button" onClick={sharePrayer} className="flex min-h-16 flex-col items-center justify-center gap-1.5"><Send className="h-7 w-7 text-[#efbd52]" /><span>Compartir</span></button>
           </div>
           <button type="button" onClick={markPrayed} disabled={prayedToday} className={`mt-5 flex min-h-14 w-full items-center justify-center gap-3 rounded-full border text-sm font-bold transition ${prayedToday ? "border-emerald-400/45 bg-emerald-400/10 text-emerald-200" : "border-[#efbd52] text-[#efbd52] active:bg-[#efbd52]/10"}`}><Check className="h-6 w-6" />{prayedToday ? "Oración completada hoy" : "Terminé mi oración"}</button>
-          <p className="mt-3 text-center text-xs text-white/55">Hoy has rezado {dailyCount} {dailyCount === 1 ? "oración" : "oraciones"}</p>
+          <p className="mt-3 text-center text-xs opacity-60">Hoy has rezado {dailyCount} {dailyCount === 1 ? "oración" : "oraciones"}</p>
         </> : null}
       </main>
       <PrayerNav active="Oraciones" />
