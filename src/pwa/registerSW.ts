@@ -1,5 +1,5 @@
-// Guarded service-worker registration for Lovable preview safety.
-// Registers only in real production browser contexts. Honors ?sw=off kill switch.
+// Registro protegido del service worker para contextos reales de producción.
+// Conserva ?sw=off como interruptor de emergencia.
 
 const SW_URL = "/sw.js";
 
@@ -7,20 +7,14 @@ function isRefusedContext(): boolean {
   if (!import.meta.env.PROD) return true;
   if (typeof window === "undefined") return true;
   try {
-    if (window.top !== window.self) return true; // iframe (Lovable preview)
+    if (window.top !== window.self) return true;
   } catch {
     return true;
   }
   const host = window.location.hostname;
   if (
     host.startsWith("id-preview--") ||
-    host.startsWith("preview--") ||
-    host === "lovableproject.com" ||
-    host.endsWith(".lovableproject.com") ||
-    host === "lovableproject-dev.com" ||
-    host.endsWith(".lovableproject-dev.com") ||
-    host === "beta.lovable.dev" ||
-    host.endsWith(".beta.lovable.dev")
+    host.startsWith("preview--")
   ) {
     return true;
   }
