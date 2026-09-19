@@ -81,6 +81,7 @@ try {
         'titulo' => $title,
         'subtitulo' => trim((string) ($prayer['subtitulo'] ?? '')),
         'categoria' => $appCategory,
+        'subcategoria' => trim((string) ($prayer['subcategoria_app'] ?? '')),
         'descripcion' => trim((string) ($prayer['descripcion'] ?? '')),
         'texto_completo' => $text,
         'contenido_json' => json_encode([
