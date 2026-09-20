@@ -704,9 +704,9 @@ const LecturasDelDia = () => {
                           onClick={() => setSelectedDate(fecha)}
                           className={`mx-auto flex h-10 w-9 items-center justify-center rounded-[11px] text-[17px] font-extrabold transition sm:h-12 sm:w-11 sm:text-[18px] ${
                             active
-                              ? "border border-[#a97812] bg-[#d4af37] text-[var(--lit-text)] shadow-[0_6px_16px_-8px_rgba(8,35,71,0.65)]"
+                              ? "border border-[#a97812] bg-[#d4af37] text-[#071a33] shadow-[0_6px_16px_-8px_rgba(8,35,71,0.65)]"
                               : available
-                                ? "text-[var(--lit-muted)] hover:bg-[#f7ead1]"
+                                ? "text-[var(--lit-muted)] hover:bg-[#d4af37]/10"
                                 : "cursor-not-allowed text-[#b8bec7] opacity-45"
                           }`}
                           aria-label={fecha}
