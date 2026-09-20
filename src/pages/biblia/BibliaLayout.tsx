@@ -11,9 +11,10 @@ interface Props {
   headerAction?: ReactNode;
   hideHeader?: boolean;
   hideBottomNav?: boolean;
+  hideBack?: boolean;
 }
 
-export const BibliaLayout = ({ title, children, back, headerAction, hideHeader = false, hideBottomNav = false }: Props) => {
+export const BibliaLayout = ({ title, children, back, headerAction, hideHeader = false, hideBottomNav = false, hideBack = false }: Props) => {
   const loc = useLocation();
   const isHome = loc.pathname === "/biblia" || loc.pathname === "/Biblia";
 
@@ -25,13 +26,15 @@ export const BibliaLayout = ({ title, children, back, headerAction, hideHeader =
       {!isHome && !hideHeader && (
         <header className="sticky top-0 z-40 border-b border-[#D4AF37]/15 bg-[#050505]/92 shadow-[0_14px_38px_rgba(0,0,0,0.5)] backdrop-blur-xl">
           <div className="mx-auto flex w-full items-center gap-3 px-4 py-3 sm:max-w-[640px] md:max-w-4xl">
-            <Link
-              to={back ?? "/biblia"}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D4AF37]/30 bg-[#111111]/80 text-[#F2D27A] shadow-[0_0_20px_rgba(212,175,55,0.12)] transition hover:border-[#D4AF37]/60 hover:bg-[#171717]"
-              aria-label="Volver"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
+            {!hideBack && (
+              <Link
+                to={back ?? "/biblia"}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D4AF37]/30 bg-[#111111]/80 text-[#F2D27A] shadow-[0_0_20px_rgba(212,175,55,0.12)] transition hover:border-[#D4AF37]/60 hover:bg-[#171717]"
+                aria-label="Volver"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            )}
             <div className="flex items-center gap-2">
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#F2D27A] via-[#D4AF37] to-[#9B7417] shadow-[0_0_22px_rgba(212,175,55,0.28)]">
                 <BookOpen className="h-4 w-4 text-[#050505]" />
