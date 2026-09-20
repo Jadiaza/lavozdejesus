@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 final class SupabaseAuth
 {
-  public static function requireUser(PDO $pdo): array
+  public static function requireAccount(PDO $pdo): array
   {
     $header = self::authorizationHeader();
-    if (!preg_match('/^Bearer\s+(.+)$/i', $header, $match)) {
-      lvj_json_response(['success' => false, 'message' => 'Inicia sesión para solicitar un estudio bíblico.'], 401);
+    if (!preg_match('/^Bearer\\s+(.+)$/i', $header, $match)) {
+      lvj_json_response(['success' => false, 'message' => 'Inicia sesión para continuar.'], 401);
     }
     $url = rtrim((string) lvj_setting('SUPABASE_URL'), '/');
     $anon = trim((string) lvj_setting('SUPABASE_ANON_KEY'));
@@ -26,13 +26,19 @@ final class SupabaseAuth
       lvj_json_response(['success' => false, 'message' => 'Debes confirmar un correo electrónico válido.'], 403);
     }
     if (!self::isAllowedEmail($email)) {
-      lvj_json_response(['success' => false, 'message' => 'Este proveedor de correo no está habilitado para los estudios bíblicos.'], 403);
+      lvj_json_response(['success' => false, 'message' => 'Este proveedor de correo no está habilitado.'], 403);
     }
     $user = self::resolveLocalUser($pdo, $identity);
     if (!$user) lvj_json_response(['success' => false, 'message' => 'No fue posible vincular tu cuenta con La Voz de Jesús.'], 403);
     if (array_key_exists('estado', $user) && (int) $user['estado'] !== 1) {
       lvj_json_response(['success' => false, 'message' => 'Tu cuenta no está activa.'], 403);
     }
+    return $user;
+  }
+
+  public static function requireUser(PDO $pdo): array
+  {
+    $user = self::requireAccount($pdo);
     if (array_key_exists('ia_autorizado', $user) && (int) $user['ia_autorizado'] !== 1) {
       lvj_json_response(['success' => false, 'message' => 'Tu cuenta no tiene autorización para realizar consultas de IA.'], 403);
     }
