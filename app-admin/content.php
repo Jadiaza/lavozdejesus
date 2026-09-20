@@ -77,6 +77,13 @@ $modules = [
       'lvj_bib_mapas' => 'Mapas',
       'lvj_bib_personajes' => 'Personajes bíblicos',
     ],
+    'tabs' => [
+      ['label' => 'Planes', 'table' => 'lvj_bib_planes'],
+      ['label' => 'Jornadas', 'table' => 'lvj_bib_plan_dias'],
+      ['label' => 'Importar plan', 'href' => 'biblia-plan-importar.php'],
+      ['label' => 'Libros', 'table' => 'lvj_bib_libros'],
+      ['label' => 'Versículos', 'table' => 'lvj_bib_versiculos'],
+    ],
   ],
   'inteligencia-artificial' => [
     'title' => 'Formación y Supervisión IA',
