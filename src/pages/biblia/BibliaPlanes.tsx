@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import {
   BookOpen,
   BookOpenCheck,
+  CalendarCheck2,
   ChevronRight,
   Loader2,
   Sparkles,
@@ -87,10 +88,14 @@ export default function BibliaPlanes() {
 
   return (
     <BibliaLayout title="Planes" hideHeader>
-      <section className="relative overflow-hidden pb-3 pt-2">
-        <div className="pointer-events-none absolute -right-8 top-1 opacity-[0.12]">
-          <BookOpen className="h-32 w-32 text-[#D4AF37]" strokeWidth={0.8} />
+      <section className="relative mb-4 overflow-hidden rounded-[1.5rem] border border-[#D4AF37]/18 bg-[radial-gradient(circle_at_82%_18%,rgba(212,175,55,0.20),transparent_34%),radial-gradient(circle_at_18%_100%,rgba(212,175,55,0.08),transparent_36%),linear-gradient(135deg,#121009_0%,#080808_58%,#050505_100%)] px-4 pb-4 pt-4 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
+        <div className="pointer-events-none absolute -right-7 -top-8 rotate-[-8deg] opacity-[0.10]">
+          <BookOpen className="h-36 w-36 text-[#F2D27A]" strokeWidth={0.75} />
         </div>
+        <div className="pointer-events-none absolute bottom-2 right-5 opacity-[0.12]">
+          <CalendarCheck2 className="h-14 w-14 text-[#D4AF37]" strokeWidth={1.15} />
+        </div>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#D4AF37]/55 to-transparent" />
 
         <div className="relative flex items-center gap-3">
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(145deg,#F5D86B,#D4AF37)] text-black shadow-[0_10px_30px_rgba(212,175,55,0.24)]">
@@ -106,7 +111,7 @@ export default function BibliaPlanes() {
           </div>
         </div>
 
-        <p className="relative mt-2.5 max-w-[92%] text-[14px] leading-[1.55] text-[#C7C0B1]">
+        <p className="relative mt-3 max-w-[78%] text-[14px] leading-[1.55] text-[#C7C0B1]">
           Caminos para encontrarte con Dios, crecer en su Palabra y dejar que transforme tu vida.
         </p>
       </section>
