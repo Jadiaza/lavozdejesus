@@ -82,7 +82,7 @@ export default function BibliaPlanDetalle() {
     : progress
       ? Math.min(
           100,
-          Math.round((progress.dia_actual / Math.max(1, plan.duracion_dias)) * 100),
+          Math.round((Math.max(0, progress.dia_actual - 1) / Math.max(1, plan.duracion_dias)) * 100),
         )
       : 0;
 
