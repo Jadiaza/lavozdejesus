@@ -64,12 +64,8 @@ export default function BibliaPlanes() {
 
   return (
     <BibliaLayout title="Planes">
-      <section className="pb-3 pt-2">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#D4AF37]">
-          La Voz de Jesús
-        </p>
-        <h1 className="mt-1 font-display text-3xl text-[#F8F5EA]">Planes</h1>
-        <p className="mt-2 max-w-xl text-sm leading-relaxed text-[#BEB7A7]">
+      <section className="pb-4 pt-1">
+        <p className="max-w-xl text-sm leading-relaxed text-[#BEB7A7]">
           Caminos para encontrarte con Dios, crecer en su Palabra y dejar que transforme tu vida.
         </p>
       </section>
