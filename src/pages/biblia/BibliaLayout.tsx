@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { BookOpen, CalendarCheck2, GraduationCap, Home } from "lucide-react";
+import { BookOpen, CalendarCheck2, GraduationCap, Home, House } from "lucide-react";
 import "./biblia-layout.css";
 
 interface Props {
@@ -16,7 +16,8 @@ interface Props {
 const BibliaBottomNav = () => {
   const loc = useLocation();
   const items = [
-    { icon: Home, label: "Home", to: "/biblia", active: loc.pathname === "/biblia" || loc.pathname === "/Biblia" },
+    { icon: House, label: "Inicio", to: "/", active: loc.pathname === "/" },
+    { icon: Home, label: "Biblia", to: "/biblia", active: loc.pathname === "/biblia" || loc.pathname === "/Biblia" },
     { icon: BookOpen, label: "Leer", to: "/biblia/libros", active: loc.pathname.startsWith("/biblia/libros") || loc.pathname.startsWith("/biblia/leer") },
     { icon: GraduationCap, label: "Estudio", to: "/biblia/estudio", active: loc.pathname.startsWith("/biblia/estudio") },
     { icon: CalendarCheck2, label: "Planes", to: "/biblia/planes", active: loc.pathname.startsWith("/biblia/planes") },
