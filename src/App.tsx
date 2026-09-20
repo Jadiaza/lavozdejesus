@@ -50,6 +50,7 @@ const BibliaProximamente = lazy(() => import("./pages/biblia/BibliaProximamente.
 const BibliaEstudio = lazy(() => import("./pages/biblia/BibliaEstudio.tsx"));
 const BibliaMapas = lazy(() => import("./pages/biblia/BibliaMapas.tsx"));
 const BibliaPersonajes = lazy(() => import("./pages/biblia/BibliaPersonajes.tsx"));
+const BibliaPersonajeDetalle = lazy(() => import("./pages/biblia/BibliaPersonajeDetalle.tsx"));
 const BibliaLibros = lazy(() => import("./pages/biblia/BibliaLibros.tsx"));
 const BibliaFavoritos = lazy(() => import("./pages/biblia/BibliaFavoritos.tsx"));
 const BibliaMiBiblia = lazy(() => import("./pages/biblia/BibliaMiBiblia.tsx"));
@@ -97,6 +98,7 @@ const App = () => (
               <Route path="/biblia/estudio/:id" element={<BibliaEstudio />} />
               <Route path="/biblia/mapas" element={<BibliaMapas />} />
               <Route path="/biblia/personajes" element={<BibliaPersonajes />} />
+              <Route path="/biblia/personajes/:id" element={<BibliaPersonajeDetalle />} />
               <Route path="/biblia/explorar" element={<BibliaPersonajes />} />
               <Route path="/biblia/:section" element={<BibliaProximamente />} />
               <Route path="/acceso" element={<Auth />} />
