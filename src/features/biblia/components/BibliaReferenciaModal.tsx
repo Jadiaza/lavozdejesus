@@ -305,7 +305,7 @@ export function BibliaReferenciaContenido({
                   document.getElementById("plan-reading-" + index)?.scrollIntoView({ behavior: "smooth", block: "start" });
                 });
               }}
-              className={"shrink-0 rounded-full border px-5 py-2 font-display text-base transition " + (
+              className={"shrink-0 rounded-full border px-4 py-1.5 font-display text-[15px] transition " + (
                 isActive
                   ? "border-[#E7C35D] bg-[linear-gradient(135deg,#F2D27A,#D4AF37)] text-[#0A0906] shadow-[0_6px_20px_rgba(212,175,55,0.2)]"
                   : done
@@ -329,8 +329,8 @@ export function BibliaReferenciaContenido({
               key={passage.referencia + "-" + index}
               className={"scroll-mt-24 transition " + (
                 isActive
-                  ? "border-0 bg-transparent"
-                  : "overflow-hidden rounded-[1.15rem] border border-white/10 bg-[#090909]"
+                  ? "bg-transparent"
+                  : "overflow-hidden rounded-[1.05rem] border border-white/10 bg-[#090909]"
               )}
             >
               <button
@@ -338,35 +338,35 @@ export function BibliaReferenciaContenido({
                 onClick={() => setActiveIndex(index)}
                 className={"flex w-full items-center gap-3 text-left " + (
                   isActive
-                    ? "border-b border-[#D4AF37]/22 px-1 pb-3 pt-2"
-                    : "px-4 py-3"
+                    ? "border-b border-[#D4AF37]/18 px-0 pb-2.5 pt-1"
+                    : "px-3.5 py-2.5"
                 )}
                 aria-expanded={isActive}
               >
-                <span className={"flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border " + (
-                  isActive || done ? "border-[#D4AF37]/30 bg-[#D4AF37]/8 text-[#E7C35D]" : "border-white/10 bg-white/[0.02] text-[#9E9A91]"
+                <span className={"flex h-8 w-8 shrink-0 items-center justify-center rounded-md border " + (
+                  isActive || done ? "border-[#D4AF37]/25 bg-[#D4AF37]/[0.06] text-[#E7C35D]" : "border-white/10 bg-white/[0.02] text-[#9E9A91]"
                 )}>
                   {done ? <CheckCircle2 className="h-5 w-5" /> : <BookOpen className="h-5 w-5" />}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-display text-[1.28rem] leading-none text-[#F8F5EA]">{passage.referencia}</span>
-                  <span className="mt-1 block text-[9px] font-medium tracking-[0.08em] text-[#9F998F]">Biblia Platense · Straubinger</span>
+                  <span className="block font-display text-[1.22rem] leading-none text-[#F8F5EA]">{passage.referencia}</span>
+                  <span className="mt-1 block text-[8.5px] font-medium tracking-[0.06em] text-[#9F998F]">Biblia Platense · Straubinger</span>
                 </span>
                 {isActive ? <ChevronUp className="h-5 w-5 shrink-0 text-[#E7C35D]" /> : <ChevronDown className="h-5 w-5 shrink-0 text-[#8F8A80]" />}
               </button>
 
               {isActive ? (
-                <div className="pb-2 pt-4">
-                  <div className="space-y-3 px-1">
+                <div className="pb-2 pt-3">
+                  <div className="space-y-2.5 px-0.5">
                     {passage.versiculos.map((verse) => (
-                      <p key={verse.id} className="font-display text-[18px] leading-[1.62] text-[#E8E2D7]">
-                        <sup className="mr-1.5 align-super font-sans text-[10px] font-bold text-[#D4AF37]">{verse.versiculo}</sup>
+                      <p key={verse.id} className="font-display text-[17.5px] leading-[1.58] text-[#E8E2D7]">
+                        <sup className="mr-1 align-super font-sans text-[9.5px] font-bold text-[#D4AF37]">{verse.versiculo}</sup>
                         {verse.texto}
                       </p>
                     ))}
                   </div>
-                  <div className="mt-5 border-t border-[#D4AF37]/16 pt-3">
-                    <button type="button" onClick={markCurrentAndContinue} className="flex min-h-11 w-full items-center justify-between px-1 font-semibold text-[#E7C35D] transition active:scale-[0.99]">
+                  <div className="mt-4 border-t border-[#D4AF37]/14 pt-2.5">
+                    <button type="button" onClick={markCurrentAndContinue} className="flex min-h-10 w-full items-center justify-between px-0.5 font-semibold text-[#E7C35D] transition active:scale-[0.99]">
                       <span>{done ? "Continuar lectura" : "Marcar leído y continuar"}</span>
                       <ChevronRight className="h-5 w-5" />
                     </button>
