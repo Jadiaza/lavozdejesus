@@ -93,10 +93,10 @@ export default function BibliaPlanDetalle() {
         <BiblePlanCover
           src={plan.imagen_url}
           alt={plan.titulo}
-          className="aspect-[4/3] w-full"
-          fallbackClassName="aspect-[4/3] w-full"
+          className="h-auto w-full"
+          fallbackClassName="aspect-[16/7] w-full"
           iconClassName="h-16 w-16"
-          fit="stretch"
+          fit="contain"
         />
 
         <div className="p-5">
