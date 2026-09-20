@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, ExternalLink, LoaderCircle, MapPin, Search, ScrollText, UserRound, UsersRound, X } from "lucide-react";
+import { BookOpen, ExternalLink, Home, LoaderCircle, Map, MapPin, Search, ScrollText, UserRound, UsersRound, X, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { BibliaLayout } from "./BibliaLayout";
+import { Link } from "react-router-dom";
 import { BibliaPersonaje, getBibliaPersonajes } from "@/services/bibliaService";
 
 type TestamentFilter = "todos" | "AT" | "NT";
@@ -43,44 +44,61 @@ export default function BibliaPersonajes() {
   }, [selected]);
 
   return (
-    <BibliaLayout title="Explorar">
-      <section className="overflow-hidden rounded-[2rem] border border-[#D4AF37]/25 bg-[#111111] shadow-[0_24px_70px_rgba(0,0,0,0.45)]">
-        <div className="border-b border-[#D4AF37]/15 px-4 pb-4 pt-3 sm:px-6">
-          <p className="mb-4 text-sm leading-relaxed text-[#C9C3B3] sm:text-base">Profundiza en la riqueza de la Biblia a través de sus personajes, lugares, mapas y más.</p>
-          <div className="grid grid-cols-4 gap-2">
-            <button type="button" className="min-w-0 rounded-2xl border border-[#D4AF37] bg-[#D4AF37] px-1 py-3 text-center text-[#050505]"><UsersRound className="mx-auto mb-1 h-5 w-5" /><span className="block text-[10px] font-bold leading-tight sm:text-xs">Personajes<br />bíblicos</span></button>
-            <button type="button" className="min-w-0 rounded-2xl border border-[#D4AF37]/25 bg-[#0B0B0B] px-1 py-3 text-center text-[#D4AF37]"><MapPin className="mx-auto mb-1 h-5 w-5" /><span className="block text-[10px] font-semibold leading-tight text-[#C9C3B3] sm:text-xs">Lugares<br />bíblicos</span></button>
-            <a href="/biblia/mapas" className="min-w-0 rounded-2xl border border-[#D4AF37]/25 bg-[#0B0B0B] px-1 py-3 text-center text-[#D4AF37]"><ScrollText className="mx-auto mb-1 h-5 w-5" /><span className="block text-[10px] font-semibold leading-tight text-[#C9C3B3] sm:text-xs">Mapas</span></a>
-            <button type="button" className="min-w-0 rounded-2xl border border-[#D4AF37]/25 bg-[#0B0B0B] px-1 py-3 text-center text-[#D4AF37]"><BookOpen className="mx-auto mb-1 h-5 w-5" /><span className="block text-[10px] font-semibold leading-tight text-[#C9C3B3] sm:text-xs">Cronología</span></button>
-          </div>
+    <BibliaLayout title="Explorar" hideBottomNav>
+      <section className="pb-3">
+        <p className="mb-4 px-1 text-[15px] leading-6 text-[#C9C3B3]">Profundiza en la riqueza de la Biblia a través de sus personajes, lugares, mapas y más.</p>
+
+        <div className="mb-3">
+          <label className="relative block">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8F897C]" />
+            <input value={search} onChange={(event) => setSearch(event.target.value)} type="search" placeholder="Buscar personaje..." className="h-12 w-full rounded-2xl border border-[#D4AF37]/30 bg-[#080808] pl-12 pr-4 text-[15px] text-[#F8F5EA] outline-none focus:border-[#D4AF37]" />
+          </label>
         </div>
-        <div className="px-4 pb-5 pt-4 sm:px-6 sm:pb-6">
-        <div className="mb-6 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto]">
-          <label className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8F897C]" /><input value={search} onChange={(event) => setSearch(event.target.value)} type="search" placeholder="Buscar personaje…" className="h-11 w-full rounded-xl border border-[#D4AF37]/20 bg-[#080808] pl-10 pr-3 text-sm text-[#F8F5EA] outline-none focus:border-[#D4AF37]" /></label>
-          <select value={testament} onChange={(event) => setTestament(event.target.value as TestamentFilter)} className="h-11 rounded-xl border border-[#D4AF37]/20 bg-[#080808] px-3 text-sm text-[#F8F5EA] outline-none"><option value="todos">Todos los testamentos</option><option value="AT">Antiguo Testamento</option><option value="NT">Nuevo Testamento</option></select>
-          <select value={category} onChange={(event) => setCategory(event.target.value)} className="h-11 rounded-xl border border-[#D4AF37]/20 bg-[#080808] px-3 text-sm text-[#F8F5EA] outline-none"><option value="todas">Todas las categorías</option>{categories.map((item) => <option key={item} value={item}>{item}</option>)}</select>
+
+        <div className="mb-4 grid grid-cols-2 gap-2">
+          <select value={testament} onChange={(event) => setTestament(event.target.value as TestamentFilter)} className="h-11 min-w-0 rounded-2xl border border-[#D4AF37]/25 bg-[#080808] px-3 text-[13px] text-[#F8F5EA] outline-none"><option value="todos">Todos los testamentos</option><option value="AT">Antiguo Testamento</option><option value="NT">Nuevo Testamento</option></select>
+          <select value={category} onChange={(event) => setCategory(event.target.value)} className="h-11 min-w-0 rounded-2xl border border-[#D4AF37]/25 bg-[#080808] px-3 text-[13px] text-[#F8F5EA] outline-none"><option value="todas">Todas las categorías</option>{categories.map((item) => <option key={item} value={item}>{item}</option>)}</select>
         </div>
 
         {isLoading ? (
-          <div className="flex min-h-52 items-center justify-center rounded-2xl border border-[#D4AF37]/20 bg-[#0B0B0B] text-[#D4AF37]"><LoaderCircle className="mr-2 h-5 w-5 animate-spin" /> Cargando personajes…</div>
+          <div className="flex min-h-40 items-center justify-center rounded-2xl border border-[#D4AF37]/20 bg-[#0B0B0B] text-[#D4AF37]"><LoaderCircle className="mr-2 h-5 w-5 animate-spin" /> Cargando personajes…</div>
         ) : isError ? (
-          <div className="rounded-2xl border border-red-400/25 bg-red-950/20 p-6 text-center"><p className="text-sm text-red-100">No fue posible cargar los personajes.</p><button type="button" onClick={() => refetch()} className="mt-4 rounded-full border border-red-200/25 px-4 py-2 text-sm font-semibold text-red-100">Intentar nuevamente</button></div>
+          <div className="rounded-2xl border border-red-400/25 bg-red-950/20 p-5 text-center"><p className="text-sm text-red-100">No fue posible cargar los personajes.</p><button type="button" onClick={() => refetch()} className="mt-3 rounded-full border border-red-200/25 px-4 py-2 text-sm font-semibold text-red-100">Intentar nuevamente</button></div>
         ) : characters.length === 0 ? (
-          <div className="rounded-2xl border border-[#D4AF37]/20 bg-[#0B0B0B] p-8 text-center"><UserRound className="mx-auto mb-3 h-8 w-8 text-[#D4AF37]" /><p className="text-sm text-[#C9C3B3]">Los primeros personajes estarán disponibles próximamente.</p></div>
+          <div className="rounded-2xl border border-[#D4AF37]/20 bg-[#0B0B0B] p-6 text-center"><UserRound className="mx-auto mb-2 h-7 w-7 text-[#D4AF37]" /><p className="text-sm text-[#C9C3B3]">Los primeros personajes estarán disponibles próximamente.</p></div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-2xl border border-[#D4AF37]/20 bg-[#0B0B0B] p-8 text-center"><Search className="mx-auto mb-3 h-8 w-8 text-[#D4AF37]" /><p className="text-sm text-[#C9C3B3]">No encontramos personajes con esos filtros.</p></div>
+          <div className="rounded-2xl border border-[#D4AF37]/20 bg-[#0B0B0B] p-6 text-center"><Search className="mx-auto mb-2 h-7 w-7 text-[#D4AF37]" /><p className="text-sm text-[#C9C3B3]">No encontramos personajes con esos filtros.</p></div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="space-y-2.5">
             {filtered.map((character) => (
-              <button key={character.id} type="button" onClick={() => setSelected(character)} className="group overflow-hidden rounded-2xl border border-[#D4AF37]/20 bg-[#0B0B0B] text-left transition hover:-translate-y-0.5 hover:border-[#D4AF37]/45">
-                <div className="aspect-[4/3] overflow-hidden bg-black"><img src={character.imagen_url} alt={character.nombre} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /></div>
-                <div className="p-4"><div className="mb-2 flex flex-wrap gap-2"><span className="rounded-full border border-[#D4AF37]/25 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#D4AF37]">{character.testamento === "AT" ? "Antiguo Testamento" : "Nuevo Testamento"}</span><span className="rounded-full bg-white/5 px-2 py-1 text-[10px] text-[#C9C3B3]">{character.categoria}</span></div><h2 className="font-display text-xl text-[#F8F5EA]">{character.nombre}</h2>{character.nombre_alternativo && <p className="mt-1 text-xs text-[#8F897C]">{character.nombre_alternativo}</p>}<p className="mt-2 line-clamp-3 text-sm leading-relaxed text-[#C9C3B3]">{character.resumen}</p><span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#D4AF37]">Ver ficha <BookOpen className="h-3.5 w-3.5" /></span></div>
+              <button key={character.id} type="button" onClick={() => setSelected(character)} className="group flex w-full min-h-[116px] overflow-hidden rounded-2xl border border-[#D4AF37]/20 bg-[#0B0B0B] text-left transition active:bg-[#111111]">
+                <div className="w-[112px] shrink-0 overflow-hidden bg-black sm:w-[132px]"><img src={character.imagen_url} alt={character.nombre} loading="lazy" className="h-full w-full object-cover" /></div>
+                <div className="flex min-w-0 flex-1 items-center p-3">
+                  <div className="min-w-0 flex-1">
+                    <h2 className="font-display text-xl leading-tight text-[#F8F5EA]">{character.nombre}</h2>
+                    <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#C9C3B3]">{character.resumen}</p>
+                    <div className="mt-2 flex min-w-0 gap-1.5 overflow-hidden">
+                      <span className="truncate rounded-full border border-[#D4AF37]/45 px-2 py-1 text-[9px] font-semibold text-[#D4AF37]">{character.testamento === "AT" ? "Antiguo Testamento" : "Nuevo Testamento"}</span>
+                      <span className="truncate rounded-full border border-white/15 px-2 py-1 text-[9px] text-[#C9C3B3]">{character.categoria}</span>
+                    </div>
+                  </div>
+                  <ChevronRight className="ml-2 h-5 w-5 shrink-0 text-[#D4AF37]" />
+                </div>
               </button>
             ))}
           </div>
         )}
-        </div>
       </section>
+
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#D4AF37]/25 bg-[#080808]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl">
+        <div className="mx-auto grid h-[76px] max-w-[640px] grid-cols-5">
+          <Link to="/biblia" className="flex flex-col items-center justify-center gap-1 text-[#B8B3AA]"><Home className="h-5 w-5" /><span className="text-[10px]">Inicio</span></Link>
+          <div className="relative flex flex-col items-center justify-center gap-1 text-[#D4AF37]"><UsersRound className="h-5 w-5" /><span className="text-[10px] font-semibold">Personajes</span><span className="absolute bottom-1 h-0.5 w-7 rounded-full bg-[#D4AF37]" /></div>
+          <button type="button" className="flex flex-col items-center justify-center gap-1 text-[#B8B3AA]"><MapPin className="h-5 w-5" /><span className="text-[10px]">Lugares</span></button>
+          <Link to="/biblia/mapas" className="flex flex-col items-center justify-center gap-1 text-[#B8B3AA]"><Map className="h-5 w-5" /><span className="text-[10px]">Mapas</span></Link>
+          <button type="button" className="flex flex-col items-center justify-center gap-1 text-[#B8B3AA]"><ScrollText className="h-5 w-5" /><span className="text-[10px]">Cronología</span></button>
+        </div>
+      </nav>
 
       {selected && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-3 backdrop-blur-sm sm:p-6" role="dialog" aria-modal="true" aria-label={selected.nombre} onMouseDown={(event) => event.target === event.currentTarget && setSelected(null)}>
