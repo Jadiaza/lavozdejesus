@@ -2,8 +2,6 @@ import {
   ArrowLeft,
   BookOpen,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
   Cross,
   Heart,
   Headphones,
@@ -505,15 +503,6 @@ const LecturasDelDia = () => {
   const lectio = lectios.find((item) => item.fecha === selectedDate) ?? null;
   const santo =
     santos.find((item) => santoMatchesDate(item, selectedDate)) ?? null;
-  const selectedIndex = liturgias.findIndex(
-    (item) => item.fecha === selectedDate,
-  );
-  const previousDate =
-    selectedIndex > 0 ? liturgias[selectedIndex - 1]?.fecha : undefined;
-  const nextDate =
-    selectedIndex >= 0 && selectedIndex < liturgias.length - 1
-      ? liturgias[selectedIndex + 1]?.fecha
-      : undefined;
   const weekDates = useMemo(() => getWeekDates(selectedDate), [selectedDate]);
   const publishedDates = useMemo(
     () => new Set(liturgias.map((item) => item.fecha)),
@@ -574,43 +563,23 @@ const LecturasDelDia = () => {
                     })}
                   </div>
 
-                  <div className="relative flex min-h-[230px] items-center justify-center px-4 py-8">
-                    <button
-                      type="button"
-                      onClick={() => previousDate && setSelectedDate(previousDate)}
-                      disabled={!previousDate}
-                      className="absolute left-2 flex h-10 w-10 items-center justify-center rounded-full text-[#082347] disabled:opacity-20"
-                      aria-label="Día anterior"
-                    >
-                      <ChevronLeft className="h-6 w-6" />
-                    </button>
-
+                  <div className="flex min-h-[172px] items-center justify-center px-4 py-5">
                     <div className="text-center">
-                      <div className="mx-auto flex h-[136px] w-[126px] flex-col items-center justify-center rounded-[24px] bg-[#082347] text-white shadow-[0_18px_34px_-22px_rgba(8,35,71,0.85)]">
-                        <span className="text-[21px] font-bold leading-none">
+                      <div className="mx-auto flex h-[115px] w-[105px] flex-col items-center justify-center rounded-[21px] bg-[#082347] text-white shadow-[0_16px_30px_-22px_rgba(8,35,71,0.82)]">
+                        <span className="text-[18px] font-bold leading-none">
                           {dateCard.weekday}
                         </span>
-                        <span className="mt-1 text-[48px] font-extrabold leading-none">
+                        <span className="mt-1 text-[36px] font-extrabold leading-none">
                           {dateCard.day}
                         </span>
-                        <span className="mt-1 text-[20px] font-extrabold leading-none text-[#d4af37]">
+                        <span className="mt-1 text-[17px] font-extrabold leading-none text-[#d4af37]">
                           {dateCard.month}
                         </span>
                       </div>
-                      <div className="mt-3 text-[20px] font-extrabold text-[#40506a]">
+                      <div className="mt-2 text-[18px] font-extrabold text-[#40506a]">
                         {dateCard.year}
                       </div>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={() => nextDate && setSelectedDate(nextDate)}
-                      disabled={!nextDate}
-                      className="absolute right-2 flex h-10 w-10 items-center justify-center rounded-full text-[#082347] disabled:opacity-20"
-                      aria-label="Día siguiente"
-                    >
-                      <ChevronRight className="h-6 w-6" />
-                    </button>
                   </div>
                 </div>
               )}
