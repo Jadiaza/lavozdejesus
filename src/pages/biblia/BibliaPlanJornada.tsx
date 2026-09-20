@@ -67,6 +67,7 @@ export default function BibliaPlanJornada() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [readingProgress, setReadingProgress] = useState({ completed: 0, total: 0 });
 
   useEffect(() => {
     let active = true;
@@ -140,10 +141,13 @@ export default function BibliaPlanJornada() {
   }
 
   const { plan, jornada } = data;
-  const percentage = Math.min(
+  const annualPercentage = Math.min(
     100,
     Math.round((jornada.dia / Math.max(1, plan.duracion_dias)) * 100),
   );
+  const readingPercentage = readingProgress.total
+    ? Math.round((readingProgress.completed / readingProgress.total) * 100)
+    : 0;
 
   return (
     <BibliaLayout title="Planes">
@@ -159,18 +163,28 @@ export default function BibliaPlanJornada() {
         </span>
       </div>
 
-      <header className="mb-5">
-        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#D4AF37]">
+      <header className="mb-6">
+        <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#D4AF37]">
           Jornada {jornada.dia} de {plan.duracion_dias}
         </p>
-        <h1 className="mt-2 font-display text-3xl leading-tight text-[#F8F5EA]">
+        <h1 className="mt-2 font-display text-[2.05rem] leading-[1.08] text-[#F8F5EA] sm:text-4xl">
           {journeyTitle(jornada.titulo)}
         </h1>
-        <div className="mt-4 h-1 overflow-hidden rounded-full bg-white/10">
-          <div
-            className="h-full rounded-full bg-[#D4AF37]"
-            style={{ width: `${percentage}%` }}
-          />
+
+        <div className="mt-5 flex items-center gap-3">
+          <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full border border-white/10 bg-white/[0.06] p-[1px]">
+            <div
+              className="h-full rounded-full bg-[linear-gradient(90deg,#D4AF37,#F2D27A)] transition-[width]"
+              style={{
+                width: `${readingProgress.total ? readingPercentage : annualPercentage}%`,
+              }}
+            />
+          </div>
+          <span className="shrink-0 text-[11px] text-[#AAA397]">
+            {readingProgress.total
+              ? `${readingProgress.completed} de ${readingProgress.total} lecturas · ${readingPercentage}%`
+              : `${annualPercentage}% del plan`}
+          </span>
         </div>
       </header>
 
@@ -187,19 +201,20 @@ export default function BibliaPlanJornada() {
       ) : null}
 
       {jornada.lectura ? (
-        <section className="mb-4 rounded-[1.5rem] border border-[#D4AF37]/28 bg-[linear-gradient(145deg,rgba(212,175,55,0.11),rgba(11,11,11,0.95))] p-5">
-          <div className="flex items-center gap-2 text-[#D4AF37]">
+        <section className="mb-5">
+          <div className="mb-4 flex items-center gap-2 border-b border-[#D4AF37]/18 pb-3 text-[#D4AF37]">
             <BookOpen className="h-4 w-4" />
-            <h2 className="text-[11px] font-bold uppercase tracking-[0.2em]">
+            <h2 className="text-[11px] font-bold uppercase tracking-[0.24em]">
               Palabra de Dios
             </h2>
           </div>
-          <p className="mt-3 font-display text-xl leading-tight text-[#F8F5EA]">
-            {jornada.lectura}
-          </p>
-          <div className="mt-5 border-t border-[#D4AF37]/15 pt-5">
-            <BibliaReferenciaContenido referencia={jornada.lectura} />
-          </div>
+          <BibliaReferenciaContenido
+            referencia={jornada.lectura}
+            storageKey={`planReading:${plan.id}:${jornada.dia}`}
+            onProgressChange={(completed, total) =>
+              setReadingProgress({ completed, total })
+            }
+          />
         </section>
       ) : null}
 
@@ -233,21 +248,34 @@ export default function BibliaPlanJornada() {
         </section>
       ) : null}
 
-      <button
-        type="button"
-        disabled={saving}
-        onClick={complete}
-        className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#D4AF37] px-4 py-3.5 text-sm font-bold text-black disabled:opacity-60"
-      >
-        {saving ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <CheckCircle2 className="h-4 w-4" />
-        )}
-        {jornada.dia >= plan.duracion_dias
-          ? "COMPLETAR PLAN"
-          : "COMPLETAR Y CONTINUAR"}
-      </button>
+      <div className="mt-6 rounded-[1.35rem] border border-[#D4AF37]/30 bg-[linear-gradient(145deg,rgba(212,175,55,0.07),rgba(8,8,8,0.98))] p-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3 px-1">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#D4AF37]/65 text-[#E7C35D]">
+              <CheckCircle2 className="h-5 w-5" />
+            </span>
+            <p className="text-[12px] leading-5 text-[#B7B0A2]">
+              Has completado{" "}
+              <strong className="font-semibold text-[#F8F5EA]">
+                {readingProgress.completed} de {readingProgress.total || "—"} lecturas
+              </strong>
+            </p>
+          </div>
+
+          <button
+            type="button"
+            disabled={saving}
+            onClick={complete}
+            className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#F2D27A,#D4AF37)] px-6 text-sm font-bold text-[#0A0906] shadow-[0_8px_24px_rgba(212,175,55,0.2)] disabled:opacity-60"
+          >
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            {jornada.dia >= plan.duracion_dias
+              ? "Completar plan"
+              : "Completar jornada"}
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2">
         {jornada.dia > 1 ? (
