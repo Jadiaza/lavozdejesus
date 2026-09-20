@@ -65,7 +65,10 @@ async function parse<T>(response: Response): Promise<T> {
 async function request<T>(params: Record<string, string | number>): Promise<T> {
   const url = new URL(apiUrl, window.location.origin);
   Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, String(value)));
-  const response = await fetch(url.toString(), {\n      cache: "no-store",\n      headers: { Accept: "application/json" },\n    });
+  const response = await fetch(url.toString(), {
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+  });
   return parse<T>(response);
 }
 
@@ -99,7 +102,10 @@ export async function getServerPlanProgress(planId: number): Promise<BiblePlanPr
   const url = new URL(apiUrl, window.location.origin);
   url.searchParams.set("accion", "progreso");
   url.searchParams.set("plan_id", String(planId));
-  const response = await fetch(url.toString(), {\n    cache: "no-store",\n    headers: { Accept: "application/json", ...authHeaders(token) },\n  });
+  const response = await fetch(url.toString(), {
+    cache: "no-store",
+    headers: { Accept: "application/json", ...authHeaders(token) },
+  });
   if (response.status === 401 || response.status === 403) return null;
   return parse<BiblePlanProgress | null>(response);
 }
