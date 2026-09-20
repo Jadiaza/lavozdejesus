@@ -35,14 +35,63 @@ type LecturasTab = "liturgia" | "santo" | "reflexion";
 type ReadingRenderMode = "normal" | "ordo" | "psalm";
 type ReadingAlignment = "left" | "justify";
 
+type LiturgiaTheme = "oscuro" | "claro" | "sepia";
+
 interface LiturgiaReadingPreferences {
   fontSize: 16 | 18 | 21 | 24;
   alignment: ReadingAlignment;
+  theme: LiturgiaTheme;
 }
 
 const DEFAULT_READING_PREFERENCES: LiturgiaReadingPreferences = {
   fontSize: 18,
   alignment: "left",
+  theme: "oscuro",
+};
+
+const LITURGIA_THEMES: Record<
+  LiturgiaTheme,
+  {
+    label: string;
+    background: string;
+    surface: string;
+    soft: string;
+    text: string;
+    muted: string;
+    border: string;
+    nav: string;
+  }
+> = {
+  oscuro: {
+    label: "Oscuro",
+    background: "#050505",
+    surface: "#0d1117",
+    soft: "#111111",
+    text: "#f8f5ea",
+    muted: "#b8b2a6",
+    border: "rgba(212,175,55,.28)",
+    nav: "rgba(5,5,5,.96)",
+  },
+  claro: {
+    label: "Claro",
+    background: "#f8f5ea",
+    surface: "#fffdf8",
+    soft: "#f3eadb",
+    text: "#082347",
+    muted: "#536174",
+    border: "#e6d8bf",
+    nav: "rgba(255,253,248,.96)",
+  },
+  sepia: {
+    label: "Tinta",
+    background: "#e7e1cf",
+    surface: "#eee9d9",
+    soft: "#ddd5bf",
+    text: "#20211d",
+    muted: "#5f5b4d",
+    border: "rgba(95,91,77,.34)",
+    nav: "rgba(231,225,207,.96)",
+  },
 };
 
 const READING_PREFERENCES_KEY = "lvj_liturgia_reading_preferences_v1";
@@ -180,8 +229,8 @@ const LiturgicalStole = ({ color }: { color?: string }) => {
       style={{ backgroundColor: colors[key] ?? "#d4af37" }}
       aria-hidden="true"
     >
-      <span className="absolute h-4 w-[2px] rounded-full bg-white" />
-      <span className="absolute h-[2px] w-2.5 rounded-full bg-white" />
+      <span className="absolute h-4 w-[2px] rounded-full bg-[var(--lit-surface)]" />
+      <span className="absolute h-[2px] w-2.5 rounded-full bg-[var(--lit-surface)]" />
     </span>
   );
 };
@@ -212,8 +261,8 @@ const ContentCard = ({
   return (
     <article
       id={id}
-      className={`scroll-mt-6 rounded-2xl border bg-white p-5 text-left shadow-[0_12px_32px_-28px_rgba(8,35,71,0.45)] ${
-        featured ? "border-[#d4af37]" : "border-[#e6d8bf]"
+      className={`scroll-mt-6 rounded-2xl border bg-[var(--lit-surface)] p-5 text-left shadow-[0_12px_32px_-28px_rgba(8,35,71,0.45)] ${
+        featured ? "border-[#d4af37]" : "border-[var(--lit-border)]"
       }`}
     >
       <div className="flex items-start gap-4">
@@ -227,7 +276,7 @@ const ContentCard = ({
           {icon}
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="text-[15px] font-extrabold uppercase tracking-[0.14em] text-[#082347]">
+          <h2 className="text-[15px] font-extrabold uppercase tracking-[0.14em] text-[var(--lit-text)]">
             {title}
           </h2>
           {subtitle && (
@@ -246,7 +295,7 @@ const ContentCard = ({
 
       {text && (
         <div
-          className="mt-5 leading-[1.78] text-[#263349]"
+          className="mt-5 leading-[1.78] text-[var(--lit-text)]"
           style={{
             fontSize: `${readingPreferences.fontSize}px`,
             textAlign: readingPreferences.alignment,
@@ -295,7 +344,7 @@ const DesktopSidebar = ({
     <nav className="space-y-2 text-sm">
       <Link
         to="/"
-        className="flex items-center gap-3 rounded-xl px-3 py-3 text-white/80 hover:bg-white/10"
+        className="flex items-center gap-3 rounded-xl px-3 py-3 text-white/80 hover:bg-[var(--lit-surface)]/10"
       >
         <Home className="h-5 w-5" />
         Inicio
@@ -313,8 +362,8 @@ const DesktopSidebar = ({
           onClick={() => onSelectTab(tab)}
           className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left ${
             activeTab === tab
-              ? "bg-[#d4af37] text-[#071a33]"
-              : "text-white/80 hover:bg-white/10"
+              ? "bg-[#d4af37] text-[var(--lit-text)]"
+              : "text-white/80 hover:bg-[var(--lit-surface)]/10"
           }`}
         >
           {icon}
@@ -334,7 +383,7 @@ const SantoView = ({
 }) => {
   if (!santo?.nombre) {
     return (
-      <article className="rounded-2xl border border-[#e6d8bf] bg-white p-5 text-center text-[#263349]">
+      <article className="rounded-2xl border border-[var(--lit-border)] bg-[var(--lit-surface)] p-5 text-center text-[var(--lit-text)]">
         El santo del día estará disponible pronto.
       </article>
     );
@@ -351,7 +400,7 @@ const SantoView = ({
 
   return (
     <div className="space-y-4">
-      <article className="rounded-2xl border border-[#e6d8bf] bg-white px-5 py-7 text-center shadow-[0_18px_46px_-34px_rgba(8,35,71,0.48)] sm:px-7 md:px-8 md:py-8">
+      <article className="rounded-2xl border border-[var(--lit-border)] bg-[var(--lit-surface)] px-5 py-7 text-center shadow-[0_18px_46px_-34px_rgba(8,35,71,0.48)] sm:px-7 md:px-8 md:py-8">
         <p className="text-xs font-extrabold uppercase tracking-[0.28em] text-[#c69222]">
           Santo del Día
         </p>
@@ -362,17 +411,17 @@ const SantoView = ({
           </div>
 
           <div className="min-w-0">
-            <h2 className="font-display text-[34px] leading-tight text-[#082347] md:text-[42px]">
+            <h2 className="font-display text-[34px] leading-tight text-[var(--lit-text)] md:text-[42px]">
               {santo.nombre}
             </h2>
             {santo.titulo && (
-              <p className="mt-1 text-lg font-semibold leading-snug text-[#263349]">
+              <p className="mt-1 text-lg font-semibold leading-snug text-[var(--lit-text)]">
                 {santo.titulo}
               </p>
             )}
             {santo.resumen && (
               <div
-                className="mt-5 leading-[1.78] text-[#263349]"
+                className="mt-5 leading-[1.78] text-[var(--lit-text)]"
                 style={{
                   fontSize: `${readingPreferences.fontSize}px`,
                   textAlign: readingPreferences.alignment,
@@ -385,7 +434,7 @@ const SantoView = ({
         </div>
 
         {santo.frase_destacada && (
-          <div className="mx-auto mt-6 max-w-xl rounded-xl border border-[#e6d8bf] bg-[#fffaf0] px-5 py-4 text-[16px] font-bold leading-relaxed text-[#082347] md:ml-[226px] md:text-left">
+          <div className="mx-auto mt-6 max-w-xl rounded-xl border border-[var(--lit-border)] bg-[#fffaf0] px-5 py-4 text-[16px] font-bold leading-relaxed text-[var(--lit-text)] md:ml-[226px] md:text-left">
             «{stripOuterQuotes(santo.frase_destacada)}»
           </div>
         )}
@@ -427,7 +476,7 @@ const ReflectionView = ({
   return (
     <div className="space-y-4">
       {!content.reflexion && (
-        <article className="rounded-2xl border border-[#e6d8bf] bg-white p-5">
+        <article className="rounded-2xl border border-[var(--lit-border)] bg-[var(--lit-surface)] p-5">
           Todavía no hay reflexión publicada para esta fecha.
         </article>
       )}
@@ -463,8 +512,8 @@ const ReflectionView = ({
         readingPreferences={readingPreferences}
       />
       {content.audio && (
-        <article className="rounded-2xl border border-[#e6d8bf] bg-white p-5">
-          <div className="mb-4 flex items-center gap-3 font-bold text-[#082347]">
+        <article className="rounded-2xl border border-[var(--lit-border)] bg-[var(--lit-surface)] p-5">
+          <div className="mb-4 flex items-center gap-3 font-bold text-[var(--lit-text)]">
             <Headphones className="h-5 w-5 text-[#c69222]" />
             Escuchar reflexión
           </div>
@@ -511,8 +560,12 @@ const LecturasDelDia = () => {
           : DEFAULT_READING_PREFERENCES.fontSize;
         const alignment =
           parsed.alignment === "justify" ? "justify" : "left";
+        const theme: LiturgiaTheme =
+          parsed.theme === "claro" || parsed.theme === "sepia"
+            ? parsed.theme
+            : "oscuro";
 
-        return { fontSize, alignment };
+        return { fontSize, alignment, theme };
       } catch {
         return DEFAULT_READING_PREFERENCES;
       }
@@ -606,26 +659,40 @@ const LecturasDelDia = () => {
   const palabraHoy =
     liturgia?.palabra_hoy || "La Palabra para hoy estará disponible pronto.";
   const dateCard = formatDateCard(selectedDate);
+  const activeTheme = LITURGIA_THEMES[readingPreferences.theme];
 
   return (
-    <main className="lvj-reading-page min-h-screen bg-[#fff8ec] text-[#071a33]">
+    <main
+      className="lvj-reading-page min-h-screen bg-[var(--lit-bg)] text-[var(--lit-text)] transition-colors duration-300"
+      style={
+        {
+          "--lit-bg": activeTheme.background,
+          "--lit-surface": activeTheme.surface,
+          "--lit-soft": activeTheme.soft,
+          "--lit-text": activeTheme.text,
+          "--lit-muted": activeTheme.muted,
+          "--lit-border": activeTheme.border,
+          "--lit-nav": activeTheme.nav,
+        } as React.CSSProperties
+      }
+    >
       <div
         className="mx-auto w-full md:px-5 md:py-8"
         style={{ maxWidth: "1240px" }}
       >
-        <div className="md:flex md:overflow-hidden md:rounded-[28px] md:border md:border-[#e6d8bf] md:bg-white/70">
+        <div className="md:flex md:overflow-hidden md:rounded-[28px] md:border md:border-[var(--lit-border)] md:bg-[var(--lit-surface)]/70">
           <DesktopSidebar activeTab={activeTab} onSelectTab={setActiveTab} />
 
           <section className="min-w-0 flex-1 px-4 pb-28 pt-3 sm:px-6 md:px-8 md:py-8">
             <header className="mx-auto max-w-[860px]">
-              <h1 className="hidden items-center gap-2 border-b border-[#e6d8bf] pb-5 text-lg font-extrabold uppercase tracking-[0.22em] text-[#b17a12] md:flex md:justify-start">
+              <h1 className="hidden items-center gap-2 border-b border-[var(--lit-border)] pb-5 text-lg font-extrabold uppercase tracking-[0.22em] text-[#b17a12] md:flex md:justify-start">
                 <BookOpen className="h-5 w-5" />
                 Liturgia del Día
               </h1>
 
               {liturgias.length > 0 && (
-                <div className="overflow-hidden bg-[#fffaf2]">
-                  <div className="grid grid-cols-7 border-b border-[#e6d8bf] px-2 py-3 sm:px-4 md:py-4">
+                <div className="overflow-hidden bg-[var(--lit-surface)]">
+                  <div className="grid grid-cols-7 border-b border-[var(--lit-border)] px-2 py-3 sm:px-4 md:py-4">
                     {weekDates.map((fecha, index) => {
                       const active = fecha === selectedDate;
                       const available = publishedDates.has(fecha);
@@ -637,9 +704,9 @@ const LecturasDelDia = () => {
                           onClick={() => setSelectedDate(fecha)}
                           className={`mx-auto flex h-10 w-9 items-center justify-center rounded-[11px] text-[17px] font-extrabold transition sm:h-12 sm:w-11 sm:text-[18px] ${
                             active
-                              ? "border border-[#a97812] bg-[#d4af37] text-[#082347] shadow-[0_6px_16px_-8px_rgba(8,35,71,0.65)]"
+                              ? "border border-[#a97812] bg-[#d4af37] text-[var(--lit-text)] shadow-[0_6px_16px_-8px_rgba(8,35,71,0.65)]"
                               : available
-                                ? "text-[#536174] hover:bg-[#f7ead1]"
+                                ? "text-[var(--lit-muted)] hover:bg-[#f7ead1]"
                                 : "cursor-not-allowed text-[#b8bec7] opacity-45"
                           }`}
                           aria-label={fecha}
@@ -663,7 +730,7 @@ const LecturasDelDia = () => {
                           {dateCard.month}
                         </span>
                       </div>
-                      <div className="mt-2 text-[16px] font-extrabold text-[#40506a]">
+                      <div className="mt-2 text-[16px] font-extrabold text-[var(--lit-muted)]">
                         {dateCard.year}
                       </div>
                     </div>
@@ -671,29 +738,29 @@ const LecturasDelDia = () => {
                 </div>
               )}
 
-              <div className="bg-[#f3eadb]/55 px-4 pb-6 pt-4 text-center">
-                <h2 className="font-display text-[30px] leading-[1.1] text-[#082347] sm:text-[40px]">
+              <div className="bg-[var(--lit-soft)] px-4 pb-6 pt-4 text-center">
+                <h2 className="font-display text-[30px] leading-[1.1] text-[var(--lit-text)] sm:text-[40px]">
                   {liturgia?.celebracion || "Liturgia del Día"}
                 </h2>
-                <p className="mt-4 text-[15px] font-extrabold text-[#40506a] sm:text-[16px]">
+                <p className="mt-4 text-[15px] font-extrabold text-[var(--lit-muted)] sm:text-[16px]">
                   Calendario litúrgico de Colombia
                 </p>
                 <div className="mx-auto mt-3 h-[2px] w-[72%] max-w-[420px] bg-[#c69222]" />
-                <div className="mt-4 flex items-center justify-center gap-2.5 text-[15px] font-extrabold uppercase text-[#082347] sm:text-[16px]">
+                <div className="mt-4 flex items-center justify-center gap-2.5 text-[15px] font-extrabold uppercase text-[var(--lit-text)] sm:text-[16px]">
                   <LiturgicalStole color={liturgia?.color_liturgico} />
                   <span>{liturgia?.tiempo_liturgico || "Tiempo litúrgico"}</span>
                 </div>
               </div>
             </header>
 
-            <section className="mx-auto mt-5 max-w-[860px] rounded-[22px] border-2 border-[#d8c49d] bg-white px-4 py-5 text-center shadow-[0_14px_32px_-28px_rgba(8,35,71,0.32)] sm:px-6 sm:py-6 md:p-8">
-              <div className="flex items-center justify-center gap-3 text-[#082347]">
+            <section className="mx-auto mt-5 max-w-[860px] rounded-[22px] border-2 border-[var(--lit-border)] bg-[var(--lit-surface)] px-4 py-5 text-center shadow-[0_14px_32px_-28px_rgba(8,35,71,0.32)] sm:px-6 sm:py-6 md:p-8">
+              <div className="flex items-center justify-center gap-3 text-[var(--lit-text)]">
                 <BookOpen className="h-5 w-5 text-[#b17a12]" />
                 <p className="text-[14px] font-extrabold uppercase tracking-[0.08em] sm:text-[16px]">
                   Palabra para hoy
                 </p>
               </div>
-              <h2 className="mx-auto mt-3 max-w-2xl font-display text-[22px] italic leading-[1.24] text-[#082347] sm:text-[27px] md:text-[34px]">
+              <h2 className="mx-auto mt-3 max-w-2xl font-display text-[22px] italic leading-[1.24] text-[var(--lit-text)] sm:text-[27px] md:text-[34px]">
                 {loading
                   ? "Cargando lecturas..."
                   : `«${stripOuterQuotes(palabraHoy)}»`}
@@ -701,7 +768,7 @@ const LecturasDelDia = () => {
               {liturgia?.evangelio_cita && (
                 <>
                   <div className="mx-auto mt-4 h-[2px] w-20 bg-[#c69222]" />
-                  <p className="mt-2 text-[12px] font-semibold text-[#536174] sm:text-sm">
+                  <p className="mt-2 text-[12px] font-semibold text-[var(--lit-muted)] sm:text-sm">
                     {liturgia.evangelio_cita}
                   </p>
                 </>
@@ -711,7 +778,7 @@ const LecturasDelDia = () => {
             {activeTab === "liturgia" && (
               <section className="mx-auto mt-5 max-w-[860px]">
                 <div className="mb-3 flex items-center justify-between gap-4 px-1">
-                  <h2 className="text-[13px] font-extrabold uppercase tracking-[0.22em] text-[#40506a]">
+                  <h2 className="text-[13px] font-extrabold uppercase tracking-[0.22em] text-[var(--lit-muted)]">
                     Lecturas de hoy
                   </h2>
                   <button
@@ -756,15 +823,15 @@ const LecturasDelDia = () => {
                           .getElementById(item.id)
                           ?.scrollIntoView({ behavior: "smooth", block: "start" })
                       }
-                      className="min-h-[108px] rounded-[14px] border border-[#e6d8bf] bg-white px-2.5 py-3 text-left shadow-[0_10px_24px_-22px_rgba(8,35,71,0.4)] transition active:scale-[0.98]"
+                      className="min-h-[108px] rounded-[14px] border border-[var(--lit-border)] bg-[var(--lit-surface)] px-2.5 py-3 text-left shadow-[0_10px_24px_-22px_rgba(8,35,71,0.4)] transition active:scale-[0.98]"
                     >
                       <span className="mb-2 flex h-7 w-7 items-center justify-center text-[#b17a12]">
                         {item.icon}
                       </span>
-                      <strong className="block text-[12px] leading-[1.15] text-[#082347] sm:text-[13px]">
+                      <strong className="block text-[12px] leading-[1.15] text-[var(--lit-text)] sm:text-[13px]">
                         {item.label}
                       </strong>
-                      <span className="mt-1.5 block line-clamp-2 text-[10px] leading-snug text-[#536174] sm:text-[11px]">
+                      <span className="mt-1.5 block line-clamp-2 text-[10px] leading-snug text-[var(--lit-muted)] sm:text-[11px]">
                         {item.citation || "Disponible pronto"}
                       </span>
                     </button>
@@ -848,7 +915,7 @@ const LecturasDelDia = () => {
             onClick={() => setSettingsOpen(false)}
           />
           <section
-            className="relative w-full rounded-t-[28px] border-t border-[#d8c49d] bg-[#fffaf2] px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5 shadow-[0_-18px_50px_-30px_rgba(8,35,71,0.55)]"
+            className="relative w-full rounded-t-[28px] border-t border-[var(--lit-border)] bg-[var(--lit-surface)] px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5 shadow-[0_-18px_50px_-30px_rgba(8,35,71,0.55)]"
             aria-label="Configuración de lectura"
           >
             <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-[#d8c49d]" />
@@ -857,14 +924,14 @@ const LecturasDelDia = () => {
                 <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#b17a12]">
                   Configuración
                 </p>
-                <h2 className="mt-1 text-xl font-extrabold text-[#082347]">
+                <h2 className="mt-1 text-xl font-extrabold text-[var(--lit-text)]">
                   Aa · Formato de texto
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setSettingsOpen(false)}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-[#e6d8bf] bg-white text-[#082347]"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--lit-border)] bg-[var(--lit-surface)] text-[var(--lit-text)]"
                 aria-label="Cerrar configuración"
               >
                 <X className="h-5 w-5" />
@@ -873,7 +940,38 @@ const LecturasDelDia = () => {
 
             <div className="mt-6 space-y-6">
               <fieldset>
-                <legend className="mb-3 text-sm font-extrabold text-[#40506a]">
+                <legend className="mb-3 text-sm font-extrabold text-[var(--lit-muted)]">
+                  Tema
+                </legend>
+                <div className="grid grid-cols-3 gap-2">
+                  {(Object.keys(LITURGIA_THEMES) as LiturgiaTheme[]).map((theme) => (
+                    <button
+                      key={theme}
+                      type="button"
+                      onClick={() => updateReadingPreferences({ theme })}
+                      className={`min-h-20 rounded-xl border p-2 text-xs font-bold transition ${
+                        readingPreferences.theme === theme
+                          ? "border-[#d4af37] bg-[#d4af37]/15 text-[#d4af37]"
+                          : "border-[var(--lit-border)] text-[var(--lit-muted)]"
+                      }`}
+                    >
+                      <span
+                        className={`mx-auto mb-2 block h-9 w-9 rounded-full border ${
+                          theme === "claro"
+                            ? "border-stone-300 bg-[#f8f5ea]"
+                            : theme === "sepia"
+                              ? "border-[#756e5d] bg-[#e7e1cf]"
+                              : "border-stone-700 bg-[#111111]"
+                        }`}
+                      />
+                      {LITURGIA_THEMES[theme].label}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend className="mb-3 text-sm font-extrabold text-[var(--lit-muted)]">
                   Tamaño del texto
                 </legend>
                 <div className="grid grid-cols-4 gap-2">
@@ -889,8 +987,8 @@ const LecturasDelDia = () => {
                       onClick={() => updateReadingPreferences({ fontSize: size })}
                       className={`min-h-12 rounded-xl border px-2 text-xs font-bold transition ${
                         readingPreferences.fontSize === size
-                          ? "border-[#b17a12] bg-[#d4af37] text-[#082347]"
-                          : "border-[#e6d8bf] bg-white text-[#40506a]"
+                          ? "border-[#b17a12] bg-[#d4af37] text-[var(--lit-text)]"
+                          : "border-[var(--lit-border)] bg-[var(--lit-surface)] text-[var(--lit-muted)]"
                       }`}
                     >
                       {label}
@@ -900,7 +998,7 @@ const LecturasDelDia = () => {
               </fieldset>
 
               <fieldset>
-                <legend className="mb-3 text-sm font-extrabold text-[#40506a]">
+                <legend className="mb-3 text-sm font-extrabold text-[var(--lit-muted)]">
                   Alineación
                 </legend>
                 <div className="grid grid-cols-2 gap-3">
@@ -916,8 +1014,8 @@ const LecturasDelDia = () => {
                       }
                       className={`min-h-12 rounded-xl border px-4 text-sm font-bold transition ${
                         readingPreferences.alignment === alignment
-                          ? "border-[#b17a12] bg-[#d4af37] text-[#082347]"
-                          : "border-[#e6d8bf] bg-white text-[#40506a]"
+                          ? "border-[#b17a12] bg-[#d4af37] text-[var(--lit-text)]"
+                          : "border-[var(--lit-border)] bg-[var(--lit-surface)] text-[var(--lit-muted)]"
                       }`}
                     >
                       {label}
@@ -931,13 +1029,13 @@ const LecturasDelDia = () => {
       )}
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-[900] border-t border-[#e6d8bf] bg-[#fffdf8]/95 pb-[max(0.4rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_-24px_rgba(8,35,71,0.45)] backdrop-blur md:hidden"
+        className="fixed inset-x-0 bottom-0 z-[900] border-t border-[var(--lit-border)] bg-[var(--lit-nav)] pb-[max(0.4rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_-24px_rgba(8,35,71,0.45)] backdrop-blur md:hidden"
         aria-label="Navegación de Liturgia"
       >
         <div className="mx-auto grid max-w-[560px] grid-cols-5 px-1">
           <Link
             to="/"
-            className="flex min-h-[60px] flex-col items-center justify-center gap-0.5 px-1 text-center text-[10px] font-semibold leading-[1.05] text-[#536174]"
+            className="flex min-h-[60px] flex-col items-center justify-center gap-0.5 px-1 text-center text-[10px] font-semibold leading-[1.05] text-[var(--lit-muted)]"
           >
             <Home className="h-5 w-5" />
             <span>Home</span>
@@ -949,7 +1047,7 @@ const LecturasDelDia = () => {
             className={`relative flex min-h-[60px] flex-col items-center justify-center gap-0.5 px-1 text-center text-[10px] font-semibold leading-[1.05] ${
               activeTab === "liturgia" && !settingsOpen
                 ? "text-[#b17a12]"
-                : "text-[#536174]"
+                : "text-[var(--lit-muted)]"
             }`}
           >
             <BookOpen className="h-5 w-5" />
@@ -965,7 +1063,7 @@ const LecturasDelDia = () => {
             className={`relative flex min-h-[60px] flex-col items-center justify-center gap-0.5 px-1 text-center text-[10px] font-semibold leading-[1.05] ${
               activeTab === "santo" && !settingsOpen
                 ? "text-[#b17a12]"
-                : "text-[#536174]"
+                : "text-[var(--lit-muted)]"
             }`}
           >
             <UserRound className="h-5 w-5" />
@@ -981,7 +1079,7 @@ const LecturasDelDia = () => {
             className={`relative flex min-h-[60px] flex-col items-center justify-center gap-0.5 px-1 text-center text-[10px] font-semibold leading-[1.05] ${
               activeTab === "reflexion" && !settingsOpen
                 ? "text-[#b17a12]"
-                : "text-[#536174]"
+                : "text-[var(--lit-muted)]"
             }`}
           >
             <MessageCircleQuestion className="h-5 w-5" />
@@ -995,7 +1093,7 @@ const LecturasDelDia = () => {
             type="button"
             onClick={() => setSettingsOpen(true)}
             className={`relative flex min-h-[60px] flex-col items-center justify-center gap-0.5 px-1 text-center text-[10px] font-semibold leading-[1.05] ${
-              settingsOpen ? "text-[#b17a12]" : "text-[#536174]"
+              settingsOpen ? "text-[#b17a12]" : "text-[var(--lit-muted)]"
             }`}
           >
             <Settings className="h-5 w-5" />
