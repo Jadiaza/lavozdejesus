@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 require __DIR__ . '/bootstrap.php';
 
+// Los planes se administran desde el panel y deben reflejar cambios inmediatamente.
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
+
 $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
 if ($method === 'OPTIONS') {
   header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
