@@ -45,21 +45,16 @@ export default function BibliaPersonajes() {
   return (
     <BibliaLayout title="Explorar">
       <section className="overflow-hidden rounded-[2rem] border border-[#D4AF37]/25 bg-[#111111] shadow-[0_24px_70px_rgba(0,0,0,0.45)]">
-        <div className="border-b border-[#D4AF37]/15 p-5 sm:p-6">
-          <div className="mb-5 flex items-start gap-3"><div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#D4AF37]/30 bg-[#D4AF37]/10 text-[#D4AF37]"><BookOpen className="h-6 w-6" /></div><div><h1 className="font-display text-3xl text-[#F8F5EA]">Explorar</h1><p className="mt-1 text-sm leading-relaxed text-[#C9C3B3]">Profundiza en la riqueza de la Biblia a través de sus personajes, lugares, mapas y más.</p></div></div>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <button type="button" className="rounded-2xl border border-[#D4AF37] bg-[#D4AF37] p-3 text-center text-[#050505]"><UsersRound className="mx-auto mb-1 h-5 w-5" /><span className="text-xs font-bold">Personajes bíblicos</span></button>
-            <button type="button" className="rounded-2xl border border-[#D4AF37]/25 bg-[#0B0B0B] p-3 text-center text-[#D4AF37]"><MapPin className="mx-auto mb-1 h-5 w-5" /><span className="text-xs font-semibold text-[#C9C3B3]">Lugares bíblicos</span></button>
-            <a href="/biblia/mapas" className="rounded-2xl border border-[#D4AF37]/25 bg-[#0B0B0B] p-3 text-center text-[#D4AF37]"><ScrollText className="mx-auto mb-1 h-5 w-5" /><span className="text-xs font-semibold text-[#C9C3B3]">Mapas</span></a>
-            <button type="button" className="rounded-2xl border border-[#D4AF37]/25 bg-[#0B0B0B] p-3 text-center text-[#D4AF37]"><BookOpen className="mx-auto mb-1 h-5 w-5" /><span className="text-xs font-semibold text-[#C9C3B3]">Cronología</span></button>
+        <div className="border-b border-[#D4AF37]/15 px-4 pb-4 pt-3 sm:px-6">
+          <p className="mb-4 text-sm leading-relaxed text-[#C9C3B3] sm:text-base">Profundiza en la riqueza de la Biblia a través de sus personajes, lugares, mapas y más.</p>
+          <div className="grid grid-cols-4 gap-2">
+            <button type="button" className="min-w-0 rounded-2xl border border-[#D4AF37] bg-[#D4AF37] px-1 py-3 text-center text-[#050505]"><UsersRound className="mx-auto mb-1 h-5 w-5" /><span className="block text-[10px] font-bold leading-tight sm:text-xs">Personajes<br />bíblicos</span></button>
+            <button type="button" className="min-w-0 rounded-2xl border border-[#D4AF37]/25 bg-[#0B0B0B] px-1 py-3 text-center text-[#D4AF37]"><MapPin className="mx-auto mb-1 h-5 w-5" /><span className="block text-[10px] font-semibold leading-tight text-[#C9C3B3] sm:text-xs">Lugares<br />bíblicos</span></button>
+            <a href="/biblia/mapas" className="min-w-0 rounded-2xl border border-[#D4AF37]/25 bg-[#0B0B0B] px-1 py-3 text-center text-[#D4AF37]"><ScrollText className="mx-auto mb-1 h-5 w-5" /><span className="block text-[10px] font-semibold leading-tight text-[#C9C3B3] sm:text-xs">Mapas</span></a>
+            <button type="button" className="min-w-0 rounded-2xl border border-[#D4AF37]/25 bg-[#0B0B0B] px-1 py-3 text-center text-[#D4AF37]"><BookOpen className="mx-auto mb-1 h-5 w-5" /><span className="block text-[10px] font-semibold leading-tight text-[#C9C3B3] sm:text-xs">Cronología</span></button>
           </div>
         </div>
-        <div className="p-5 sm:p-6">
-        <header className="mb-5 flex items-start gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#D4AF37]/30 bg-[#D4AF37]/10 text-[#D4AF37]"><UsersRound className="h-6 w-6" /></div>
-          <div><h1 className="font-display text-2xl text-[#F8F5EA]">Personajes bíblicos</h1><p className="mt-1 text-sm leading-relaxed text-[#C9C3B3]">Conoce su historia, sus pasajes principales y su lugar en la historia de la salvación.</p></div>
-        </header>
-
+        <div className="px-4 pb-5 pt-4 sm:px-6 sm:pb-6">
         <div className="mb-6 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto]">
           <label className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8F897C]" /><input value={search} onChange={(event) => setSearch(event.target.value)} type="search" placeholder="Buscar personaje…" className="h-11 w-full rounded-xl border border-[#D4AF37]/20 bg-[#080808] pl-10 pr-3 text-sm text-[#F8F5EA] outline-none focus:border-[#D4AF37]" /></label>
           <select value={testament} onChange={(event) => setTestament(event.target.value as TestamentFilter)} className="h-11 rounded-xl border border-[#D4AF37]/20 bg-[#080808] px-3 text-sm text-[#F8F5EA] outline-none"><option value="todos">Todos los testamentos</option><option value="AT">Antiguo Testamento</option><option value="NT">Nuevo Testamento</option></select>
