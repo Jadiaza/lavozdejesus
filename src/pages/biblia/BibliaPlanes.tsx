@@ -7,7 +7,6 @@ import {
   Loader2,
   Sparkles,
 } from "lucide-react";
-import planesHeaderBg from "@/assets/biblia/planes-header-bg.webp";
 import { BiblePlanCover } from "@/features/biblia/components/BiblePlanCover";
 import { BibliaLayout } from "./BibliaLayout";
 import {
@@ -90,12 +89,12 @@ export default function BibliaPlanes() {
     <BibliaLayout title="Planes" hideHeader>
       <section className="relative mb-4 overflow-hidden rounded-[1.5rem] border border-[#D4AF37]/18 bg-[#070707] px-4 pb-4 pt-4 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
         <img
-          src={planesHeaderBg}
+          src="https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/biblia/planes/images/header-plan.png"
           alt=""
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 h-full w-full object-cover object-right"
         />
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,5,0.90)_0%,rgba(5,5,5,0.80)_42%,rgba(5,5,5,0.38)_68%,rgba(5,5,5,0.08)_100%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,5,0.94)_0%,rgba(5,5,5,0.82)_45%,rgba(5,5,5,0.42)_70%,rgba(5,5,5,0.12)_100%)]" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#D4AF37]/55 to-transparent" />
 
         <div className="relative flex items-center gap-3">
