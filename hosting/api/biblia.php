@@ -229,14 +229,14 @@ try {
     $offset = ($page - 1) * $limit;
 
     $themeSql =
-      'SELECT vt.categoria, vt.tema, COUNT(*) AS total
+      "SELECT vt.categoria, vt.tema, COUNT(*) AS total
        FROM lvj_bib_versiculos_tematicos vt
        INNER JOIN lvj_bib_versiculos v
          ON v.id = vt.versiculo_id
         AND v.version_id = :version_id
         AND v.estado = 1
         AND v.deleted_at IS NULL
-       WHERE LOWER(CAST(vt.estado AS CHAR)) IN (\'1\', \'activo\')';
+       WHERE LOWER(CAST(vt.estado AS CHAR)) IN ('1', 'activo')";
     $themeParams = ['version_id' => $versionId];
     if ($query !== '') {
       $themeSql .= ' AND (LOCATE(:theme_query, vt.tema) > 0 OR LOCATE(:category_query, vt.categoria) > 0)';
@@ -258,7 +258,7 @@ try {
     $results = [];
     if ($tema !== '') {
       $countStatement = $pdo->prepare(
-        'SELECT COUNT(*)
+        "SELECT COUNT(*)
          FROM lvj_bib_versiculos_tematicos vt
          INNER JOIN lvj_bib_versiculos v
            ON v.id = vt.versiculo_id
@@ -270,13 +270,13 @@ try {
           AND l.version_id = v.version_id
           AND l.estado = 1
           AND l.deleted_at IS NULL
-         WHERE LOWER(CAST(vt.estado AS CHAR)) IN (\'1\', \'activo\') AND vt.tema = :tema'
+         WHERE LOWER(CAST(vt.estado AS CHAR)) IN ('1', 'activo') AND vt.tema = :tema"
       );
       $countStatement->execute(['version_id' => $versionId, 'tema' => $tema]);
       $total = (int) $countStatement->fetchColumn();
 
       $resultStatement = $pdo->prepare(
-        'SELECT v.id, v.capitulo, v.versiculo, v.texto,
+        "SELECT v.id, v.capitulo, v.versiculo, v.texto,
                 l.id AS libro_id, l.codigo AS libro_codigo, l.nombre AS libro_nombre,
                 l.abreviatura AS libro_abreviatura, l.testamento
          FROM lvj_bib_versiculos_tematicos vt
@@ -290,9 +290,9 @@ try {
           AND l.version_id = v.version_id
           AND l.estado = 1
           AND l.deleted_at IS NULL
-         WHERE LOWER(CAST(vt.estado AS CHAR)) IN (\'1\', \'activo\') AND vt.tema = :tema
+         WHERE LOWER(CAST(vt.estado AS CHAR)) IN ('1', 'activo') AND vt.tema = :tema
          ORDER BY l.orden ASC, v.capitulo ASC, v.versiculo ASC, v.id ASC
-         LIMIT :limit OFFSET :offset'
+         LIMIT :limit OFFSET :offset"
       );
       $resultStatement->bindValue(':version_id', $versionId, PDO::PARAM_INT);
       $resultStatement->bindValue(':tema', $tema, PDO::PARAM_STR);
