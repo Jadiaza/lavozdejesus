@@ -198,7 +198,7 @@ try {
 
   if ($accion === 'buscar') {
     $query = lvj_bib_query_param();
-    $page = lvj_bib_int_param('page', 1, 1, 100000);
+    $page = lvj_bib_int_param('page', 1, 1, 5000);
     $limit = lvj_bib_int_param('limit', 20, 1, 40);
     $offset = ($page - 1) * $limit;
 
@@ -224,7 +224,7 @@ try {
       lvj_json_response(['success' => false, 'message' => 'El tema solicitado no es válido.'], 400);
     }
 
-    $page = lvj_bib_int_param('page', 1, 1, 100000);
+    $page = lvj_bib_int_param('page', 1, 1, 5000);
     $limit = lvj_bib_int_param('limit', 20, 1, 40);
     $offset = ($page - 1) * $limit;
 
@@ -331,7 +331,7 @@ try {
 
   if ($accion === 'concordancia') {
     $query = lvj_bib_query_param();
-    $page = lvj_bib_int_param('page', 1, 1, 100000);
+    $page = lvj_bib_int_param('page', 1, 1, 5000);
     $limit = lvj_bib_int_param('limit', 20, 1, 40);
     $offset = ($page - 1) * $limit;
     $bookCode = strtoupper(lvj_bib_param('libro'));
