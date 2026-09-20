@@ -102,7 +102,7 @@ const tabLabels: Record<LecturasTab, string> = {
   reflexion: "Reflexión",
 };
 
-const weekLetters = ["L", "M", "M", "J", "V", "S", "D"];
+const weekLetters = ["L", "M", "X", "J", "V", "S", "D"];
 
 const formatDateCard = (fecha?: string) => {
   if (!fecha) return { weekday: "", day: "", month: "", year: "" };
