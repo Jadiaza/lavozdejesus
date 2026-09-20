@@ -38,7 +38,7 @@ export default function BibliaMapas() {
   }, [selected]);
 
   return (
-    <BibliaLayout title="Mapas" hideBottomNav>
+    <BibliaLayout title="Mapas" hideBottomNav hideBack>
       <section className="pb-3">
         <p className="mb-4 px-1 text-[15px] leading-6 text-[#C9C3B3]">Explora territorios, recorridos y acontecimientos de la historia de la salvación.</p>
         <label className="relative mb-3 block"><Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8F897C]" /><input value={search} onChange={(event) => setSearch(event.target.value)} type="search" placeholder="Buscar mapa..." className="h-12 w-full rounded-2xl border border-[#D4AF37]/30 bg-[#080808] pl-12 pr-4 text-[15px] text-[#F8F5EA] outline-none focus:border-[#D4AF37]" /></label>
