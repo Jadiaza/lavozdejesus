@@ -89,12 +89,12 @@ export default function BibliaPlanes() {
     <BibliaLayout title="Planes" hideHeader>
       <section className="relative mb-4 overflow-hidden rounded-[1.5rem] border border-[#D4AF37]/18 bg-[#070707] px-4 pb-4 pt-4 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
         <img
-          src="/images/biblia/planes-header-bg.webp"
+          src="/images/biblia/planes-header-bg.webp?v=20260920-2"
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-right"
         />
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,5,0.97)_0%,rgba(5,5,5,0.90)_46%,rgba(5,5,5,0.55)_70%,rgba(5,5,5,0.28)_100%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,5,0.90)_0%,rgba(5,5,5,0.80)_42%,rgba(5,5,5,0.38)_68%,rgba(5,5,5,0.08)_100%)]" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#D4AF37]/55 to-transparent" />
 
         <div className="relative flex items-center gap-3">
