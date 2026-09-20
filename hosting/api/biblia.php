@@ -236,7 +236,7 @@ try {
         AND v.version_id = :version_id
         AND v.estado = 1
         AND v.deleted_at IS NULL
-       WHERE vt.estado = 1';
+       WHERE LOWER(CAST(vt.estado AS CHAR)) IN ('1', 'activo')';
     $themeParams = ['version_id' => $versionId];
     if ($query !== '') {
       $themeSql .= ' AND (LOCATE(:theme_query, vt.tema) > 0 OR LOCATE(:category_query, vt.categoria) > 0)';
@@ -270,7 +270,7 @@ try {
           AND l.version_id = v.version_id
           AND l.estado = 1
           AND l.deleted_at IS NULL
-         WHERE vt.estado = 1 AND vt.tema = :tema'
+         WHERE LOWER(CAST(vt.estado AS CHAR)) IN ('1', 'activo') AND vt.tema = :tema'
       );
       $countStatement->execute(['version_id' => $versionId, 'tema' => $tema]);
       $total = (int) $countStatement->fetchColumn();
@@ -290,7 +290,7 @@ try {
           AND l.version_id = v.version_id
           AND l.estado = 1
           AND l.deleted_at IS NULL
-         WHERE vt.estado = 1 AND vt.tema = :tema
+         WHERE LOWER(CAST(vt.estado AS CHAR)) IN ('1', 'activo') AND vt.tema = :tema
          ORDER BY l.orden ASC, v.capitulo ASC, v.versiculo ASC, v.id ASC
          LIMIT :limit OFFSET :offset'
       );
