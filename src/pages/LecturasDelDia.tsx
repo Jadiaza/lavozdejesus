@@ -14,7 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { Fragment, useEffect, useMemo, useState } from "react";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/lvdj/Logo";
 import {
@@ -673,7 +673,7 @@ const LecturasDelDia = () => {
           "--lit-muted": activeTheme.muted,
           "--lit-border": activeTheme.border,
           "--lit-nav": activeTheme.nav,
-        } as React.CSSProperties
+        } as CSSProperties
       }
     >
       <div
