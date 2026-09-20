@@ -126,7 +126,7 @@ export default function Oraciones() {
 
         <div className="mt-auto grid grid-cols-2 gap-2.5 pt-2">{homeItems.map(([label, to, Icon]) => <Link key={label} to={to} onClick={tactileFeedback} className="group relative flex min-h-[clamp(3.8rem,8.7dvh,4.55rem)] items-center gap-2.5 overflow-hidden rounded-[0.85rem] border border-[#2b3b44] bg-[linear-gradient(145deg,rgba(18,33,42,.94)_0%,rgba(9,19,26,.96)_100%)] px-[clamp(.7rem,3.5vw,.95rem)] py-2 shadow-[inset_0_1px_0_rgba(255,255,255,.035),0_7px_18px_rgba(0,0,0,.28)] backdrop-blur-md transition hover:border-[#d8a740]/55 active:scale-[.975]"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#d8a740]/25 bg-[#d8a740]/[0.07]"><Icon className="h-6 w-6 text-[#f2c544] transition group-hover:drop-shadow-[0_0_8px_rgba(241,195,61,.4)]" strokeWidth={1.8} /></span><span className="min-w-0 text-[clamp(.66rem,3vw,.79rem)] font-semibold leading-[1.16] text-white/95">{label}</span></Link>)}</div>
       </main>
-      <PrayerNav active="Inicio" />
+      <PrayerNav active="Oraciones" />
     </div>
   </div>;
 }
