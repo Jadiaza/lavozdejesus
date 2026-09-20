@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { BookOpen, Check, ChevronRight, Loader2, Shield, Sparkles } from "lucide-react";
+import { BookOpen, Check, ChevronRight, Loader2, Sparkles } from "lucide-react";
+import { BiblePlanCover } from "@/features/biblia/components/BiblePlanCover";
 import { BibliaLayout } from "./BibliaLayout";
 import {
   getBiblePlan,
@@ -89,13 +90,13 @@ export default function BibliaPlanDetalle() {
   return (
     <BibliaLayout title="Planes">
       <section className="overflow-hidden rounded-[1.75rem] border border-[#D4AF37]/25 bg-[#0B0B0B] shadow-[0_22px_70px_rgba(0,0,0,0.42)]">
-        {plan.imagen_url ? (
-          <img src={plan.imagen_url} alt="" className="h-56 w-full object-cover" />
-        ) : (
-          <div className="flex h-44 items-center justify-center bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.22),transparent_55%),linear-gradient(145deg,#171208,#050505)]">
-            <Shield className="h-16 w-16 text-[#D4AF37]" strokeWidth={1.2} />
-          </div>
-        )}
+        <BiblePlanCover
+          src={plan.imagen_url}
+          alt={plan.titulo}
+          className="h-56 w-full"
+          fallbackClassName="h-44 w-full"
+          iconClassName="h-16 w-16"
+        />
 
         <div className="p-5">
           <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#D4AF37]">
