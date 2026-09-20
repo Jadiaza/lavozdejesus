@@ -192,7 +192,20 @@ const renderReadingText = (
             firstMeaningfulLineRendered = true;
           }
 
-          const node = highlightOrdo ? (
+          const psalmMarker =
+            mode === "psalm"
+              ? line.match(/^(\s*(?:V\.|V\/\.|R\.|R\/.))(\s*)(.*)$/i)
+              : null;
+
+          const node = psalmMarker ? (
+            <span>
+              <span className="font-bold text-[#c69222]">
+                {psalmMarker[1]}
+              </span>
+              {psalmMarker[2]}
+              {psalmMarker[3]}
+            </span>
+          ) : highlightOrdo ? (
             <span className="font-semibold italic text-[#c69222]">{line}</span>
           ) : (
             <span>{line}</span>
