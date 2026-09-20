@@ -1,0 +1,59 @@
+<svg width="1600" height="520" viewBox="0 0 1600 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1600" y2="520" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#050505"/>
+      <stop offset="0.48" stop-color="#0B0905"/>
+      <stop offset="1" stop-color="#171006"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1240 85) rotate(151) scale(520 360)">
+      <stop stop-color="#F1D36A" stop-opacity=".55"/>
+      <stop offset=".35" stop-color="#D4AF37" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#D4AF37" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="page" x1="1045" y1="265" x2="1470" y2="430" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E7D5A2" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#8B6B28" stop-opacity=".28"/>
+    </linearGradient>
+    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="26"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="520" fill="url(#bg)"/>
+  <rect width="1600" height="520" fill="url(#glow)"/>
+
+  <g opacity=".2" filter="url(#blur)">
+    <ellipse cx="1260" cy="125" rx="220" ry="95" fill="#E7C557"/>
+  </g>
+
+  <g opacity=".48">
+    <path d="M1080 290C1160 252 1252 252 1328 286V442C1243 407 1160 407 1080 445V290Z" fill="url(#page)"/>
+    <path d="M1328 286C1402 252 1490 252 1568 292V446C1490 409 1408 409 1328 442V286Z" fill="url(#page)"/>
+    <path d="M1328 286V442" stroke="#D9BD63" stroke-opacity=".46" stroke-width="4"/>
+    <path d="M1105 314C1172 289 1239 288 1304 310" stroke="#F4E6B8" stroke-opacity=".16" stroke-width="3"/>
+    <path d="M1105 338C1170 315 1238 314 1304 335" stroke="#F4E6B8" stroke-opacity=".13" stroke-width="3"/>
+    <path d="M1350 312C1413 291 1477 292 1542 318" stroke="#F4E6B8" stroke-opacity=".16" stroke-width="3"/>
+    <path d="M1350 338C1414 316 1478 319 1542 343" stroke="#F4E6B8" stroke-opacity=".13" stroke-width="3"/>
+  </g>
+
+  <g opacity=".66">
+    <rect x="1440" y="92" width="22" height="170" rx="4" fill="#D1B04D"/>
+    <rect x="1385" y="142" width="132" height="22" rx="4" fill="#D1B04D"/>
+  </g>
+
+  <g opacity=".28">
+    <path d="M980 0L1215 520" stroke="#D9B84A" stroke-width="16"/>
+    <path d="M1080 0L1280 520" stroke="#D9B84A" stroke-width="9"/>
+    <path d="M1180 0L1370 520" stroke="#F3D474" stroke-width="5"/>
+  </g>
+
+  <rect width="1600" height="520" fill="url(#leftFade)"/>
+  <defs>
+    <linearGradient id="leftFade" x1="0" y1="0" x2="1600" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#050505" stop-opacity=".98"/>
+      <stop offset=".48" stop-color="#050505" stop-opacity=".8"/>
+      <stop offset=".75" stop-color="#050505" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#050505" stop-opacity=".08"/>
+    </linearGradient>
+  </defs>
+</svg>
