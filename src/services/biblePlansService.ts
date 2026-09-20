@@ -51,9 +51,7 @@ interface ApiEnvelope<T> {
 const baseUrl = ((import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "https://lavozdejesus.co")
   .trim()
   .replace(/\/+$/, "");
-const apiUrl =
-  (import.meta.env.VITE_BIBLE_PLANS_API_URL as string | undefined)?.trim() ||
-  `${baseUrl}/api/biblia-planes.php`;
+const apiUrl = (import.meta.env.VITE_BIBLE_PLANS_API_URL as string | undefined)?.trim() || `${baseUrl}/api/biblia-planes.php`;
 const localKey = (planId: number) => `planProgress:${planId}`;
 
 async function parse<T>(response: Response): Promise<T> {
@@ -86,8 +84,7 @@ export async function listBiblePlans(): Promise<BiblePlan[]> {
   return data.planes ?? [];
 }
 
-export const getBiblePlan = (id: number) =>
-  request<BiblePlanDetail>({ accion: "detalle", id });
+export const getBiblePlan = (id: number) => request<BiblePlanDetail>({ accion: "detalle", id });
 
 export const getBiblePlanDay = (planId: number, day: number) =>
   request<BiblePlanJourney>({ accion: "jornada", plan_id: planId, dia: day });
@@ -102,11 +99,29 @@ export async function getServerPlanProgress(planId: number): Promise<BiblePlanPr
   const url = new URL(apiUrl, window.location.origin);
   url.searchParams.set("accion", "progreso");
   url.searchParams.set("plan_id", String(planId));
-  const response = await fetch(url.toString(), {
-    headers: { Accept: "application/json", ...authHeaders(token) },
-  });
+  const response = await fetch(url.toString(), { headers: { Accept: "application/json", ...authHeaders(token) } });
   if (response.status === 401 || response.status === 403) return null;
   return parse<BiblePlanProgress | null>(response);
+}
+
+async function postServerProgress(progress: BiblePlanProgress): Promise<BiblePlanProgress | null> {
+  const token = await accessToken();
+  if (!token) return null;
+  const response = await fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...authHeaders(token),
+    },
+    body: JSON.stringify({
+      accion: "progreso",
+      plan_id: progress.plan_id,
+      dia_actual: progress.dia_actual,
+      completado: progress.completado,
+    }),
+  });
+  return parse<BiblePlanProgress>(response);
 }
 
 export async function resolvePlanProgress(planId: number): Promise<BiblePlanProgress | null> {
@@ -118,21 +133,43 @@ export async function resolvePlanProgress(planId: number): Promise<BiblePlanProg
     server = null;
   }
   if (!local && !server) return null;
+
   const merged: BiblePlanProgress = {
     plan_id: planId,
     dia_actual: Math.max(local?.dia_actual ?? 1, server?.dia_actual ?? 1),
     completado: Boolean(local?.completado || server?.completado),
-    updated_at: new Date().toISOString(),
+    updated_at: server?.updated_at || local?.updated_at || new Date().toISOString(),
   };
   await setMeta(localKey(planId), merged);
+
+  const serverBehind = Boolean(
+    local &&
+      (!server ||
+        local.dia_actual > server.dia_actual ||
+        (local.completado && !server.completado)),
+  );
+  if (serverBehind) {
+    try {
+      const synced = await postServerProgress(merged);
+      if (synced) {
+        const normalized: BiblePlanProgress = {
+          plan_id: planId,
+          dia_actual: Math.max(merged.dia_actual, synced.dia_actual),
+          completado: merged.completado || synced.completado,
+          updated_at: synced.updated_at || merged.updated_at,
+        };
+        await setMeta(localKey(planId), normalized);
+        return normalized;
+      }
+    } catch {
+      // La lectura del plan no debe bloquearse por una falla de sincronización.
+    }
+  }
+
   return merged;
 }
 
-export async function savePlanProgress(
-  planId: number,
-  day: number,
-  completed: boolean,
-): Promise<BiblePlanProgress> {
+export async function savePlanProgress(planId: number, day: number, completed: boolean): Promise<BiblePlanProgress> {
   const previous = await getLocalPlanProgress(planId);
   const local: BiblePlanProgress = {
     plan_id: planId,
@@ -142,25 +179,9 @@ export async function savePlanProgress(
   };
   await setMeta(localKey(planId), local);
 
-  const token = await accessToken();
-  if (!token) return local;
-
   try {
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        ...authHeaders(token),
-      },
-      body: JSON.stringify({
-        accion: "progreso",
-        plan_id: planId,
-        dia_actual: local.dia_actual,
-        completado: local.completado,
-      }),
-    });
-    const server = await parse<BiblePlanProgress>(response);
+    const server = await postServerProgress(local);
+    if (!server) return local;
     const merged: BiblePlanProgress = {
       plan_id: planId,
       dia_actual: Math.max(local.dia_actual, server.dia_actual),
