@@ -243,6 +243,7 @@ const ContentCard = ({
   text,
   icon,
   featured = false,
+  integrated = false,
   mode = "normal",
   readingPreferences = DEFAULT_READING_PREFERENCES,
 }: {
@@ -253,6 +254,7 @@ const ContentCard = ({
   text?: string;
   icon: ReactNode;
   featured?: boolean;
+  integrated?: boolean;
   mode?: ReadingRenderMode;
   readingPreferences?: LiturgiaReadingPreferences;
 }) => {
@@ -261,22 +263,38 @@ const ContentCard = ({
   return (
     <article
       id={id}
-      className={`scroll-mt-6 rounded-2xl border bg-[var(--lit-surface)] p-5 text-left shadow-[0_12px_32px_-28px_rgba(8,35,71,0.45)] ${
-        featured ? "border-[#d4af37]" : "border-[var(--lit-border)]"
-      }`}
+      className={
+        integrated
+          ? `scroll-mt-2 border-b px-1 py-7 text-left last:border-b-0 ${
+              featured
+                ? "border-[#d4af37]/60"
+                : "border-[var(--lit-border)]"
+            }`
+          : `scroll-mt-6 rounded-2xl border bg-[var(--lit-surface)] p-5 text-left shadow-[0_12px_32px_-28px_rgba(8,35,71,0.45)] ${
+              featured ? "border-[#d4af37]" : "border-[var(--lit-border)]"
+            }`
+      }
     >
-      <div className="flex items-start gap-4">
+      <div className={`flex items-start ${integrated ? "gap-3" : "gap-4"}`}>
         <span
-          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
-            featured
-              ? "bg-[#082347] text-[#d4af37]"
-              : "bg-[#f7ead1] text-[#c08a19]"
-          }`}
+          className={
+            integrated
+              ? "flex h-8 w-8 shrink-0 items-center justify-center text-[#d4af37]"
+              : `flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
+                  featured
+                    ? "bg-[#082347] text-[#d4af37]"
+                    : "bg-[#f7ead1] text-[#c08a19]"
+                }`
+          }
         >
           {icon}
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="text-[15px] font-extrabold uppercase tracking-[0.14em] text-[var(--lit-text)]">
+          <h2 className={`font-extrabold uppercase text-[var(--lit-text)] ${
+            integrated
+              ? "text-[17px] tracking-[0.17em]"
+              : "text-[15px] tracking-[0.14em]"
+          }`}>
             {title}
           </h2>
           {subtitle && (
@@ -287,15 +305,26 @@ const ContentCard = ({
         </div>
       </div>
 
+      {integrated && (
+        <div
+          className={`mt-4 h-px w-full ${
+            featured ? "bg-[#d4af37]/70" : "bg-[var(--lit-border)]"
+          }`}
+          aria-hidden="true"
+        />
+      )}
+
       {response && (
-        <p className="mt-5 text-[17px] font-bold leading-[1.7] text-[#b17a12]">
+        <p className="mt-5 text-[17px] font-bold leading-[1.7] text-[#c69222]">
           {response}
         </p>
       )}
 
       {text && (
         <div
-          className="mt-5 leading-[1.78] text-[var(--lit-text)]"
+          className={`leading-[1.78] text-[var(--lit-text)] ${
+            integrated ? "mt-6" : "mt-5"
+          }`}
           style={{
             fontSize: `${readingPreferences.fontSize}px`,
             textAlign: readingPreferences.alignment,
@@ -853,6 +882,7 @@ const LecturasDelDia = () => {
                     text={liturgia?.primera_lectura_texto}
                     icon={<BookOpen className="h-5 w-5" />}
                     mode="ordo"
+                    integrated
                     readingPreferences={readingPreferences}
                   />
                   <ContentCard
@@ -863,6 +893,7 @@ const LecturasDelDia = () => {
                     text={liturgia?.salmo_texto}
                     icon={<Music2 className="h-5 w-5" />}
                     mode="psalm"
+                    integrated
                     readingPreferences={readingPreferences}
                   />
                   <ContentCard
@@ -872,6 +903,7 @@ const LecturasDelDia = () => {
                     text={liturgia?.segunda_lectura_texto}
                     icon={<BookOpen className="h-5 w-5" />}
                     mode="ordo"
+                    integrated
                     readingPreferences={readingPreferences}
                   />
                   <ContentCard
@@ -882,6 +914,7 @@ const LecturasDelDia = () => {
                     icon={<Cross className="h-5 w-5" />}
                     featured
                     mode="ordo"
+                    integrated
                     readingPreferences={readingPreferences}
                   />
                 </div>
