@@ -192,18 +192,25 @@ const renderReadingText = (
             firstMeaningfulLineRendered = true;
           }
 
-          const psalmMarker =
-            mode === "psalm"
-              ? line.match(/^(\s*(?:[VR]\.|[VR]\/\.))(\s*)(.*)$/i)
-              : null;
+          const psalmParts =
+            mode === "psalm" ? line.split(/(\b[VR](?:\/)?\.)/gi) : null;
 
-          const node = psalmMarker ? (
+          const node = psalmParts ? (
             <span>
-              <span className="font-bold text-[#c69222]">
-                {psalmMarker[1]}
-              </span>
-              {psalmMarker[2]}
-              {psalmMarker[3]}
+              {psalmParts.map((part, partIndex) =>
+                /^[VR](?:\/)?\.$/i.test(part) ? (
+                  <span
+                    key={`${part}-${partIndex}`}
+                    className="font-bold text-[#c69222]"
+                  >
+                    {part}
+                  </span>
+                ) : (
+                  <Fragment key={`${partIndex}-${part.slice(0, 8)}`}>
+                    {part}
+                  </Fragment>
+                ),
+              )}
             </span>
           ) : highlightOrdo ? (
             <span className="font-semibold italic text-[#c69222]">{line}</span>
