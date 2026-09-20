@@ -25,6 +25,10 @@ const sectionLabels = new Set([
   "COMPROMISO DEL DÍA",
 ]);
 
+function journeyTitle(title: string) {
+  return title.replace(/^D[ií]a\s+\d+\s*[—–-]\s*/i, "").trim() || title;
+}
+
 function SpiritualText({ text }: { text: string }) {
   const blocks = text
     .split(/\n\s*\n/)
@@ -160,7 +164,7 @@ export default function BibliaPlanJornada() {
           Jornada {jornada.dia} de {plan.duracion_dias}
         </p>
         <h1 className="mt-2 font-display text-3xl leading-tight text-[#F8F5EA]">
-          {jornada.titulo}
+          {journeyTitle(jornada.titulo)}
         </h1>
         <div className="mt-4 h-1 overflow-hidden rounded-full bg-white/10">
           <div
