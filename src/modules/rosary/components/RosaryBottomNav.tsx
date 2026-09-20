@@ -2,7 +2,7 @@ import { BookOpen, Home, PlayCircle, Settings } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const ITEMS = [
-  { label: "Home", to: "/", icon: Home, match: (path: string) => path === "/" },
+  { label: "Inicio", to: "/", icon: Home, match: (path: string) => path === "/" },
   {
     label: "Rosario",
     to: "/rosario",
