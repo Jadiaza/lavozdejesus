@@ -10,7 +10,7 @@ import {
   MessageCircleQuestion,
   ShieldCheck,
 } from "lucide-react";
-import { BibliaReferenciaModal } from "@/features/biblia/components/BibliaReferenciaModal";
+import { BibliaReferenciaContenido } from "@/features/biblia/components/BibliaReferenciaModal";
 import { BibliaLayout } from "./BibliaLayout";
 import {
   getBiblePlanDay,
@@ -194,12 +194,12 @@ export default function BibliaPlanJornada() {
               Palabra de Dios
             </h2>
           </div>
-          <div className="mt-3">
-            <BibliaReferenciaModal referencia={jornada.lectura} />
-          </div>
-          <p className="mt-2 text-[11px] leading-relaxed text-[#8F897C]">
-            Toca la cita para leer el pasaje sin salir de esta jornada.
+          <p className="mt-3 font-display text-xl leading-tight text-[#F8F5EA]">
+            {jornada.lectura}
           </p>
+          <div className="mt-5 border-t border-[#D4AF37]/15 pt-5">
+            <BibliaReferenciaContenido referencia={jornada.lectura} />
+          </div>
         </section>
       ) : null}
 
