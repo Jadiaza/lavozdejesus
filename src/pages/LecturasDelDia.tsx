@@ -102,7 +102,7 @@ const tabLabels: Record<LecturasTab, string> = {
   reflexion: "Reflexión",
 };
 
-const weekLetters = ["L", "M", "X", "J", "V", "S", "D"];
+const weekLetters = ["L", "M", "M", "J", "V", "S", "D"];
 
 const formatDateCard = (fecha?: string) => {
   if (!fecha) return { weekday: "", day: "", month: "", year: "" };
@@ -194,8 +194,14 @@ const renderReadingText = (
 
           const psalmParts =
             mode === "psalm" ? line.split(/(\b[VR](?:\/)?\.)/gi) : null;
+          const isClosingFormula =
+            /^(Palabra de Dios|Palabra del Señor)\.?$/i.test(line.trim());
 
-          const node = psalmParts ? (
+          const node = isClosingFormula ? (
+            <strong className="font-extrabold text-[var(--lit-text)]">
+              {line}
+            </strong>
+          ) : psalmParts ? (
             <span>
               {psalmParts.map((part, partIndex) =>
                 /^[VR](?:\/)?\.$/i.test(part) ? (
