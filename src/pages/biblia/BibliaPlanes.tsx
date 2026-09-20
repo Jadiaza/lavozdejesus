@@ -10,8 +10,8 @@ import {
 } from "lucide-react";
 import { BibliaLayout } from "./BibliaLayout";
 import {
-  getLocalPlanProgress,
   listBiblePlans,
+  resolvePlanProgress,
   type BiblePlan,
   type BiblePlanProgress,
 } from "@/services/biblePlansService";
@@ -30,7 +30,7 @@ export default function BibliaPlanes() {
         if (!active) return;
         setPlans(rows);
         const entries = await Promise.all(
-          rows.map(async (plan) => [plan.id, await getLocalPlanProgress(plan.id)] as const),
+          rows.map(async (plan) => [plan.id, await resolvePlanProgress(plan.id)] as const),
         );
         if (!active) return;
         setProgress(
@@ -109,7 +109,7 @@ export default function BibliaPlanes() {
                     width: `${Math.min(
                       100,
                       Math.round(
-                        (progress[current.id].dia_actual / current.duracion_dias) * 100,
+                        (Math.max(0, progress[current.id].dia_actual - 1) / current.duracion_dias) * 100,
                       ),
                     )}%`,
                   }}
@@ -151,7 +151,7 @@ export default function BibliaPlanes() {
               const pct = saved
                 ? Math.min(
                     100,
-                    Math.round((saved.dia_actual / Math.max(1, plan.duracion_dias)) * 100),
+                    Math.round((Math.max(0, saved.dia_actual - 1) / Math.max(1, plan.duracion_dias)) * 100),
                   )
                 : 0;
 
