@@ -263,6 +263,7 @@ export function OracionDetalle() {
   const [error, setError] = useState("");
   const [formatOpen, setFormatOpen] = useState(false);
   const [favorite, setFavorite] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
   const [prayedToday, setPrayedToday] = useState(false);
   const [dailyCount, setDailyCount] = useState(0);
   const { preferences, update, reset } = usePrayerPreferences();
@@ -293,13 +294,23 @@ export function OracionDetalle() {
     const day = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota" }).format(new Date());
     try {
       const favorites = JSON.parse(localStorage.getItem("lvj-prayer-favorites-v1") || "[]") as string[];
+      const downloads = JSON.parse(localStorage.getItem("lvj-prayer-downloads-v1") || "[]") as LibraryPrayer[];
       const progress = JSON.parse(localStorage.getItem("lvj-prayer-daily-v1") || "{}") as { day?: string; ids?: string[] };
       const ids = progress.day === day && Array.isArray(progress.ids) ? progress.ids : [];
       setFavorite(favorites.includes(id));
+      setDownloaded(downloads.some((item) => String(item.id) === id));
       setPrayedToday(ids.includes(id));
       setDailyCount(ids.length);
     } catch { /* Conserva los valores iniciales si el almacenamiento está dañado. */ }
   }, [id]);
+
+  useEffect(() => {
+    if (!prayer) return;
+    const key = "lvj-prayer-recents-v1";
+    let ids: string[] = [];
+    try { ids = JSON.parse(localStorage.getItem(key) || "[]"); } catch { ids = []; }
+    localStorage.setItem(key, JSON.stringify([String(prayer.id), ...ids.filter((item) => item !== String(prayer.id))].slice(0, 30)));
+  }, [prayer]);
 
   const toggleFavorite = () => {
     const key = "lvj-prayer-favorites-v1";
@@ -319,6 +330,18 @@ export function OracionDetalle() {
     const ids = current.includes(id) ? current : [...current, id];
     localStorage.setItem("lvj-prayer-daily-v1", JSON.stringify({ day, ids }));
     setPrayedToday(true); setDailyCount(ids.length); tactileFeedback();
+  };
+
+  const toggleDownloaded = () => {
+    if (!prayer) return;
+    const key = "lvj-prayer-downloads-v1";
+    let saved: LibraryPrayer[] = [];
+    try { saved = JSON.parse(localStorage.getItem(key) || "[]"); } catch { saved = []; }
+    const exists = saved.some((item) => String(item.id) === String(prayer.id));
+    const next = exists ? saved.filter((item) => String(item.id) !== String(prayer.id)) : [prayer, ...saved];
+    localStorage.setItem(key, JSON.stringify(next));
+    setDownloaded(!exists);
+    tactileFeedback();
   };
 
   const sharePrayer = async () => {
@@ -345,9 +368,10 @@ export function OracionDetalle() {
             <div style={{ color: readingTheme.color }} className="mx-auto -mt-1 flex w-28 items-center gap-2 opacity-80" aria-hidden="true"><span className="h-px flex-1 bg-current" /><span className="rotate-45 text-[9px]">◆</span><span className="h-px flex-1 bg-current" /></div>
           </section>
           <PrayerReader preferences={preferences} integrated><div className="whitespace-pre-line">{prayer.texto_completo}</div></PrayerReader>
-          <div className="mt-8 grid grid-cols-3 gap-2 text-center text-xs">
+          <div className="mt-8 grid grid-cols-4 gap-1 text-center text-[10px]">
             <button type="button" onClick={toggleFavorite} className="flex min-h-16 flex-col items-center justify-center gap-1.5"><Heart className={`h-7 w-7 text-[#efbd52] ${favorite ? "fill-current" : ""}`} /><span>{favorite ? "Guardada" : "Favorito"}</span></button>
-            {prayer.audio_url ? <a href={prayer.audio_url} className="flex min-h-16 flex-col items-center justify-center gap-1.5"><Volume2 className="h-7 w-7 text-[#efbd52]" /><span>Escuchar</span></a> : <button type="button" disabled className="flex min-h-16 flex-col items-center justify-center gap-1.5 opacity-45"><Volume2 className="h-7 w-7 text-[#efbd52]" /><span>Sin audio</span></button>}
+            <button type="button" onClick={toggleDownloaded} className="flex min-h-16 flex-col items-center justify-center gap-1.5"><Download className={`h-7 w-7 text-[#efbd52] ${downloaded ? "fill-current" : ""}`} /><span>{downloaded ? "Descargada" : "Descargar"}</span></button>
+            {prayer.audio_url ? <a href={prayer.audio_url} className="flex min-h-16 flex-col items-center justify-center gap-1.5"><Volume2 className="h-7 w-7 text-[#efbd52]" /><span>Escuchar</span></a> : <span className="flex min-h-16 flex-col items-center justify-center gap-1.5 opacity-35"><Volume2 className="h-7 w-7 text-[#efbd52]" /><span>Sin audio</span></span>}
             <button type="button" onClick={sharePrayer} className="flex min-h-16 flex-col items-center justify-center gap-1.5"><Send className="h-7 w-7 text-[#efbd52]" /><span>Compartir</span></button>
           </div>
           <button type="button" onClick={markPrayed} disabled={prayedToday} className={`mt-5 flex min-h-14 w-full items-center justify-center gap-3 rounded-full border text-sm font-bold transition ${prayedToday ? "border-emerald-400/45 bg-emerald-400/10 text-emerald-200" : "border-[#efbd52] text-[#efbd52] active:bg-[#efbd52]/10"}`}><Check className="h-6 w-6" />{prayedToday ? "Oración completada hoy" : "Terminé mi oración"}</button>
@@ -400,7 +424,47 @@ export function DevocionDetalle() {
 }
 
 export function MisOraciones() {
-  return <Shell title="Mis oraciones" active="Favoritos"><div className="mb-4 grid grid-cols-3 rounded-xl bg-[#111b23] p-1 text-center text-xs"><span className="rounded-lg bg-[#efd078] px-2 py-3 font-bold text-black">Favoritas</span><span className="px-2 py-3">Descargadas</span><span className="px-2 py-3">Recientes</span></div><div className="rounded-xl border border-white/10 bg-[#111b23] p-6 text-center text-sm text-white/60">Tus oraciones guardadas aparecerán aquí.</div></Shell>;
+  const [activeTab, setActiveTab] = useState<"favorites" | "downloads" | "recents">("favorites");
+  const [items, setItems] = useState<LibraryPrayer[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setLoading(true);
+      let downloads: LibraryPrayer[] = [];
+      try { downloads = JSON.parse(localStorage.getItem("lvj-prayer-downloads-v1") || "[]"); } catch { downloads = []; }
+      if (activeTab === "downloads") {
+        if (!cancelled) { setItems(downloads); setLoading(false); }
+        return;
+      }
+      const key = activeTab === "favorites" ? "lvj-prayer-favorites-v1" : "lvj-prayer-recents-v1";
+      let ids: string[] = [];
+      try { ids = JSON.parse(localStorage.getItem(key) || "[]").map(String); } catch { ids = []; }
+      const results = await Promise.all(ids.map(async (prayerId) => {
+        const offline = downloads.find((item) => String(item.id) === prayerId);
+        try { return await prayerLibraryService.get(prayerId); } catch { return offline || null; }
+      }));
+      if (!cancelled) { setItems(results.filter((item): item is LibraryPrayer => Boolean(item))); setLoading(false); }
+    };
+    void load();
+    return () => { cancelled = true; };
+  }, [activeTab]);
+
+  const emptyMessage = activeTab === "favorites"
+    ? "Aún no has marcado oraciones como favoritas."
+    : activeTab === "downloads"
+      ? "Aún no has descargado oraciones para leer sin conexión."
+      : "Las oraciones que abras aparecerán aquí.";
+
+  return <Shell title="Mis oraciones" active="Favoritos">
+    <div className="mb-5 grid grid-cols-3 rounded-2xl bg-[#111b23] p-1.5 text-center text-xs">
+      {[["favorites", "Favoritas"], ["downloads", "Descargadas"], ["recents", "Recientes"]].map(([value, label]) => <button key={value} type="button" onClick={() => setActiveTab(value as typeof activeTab)} className={`rounded-xl px-1 py-3 font-semibold transition ${activeTab === value ? "bg-[#efd078] text-black shadow-md" : "text-white/70"}`}>{label}</button>)}
+    </div>
+    {loading ? <div className="flex min-h-48 items-center justify-center"><LoaderCircle className="h-7 w-7 animate-spin text-[#efbd52]" /></div> : null}
+    {!loading && items.length === 0 ? <div className="rounded-2xl border border-white/10 bg-[#111b23] p-8 text-center text-sm leading-relaxed text-white/60">{emptyMessage}</div> : null}
+    {!loading && items.length ? <div className="space-y-3">{items.map((prayer) => <Link key={prayer.id} to={`/oraciones/oracion/${prayer.id}`} className="flex min-h-[4.8rem] items-center rounded-2xl border border-white/10 bg-[#111b23] p-4 active:scale-[.985]"><span className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#efbd52]/30 bg-[#efbd52]/10"><HandHeart className="h-5 w-5 text-[#efbd52]" /></span><span className="min-w-0 flex-1"><b className="block text-sm">{prayer.titulo}</b>{prayer.subtitulo ? <small className="mt-1 line-clamp-2 block text-[10px] leading-relaxed text-white/50">{prayer.subtitulo}</small> : null}</span><ChevronRight className="ml-2 h-5 w-5 shrink-0 text-[#efbd52]" /></Link>)}</div> : null}
+  </Shell>;
 }
 
 export function PeticionOracion() {
