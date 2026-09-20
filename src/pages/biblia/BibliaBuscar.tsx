@@ -138,7 +138,7 @@ export default function BibliaBuscar() {
     return () => {
       active = false;
     };
-  }, [activeTab, themeLoading, themesLoaded]);
+  }, [activeTab, themesLoaded]);
 
   const addHistory = (tab: RecentSearch["tab"], query: string) => {
     const clean = query.trim();
