@@ -27,15 +27,121 @@ interface Passage {
   versiculos: BibliaVersiculo[];
 }
 
+interface ExpandedReference extends BibliaReferenciaResuelta {
+  hastaFinalCapitulo?: boolean;
+}
+
+type ExpandedReferenceResult =
+  | { ok: true; data: ExpandedReference[] }
+  | { ok: false; message: string };
+
 function splitReferences(value: string) {
   return value
-    .split(";")
+    .split(/[;·]/)
     .map((item) => item.trim())
     .filter(Boolean);
 }
 
+function expandReference(
+  input: string,
+  books: BibliaLibro[],
+): ExpandedReferenceResult {
+  const normalizedDashes = input.replace(/[–—]/g, "-");
+
+  const crossChapter = normalizedDashes.match(
+    /^(.+?)\s+(\d{1,3})\s*[:,]\s*(\d{1,3})\s*-\s*(\d{1,3})\s*[:,]\s*(\d{1,3})$/,
+  );
+
+  if (crossChapter) {
+    const [, bookPart, startChapterRaw, startVerseRaw, endChapterRaw, endVerseRaw] =
+      crossChapter;
+    const startChapter = Number(startChapterRaw);
+    const startVerse = Number(startVerseRaw);
+    const endChapter = Number(endChapterRaw);
+    const endVerse = Number(endVerseRaw);
+
+    const startResolved = resolverReferenciaBiblica(
+      `${bookPart} ${startChapter}`,
+      books,
+    );
+    if (!startResolved.ok) return startResolved;
+    const endResolved = resolverReferenciaBiblica(
+      `${bookPart} ${endChapter}`,
+      books,
+    );
+    if (!endResolved.ok) return endResolved;
+
+    if (
+      startResolved.data.libro.codigo !== endResolved.data.libro.codigo ||
+      endChapter < startChapter ||
+      startVerse < 1 ||
+      endVerse < 1
+    ) {
+      return { ok: false, message: "El rango bíblico no es válido." };
+    }
+
+    const data: ExpandedReference[] = [];
+    for (let chapter = startChapter; chapter <= endChapter; chapter += 1) {
+      data.push({
+        libro: startResolved.data.libro,
+        capitulo: chapter,
+        versiculoInicio: chapter === startChapter ? startVerse : undefined,
+        versiculoFin: chapter === endChapter ? endVerse : undefined,
+        hastaFinalCapitulo: chapter === startChapter && chapter !== endChapter,
+        referencia: `${startResolved.data.libro.nombre} ${chapter}`,
+      });
+    }
+    return { ok: true, data };
+  }
+
+  const chapterRange = normalizedDashes.match(
+    /^(.+?)\s+(\d{1,3})\s*-\s*(\d{1,3})$/,
+  );
+
+  if (chapterRange) {
+    const [, bookPart, startRaw, endRaw] = chapterRange;
+    const startChapter = Number(startRaw);
+    const endChapter = Number(endRaw);
+    const startResolved = resolverReferenciaBiblica(
+      `${bookPart} ${startChapter}`,
+      books,
+    );
+
+    if (!startResolved.ok) return startResolved;
+    if (
+      endChapter < startChapter ||
+      endChapter > startResolved.data.libro.capitulos
+    ) {
+      return {
+        ok: false,
+        message: `${startResolved.data.libro.nombre} no tiene ese rango de capítulos.`,
+      };
+    }
+
+    return {
+      ok: true,
+      data: Array.from(
+        { length: endChapter - startChapter + 1 },
+        (_, index) => {
+          const chapter = startChapter + index;
+          return {
+            libro: startResolved.data.libro,
+            capitulo: chapter,
+            referencia: `${startResolved.data.libro.nombre} ${chapter}`,
+          };
+        },
+      ),
+    };
+  }
+
+  const resolved = resolverReferenciaBiblica(normalizedDashes, books);
+  return resolved.ok
+    ? { ok: true, data: [resolved.data] }
+    : resolved;
+}
+
 async function loadResolvedPassage(
-  resolved: BibliaReferenciaResuelta,
+  resolved: ExpandedReference,
 ): Promise<Passage> {
   const chapter = await getBibliaCapitulo(
     resolved.libro.codigo,
@@ -44,10 +150,16 @@ async function loadResolvedPassage(
   );
 
   const start = resolved.versiculoInicio;
-  const end = resolved.versiculoFin ?? start;
+  const end = resolved.hastaFinalCapitulo
+    ? Number.POSITIVE_INFINITY
+    : resolved.versiculoFin ?? start;
   const verses =
     start === undefined
-      ? chapter.versiculos
+      ? resolved.versiculoFin === undefined
+        ? chapter.versiculos
+        : chapter.versiculos.filter(
+            (verse) => verse.versiculo <= resolved.versiculoFin!,
+          )
       : chapter.versiculos.filter(
           (verse) => verse.versiculo >= start && verse.versiculo <= (end ?? start),
         );
@@ -115,7 +227,7 @@ export function BibliaReferenciaModal({
     setLoading(true);
     setError("");
 
-    const resolved = references.map((item) => resolverReferenciaBiblica(item, books));
+    const resolved = references.map((item) => expandReference(item, books));
     const invalid = resolved.find((item) => !item.ok);
 
     if (invalid && !invalid.ok) {
@@ -125,12 +237,9 @@ export function BibliaReferenciaModal({
       return;
     }
 
-    Promise.all(
-      resolved.map((item) => {
-        if (!item.ok) throw new Error(item.message);
-        return loadResolvedPassage(item.data);
-      }),
-    )
+    const expanded = resolved.flatMap((item) => (item.ok ? item.data : []));
+
+    Promise.all(expanded.map((item) => loadResolvedPassage(item)))
       .then((items) => {
         if (active) setPassages(items);
       })
@@ -193,8 +302,8 @@ export function BibliaReferenciaModal({
               </div>
             ) : (
               <div className="space-y-6">
-                {passages.map((passage) => (
-                  <section key={passage.referencia}>
+                {passages.map((passage, index) => (
+                  <section key={`${passage.referencia}-${index}`}>
                     {passages.length > 1 ? (
                       <h3 className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-[#D4AF37]">
                         {passage.referencia}
