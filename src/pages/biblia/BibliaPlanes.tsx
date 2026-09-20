@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import {
   BookOpen,
   BookOpenCheck,
-  CalendarCheck2,
   ChevronRight,
   Loader2,
   Sparkles,
@@ -88,13 +87,14 @@ export default function BibliaPlanes() {
 
   return (
     <BibliaLayout title="Planes" hideHeader>
-      <section className="relative mb-4 overflow-hidden rounded-[1.5rem] border border-[#D4AF37]/18 bg-[radial-gradient(circle_at_82%_18%,rgba(212,175,55,0.20),transparent_34%),radial-gradient(circle_at_18%_100%,rgba(212,175,55,0.08),transparent_36%),linear-gradient(135deg,#121009_0%,#080808_58%,#050505_100%)] px-4 pb-4 pt-4 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
-        <div className="pointer-events-none absolute -right-7 -top-8 rotate-[-8deg] opacity-[0.10]">
-          <BookOpen className="h-36 w-36 text-[#F2D27A]" strokeWidth={0.75} />
-        </div>
-        <div className="pointer-events-none absolute bottom-2 right-5 opacity-[0.12]">
-          <CalendarCheck2 className="h-14 w-14 text-[#D4AF37]" strokeWidth={1.15} />
-        </div>
+      <section className="relative mb-4 overflow-hidden rounded-[1.5rem] border border-[#D4AF37]/18 bg-[#070707] px-4 pb-4 pt-4 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
+        <img
+          src="/images/biblia/planes-header-bg.svg"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,5,0.96)_0%,rgba(5,5,5,0.88)_48%,rgba(5,5,5,0.34)_100%)]" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#D4AF37]/55 to-transparent" />
 
         <div className="relative flex items-center gap-3">
