@@ -87,26 +87,26 @@ export default function BibliaPlanes() {
 
   return (
     <BibliaLayout title="Planes" hideHeader>
-      <section className="relative overflow-hidden pb-5 pt-5">
+      <section className="relative overflow-hidden pb-4 pt-3">
         <div className="pointer-events-none absolute -right-8 top-1 opacity-[0.12]">
           <BookOpen className="h-32 w-32 text-[#D4AF37]" strokeWidth={0.8} />
         </div>
 
         <div className="relative flex items-center gap-3">
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(145deg,#F5D86B,#D4AF37)] text-black shadow-[0_10px_30px_rgba(212,175,55,0.24)]">
-            <BookOpen className="h-6 w-6" strokeWidth={1.8} />
+            <BookOpen className="h-5 w-5" strokeWidth={1.8} />
           </span>
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#D4AF37]">
               La Voz de Jesús
             </p>
-            <h1 className="mt-0.5 font-display text-[34px] leading-none text-[#F8F5EA]">
+            <h1 className="mt-0.5 font-display text-[32px] leading-none text-[#F8F5EA]">
               Planes
             </h1>
           </div>
         </div>
 
-        <p className="relative mt-4 max-w-[92%] text-[15px] leading-7 text-[#C7C0B1]">
+        <p className="relative mt-3 max-w-[92%] text-[14px] leading-6 text-[#C7C0B1]">
           Caminos para encontrarte con Dios, crecer en su Palabra y dejar que transforme tu vida.
         </p>
       </section>
@@ -124,17 +124,17 @@ export default function BibliaPlanes() {
       ) : null}
 
       {!loading && !error && current ? (
-        <section className="mb-6 rounded-[1.4rem] border border-[#D4AF37]/55 bg-[#0A0A09] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.4)]">
-          <div className="grid grid-cols-[52px_minmax(0,1fr)] gap-3">
-            <span className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-[#D4AF37] text-black">
-              <BookOpenCheck className="h-6 w-6" />
+        <section className="mb-5 rounded-[1.35rem] border border-[#D4AF37]/45 bg-[#0A0A09] p-3.5 shadow-[0_14px_38px_rgba(0,0,0,0.34)]">
+          <div className="grid grid-cols-[48px_minmax(0,1fr)] gap-3">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#D4AF37] text-black">
+              <BookOpenCheck className="h-5 w-5" />
             </span>
 
             <div className="min-w-0">
               <p className="text-[9px] font-bold uppercase tracking-[0.23em] text-[#D4AF37]">
                 Continúa tu camino
               </p>
-              <h2 className="mt-1 font-display text-[20px] leading-[1.08] text-[#F8F5EA]">
+              <h2 className="mt-1 line-clamp-2 font-display text-[18px] leading-[1.08] text-[#F8F5EA]">
                 {current.titulo}
               </h2>
               <p className="mt-1 text-[11px] text-[#B9B1A2]">
@@ -143,7 +143,7 @@ export default function BibliaPlanes() {
             </div>
           </div>
 
-          <div className="mt-3 grid grid-cols-[1fr_auto] items-center gap-3">
+          <div className="mt-2.5 grid grid-cols-[1fr_auto] items-center gap-3">
             <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
               <div
                 className="h-full rounded-full bg-[#D4AF37]"
@@ -157,7 +157,7 @@ export default function BibliaPlanes() {
 
           <Link
             to={`/biblia/planes/${current.id}/jornada/${progress[current.id].dia_actual}`}
-            className="mt-4 flex min-h-11 w-full items-center justify-center gap-1 rounded-xl bg-[#D4AF37] px-4 text-sm font-extrabold text-black"
+            className="mt-3 flex min-h-10 w-full items-center justify-center gap-1 rounded-xl bg-[#D4AF37] px-4 text-sm font-extrabold text-black"
           >
             CONTINUAR
             <ChevronRight className="h-4 w-4" />
@@ -167,14 +167,14 @@ export default function BibliaPlanes() {
 
       {!loading && !error && featured ? (
         <>
-          <section className="mb-7">
-            <h2 className="mb-3 font-display text-[26px] leading-none text-[#F8F5EA]">
+          <section className="mb-6">
+            <h2 className="mb-3 font-display text-[24px] leading-none text-[#F8F5EA]">
               Plan destacado
             </h2>
 
             <Link
               to={`/biblia/planes/${featured.id}`}
-              className="group block overflow-hidden rounded-[1.45rem] border border-[#D4AF37]/22 bg-[#0B0B0B] shadow-[0_18px_48px_rgba(0,0,0,0.3)]"
+              className="group block overflow-hidden rounded-[1.35rem] border border-[#D4AF37]/20 bg-[#0B0B0B] shadow-[0_14px_36px_rgba(0,0,0,0.28)]"
             >
               <BiblePlanCover
                 src={featured.imagen_url}
@@ -185,22 +185,22 @@ export default function BibliaPlanes() {
                 fit="stretch"
               />
 
-              <div className="p-4">
+              <div className="p-3.5">
                 <div className="text-[9px] font-bold uppercase tracking-[0.18em] text-[#D4AF37]">
                   {featured.categoria || "Plan"} · {featured.duracion_dias} jornadas
                 </div>
 
                 <div className="mt-2 flex items-start gap-3">
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-display text-[22px] leading-[1.08] text-[#F8F5EA]">
+                    <h3 className="font-display text-[20px] leading-[1.08] text-[#F8F5EA]">
                       {featured.titulo}
                     </h3>
-                    <p className="mt-2 line-clamp-2 text-[13px] leading-5 text-[#AAA396]">
+                    <p className="mt-1.5 line-clamp-2 text-[12.5px] leading-5 text-[#AAA396]">
                       {featured.descripcion}
                     </p>
                   </div>
 
-                  <span className="flex h-10 shrink-0 items-center gap-1 rounded-full border border-[#D4AF37]/65 px-3 text-[11px] font-semibold text-[#EBC95C]">
+                  <span className="flex h-9 shrink-0 items-center gap-1 rounded-full border border-[#D4AF37]/65 px-3 text-[11px] font-semibold text-[#EBC95C]">
                     Ver plan
                     <ChevronRight className="h-4 w-4" />
                   </span>
@@ -211,38 +211,38 @@ export default function BibliaPlanes() {
 
           <section>
             <div className="mb-3">
-              <h2 className="font-display text-[26px] leading-none text-[#F8F5EA]">
+              <h2 className="font-display text-[24px] leading-none text-[#F8F5EA]">
                 Explora otros planes
               </h2>
-              <p className="mt-2 max-w-[92%] text-[13px] leading-5 text-[#AAA396]">
+              <p className="mt-1.5 max-w-[92%] text-[12px] leading-5 text-[#AAA396]">
                 Encuentra un camino más corto o enfocado en una necesidad espiritual concreta.
               </p>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {otherPlans.map((plan) => (
                 <Link
                   key={plan.id}
                   to={`/biblia/planes/${plan.id}`}
-                  className="group grid min-h-[86px] grid-cols-[82px_minmax(0,1fr)_24px] items-center gap-3 rounded-[1.25rem] border border-white/10 bg-[#11110F] p-2.5 shadow-[0_12px_30px_rgba(0,0,0,0.24)] transition hover:border-[#D4AF37]/35"
+                  className="group grid min-h-[78px] grid-cols-[76px_minmax(0,1fr)_22px] items-center gap-3 rounded-[1.15rem] border border-[#D4AF37]/14 bg-[#11110F] p-2 shadow-[0_10px_24px_rgba(0,0,0,0.2)] transition hover:border-[#D4AF37]/35"
                 >
                   <BiblePlanCover
                     src={plan.imagen_url}
                     alt={plan.titulo}
-                    className="h-[66px] w-[82px] rounded-xl"
-                    fallbackClassName="h-[66px] w-[82px] rounded-xl"
+                    className="h-[62px] w-[76px] rounded-xl"
+                    fallbackClassName="h-[62px] w-[76px] rounded-xl"
                     iconClassName="h-7 w-7"
                     fit="stretch"
                   />
 
                   <div className="min-w-0">
-                    <p className="text-[11px] text-[#A8A094]">
+                    <p className="text-[10.5px] text-[#A8A094]">
                       {plan.duracion_dias} jornadas
                     </p>
-                    <h3 className="mt-0.5 font-display text-[19px] leading-[1.05] text-[#F8F5EA]">
+                    <h3 className="mt-0.5 font-display text-[18px] leading-[1.06] text-[#F8F5EA]">
                       {plan.titulo}
                     </h3>
-                    <p className="mt-1 truncate text-[10px] uppercase tracking-[0.12em] text-[#B69539]">
+                    <p className="mt-0.5 truncate text-[9px] uppercase tracking-[0.12em] text-[#B69539]">
                       {plan.categoria || "Plan"}
                     </p>
                   </div>
