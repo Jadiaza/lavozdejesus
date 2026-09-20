@@ -43,6 +43,7 @@ const Capilla = lazy(() => import("./pages/Capilla.tsx"));
 const Intenciones = lazy(() => import("./pages/Intenciones.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const BibliaHome = lazy(() => import("./pages/biblia/BibliaHome.tsx"));
+const BibliaBuscar = lazy(() => import("./pages/biblia/BibliaBuscar.tsx"));
 const BibliaLeer = lazy(() => import("./pages/biblia/BibliaLeer.tsx"));
 const BibliaComparar = lazy(() => import("./pages/biblia/BibliaComparar.tsx"));
 const BibliaProximamente = lazy(() => import("./pages/biblia/BibliaProximamente.tsx"));
@@ -86,6 +87,7 @@ const App = () => (
               <Route path="/programacion" element={<Programacion />} />
               <Route path="/biblia" element={<BibliaHome />} />
               <Route path="/Biblia" element={<BibliaHome />} />
+              <Route path="/biblia/buscar" element={<BibliaBuscar />} />
               <Route path="/biblia/leer" element={<BibliaLeer />} />
               <Route path="/biblia/libros" element={<BibliaLibros />} />
               <Route path="/biblia/favoritos" element={<BibliaFavoritos />} />
