@@ -1,7 +1,6 @@
 import { type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ArrowLeft, BookOpen } from "lucide-react";
-import { BottomNav } from "@/components/lvdj/BottomNav";
+import { BookOpen, CalendarCheck2, GraduationCap, Home } from "lucide-react";
 import "./biblia-layout.css";
 
 interface Props {
@@ -14,7 +13,33 @@ interface Props {
   hideBack?: boolean;
 }
 
-export const BibliaLayout = ({ title, children, back, headerAction, hideHeader = false, hideBottomNav = false, hideBack = false }: Props) => {
+const BibliaBottomNav = () => {
+  const loc = useLocation();
+  const items = [
+    { icon: Home, label: "Home", to: "/biblia", active: loc.pathname === "/biblia" || loc.pathname === "/Biblia" },
+    { icon: BookOpen, label: "Leer", to: "/biblia/libros", active: loc.pathname.startsWith("/biblia/libros") || loc.pathname.startsWith("/biblia/leer") },
+    { icon: GraduationCap, label: "Estudio", to: "/biblia/estudio", active: loc.pathname.startsWith("/biblia/estudio") },
+    { icon: CalendarCheck2, label: "Planes", to: "/biblia/planes", active: loc.pathname.startsWith("/biblia/planes") },
+  ];
+
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-[9998] w-full xl:hidden" aria-label="Navegación del módulo Biblia">
+      <div className="mx-auto w-full max-w-[430px] border-t border-[#D4AF37]/25 bg-[#0B0E0C]/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-12px_30px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+        <div className="flex items-end justify-around">
+          {items.map((item) => (
+            <Link key={item.label} to={item.to} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-1">
+              <item.icon className={`h-5 w-5 ${item.active ? "text-[#D4AF37]" : "text-[#A6A59F]"}`} strokeWidth={item.active ? 2 : 1.6} />
+              <span className={`text-[10px] ${item.active ? "font-medium text-[#D4AF37]" : "text-[#A6A59F]"}`}>{item.label}</span>
+              {item.active && <span className="h-0.5 w-5 rounded-full bg-[#D4AF37]" />}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export const BibliaLayout = ({ title, children, headerAction, hideHeader = false, hideBottomNav = false }: Props) => {
   const loc = useLocation();
   const isHome = loc.pathname === "/biblia" || loc.pathname === "/Biblia";
 
@@ -26,26 +51,13 @@ export const BibliaLayout = ({ title, children, back, headerAction, hideHeader =
       {!isHome && !hideHeader && (
         <header className="sticky top-0 z-40 border-b border-[#D4AF37]/15 bg-[#050505]/92 shadow-[0_14px_38px_rgba(0,0,0,0.5)] backdrop-blur-xl">
           <div className="mx-auto flex w-full items-center gap-3 px-4 py-3 sm:max-w-[640px] md:max-w-4xl">
-            {!hideBack && (
-              <Link
-                to={back ?? "/biblia"}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D4AF37]/30 bg-[#111111]/80 text-[#F2D27A] shadow-[0_0_20px_rgba(212,175,55,0.12)] transition hover:border-[#D4AF37]/60 hover:bg-[#171717]"
-                aria-label="Volver"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            )}
             <div className="flex items-center gap-2">
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#F2D27A] via-[#D4AF37] to-[#9B7417] shadow-[0_0_22px_rgba(212,175,55,0.28)]">
                 <BookOpen className="h-4 w-4 text-[#050505]" />
               </span>
               <div>
-                <div className="text-[10px] uppercase tracking-[0.28em] text-[#D4AF37]/85">
-                  La Voz de Jesús
-                </div>
-                <div className="font-display text-lg leading-none text-[#F8F5EA]">
-                  {title ?? "Biblia"}
-                </div>
+                <div className="text-[10px] uppercase tracking-[0.28em] text-[#D4AF37]/85">La Voz de Jesús</div>
+                <div className="font-display text-lg leading-none text-[#F8F5EA]">{title ?? "Biblia"}</div>
               </div>
             </div>
             {headerAction && <div className="ml-auto flex items-center">{headerAction}</div>}
@@ -53,14 +65,8 @@ export const BibliaLayout = ({ title, children, back, headerAction, hideHeader =
         </header>
       )}
 
-      <main
-        className={`biblia-layout-content relative z-10 mx-auto w-full px-3 pb-8 sm:max-w-[640px] sm:px-4 md:max-w-4xl md:px-6 ${
-          isHome ? "pt-0" : "pt-3"
-        }`}
-      >
-        {children}
-      </main>
-      {!hideBottomNav && <BottomNav activeLabel="Biblia" />}
+      <main className={`biblia-layout-content relative z-10 mx-auto w-full px-3 pb-8 sm:max-w-[640px] sm:px-4 md:max-w-4xl md:px-6 ${isHome ? "pt-0" : "pt-3"}`}>{children}</main>
+      {!hideBottomNav && <BibliaBottomNav />}
     </div>
   );
 };
