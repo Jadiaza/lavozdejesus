@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, Loader2 } from "lucide-react";
+import { BookOpen, CheckCircle2, ChevronDown, ChevronRight, ChevronUp, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -178,121 +178,194 @@ async function loadResolvedPassage(
 
 export function BibliaReferenciaContenido({
   referencia,
+  storageKey,
+  onProgressChange,
 }: {
   referencia: string;
+  storageKey?: string;
+  onProgressChange?: (completed: number, total: number) => void;
 }) {
   const [books, setBooks] = useState<BibliaLibro[]>([]);
   const [passages, setPassages] = useState<Passage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [completed, setCompleted] = useState<number[]>([]);
   const references = useMemo(() => splitReferences(referencia), [referencia]);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
     setError("");
-
     getBibliaCatalogo(VERSION)
-      .then((catalog) => {
-        if (active) setBooks(catalog.libros);
-      })
+      .then((catalog) => { if (active) setBooks(catalog.libros); })
       .catch((cause) => {
         if (active) {
-          setError(
-            cause instanceof Error
-              ? cause.message
-              : "No fue posible consultar la Biblia.",
-          );
+          setError(cause instanceof Error ? cause.message : "No fue posible consultar la Biblia.");
           setLoading(false);
         }
       });
-
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
     if (!books.length) return;
-
     let active = true;
     setLoading(true);
     setError("");
-
     const resolved = references.map((item) => expandReference(item, books));
     const invalid = resolved.find((item) => !item.ok);
-
     if (invalid && !invalid.ok) {
       setPassages([]);
       setError(invalid.message);
       setLoading(false);
       return;
     }
-
     const expanded = resolved.flatMap((item) => (item.ok ? item.data : []));
-
     Promise.all(expanded.map((item) => loadResolvedPassage(item)))
       .then((items) => {
-        if (active) setPassages(items);
+        if (!active) return;
+        setPassages(items);
+        setActiveIndex(0);
+        if (storageKey) {
+          try {
+            const raw = window.localStorage.getItem(storageKey);
+            const saved = raw ? JSON.parse(raw) : null;
+            const restored = Array.isArray(saved?.completed)
+              ? saved.completed.filter((value: unknown) => Number.isInteger(value) && Number(value) >= 0 && Number(value) < items.length)
+              : [];
+            setCompleted(restored);
+            if (Number.isInteger(saved?.activeIndex) && saved.activeIndex >= 0 && saved.activeIndex < items.length) {
+              setActiveIndex(saved.activeIndex);
+            }
+          } catch {
+            setCompleted([]);
+          }
+        }
       })
       .catch((cause) => {
         if (active) {
           setPassages([]);
-          setError(
-            cause instanceof Error
-              ? cause.message
-              : "No fue posible consultar la Biblia.",
-          );
+          setError(cause instanceof Error ? cause.message : "No fue posible consultar la Biblia.");
         }
       })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [books, references, storageKey]);
 
-    return () => {
-      active = false;
-    };
-  }, [books, references]);
+  useEffect(() => {
+    if (!passages.length) return;
+    onProgressChange?.(completed.length, passages.length);
+    if (!storageKey) return;
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify({ completed, activeIndex }));
+    } catch {
+      // La lectura no debe bloquearse si el almacenamiento local no está disponible.
+    }
+  }, [activeIndex, completed, onProgressChange, passages.length, storageKey]);
+
+  const markCurrentAndContinue = () => {
+    if (!passages.length) return;
+    setCompleted((current) => current.includes(activeIndex) ? current : [...current, activeIndex].sort((a, b) => a - b));
+    if (activeIndex < passages.length - 1) {
+      const nextIndex = activeIndex + 1;
+      setActiveIndex(nextIndex);
+      window.requestAnimationFrame(() => {
+        document.getElementById("plan-reading-" + nextIndex)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  };
+
+  const shortLabel = (passage: Passage) => {
+    const abbreviation = passage.libro.abreviatura?.replace(/\.$/, "") || passage.libro.nombre.slice(0, 3);
+    return abbreviation + " " + passage.capitulo;
+  };
 
   if (loading) {
-    return (
-      <div className="flex min-h-28 items-center justify-center" role="status">
-        <Loader2 className="h-6 w-6 animate-spin text-[#D4AF37]" />
-      </div>
-    );
+    return <div className="flex min-h-36 items-center justify-center" role="status"><Loader2 className="h-6 w-6 animate-spin text-[#D4AF37]" /></div>;
   }
 
   if (error) {
-    return (
-      <div className="rounded-2xl border border-red-500/25 bg-red-950/20 p-4 text-sm leading-relaxed text-red-200">
-        {error}
-      </div>
-    );
+    return <div className="rounded-2xl border border-red-500/25 bg-red-950/20 p-4 text-sm leading-relaxed text-red-200">{error}</div>;
   }
 
   return (
-    <div className="space-y-7">
-      {passages.map((passage, index) => (
-        <section key={`${passage.referencia}-${index}`}>
-          <h3 className="mb-3 font-display text-xl leading-tight text-[#F8F5EA]">
-            {passage.referencia}
-          </h3>
-          <div className="space-y-3">
-            {passage.versiculos.map((verse) => (
-              <p
-                key={verse.id}
-                className="text-[16px] leading-7 text-[#E6E0D4]"
-              >
-                <sup className="mr-1.5 text-[10px] font-bold text-[#D4AF37]">
-                  {verse.versiculo}
-                </sup>
-                {verse.texto}
-              </p>
-            ))}
-          </div>
-        </section>
-      ))}
+    <div className="space-y-4">
+      <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">
+        {passages.map((passage, index) => {
+          const isActive = activeIndex === index;
+          const done = completed.includes(index);
+          return (
+            <button
+              key={"chip-" + passage.referencia + "-" + index}
+              type="button"
+              onClick={() => {
+                setActiveIndex(index);
+                window.requestAnimationFrame(() => {
+                  document.getElementById("plan-reading-" + index)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                });
+              }}
+              className={"shrink-0 rounded-full border px-5 py-2 font-display text-base transition " + (
+                isActive
+                  ? "border-[#E7C35D] bg-[linear-gradient(135deg,#F2D27A,#D4AF37)] text-[#0A0906] shadow-[0_6px_20px_rgba(212,175,55,0.2)]"
+                  : done
+                    ? "border-[#D4AF37]/35 bg-[#15130D] text-[#E7C35D]"
+                    : "border-white/20 bg-[#0A0A09] text-[#E7E2D6]"
+              )}
+            >
+              {shortLabel(passage)}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="space-y-3">
+        {passages.map((passage, index) => {
+          const isActive = activeIndex === index;
+          const done = completed.includes(index);
+          return (
+            <section
+              id={"plan-reading-" + index}
+              key={passage.referencia + "-" + index}
+              className={"scroll-mt-24 overflow-hidden rounded-[1.35rem] border transition " + (
+                isActive
+                  ? "border-[#D4AF37]/65 bg-[linear-gradient(145deg,rgba(212,175,55,0.08),rgba(8,8,8,0.98))] shadow-[0_16px_48px_rgba(0,0,0,0.28)]"
+                  : "border-white/10 bg-[#090909]"
+              )}
+            >
+              <button type="button" onClick={() => setActiveIndex(index)} className="flex w-full items-center gap-3 px-4 py-4 text-left" aria-expanded={isActive}>
+                <span className={"flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border " + (
+                  isActive || done ? "border-[#D4AF37]/35 bg-[#D4AF37]/10 text-[#E7C35D]" : "border-white/10 bg-white/[0.02] text-[#9E9A91]"
+                )}>
+                  {done ? <CheckCircle2 className="h-5 w-5" /> : <BookOpen className="h-5 w-5" />}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-display text-[1.35rem] leading-none text-[#F8F5EA]">{passage.referencia}</span>
+                  <span className="mt-1.5 block text-[9px] font-semibold uppercase tracking-[0.24em] text-[#AFA89B]">Biblia Platense · Straubinger</span>
+                </span>
+                {isActive ? <ChevronUp className="h-5 w-5 shrink-0 text-[#E7C35D]" /> : <ChevronDown className="h-5 w-5 shrink-0 text-[#8F8A80]" />}
+              </button>
+
+              {isActive ? (
+                <div className="border-t border-[#D4AF37]/12 px-4 pb-4 pt-4">
+                  <div className="space-y-4">
+                    {passage.versiculos.map((verse) => (
+                      <p key={verse.id} className="font-display text-[19px] leading-[1.75] text-[#E8E2D7]">
+                        <sup className="mr-2 align-super font-sans text-[10px] font-bold text-[#D4AF37]">{verse.versiculo}</sup>
+                        {verse.texto}
+                      </p>
+                    ))}
+                  </div>
+                  <button type="button" onClick={markCurrentAndContinue} className="mt-6 flex min-h-12 w-full items-center justify-between rounded-xl border border-[#D4AF37]/28 bg-[#11100D] px-4 font-semibold text-[#E7C35D] transition active:scale-[0.99]">
+                    <span>{done ? "Continuar lectura" : "Marcar leído y continuar"}</span>
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </div>
+              ) : null}
+            </section>
+          );
+        })}
+      </div>
     </div>
   );
 }
