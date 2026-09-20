@@ -176,6 +176,127 @@ async function loadResolvedPassage(
   };
 }
 
+export function BibliaReferenciaContenido({
+  referencia,
+}: {
+  referencia: string;
+}) {
+  const [books, setBooks] = useState<BibliaLibro[]>([]);
+  const [passages, setPassages] = useState<Passage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const references = useMemo(() => splitReferences(referencia), [referencia]);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError("");
+
+    getBibliaCatalogo(VERSION)
+      .then((catalog) => {
+        if (active) setBooks(catalog.libros);
+      })
+      .catch((cause) => {
+        if (active) {
+          setError(
+            cause instanceof Error
+              ? cause.message
+              : "No fue posible consultar la Biblia.",
+          );
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!books.length) return;
+
+    let active = true;
+    setLoading(true);
+    setError("");
+
+    const resolved = references.map((item) => expandReference(item, books));
+    const invalid = resolved.find((item) => !item.ok);
+
+    if (invalid && !invalid.ok) {
+      setPassages([]);
+      setError(invalid.message);
+      setLoading(false);
+      return;
+    }
+
+    const expanded = resolved.flatMap((item) => (item.ok ? item.data : []));
+
+    Promise.all(expanded.map((item) => loadResolvedPassage(item)))
+      .then((items) => {
+        if (active) setPassages(items);
+      })
+      .catch((cause) => {
+        if (active) {
+          setPassages([]);
+          setError(
+            cause instanceof Error
+              ? cause.message
+              : "No fue posible consultar la Biblia.",
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [books, references]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-28 items-center justify-center" role="status">
+        <Loader2 className="h-6 w-6 animate-spin text-[#D4AF37]" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-2xl border border-red-500/25 bg-red-950/20 p-4 text-sm leading-relaxed text-red-200">
+        {error}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-7">
+      {passages.map((passage, index) => (
+        <section key={`${passage.referencia}-${index}`}>
+          <h3 className="mb-3 font-display text-xl leading-tight text-[#F8F5EA]">
+            {passage.referencia}
+          </h3>
+          <div className="space-y-3">
+            {passage.versiculos.map((verse) => (
+              <p
+                key={verse.id}
+                className="text-[16px] leading-7 text-[#E6E0D4]"
+              >
+                <sup className="mr-1.5 text-[10px] font-bold text-[#D4AF37]">
+                  {verse.versiculo}
+                </sup>
+                {verse.texto}
+              </p>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
 export function BibliaReferenciaModal({
   referencia,
   className = "",
