@@ -67,6 +67,69 @@ export interface BibliaPersonaje {
   licencia: string;
 }
 
+export interface BibliaSearchResult {
+  id: string;
+  libro_id: number;
+  libro_codigo: string;
+  libro_nombre: string;
+  libro_abreviatura: string;
+  testamento: TestamentoBiblico;
+  capitulo: number;
+  versiculo: number;
+  texto: string;
+  referencia: string;
+}
+
+export interface BibliaSearchResponse {
+  version: BibliaVersion;
+  query: string;
+  page: number;
+  limit: number;
+  total: number;
+  has_more: boolean;
+  resultados: BibliaSearchResult[];
+}
+
+export interface BibliaTema {
+  categoria: string;
+  tema: string;
+  total: number;
+}
+
+export interface BibliaTemasResponse {
+  version: BibliaVersion;
+  query: string;
+  tema: string;
+  page: number;
+  limit: number;
+  total: number;
+  has_more: boolean;
+  temas: BibliaTema[];
+  resultados: BibliaSearchResult[];
+}
+
+export interface BibliaConcordanciaLibro {
+  libro_id: number;
+  libro_codigo: string;
+  libro_nombre: string;
+  testamento: TestamentoBiblico;
+  total: number;
+}
+
+export interface BibliaConcordanciaResponse {
+  version: BibliaVersion;
+  query: string;
+  page: number;
+  limit: number;
+  total: number;
+  total_filtrado: number;
+  has_more: boolean;
+  filtro_libro: string;
+  testamentos: Record<TestamentoBiblico, number>;
+  libros: BibliaConcordanciaLibro[];
+  resultados: BibliaSearchResult[];
+}
+
 interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -149,3 +212,50 @@ export const getBibliaPersonajes = () =>
         : character.imagen_url,
     })),
   );
+
+
+export const buscarBiblia = (
+  query: string,
+  page = 1,
+  limit = 20,
+  version = "SPAPLATENSE",
+) =>
+  request<BibliaSearchResponse>({
+    accion: "buscar",
+    version,
+    q: query,
+    page,
+    limit,
+  });
+
+export const getBibliaTemas = (
+  query = "",
+  tema = "",
+  page = 1,
+  limit = 20,
+  version = "SPAPLATENSE",
+) =>
+  request<BibliaTemasResponse>({
+    accion: "temas",
+    version,
+    q: query,
+    tema,
+    page,
+    limit,
+  });
+
+export const getBibliaConcordancia = (
+  query: string,
+  page = 1,
+  limit = 20,
+  libro = "",
+  version = "SPAPLATENSE",
+) =>
+  request<BibliaConcordanciaResponse>({
+    accion: "concordancia",
+    version,
+    q: query,
+    page,
+    limit,
+    libro,
+  });
