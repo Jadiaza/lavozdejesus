@@ -145,12 +145,11 @@ export default function BibliaPlanJornada() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <Link
           to={`/biblia/planes/${plan.id}`}
-          className="flex min-h-10 items-center gap-1 text-sm text-[#C9C3B3]"
+          className="min-w-0 truncate text-xs font-semibold uppercase tracking-[0.14em] text-[#A9A294]"
         >
-          <ChevronLeft className="h-4 w-4" />
-          Plan
+          {plan.titulo}
         </Link>
-        <span className="text-xs font-semibold text-[#D4AF37]">
+        <span className="shrink-0 text-xs font-semibold text-[#D4AF37]">
           {jornada.dia} / {plan.duracion_dias}
         </span>
       </div>
