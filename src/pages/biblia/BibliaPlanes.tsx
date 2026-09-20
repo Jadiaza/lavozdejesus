@@ -5,9 +5,9 @@ import {
   CalendarDays,
   ChevronRight,
   Loader2,
-  Shield,
   Sparkles,
 } from "lucide-react";
+import { BiblePlanCover } from "@/features/biblia/components/BiblePlanCover";
 import { BibliaLayout } from "./BibliaLayout";
 import {
   listBiblePlans,
@@ -161,13 +161,13 @@ export default function BibliaPlanes() {
                   to={`/biblia/planes/${plan.id}`}
                   className="group block overflow-hidden rounded-[1.5rem] border border-[#D4AF37]/20 bg-[#0B0B0B] shadow-[0_18px_48px_rgba(0,0,0,0.3)] transition hover:border-[#D4AF37]/45"
                 >
-                  {plan.imagen_url ? (
-                    <img src={plan.imagen_url} alt="" className="h-36 w-full object-cover" />
-                  ) : (
-                    <div className="flex h-24 items-center justify-center bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.2),transparent_58%),linear-gradient(135deg,#16120A,#050505)]">
-                      <Shield className="h-10 w-10 text-[#D4AF37]" strokeWidth={1.4} />
-                    </div>
-                  )}
+                  <BiblePlanCover
+                    src={plan.imagen_url}
+                    alt={plan.titulo}
+                    className="h-36 w-full"
+                    fallbackClassName="h-24 w-full"
+                    iconClassName="h-10 w-10"
+                  />
                   <div className="p-4">
                     <div className="flex items-start gap-3">
                       <div className="min-w-0 flex-1">
