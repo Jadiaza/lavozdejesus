@@ -7,13 +7,11 @@ import {
   Home,
   Loader2,
   Mail,
-  Menu,
   Pause,
   Play,
   Radio as RadioIcon,
   Volume2,
   VolumeX,
-  X,
 } from "lucide-react";
 import type { CSSProperties } from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -123,7 +121,6 @@ const Radio = () => {
   const player = useRadioPlayer();
   const [programacion, setProgramacion] = useState<ProgramacionRadio[]>([]);
   const [now, setNow] = useState(() => new Date());
-  const [menuOpen, setMenuOpen] = useState(false);
   const [visualizerActive, setVisualizerActive] = useState(false);
   const [nextProgramImageIndex, setNextProgramImageIndex] = useState(0);
   const [adsConfig, setAdsConfig] = useState({
@@ -222,44 +219,7 @@ const Radio = () => {
         <div className="absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-black/65 to-transparent" />
       </div>
 
-      <aside
-        className={`fixed left-0 top-0 z-40 h-full w-[260px] border-r border-gold/15 bg-navy-deep/88 p-5 shadow-deep backdrop-blur xl:block ${
-          menuOpen ? "block" : "hidden"
-        }`}
-      >
-        <Logo size="md" className="mb-8" />
-        <nav className="space-y-3">
-          {sideLinks.map((item) => (
-            <Link
-              key={item.label}
-              to={item.to}
-              onClick={() => {
-                setMenuOpen(false);
-                if (item.to === "/" || item.to === "/radio") {
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }
-              }}
-              className="flex h-12 items-center gap-3 rounded-full bg-foreground/90 px-4 text-sm font-bold text-navy-deep transition hover:bg-gradient-gold"
-            >
-              <item.icon className="h-4 w-4 text-gold-deep" />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-      </aside>
-
       <main className="relative z-10 flex min-h-[100dvh] w-full max-w-full touch-pan-y overscroll-x-none flex-col items-center overflow-x-hidden pb-28 pt-5 xl:ml-[260px] xl:items-stretch xl:pb-0">
-        <header className="radio-content flex items-center justify-end xl:w-full xl:max-w-[1280px]">
-          <button
-            type="button"
-            onClick={() => setMenuOpen((current) => !current)}
-            className="flex h-11 w-11 items-center justify-center rounded-full gold-border bg-navy-deep/55 text-gold shadow-deep backdrop-blur transition hover:bg-gold/10"
-            aria-label={menuOpen ? "Cerrar menu" : "Abrir menu"}
-          >
-            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </header>
-
         <section className="radio-content grid flex-1 items-center gap-4 py-3 xl:w-full xl:max-w-[1280px] xl:grid-cols-[minmax(0,1fr)_320px] xl:gap-6 xl:py-8">
           <div className="player-section relative isolate flex min-h-[calc(100dvh-8.5rem)] w-full flex-col items-center justify-start overflow-hidden rounded-[2rem] pt-0 text-center xl:min-h-[620px] xl:justify-center xl:pt-0">
             {visualizerActive && (
