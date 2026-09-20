@@ -453,7 +453,7 @@ export default function BibliaBuscar() {
           <Message text={themeError} error />
           {themeLoading && !themeData && <Loading />}
           {!themeLoading && themesLoaded && themeCatalog.length === 0 && (
-            <div className="rounded-2xl border border-[#D4AF37]/18 bg-[#0B0B0B] p-5 text-sm leading-relaxed text-[#C9C3B3]">
+            <div className="rounded-2xl border border-[#D4AF37]/20 bg-[#0B0B0B] p-5 text-sm leading-relaxed text-[#C9C3B3]">
               Aún no hay clasificación temática disponible en los datos editoriales de la Biblia.
             </div>
           )}
@@ -470,7 +470,7 @@ export default function BibliaBuscar() {
                     onClick={() => void executeTheme(item.tema)}
                     className={`rounded-xl border px-3 py-2 text-left transition ${
                       selectedTheme === item.tema
-                        ? "border-[#D4AF37] bg-[#D4AF37]/16"
+                        ? "border-[#D4AF37] bg-[#D4AF37]/15"
                         : "border-[#D4AF37]/20 bg-[#090909]"
                     }`}
                   >
@@ -716,11 +716,11 @@ function ResultCard({
   }&versiculo_inicio=${result.versiculo}&versiculo_fin=${result.versiculo}`;
 
   return (
-    <article className="rounded-2xl border border-[#D4AF37]/18 bg-[#0B0B0B] p-4">
+    <article className="rounded-2xl border border-[#D4AF37]/20 bg-[#0B0B0B] p-4">
       <div className="text-xs font-bold uppercase tracking-[0.11em] text-[#F2D27A]">
         {result.referencia}
       </div>
-      <p className="mt-2 font-serif text-[0.98rem] leading-7 text-[#F8F5EA]/92">
+      <p className="mt-2 font-serif text-[0.98rem] leading-7 text-[#F8F5EA]/90">
         <HighlightedText text={result.texto} query={highlight ?? ""} />
       </p>
       <div className="mt-4 grid grid-cols-2 gap-2 border-t border-[#D4AF37]/10 pt-3 sm:grid-cols-4">
@@ -823,7 +823,7 @@ function InitialState({
 }) {
   const items = history.filter((item) => item.tab === tab);
   return (
-    <div className="rounded-2xl border border-[#D4AF37]/18 bg-[#0B0B0B] p-5">
+    <div className="rounded-2xl border border-[#D4AF37]/20 bg-[#0B0B0B] p-5">
       <p className="text-sm leading-relaxed text-[#C9C3B3]">{message}</p>
       {items.length > 0 && (
         <div className="mt-5 border-t border-[#D4AF37]/10 pt-4">
@@ -860,7 +860,7 @@ function InitialState({
 
 function EmptyState({ query }: { query: string }) {
   return (
-    <div className="rounded-2xl border border-[#D4AF37]/18 bg-[#0B0B0B] p-5 text-sm text-[#C9C3B3]">
+    <div className="rounded-2xl border border-[#D4AF37]/20 bg-[#0B0B0B] p-5 text-sm text-[#C9C3B3]">
       No encontramos coincidencias para «{query}».
     </div>
   );
@@ -895,7 +895,7 @@ function LoadMore({ loading, onClick }: { loading: boolean; onClick: () => void 
       type="button"
       onClick={onClick}
       disabled={loading}
-      className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#D4AF37]/30 bg-[#D4AF37]/8 text-sm font-semibold text-[#F2D27A] disabled:opacity-50"
+      className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#D4AF37]/30 bg-[#D4AF37]/10 text-sm font-semibold text-[#F2D27A] disabled:opacity-50"
     >
       {loading && <Loader2 className="h-4 w-4 animate-spin" />}
       Cargar más
