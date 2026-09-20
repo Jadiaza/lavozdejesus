@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, ExternalLink, LoaderCircle, Search, UserRound, UsersRound, X } from "lucide-react";
+import { BookOpen, ExternalLink, LoaderCircle, MapPin, Search, ScrollText, UserRound, UsersRound, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { BibliaLayout } from "./BibliaLayout";
 import { BibliaPersonaje, getBibliaPersonajes } from "@/services/bibliaService";
@@ -43,8 +43,8 @@ export default function BibliaPersonajes() {
   }, [selected]);
 
   return (
-    <BibliaLayout title="Personajes bíblicos">
-      <section className="rounded-[2rem] border border-[#D4AF37]/25 bg-[#111111] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.45)] sm:p-6">
+    <BibliaLayout title="Explorar">
+      <section className="overflow-hidden rounded-[2rem] border border-[#D4AF37]/25 bg-[#111111] shadow-[0_24px_70px_rgba(0,0,0,0.45)]">\n        <div className="border-b border-[#D4AF37]/15 p-5 sm:p-6">\n          <div className="mb-5 flex items-start gap-3"><div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#D4AF37]/30 bg-[#D4AF37]/10 text-[#D4AF37]"><BookOpen className="h-6 w-6" /></div><div><h1 className="font-display text-3xl text-[#F8F5EA]">Explorar</h1><p className="mt-1 text-sm leading-relaxed text-[#C9C3B3]">Profundiza en la riqueza de la Biblia a través de sus personajes, lugares, mapas y más.</p></div></div>\n          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">\n            <button type="button" className="rounded-2xl border border-[#D4AF37] bg-[#D4AF37] p-3 text-center text-[#050505]"><UsersRound className="mx-auto mb-1 h-5 w-5" /><span className="text-xs font-bold">Personajes bíblicos</span></button>\n            <button type="button" className="rounded-2xl border border-[#D4AF37]/25 bg-[#0B0B0B] p-3 text-center text-[#D4AF37]"><MapPin className="mx-auto mb-1 h-5 w-5" /><span className="text-xs font-semibold text-[#C9C3B3]">Lugares bíblicos</span></button>\n            <a href="/biblia/mapas" className="rounded-2xl border border-[#D4AF37]/25 bg-[#0B0B0B] p-3 text-center text-[#D4AF37]"><ScrollText className="mx-auto mb-1 h-5 w-5" /><span className="text-xs font-semibold text-[#C9C3B3]">Mapas</span></a>\n            <button type="button" className="rounded-2xl border border-[#D4AF37]/25 bg-[#0B0B0B] p-3 text-center text-[#D4AF37]"><BookOpen className="mx-auto mb-1 h-5 w-5" /><span className="text-xs font-semibold text-[#C9C3B3]">Cronología</span></button>\n          </div>\n        </div>\n        <div className="p-5 sm:p-6">
         <header className="mb-5 flex items-start gap-3">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#D4AF37]/30 bg-[#D4AF37]/10 text-[#D4AF37]"><UsersRound className="h-6 w-6" /></div>
           <div><h1 className="font-display text-2xl text-[#F8F5EA]">Personajes bíblicos</h1><p className="mt-1 text-sm leading-relaxed text-[#C9C3B3]">Conoce su historia, sus pasajes principales y su lugar en la historia de la salvación.</p></div>
