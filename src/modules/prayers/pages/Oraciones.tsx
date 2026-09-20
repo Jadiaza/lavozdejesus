@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import {
   AlertCircle, ArrowLeft, Bell, BellRing, Bird, BookOpen, Check, ChevronRight, Clock3, Cross, Download,
   HandHeart, Heart, Home, LoaderCircle, Menu, Moon, Play, RefreshCw, Search, Send, Settings,
-  Shield, ShieldCheck, SlidersHorizontal, Sparkles, Sun, Volume2,
+  Shield, ShieldCheck, Sparkles, Sun, Volume2,
 } from "lucide-react";
 import liturgyHoursHero from "@/assets/liturgy-hours-hero.webp";
 import PrayerFormatSheet from "../components/PrayerFormatSheet";
@@ -140,6 +140,7 @@ export function LiturgiaHoras() {
 
 export function LiturgiaReader() {
   const { hora = "laudes" } = useParams();
+  const navigate = useNavigate();
   const data = hours.find((item) => item[0] === hora) ?? hours[1];
   const [content, setContent] = useState<LiturgyHourResponse | null>(null);
   const [error, setError] = useState("");
@@ -147,6 +148,13 @@ export function LiturgiaReader() {
   const [reload, setReload] = useState(0);
   const [formatOpen, setFormatOpen] = useState(false);
   const { preferences, update, reset } = usePrayerPreferences();
+  const readingTheme = preferences.theme === "light"
+    ? { background: "#fffdf7", color: "#1f2933", header: "rgba(255,253,247,.96)", accent: "#8a6112" }
+    : preferences.theme === "sepia"
+      ? { background: "#f2e6cc", color: "#3f3124", header: "rgba(242,230,204,.96)", accent: "#7c5416" }
+      : preferences.theme === "contrast"
+        ? { background: "#000000", color: "#ffffff", header: "rgba(0,0,0,.96)", accent: "#ffd54f" }
+        : { background: "#030a10", color: "#f6f0e6", header: "rgba(4,16,25,.94)", accent: "#efbd52" };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -167,19 +175,29 @@ export function LiturgiaReader() {
     return "";
   };
 
-  return <Shell title={data[1]} active="Liturgia">
-    <div className="-mt-2 mb-4 flex items-center justify-between gap-3"><div><p className="text-xs capitalize text-white/65">{content?.fecha_texto || todayLabel()}</p>{content ? <p className="mt-1 text-[10px] uppercase tracking-wider text-[#efbd52]">{content.celebracion}</p> : null}</div><button type="button" onClick={() => setFormatOpen(true)} className="flex items-center gap-2 rounded-full border border-[#d8a740]/50 bg-[#111b23] px-3 py-2 text-xs font-semibold text-[#efbd52]"><SlidersHorizontal className="h-4 w-4" />Aa</button></div>
+  return <div style={{ backgroundColor: readingTheme.background, color: readingTheme.color }} className="min-h-dvh transition-colors duration-300">
+    <div style={{ backgroundColor: readingTheme.background }} className="mx-auto min-h-dvh max-w-[430px] border-x border-current/[0.04] transition-colors duration-300">
+      <header style={{ backgroundColor: readingTheme.header, borderColor: `${readingTheme.accent}33` }} className="sticky top-0 z-30 grid h-[4.8rem] grid-cols-[3.5rem_1fr_3.5rem] items-center border-b px-3 backdrop-blur-xl transition-colors duration-300">
+        <button type="button" onClick={() => navigate(-1)} aria-label="Volver" style={{ color: readingTheme.accent }} className="flex h-11 w-11 items-center justify-center"><ArrowLeft className="h-7 w-7" /></button>
+        <div className="min-w-0 text-center"><Sparkles style={{ color: readingTheme.accent }} className="mx-auto h-4 w-4" /><h1 style={{ color: readingTheme.accent }} className="truncate text-sm font-bold uppercase tracking-wide">{data[1]}</h1></div>
+        <button type="button" onClick={() => setFormatOpen(true)} aria-label="Formato de lectura" style={{ color: readingTheme.accent }} className="flex h-11 w-11 items-center justify-center font-serif text-2xl font-semibold">Aa</button>
+      </header>
 
-    {loading ? <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-white/10 bg-[#0c151d]"><LoaderCircle className="h-8 w-8 animate-spin text-[#efbd52]" /><p className="mt-3 text-sm text-white/65">Preparando la oración de la Iglesia…</p></div> : null}
-    {!loading && error ? <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-red-400/25 bg-[#0c151d] p-6 text-center"><AlertCircle className="h-9 w-9 text-[#efbd52]" /><p className="mt-3 text-sm text-white/75">{error}</p><button type="button" onClick={() => setReload((value) => value + 1)} className="mt-5 flex items-center gap-2 rounded-full bg-gradient-to-r from-[#f6d574] to-[#d49a28] px-5 py-3 text-xs font-bold text-black"><RefreshCw className="h-4 w-4" />REINTENTAR</button></div> : null}
-    {!loading && content ? <PrayerReader preferences={preferences}>
-      <div className="mb-6 border-b border-current/15 pb-4 text-left"><p className="text-xs font-semibold uppercase tracking-[.18em] text-[var(--prayer-accent)]">{content.tiempo_liturgico}</p><h2 className="mt-2 text-xl font-bold">{content.celebracion}</h2>{content.detalle ? <p className="mt-1 text-sm opacity-65">{content.detalle}</p> : null}</div>
-      <div className="space-y-8">{content.secciones.map((section, index) => <section key={`${section.tipo}-${index}`}><h3 className="mb-3 border-b border-current/10 pb-2 text-left text-lg font-bold text-[var(--prayer-accent)]">{section.titulo}</h3><div className="space-y-3">{section.contenido.map((paragraph, paragraphIndex) => <p key={paragraphIndex} className={paragraphClass(paragraph)}>{paragraph.texto}</p>)}</div></section>)}</div>
-      <footer className="mt-8 border-t border-current/15 pt-4 text-center text-xs opacity-60">Fuente: {content.fuente.nombre} · Presentado por LVJPRAYER</footer>
-    </PrayerReader> : null}
+      <main className="px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4">
+        <div className="mb-7 text-left"><p className="text-sm capitalize opacity-65">{content?.fecha_texto || todayLabel()}</p>{content ? <p style={{ color: readingTheme.accent }} className="mt-1 text-[11px] font-semibold uppercase tracking-wider">{content.celebracion}</p> : null}</div>
 
+        {loading ? <div className="flex min-h-[62dvh] flex-col items-center justify-center"><LoaderCircle style={{ color: readingTheme.accent }} className="h-8 w-8 animate-spin" /><p className="mt-3 text-sm opacity-65">Preparando la oración de la Iglesia…</p></div> : null}
+        {!loading && error ? <div className="flex min-h-[55dvh] flex-col items-center justify-center p-6 text-center"><AlertCircle style={{ color: readingTheme.accent }} className="h-9 w-9" /><p className="mt-3 text-sm opacity-75">{error}</p><button type="button" onClick={() => setReload((value) => value + 1)} style={{ borderColor: readingTheme.accent, color: readingTheme.accent }} className="mt-5 flex items-center gap-2 rounded-full border px-5 py-3 text-xs font-bold"><RefreshCw className="h-4 w-4" />REINTENTAR</button></div> : null}
+        {!loading && content ? <PrayerReader preferences={preferences} integrated>
+          <div className="mb-7 border-b border-current/20 pb-5 text-left"><p className="text-xs font-semibold uppercase tracking-[.18em] text-[var(--prayer-accent)]">{content.tiempo_liturgico}</p><h2 className="mt-2 text-[clamp(1.55rem,7vw,2rem)] font-bold leading-tight">{content.celebracion}</h2>{content.detalle ? <p className="mt-2 text-sm opacity-65">{content.detalle}</p> : null}</div>
+          <div className="space-y-9">{content.secciones.map((section, index) => <section key={`${section.tipo}-${index}`}><h3 className="mb-4 border-b border-current/20 pb-2 text-left text-lg font-bold text-[var(--prayer-accent)]">{section.titulo}</h3><div className="space-y-4">{section.contenido.map((paragraph, paragraphIndex) => <p key={paragraphIndex} className={paragraphClass(paragraph)}>{paragraph.texto}</p>)}</div></section>)}</div>
+          <footer className="mt-10 border-t border-current/20 pt-4 text-center text-xs opacity-55">Fuente: {content.fuente.nombre} · Presentado por LVJPRAYER</footer>
+        </PrayerReader> : null}
+      </main>
+      <PrayerNav active="Liturgia" theme={preferences.theme} />
+    </div>
     <PrayerFormatSheet open={formatOpen} preferences={preferences} onChange={update} onReset={reset} onClose={() => setFormatOpen(false)} />
-  </Shell>;
+  </div>;
 }
 
 export function OracionCategorias() {
