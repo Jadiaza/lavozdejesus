@@ -44,7 +44,7 @@ export default function BibliaPersonajes() {
   }, [selected]);
 
   return (
-    <BibliaLayout title="Explorar" hideBottomNav>
+    <BibliaLayout title="Explorar" hideBottomNav hideBack>
       <section className="pb-3">
         <p className="mb-4 px-1 text-[15px] leading-6 text-[#C9C3B3]">Profundiza en la riqueza de la Biblia a través de sus personajes, lugares, mapas y más.</p>
 
