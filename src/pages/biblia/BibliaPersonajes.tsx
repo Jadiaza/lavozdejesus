@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { BookOpen, ExternalLink, Home, LoaderCircle, Map, MapPin, Search, ScrollText, UserRound, UsersRound, X, ChevronRight } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Home, LoaderCircle, Map, MapPin, Search, ScrollText, UserRound, UsersRound, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { BibliaLayout } from "./BibliaLayout";
 import { Link } from "react-router-dom";
@@ -8,7 +8,6 @@ import { BibliaPersonaje, getBibliaPersonajes } from "@/services/bibliaService";
 type TestamentFilter = "todos" | "AT" | "NT";
 
 export default function BibliaPersonajes() {
-  const [selected, setSelected] = useState<BibliaPersonaje | null>(null);
   const [search, setSearch] = useState("");
   const [testament, setTestament] = useState<TestamentFilter>("todos");
   const [category, setCategory] = useState("todas");
@@ -32,16 +31,7 @@ export default function BibliaPersonajes() {
     });
   }, [characters, search, testament, category]);
 
-  useEffect(() => {
-    if (!selected) return;
-    const close = (event: KeyboardEvent) => event.key === "Escape" && setSelected(null);
-    document.addEventListener("keydown", close);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", close);
-      document.body.style.overflow = "";
-    };
-  }, [selected]);
+
 
   return (
     <BibliaLayout title="Explorar" hideBottomNav hideBack>
@@ -71,7 +61,7 @@ export default function BibliaPersonajes() {
         ) : (
           <div className="space-y-2.5">
             {filtered.map((character) => (
-              <button key={character.id} type="button" onClick={() => setSelected(character)} className="group flex w-full min-h-[116px] overflow-hidden rounded-2xl border border-[#D4AF37]/20 bg-[#0B0B0B] text-left transition active:bg-[#111111]">
+              <button key={character.id} type="button" onClick={() => window.location.assign(`/biblia/personajes/${character.id}`)} className="group flex w-full min-h-[116px] overflow-hidden rounded-2xl border border-[#D4AF37]/20 bg-[#0B0B0B] text-left transition active:bg-[#111111]">
                 <div className="w-[112px] shrink-0 overflow-hidden bg-black sm:w-[132px]"><img src={character.imagen_url} alt={character.nombre} loading="lazy" className="h-full w-full object-cover" /></div>
                 <div className="flex min-w-0 flex-1 items-center p-3">
                   <div className="min-w-0 flex-1">
@@ -100,29 +90,7 @@ export default function BibliaPersonajes() {
         </div>
       </nav>
 
-      {selected && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-3 backdrop-blur-sm sm:p-6" role="dialog" aria-modal="true" aria-label={selected.nombre} onMouseDown={(event) => event.target === event.currentTarget && setSelected(null)}>
-          <article className="max-h-full w-full max-w-4xl overflow-auto rounded-[1.75rem] border border-[#D4AF37]/30 bg-[#070707] shadow-2xl">
-            <div className="relative min-h-[300px] overflow-hidden bg-black sm:min-h-[380px]">
-              <img src={selected.imagen_url} alt={selected.nombre} className="absolute inset-0 h-full w-full object-cover" />
-              <span className="absolute inset-0 bg-gradient-to-t from-[#070707] via-black/15 to-black/15" />
-              <button type="button" onClick={() => setSelected(null)} className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white backdrop-blur" aria-label="Cerrar ficha"><X className="h-5 w-5" /></button>
-              <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
-                <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4AF37]">{selected.testamento === "AT" ? "Antiguo Testamento" : "Nuevo Testamento"}</p>
-                <h2 className="font-display text-4xl leading-none text-[#F8F5EA] sm:text-5xl">{selected.nombre}</h2>
-                {selected.nombre_alternativo && <p className="mt-2 text-base text-[#D8D2C4]">{selected.nombre_alternativo}</p>}
-                <div className="mt-3 flex flex-wrap gap-2"><span className="rounded-full border border-white/20 bg-black/35 px-3 py-1 text-[10px] text-[#E4DFD4]">{selected.testamento === "AT" ? "Antiguo Testamento" : "Nuevo Testamento"}</span><span className="rounded-full border border-white/20 bg-black/35 px-3 py-1 text-[10px] text-[#E4DFD4]">{selected.categoria}</span></div>
-              </div>
-            </div>
-            <div className="space-y-4 p-4 sm:p-6">
-              <section className="rounded-2xl border border-[#D4AF37]/30 bg-[#0B0B0B] p-5"><div className="mb-3 flex items-center gap-3"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#D4AF37]/35 bg-[#D4AF37]/10 text-[#D4AF37]"><BookOpen className="h-5 w-5" /></span><h3 className="font-display text-2xl text-[#F2D27A]">Quién fue</h3></div><p className="whitespace-pre-line pl-0 text-sm leading-7 text-[#D8D2C4] sm:pl-14">{selected.resumen}</p></section>
-              {selected.pasajes_principales && <section className="rounded-2xl border border-[#D4AF37]/30 bg-[#0B0B0B] p-5"><div className="mb-3 flex items-center gap-3"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#D4AF37]/35 bg-[#D4AF37]/10 text-[#D4AF37]"><BookOpen className="h-5 w-5" /></span><h3 className="text-sm font-bold uppercase tracking-[0.1em] text-[#D4AF37]">Pasajes principales</h3></div><div className="rounded-xl border border-[#D4AF37]/25 bg-[#111111] px-4 py-3 sm:ml-14"><p className="whitespace-pre-line text-sm leading-6 text-[#E4DFD4]">{selected.pasajes_principales}</p></div></section>}
-              {selected.ensenanza && <section className="rounded-2xl border border-[#D4AF37]/30 bg-[#0B0B0B] p-5"><div className="mb-3 flex items-center gap-3"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#D4AF37]/35 bg-[#D4AF37]/10 text-[#D4AF37]"><BookOpen className="h-5 w-5" /></span><h3 className="font-display text-2xl text-[#F2D27A]">Enseñanza</h3></div><p className="whitespace-pre-line text-sm leading-7 text-[#D8D2C4] sm:pl-14">{selected.ensenanza}</p></section>}
-              <footer className="flex flex-wrap items-center gap-x-2 gap-y-1 px-1 pt-1 text-[10px] text-[#8F897C]"><span>Imagen: {selected.fuente}</span><span>·</span><span>{selected.licencia}</span>{selected.fuente_url && <a href={selected.fuente_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#D4AF37]">Ver fuente <ExternalLink className="h-3 w-3" /></a>}</footer>
-            </div>
-          </article>
-        </div>
-      )}
+
     </BibliaLayout>
   );
 }
