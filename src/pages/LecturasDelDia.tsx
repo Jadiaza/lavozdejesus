@@ -1,5 +1,4 @@
 import {
-  ArrowLeft,
   BookOpen,
   CheckCircle2,
   Cross,
@@ -8,9 +7,11 @@ import {
   Home,
   MessageCircleQuestion,
   Music2,
+  Settings,
   Sparkles,
   Star,
   UserRound,
+  X,
 } from "lucide-react";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
@@ -32,6 +33,19 @@ import {
 
 type LecturasTab = "liturgia" | "santo" | "reflexion";
 type ReadingRenderMode = "normal" | "ordo" | "psalm";
+type ReadingAlignment = "left" | "justify";
+
+interface LiturgiaReadingPreferences {
+  fontSize: 16 | 18 | 21 | 24;
+  alignment: ReadingAlignment;
+}
+
+const DEFAULT_READING_PREFERENCES: LiturgiaReadingPreferences = {
+  fontSize: 18,
+  alignment: "left",
+};
+
+const READING_PREFERENCES_KEY = "lvj_liturgia_reading_preferences_v1";
 
 const tabLabels: Record<LecturasTab, string> = {
   liturgia: "Liturgia",
@@ -180,6 +194,7 @@ const ContentCard = ({
   icon,
   featured = false,
   mode = "normal",
+  readingPreferences = DEFAULT_READING_PREFERENCES,
 }: {
   title: string;
   subtitle?: string;
@@ -188,6 +203,7 @@ const ContentCard = ({
   icon: ReactNode;
   featured?: boolean;
   mode?: ReadingRenderMode;
+  readingPreferences?: LiturgiaReadingPreferences;
 }) => {
   if (!text && !response) return null;
 
@@ -226,7 +242,13 @@ const ContentCard = ({
       )}
 
       {text && (
-        <div className="mt-5 text-[17px] leading-[1.78] text-[#263349]">
+        <div
+          className="mt-5 leading-[1.78] text-[#263349]"
+          style={{
+            fontSize: `${readingPreferences.fontSize}px`,
+            textAlign: readingPreferences.alignment,
+          }}
+        >
           {renderReadingText(text, mode)}
         </div>
       )}
@@ -300,7 +322,13 @@ const DesktopSidebar = ({
   </aside>
 );
 
-const SantoView = ({ santo }: { santo: SantoDelDia | null }) => {
+const SantoView = ({
+  santo,
+  readingPreferences,
+}: {
+  santo: SantoDelDia | null;
+  readingPreferences: LiturgiaReadingPreferences;
+}) => {
   if (!santo?.nombre) {
     return (
       <article className="rounded-2xl border border-[#e6d8bf] bg-white p-5 text-center text-[#263349]">
@@ -340,7 +368,13 @@ const SantoView = ({ santo }: { santo: SantoDelDia | null }) => {
               </p>
             )}
             {santo.resumen && (
-              <div className="mt-5 text-left text-[16px] leading-[1.75] text-[#263349] md:text-[17px] md:leading-[1.78]">
+              <div
+                className="mt-5 leading-[1.78] text-[#263349]"
+                style={{
+                  fontSize: `${readingPreferences.fontSize}px`,
+                  textAlign: readingPreferences.alignment,
+                }}
+              >
                 {renderReadingText(santo.resumen)}
               </div>
             )}
@@ -361,6 +395,7 @@ const SantoView = ({ santo }: { santo: SantoDelDia | null }) => {
             title={label}
             text={santo[key]}
             icon={<Sparkles className="h-5 w-5" />}
+            readingPreferences={readingPreferences}
           />
         ) : null,
       )}
@@ -371,9 +406,11 @@ const SantoView = ({ santo }: { santo: SantoDelDia | null }) => {
 const ReflectionView = ({
   lectio,
   liturgia,
+  readingPreferences,
 }: {
   lectio: LectioDivina | null;
   liturgia: LiturgiaDia | null;
+  readingPreferences: LiturgiaReadingPreferences;
 }) => {
   const content = {
     reflexion: lectio?.reflexion || liturgia?.reflexion || "",
@@ -396,26 +433,31 @@ const ReflectionView = ({
         subtitle="La Palabra de hoy para tu vida"
         text={content.reflexion}
         icon={<Sparkles className="h-5 w-5" />}
+        readingPreferences={readingPreferences}
       />
       <ContentCard
         title="Pregunta para Meditar"
         text={content.pregunta}
         icon={<MessageCircleQuestion className="h-5 w-5" />}
+        readingPreferences={readingPreferences}
       />
       <ContentCard
         title="Oración"
         text={content.oracion}
         icon={<Heart className="h-5 w-5" />}
+        readingPreferences={readingPreferences}
       />
       <ContentCard
         title="Compromiso"
         text={content.compromiso}
         icon={<CheckCircle2 className="h-5 w-5" />}
+        readingPreferences={readingPreferences}
       />
       <ContentCard
         title="Mensaje Final"
         text={content.mensaje}
         icon={<Star className="h-5 w-5" />}
+        readingPreferences={readingPreferences}
       />
       {content.audio && (
         <article className="rounded-2xl border border-[#e6d8bf] bg-white p-5">
@@ -437,6 +479,42 @@ const LecturasDelDia = () => {
   const [selectedDate, setSelectedDate] = useState(getTodayISO());
   const [activeTab, setActiveTab] = useState<LecturasTab>("liturgia");
   const [loading, setLoading] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [readingPreferences, setReadingPreferences] =
+    useState<LiturgiaReadingPreferences>(() => {
+      if (typeof window === "undefined") return DEFAULT_READING_PREFERENCES;
+
+      try {
+        const raw = window.localStorage.getItem(READING_PREFERENCES_KEY);
+        if (!raw) return DEFAULT_READING_PREFERENCES;
+
+        const parsed = JSON.parse(raw) as Partial<LiturgiaReadingPreferences>;
+        const fontSize = [16, 18, 21, 24].includes(Number(parsed.fontSize))
+          ? (Number(parsed.fontSize) as LiturgiaReadingPreferences["fontSize"])
+          : DEFAULT_READING_PREFERENCES.fontSize;
+        const alignment =
+          parsed.alignment === "justify" ? "justify" : "left";
+
+        return { fontSize, alignment };
+      } catch {
+        return DEFAULT_READING_PREFERENCES;
+      }
+    });
+
+  const updateReadingPreferences = (
+    next: Partial<LiturgiaReadingPreferences>,
+  ) => {
+    setReadingPreferences((current) => {
+      const value = { ...current, ...next };
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(
+          READING_PREFERENCES_KEY,
+          JSON.stringify(value),
+        );
+      }
+      return value;
+    });
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -514,14 +592,6 @@ const LecturasDelDia = () => {
 
   return (
     <main className="lvj-reading-page min-h-screen bg-[#fff8ec] text-[#071a33]">
-      <Link
-        to="/"
-        className="fixed left-[max(18px,env(safe-area-inset-left))] top-[max(1.75rem,env(safe-area-inset-top))] z-[999] inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#d4af37]/50 bg-[#111111] text-[#f8f5ea] md:hidden"
-        aria-label="Volver al inicio"
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Link>
-
       <div
         className="mx-auto w-full md:px-5 md:py-8"
         style={{ maxWidth: "1240px" }}
@@ -529,7 +599,7 @@ const LecturasDelDia = () => {
         <div className="md:flex md:overflow-hidden md:rounded-[28px] md:border md:border-[#e6d8bf] md:bg-white/70">
           <DesktopSidebar activeTab={activeTab} onSelectTab={setActiveTab} />
 
-          <section className="min-w-0 flex-1 px-4 pb-14 pt-7 sm:px-6 md:px-8 md:py-8">
+          <section className="min-w-0 flex-1 px-4 pb-28 pt-7 sm:px-6 md:px-8 md:py-8">
             <header className="mx-auto max-w-[860px]">
               <h1 className="flex items-center justify-center gap-2 border-b border-[#e6d8bf] pb-5 text-[17px] font-extrabold uppercase tracking-[0.18em] text-[#b17a12] md:justify-start md:text-lg md:tracking-[0.22em]">
                 <BookOpen className="h-5 w-5" />
@@ -607,24 +677,7 @@ const LecturasDelDia = () => {
               </h2>
             </section>
 
-            <nav className="sticky top-3 z-30 mx-auto mt-5 grid max-w-[860px] grid-cols-3 gap-1 rounded-xl bg-[#efe5d4] p-1">
-              {(Object.keys(tabLabels) as LecturasTab[]).map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => setActiveTab(tab)}
-                  className={`rounded-lg px-4 py-2.5 text-sm font-bold ${
-                    activeTab === tab
-                      ? "bg-[#082347] text-white"
-                      : "text-[#071a33]"
-                  }`}
-                >
-                  {tabLabels[tab]}
-                </button>
-              ))}
-            </nav>
-
-            <div className="mx-auto mt-5 max-w-[860px]">
+            <div className="mx-auto mt-7 max-w-[860px]">
               {activeTab === "liturgia" && (
                 <div className="space-y-4">
                   <ContentCard
@@ -633,6 +686,7 @@ const LecturasDelDia = () => {
                     text={liturgia?.primera_lectura_texto}
                     icon={<BookOpen className="h-5 w-5" />}
                     mode="ordo"
+                    readingPreferences={readingPreferences}
                   />
                   <ContentCard
                     title="Salmo Responsorial"
@@ -641,6 +695,7 @@ const LecturasDelDia = () => {
                     text={liturgia?.salmo_texto}
                     icon={<Music2 className="h-5 w-5" />}
                     mode="psalm"
+                    readingPreferences={readingPreferences}
                   />
                   <ContentCard
                     title="Segunda Lectura"
@@ -648,6 +703,7 @@ const LecturasDelDia = () => {
                     text={liturgia?.segunda_lectura_texto}
                     icon={<BookOpen className="h-5 w-5" />}
                     mode="ordo"
+                    readingPreferences={readingPreferences}
                   />
                   <ContentCard
                     title="Evangelio"
@@ -656,19 +712,206 @@ const LecturasDelDia = () => {
                     icon={<Cross className="h-5 w-5" />}
                     featured
                     mode="ordo"
+                    readingPreferences={readingPreferences}
                   />
                 </div>
               )}
 
-              {activeTab === "santo" && <SantoView santo={santo} />}
+              {activeTab === "santo" && (
+                <SantoView
+                  santo={santo}
+                  readingPreferences={readingPreferences}
+                />
+              )}
 
               {activeTab === "reflexion" && (
-                <ReflectionView lectio={lectio} liturgia={liturgia} />
+                <ReflectionView
+                  lectio={lectio}
+                  liturgia={liturgia}
+                  readingPreferences={readingPreferences}
+                />
               )}
             </div>
           </section>
         </div>
       </div>
+
+      {settingsOpen && (
+        <div className="fixed inset-0 z-[1000] flex items-end bg-black/35 md:hidden">
+          <button
+            type="button"
+            aria-label="Cerrar configuración"
+            className="absolute inset-0"
+            onClick={() => setSettingsOpen(false)}
+          />
+          <section
+            className="relative w-full rounded-t-[28px] border-t border-[#d8c49d] bg-[#fffaf2] px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5 shadow-[0_-18px_50px_-30px_rgba(8,35,71,0.55)]"
+            aria-label="Configuración de lectura"
+          >
+            <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-[#d8c49d]" />
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#b17a12]">
+                  Configuración
+                </p>
+                <h2 className="mt-1 text-xl font-extrabold text-[#082347]">
+                  Aa · Formato de texto
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSettingsOpen(false)}
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-[#e6d8bf] bg-white text-[#082347]"
+                aria-label="Cerrar configuración"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mt-6 space-y-6">
+              <fieldset>
+                <legend className="mb-3 text-sm font-extrabold text-[#40506a]">
+                  Tamaño del texto
+                </legend>
+                <div className="grid grid-cols-4 gap-2">
+                  {([
+                    [16, "Pequeño"],
+                    [18, "Normal"],
+                    [21, "Grande"],
+                    [24, "Muy grande"],
+                  ] as const).map(([size, label]) => (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => updateReadingPreferences({ fontSize: size })}
+                      className={`min-h-12 rounded-xl border px-2 text-xs font-bold transition ${
+                        readingPreferences.fontSize === size
+                          ? "border-[#b17a12] bg-[#d4af37] text-[#082347]"
+                          : "border-[#e6d8bf] bg-white text-[#40506a]"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend className="mb-3 text-sm font-extrabold text-[#40506a]">
+                  Alineación
+                </legend>
+                <div className="grid grid-cols-2 gap-3">
+                  {([
+                    ["left", "Izquierda"],
+                    ["justify", "Justificada"],
+                  ] as const).map(([alignment, label]) => (
+                    <button
+                      key={alignment}
+                      type="button"
+                      onClick={() =>
+                        updateReadingPreferences({ alignment })
+                      }
+                      className={`min-h-12 rounded-xl border px-4 text-sm font-bold transition ${
+                        readingPreferences.alignment === alignment
+                          ? "border-[#b17a12] bg-[#d4af37] text-[#082347]"
+                          : "border-[#e6d8bf] bg-white text-[#40506a]"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            </div>
+          </section>
+        </div>
+      )}
+
+      <nav
+        className="fixed inset-x-0 bottom-0 z-[900] border-t border-[#e6d8bf] bg-[#fffdf8]/95 pb-[max(0.4rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_-24px_rgba(8,35,71,0.45)] backdrop-blur md:hidden"
+        aria-label="Navegación de Liturgia"
+      >
+        <div className="mx-auto grid max-w-[560px] grid-cols-5 px-2">
+          <Link
+            to="/"
+            className="flex min-h-[58px] flex-col items-center justify-center gap-1 text-[11px] font-semibold text-[#536174]"
+          >
+            <Home className="h-5 w-5" />
+            <span>Home</span>
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("liturgia");
+              setSettingsOpen(false);
+            }}
+            className={`relative flex min-h-[58px] flex-col items-center justify-center gap-1 text-[11px] font-semibold ${
+              activeTab === "liturgia" && !settingsOpen
+                ? "text-[#b17a12]"
+                : "text-[#536174]"
+            }`}
+          >
+            <BookOpen className="h-5 w-5" />
+            <span>Liturgia</span>
+            {activeTab === "liturgia" && !settingsOpen && (
+              <span className="absolute bottom-0 h-1.5 w-1.5 rounded-full bg-[#b17a12]" />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("santo");
+              setSettingsOpen(false);
+            }}
+            className={`relative flex min-h-[58px] flex-col items-center justify-center gap-1 text-[11px] font-semibold ${
+              activeTab === "santo" && !settingsOpen
+                ? "text-[#b17a12]"
+                : "text-[#536174]"
+            }`}
+          >
+            <UserRound className="h-5 w-5" />
+            <span>Santo</span>
+            {activeTab === "santo" && !settingsOpen && (
+              <span className="absolute bottom-0 h-1.5 w-1.5 rounded-full bg-[#b17a12]" />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("reflexion");
+              setSettingsOpen(false);
+            }}
+            className={`relative flex min-h-[58px] flex-col items-center justify-center gap-1 text-[11px] font-semibold ${
+              activeTab === "reflexion" && !settingsOpen
+                ? "text-[#b17a12]"
+                : "text-[#536174]"
+            }`}
+          >
+            <MessageCircleQuestion className="h-5 w-5" />
+            <span>Reflexión</span>
+            {activeTab === "reflexion" && !settingsOpen && (
+              <span className="absolute bottom-0 h-1.5 w-1.5 rounded-full bg-[#b17a12]" />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSettingsOpen(true)}
+            className={`relative flex min-h-[58px] flex-col items-center justify-center gap-1 text-[11px] font-semibold ${
+              settingsOpen ? "text-[#b17a12]" : "text-[#536174]"
+            }`}
+          >
+            <Settings className="h-5 w-5" />
+            <span>Configuración</span>
+            {settingsOpen && (
+              <span className="absolute bottom-0 h-1.5 w-1.5 rounded-full bg-[#b17a12]" />
+            )}
+          </button>
+        </div>
+      </nav>
     </main>
   );
 };
