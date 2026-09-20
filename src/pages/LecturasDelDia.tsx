@@ -194,7 +194,7 @@ const renderReadingText = (
 
           const psalmMarker =
             mode === "psalm"
-              ? line.match(/^(\s*(?:V\.|V\/\.|R\.|R\/.))(\s*)(.*)$/i)
+              ? line.match(/^(\s*(?:[VR]\.|[VR]\/\.))(\s*)(.*)$/i)
               : null;
 
           const node = psalmMarker ? (
