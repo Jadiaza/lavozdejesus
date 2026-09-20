@@ -7,12 +7,14 @@ export function BiblePlanCover({
   className = "h-36 w-full",
   fallbackClassName = "h-24 w-full",
   iconClassName = "h-10 w-10",
+  fit = "cover",
 }: {
   src?: string | null;
   alt?: string;
   className?: string;
   fallbackClassName?: string;
   iconClassName?: string;
+  fit?: "cover" | "stretch" | "contain";
 }) {
   const [failed, setFailed] = useState(false);
 
@@ -35,7 +37,7 @@ export function BiblePlanCover({
     <img
       src={src}
       alt={alt}
-      className={`block object-cover ${className}`}
+      className={`block ${fit === "stretch" ? "object-fill" : fit === "contain" ? "object-contain" : "object-cover"} ${className}`}
       loading="lazy"
       decoding="async"
       referrerPolicy="no-referrer"
