@@ -327,24 +327,39 @@ export function BibliaReferenciaContenido({
             <section
               id={"plan-reading-" + index}
               key={passage.referencia + "-" + index}
-              className={"scroll-mt-24 transition " + (
+              className={
                 isActive
-                  ? "bg-transparent"
-                  : "overflow-hidden rounded-[1.05rem] border border-white/10 bg-[#090909]"
-              )}
+                  ? "scroll-mt-24"
+                  : "scroll-mt-24 overflow-hidden rounded-[1.05rem] border border-white/10 bg-[#090909] transition"
+              }
+              style={
+                isActive
+                  ? {
+                      border: "0",
+                      borderRadius: 0,
+                      boxShadow: "none",
+                      background: "transparent",
+                      overflow: "visible",
+                    }
+                  : undefined
+              }
             >
               <button
                 type="button"
                 onClick={() => setActiveIndex(index)}
                 className={"flex w-full items-center gap-3 text-left " + (
                   isActive
-                    ? "border-b border-[#D4AF37]/18 px-0 pb-2.5 pt-1"
+                    ? "px-0 pb-2.5 pt-1"
                     : "px-3.5 py-2.5"
                 )}
                 aria-expanded={isActive}
               >
-                <span className={"flex h-8 w-8 shrink-0 items-center justify-center rounded-md border " + (
-                  isActive || done ? "border-[#D4AF37]/25 bg-[#D4AF37]/[0.06] text-[#E7C35D]" : "border-white/10 bg-white/[0.02] text-[#9E9A91]"
+                <span className={"flex h-8 w-8 shrink-0 items-center justify-center " + (
+                  isActive
+                    ? "text-[#E7C35D]"
+                    : done
+                      ? "rounded-md border border-[#D4AF37]/25 bg-[#D4AF37]/[0.06] text-[#E7C35D]"
+                      : "rounded-md border border-white/10 bg-white/[0.02] text-[#9E9A91]"
                 )}>
                   {done ? <CheckCircle2 className="h-5 w-5" /> : <BookOpen className="h-5 w-5" />}
                 </span>
