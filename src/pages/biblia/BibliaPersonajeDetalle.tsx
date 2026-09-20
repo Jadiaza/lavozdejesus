@@ -16,8 +16,9 @@ export default function BibliaPersonajeDetalle() {
     : <article className="overflow-hidden bg-[#070707]">
       <div className="relative min-h-[300px] overflow-hidden bg-black sm:min-h-[380px]">
         <img src={selected.imagen_url} alt={selected.nombre} className="absolute inset-0 h-full w-full object-cover"/>
-        <span className="absolute inset-0 bg-gradient-to-t from-[#070707] via-black/15 to-black/10"/>
-        <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
+        <span className="absolute inset-0 bg-gradient-to-t from-[#070707] via-black/45 to-black/10"/>
+        <span className="absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-black via-black/70 to-transparent"/>
+        <div className="absolute inset-x-0 bottom-0 z-10 p-5 [text-shadow:0_2px_8px_rgba(0,0,0,0.95)] sm:p-7">
           <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#D4AF37]">{selected.testamento === "AT" ? "Antiguo Testamento" : "Nuevo Testamento"}</p>
           <h1 className="font-display text-4xl leading-none text-[#F8F5EA] sm:text-5xl">{selected.nombre}</h1>
           {selected.nombre_alternativo && <p className="mt-2 text-base text-[#D8D2C4]">{selected.nombre_alternativo}</p>}
