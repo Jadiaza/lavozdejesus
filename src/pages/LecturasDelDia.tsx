@@ -621,7 +621,7 @@ const LecturasDelDia = () => {
                           type="button"
                           disabled={!available}
                           onClick={() => setSelectedDate(fecha)}
-                          className={`mx-auto flex h-12 w-10 items-center justify-center rounded-xl text-[19px] font-extrabold transition sm:h-14 sm:w-12 sm:text-[20px] ${
+                          className={`mx-auto flex h-10 w-9 items-center justify-center rounded-[11px] text-[17px] font-extrabold transition sm:h-12 sm:w-11 sm:text-[18px] ${
                             active
                               ? "border border-[#a97812] bg-[#d4af37] text-[#082347] shadow-[0_6px_16px_-8px_rgba(8,35,71,0.65)]"
                               : available
@@ -636,20 +636,20 @@ const LecturasDelDia = () => {
                     })}
                   </div>
 
-                  <div className="flex min-h-[172px] items-center justify-center px-4 py-5">
+                  <div className="flex min-h-[145px] items-center justify-center px-4 py-4">
                     <div className="text-center">
-                      <div className="mx-auto flex h-[115px] w-[105px] flex-col items-center justify-center rounded-[21px] bg-[#082347] text-white shadow-[0_16px_30px_-22px_rgba(8,35,71,0.82)]">
-                        <span className="text-[18px] font-bold leading-none">
+                      <div className="mx-auto flex h-[98px] w-[90px] flex-col items-center justify-center rounded-[18px] bg-[#082347] text-white shadow-[0_14px_26px_-20px_rgba(8,35,71,0.8)]">
+                        <span className="text-[16px] font-bold leading-none">
                           {dateCard.weekday}
                         </span>
-                        <span className="mt-1 text-[36px] font-extrabold leading-none">
+                        <span className="mt-1 text-[30px] font-extrabold leading-none">
                           {dateCard.day}
                         </span>
-                        <span className="mt-1 text-[17px] font-extrabold leading-none text-[#d4af37]">
+                        <span className="mt-1 text-[14px] font-extrabold leading-none text-[#d4af37]">
                           {dateCard.month}
                         </span>
                       </div>
-                      <div className="mt-2 text-[18px] font-extrabold text-[#40506a]">
+                      <div className="mt-2 text-[16px] font-extrabold text-[#40506a]">
                         {dateCard.year}
                       </div>
                     </div>
@@ -657,37 +657,37 @@ const LecturasDelDia = () => {
                 </div>
               )}
 
-              <div className="bg-[#f3eadb]/55 px-4 pb-7 pt-4 text-center">
-                <h2 className="font-display text-[35px] leading-[1.08] text-[#082347] sm:text-[44px]">
+              <div className="bg-[#f3eadb]/55 px-4 pb-6 pt-4 text-center">
+                <h2 className="font-display text-[30px] leading-[1.1] text-[#082347] sm:text-[40px]">
                   {liturgia?.celebracion || "Liturgia del Día"}
                 </h2>
-                <p className="mt-5 text-[17px] font-extrabold text-[#40506a]">
+                <p className="mt-4 text-[15px] font-extrabold text-[#40506a] sm:text-[16px]">
                   Calendario litúrgico de Colombia
                 </p>
-                <div className="mx-auto mt-2 h-[3px] w-3/4 max-w-[480px] bg-[#c69222]" />
-                <div className="mt-5 flex items-center justify-center gap-3 text-[17px] font-extrabold uppercase text-[#082347]">
+                <div className="mx-auto mt-3 h-[2px] w-[72%] max-w-[420px] bg-[#c69222]" />
+                <div className="mt-4 flex items-center justify-center gap-2.5 text-[15px] font-extrabold uppercase text-[#082347] sm:text-[16px]">
                   <LiturgicalStole color={liturgia?.color_liturgico} />
                   <span>{liturgia?.tiempo_liturgico || "Tiempo litúrgico"}</span>
                 </div>
               </div>
             </header>
 
-            <section className="mx-auto mt-7 max-w-[860px] rounded-[26px] border-2 border-[#d8c49d] bg-white px-5 py-6 text-center shadow-[0_16px_36px_-30px_rgba(8,35,71,0.35)] sm:px-7 sm:py-7 md:p-8">
+            <section className="mx-auto mt-5 max-w-[860px] rounded-[22px] border-2 border-[#d8c49d] bg-white px-4 py-5 text-center shadow-[0_14px_32px_-28px_rgba(8,35,71,0.32)] sm:px-6 sm:py-6 md:p-8">
               <div className="flex items-center justify-center gap-3 text-[#082347]">
-                <BookOpen className="h-6 w-6 text-[#b17a12]" />
-                <p className="text-[16px] font-extrabold uppercase tracking-[0.08em] sm:text-[18px]">
+                <BookOpen className="h-5 w-5 text-[#b17a12]" />
+                <p className="text-[14px] font-extrabold uppercase tracking-[0.08em] sm:text-[16px]">
                   Palabra para hoy
                 </p>
               </div>
-              <h2 className="mx-auto mt-4 max-w-2xl font-display text-[25px] italic leading-[1.24] text-[#082347] sm:text-[30px] md:text-[36px]">
+              <h2 className="mx-auto mt-3 max-w-2xl font-display text-[22px] italic leading-[1.24] text-[#082347] sm:text-[27px] md:text-[34px]">
                 {loading
                   ? "Cargando lecturas..."
                   : `«${stripOuterQuotes(palabraHoy)}»`}
               </h2>
               {liturgia?.evangelio_cita && (
                 <>
-                  <div className="mx-auto mt-5 h-[2px] w-24 bg-[#c69222]" />
-                  <p className="mt-3 text-sm font-semibold text-[#536174]">
+                  <div className="mx-auto mt-4 h-[2px] w-20 bg-[#c69222]" />
+                  <p className="mt-2 text-[12px] font-semibold text-[#536174] sm:text-sm">
                     {liturgia.evangelio_cita}
                   </p>
                 </>
@@ -695,7 +695,7 @@ const LecturasDelDia = () => {
             </section>
 
             {activeTab === "liturgia" && (
-              <section className="mx-auto mt-7 max-w-[860px]">
+              <section className="mx-auto mt-5 max-w-[860px]">
                 <div className="mb-3 flex items-center justify-between gap-4 px-1">
                   <h2 className="text-[13px] font-extrabold uppercase tracking-[0.22em] text-[#40506a]">
                     Lecturas de hoy
@@ -719,19 +719,19 @@ const LecturasDelDia = () => {
                       id: "primera-lectura",
                       label: "Primera lectura",
                       citation: liturgia?.primera_lectura_cita,
-                      icon: <BookOpen className="h-5 w-5" />,
+                      icon: <BookOpen className="h-[18px] w-[18px]" />,
                     },
                     {
                       id: "salmo-responsorial",
                       label: "Salmo responsorial",
                       citation: liturgia?.salmo_cita,
-                      icon: <Music2 className="h-5 w-5" />,
+                      icon: <Music2 className="h-[18px] w-[18px]" />,
                     },
                     {
                       id: "evangelio",
                       label: "Evangelio",
                       citation: liturgia?.evangelio_cita,
-                      icon: <Cross className="h-5 w-5" />,
+                      icon: <Cross className="h-[18px] w-[18px]" />,
                     },
                   ].map((item) => (
                     <button
@@ -742,15 +742,15 @@ const LecturasDelDia = () => {
                           .getElementById(item.id)
                           ?.scrollIntoView({ behavior: "smooth", block: "start" })
                       }
-                      className="min-h-[128px] rounded-2xl border border-[#e6d8bf] bg-white px-3 py-4 text-left shadow-[0_12px_28px_-24px_rgba(8,35,71,0.45)] transition active:scale-[0.98]"
+                      className="min-h-[108px] rounded-[14px] border border-[#e6d8bf] bg-white px-2.5 py-3 text-left shadow-[0_10px_24px_-22px_rgba(8,35,71,0.4)] transition active:scale-[0.98]"
                     >
-                      <span className="mb-3 flex h-8 w-8 items-center justify-center text-[#b17a12]">
+                      <span className="mb-2 flex h-7 w-7 items-center justify-center text-[#b17a12]">
                         {item.icon}
                       </span>
-                      <strong className="block text-[13px] leading-tight text-[#082347] sm:text-sm">
+                      <strong className="block text-[12px] leading-[1.15] text-[#082347] sm:text-[13px]">
                         {item.label}
                       </strong>
-                      <span className="mt-2 block line-clamp-2 text-[11px] leading-snug text-[#536174] sm:text-xs">
+                      <span className="mt-1.5 block line-clamp-2 text-[10px] leading-snug text-[#536174] sm:text-[11px]">
                         {item.citation || "Disponible pronto"}
                       </span>
                     </button>
@@ -917,10 +917,10 @@ const LecturasDelDia = () => {
         className="fixed inset-x-0 bottom-0 z-[900] border-t border-[#e6d8bf] bg-[#fffdf8]/95 pb-[max(0.4rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_-24px_rgba(8,35,71,0.45)] backdrop-blur md:hidden"
         aria-label="Navegación de Liturgia"
       >
-        <div className="mx-auto grid max-w-[560px] grid-cols-5 px-2">
+        <div className="mx-auto grid max-w-[560px] grid-cols-5 px-1">
           <Link
             to="/"
-            className="flex min-h-[58px] flex-col items-center justify-center gap-1 text-[11px] font-semibold text-[#536174]"
+            className="flex min-h-[60px] flex-col items-center justify-center gap-0.5 px-1 text-center text-[10px] font-semibold leading-[1.05] text-[#536174]"
           >
             <Home className="h-5 w-5" />
             <span>Home</span>
@@ -932,7 +932,7 @@ const LecturasDelDia = () => {
               setActiveTab("liturgia");
               setSettingsOpen(false);
             }}
-            className={`relative flex min-h-[58px] flex-col items-center justify-center gap-1 text-[11px] font-semibold ${
+            className={`relative flex min-h-[60px] flex-col items-center justify-center gap-0.5 px-1 text-center text-[10px] font-semibold leading-[1.05] ${
               activeTab === "liturgia" && !settingsOpen
                 ? "text-[#b17a12]"
                 : "text-[#536174]"
@@ -951,7 +951,7 @@ const LecturasDelDia = () => {
               setActiveTab("santo");
               setSettingsOpen(false);
             }}
-            className={`relative flex min-h-[58px] flex-col items-center justify-center gap-1 text-[11px] font-semibold ${
+            className={`relative flex min-h-[60px] flex-col items-center justify-center gap-0.5 px-1 text-center text-[10px] font-semibold leading-[1.05] ${
               activeTab === "santo" && !settingsOpen
                 ? "text-[#b17a12]"
                 : "text-[#536174]"
@@ -970,7 +970,7 @@ const LecturasDelDia = () => {
               setActiveTab("reflexion");
               setSettingsOpen(false);
             }}
-            className={`relative flex min-h-[58px] flex-col items-center justify-center gap-1 text-[11px] font-semibold ${
+            className={`relative flex min-h-[60px] flex-col items-center justify-center gap-0.5 px-1 text-center text-[10px] font-semibold leading-[1.05] ${
               activeTab === "reflexion" && !settingsOpen
                 ? "text-[#b17a12]"
                 : "text-[#536174]"
@@ -986,7 +986,7 @@ const LecturasDelDia = () => {
           <button
             type="button"
             onClick={() => setSettingsOpen(true)}
-            className={`relative flex min-h-[58px] flex-col items-center justify-center gap-1 text-[11px] font-semibold ${
+            className={`relative flex min-h-[60px] flex-col items-center justify-center gap-0.5 px-1 text-center text-[10px] font-semibold leading-[1.05] ${
               settingsOpen ? "text-[#b17a12]" : "text-[#536174]"
             }`}
           >
