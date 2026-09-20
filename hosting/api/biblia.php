@@ -11,6 +11,111 @@ function lvj_bib_param(string $name, string $fallback = ''): string
   return trim((string) ($_GET[$name] ?? $fallback));
 }
 
+
+function lvj_bib_int_param(string $name, int $fallback, int $min, int $max): int
+{
+  $value = filter_var($_GET[$name] ?? $fallback, FILTER_VALIDATE_INT, [
+    'options' => ['min_range' => $min, 'max_range' => $max],
+  ]);
+  return $value === false ? $fallback : (int) $value;
+}
+
+function lvj_bib_query_param(bool $required = true): string
+{
+  $query = lvj_bib_param('q');
+  if ($query === '' && !$required) return '';
+
+  $length = function_exists('mb_strlen') ? mb_strlen($query, 'UTF-8') : strlen($query);
+  if ($query === '' || $length < 2 || $length > 120) {
+    lvj_json_response([
+      'success' => false,
+      'message' => 'La búsqueda debe tener entre 2 y 120 caracteres.',
+    ], 400);
+  }
+  return $query;
+}
+
+function lvj_bib_public_version(array $version): array
+{
+  unset($version['id']);
+  return $version;
+}
+
+function lvj_bib_search_rows(
+  PDO $pdo,
+  int $versionId,
+  string $query,
+  int $limit,
+  int $offset,
+  string $bookCode = ''
+): array {
+  $bookFilter = $bookCode !== '' ? ' AND l.codigo = :book_code' : '';
+  $statement = $pdo->prepare(
+    'SELECT v.id, v.capitulo, v.versiculo, v.texto,
+            l.id AS libro_id, l.codigo AS libro_codigo, l.nombre AS libro_nombre,
+            l.abreviatura AS libro_abreviatura, l.testamento
+     FROM lvj_bib_versiculos v
+     INNER JOIN lvj_bib_libros l
+       ON l.id = v.libro_id
+      AND l.version_id = v.version_id
+      AND l.estado = 1
+      AND l.deleted_at IS NULL
+     WHERE v.version_id = :version_id
+       AND v.estado = 1
+       AND v.deleted_at IS NULL
+       AND LOCATE(:query, v.texto) > 0' . $bookFilter . '
+     ORDER BY l.orden ASC, v.capitulo ASC, v.versiculo ASC, v.id ASC
+     LIMIT :limit OFFSET :offset'
+  );
+  $statement->bindValue(':version_id', $versionId, PDO::PARAM_INT);
+  $statement->bindValue(':query', $query, PDO::PARAM_STR);
+  if ($bookCode !== '') $statement->bindValue(':book_code', $bookCode, PDO::PARAM_STR);
+  $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
+  $statement->bindValue(':offset', $offset, PDO::PARAM_INT);
+  $statement->execute();
+
+  return array_map(static function (array $row): array {
+    return [
+      'id' => (string) $row['id'],
+      'libro_id' => (int) $row['libro_id'],
+      'libro_codigo' => (string) $row['libro_codigo'],
+      'libro_nombre' => (string) $row['libro_nombre'],
+      'libro_abreviatura' => (string) $row['libro_abreviatura'],
+      'testamento' => (string) $row['testamento'],
+      'capitulo' => (int) $row['capitulo'],
+      'versiculo' => (int) $row['versiculo'],
+      'texto' => (string) $row['texto'],
+      'referencia' => (string) $row['libro_nombre'] . ' ' . (int) $row['capitulo'] . ',' . (int) $row['versiculo'],
+    ];
+  }, $statement->fetchAll());
+}
+
+function lvj_bib_search_count(
+  PDO $pdo,
+  int $versionId,
+  string $query,
+  string $bookCode = ''
+): int {
+  $bookFilter = $bookCode !== '' ? ' AND l.codigo = :book_code' : '';
+  $statement = $pdo->prepare(
+    'SELECT COUNT(*)
+     FROM lvj_bib_versiculos v
+     INNER JOIN lvj_bib_libros l
+       ON l.id = v.libro_id
+      AND l.version_id = v.version_id
+      AND l.estado = 1
+      AND l.deleted_at IS NULL
+     WHERE v.version_id = :version_id
+       AND v.estado = 1
+       AND v.deleted_at IS NULL
+       AND LOCATE(:query, v.texto) > 0' . $bookFilter
+  );
+  $params = ['version_id' => $versionId, 'query' => $query];
+  if ($bookCode !== '') $params['book_code'] = $bookCode;
+  $statement->execute($params);
+  return (int) $statement->fetchColumn();
+}
+
 try {
   $pdo = lvj_db();
   $accion = strtolower(lvj_bib_param('accion', 'catalogo'));
@@ -90,6 +195,217 @@ try {
   }
 
   $versionId = (int) $version['id'];
+
+  if ($accion === 'buscar') {
+    $query = lvj_bib_query_param();
+    $page = lvj_bib_int_param('page', 1, 1, 100000);
+    $limit = lvj_bib_int_param('limit', 20, 1, 40);
+    $offset = ($page - 1) * $limit;
+
+    $total = lvj_bib_search_count($pdo, $versionId, $query);
+    $results = lvj_bib_search_rows($pdo, $versionId, $query, $limit, $offset);
+
+    lvj_json_response(['success' => true, 'data' => [
+      'version' => lvj_bib_public_version($version),
+      'query' => $query,
+      'page' => $page,
+      'limit' => $limit,
+      'total' => $total,
+      'has_more' => $offset + count($results) < $total,
+      'resultados' => $results,
+    ]]);
+  }
+
+  if ($accion === 'temas') {
+    $query = lvj_bib_query_param(false);
+    $tema = lvj_bib_param('tema');
+    $temaLength = function_exists('mb_strlen') ? mb_strlen($tema, 'UTF-8') : strlen($tema);
+    if ($temaLength > 120) {
+      lvj_json_response(['success' => false, 'message' => 'El tema solicitado no es válido.'], 400);
+    }
+
+    $page = lvj_bib_int_param('page', 1, 1, 100000);
+    $limit = lvj_bib_int_param('limit', 20, 1, 40);
+    $offset = ($page - 1) * $limit;
+
+    $themeSql =
+      'SELECT vt.categoria, vt.tema, COUNT(*) AS total
+       FROM lvj_bib_versiculos_tematicos vt
+       INNER JOIN lvj_bib_versiculos v
+         ON v.id = vt.versiculo_id
+        AND v.version_id = :version_id
+        AND v.estado = 1
+        AND v.deleted_at IS NULL
+       WHERE vt.estado = 1';
+    $themeParams = ['version_id' => $versionId];
+    if ($query !== '') {
+      $themeSql .= ' AND (LOCATE(:theme_query, vt.tema) > 0 OR LOCATE(:category_query, vt.categoria) > 0)';
+      $themeParams['theme_query'] = $query;
+      $themeParams['category_query'] = $query;
+    }
+    $themeSql .= ' GROUP BY vt.categoria, vt.tema ORDER BY vt.categoria ASC, vt.tema ASC';
+    $themeStatement = $pdo->prepare($themeSql);
+    $themeStatement->execute($themeParams);
+    $themes = array_map(static function (array $row): array {
+      return [
+        'categoria' => (string) $row['categoria'],
+        'tema' => (string) $row['tema'],
+        'total' => (int) $row['total'],
+      ];
+    }, $themeStatement->fetchAll());
+
+    $total = 0;
+    $results = [];
+    if ($tema !== '') {
+      $countStatement = $pdo->prepare(
+        'SELECT COUNT(*)
+         FROM lvj_bib_versiculos_tematicos vt
+         INNER JOIN lvj_bib_versiculos v
+           ON v.id = vt.versiculo_id
+          AND v.version_id = :version_id
+          AND v.estado = 1
+          AND v.deleted_at IS NULL
+         INNER JOIN lvj_bib_libros l
+           ON l.id = v.libro_id
+          AND l.version_id = v.version_id
+          AND l.estado = 1
+          AND l.deleted_at IS NULL
+         WHERE vt.estado = 1 AND vt.tema = :tema'
+      );
+      $countStatement->execute(['version_id' => $versionId, 'tema' => $tema]);
+      $total = (int) $countStatement->fetchColumn();
+
+      $resultStatement = $pdo->prepare(
+        'SELECT v.id, v.capitulo, v.versiculo, v.texto,
+                l.id AS libro_id, l.codigo AS libro_codigo, l.nombre AS libro_nombre,
+                l.abreviatura AS libro_abreviatura, l.testamento
+         FROM lvj_bib_versiculos_tematicos vt
+         INNER JOIN lvj_bib_versiculos v
+           ON v.id = vt.versiculo_id
+          AND v.version_id = :version_id
+          AND v.estado = 1
+          AND v.deleted_at IS NULL
+         INNER JOIN lvj_bib_libros l
+           ON l.id = v.libro_id
+          AND l.version_id = v.version_id
+          AND l.estado = 1
+          AND l.deleted_at IS NULL
+         WHERE vt.estado = 1 AND vt.tema = :tema
+         ORDER BY l.orden ASC, v.capitulo ASC, v.versiculo ASC, v.id ASC
+         LIMIT :limit OFFSET :offset'
+      );
+      $resultStatement->bindValue(':version_id', $versionId, PDO::PARAM_INT);
+      $resultStatement->bindValue(':tema', $tema, PDO::PARAM_STR);
+      $resultStatement->bindValue(':limit', $limit, PDO::PARAM_INT);
+      $resultStatement->bindValue(':offset', $offset, PDO::PARAM_INT);
+      $resultStatement->execute();
+
+      $results = array_map(static function (array $row): array {
+        return [
+          'id' => (string) $row['id'],
+          'libro_id' => (int) $row['libro_id'],
+          'libro_codigo' => (string) $row['libro_codigo'],
+          'libro_nombre' => (string) $row['libro_nombre'],
+          'libro_abreviatura' => (string) $row['libro_abreviatura'],
+          'testamento' => (string) $row['testamento'],
+          'capitulo' => (int) $row['capitulo'],
+          'versiculo' => (int) $row['versiculo'],
+          'texto' => (string) $row['texto'],
+          'referencia' => (string) $row['libro_nombre'] . ' ' . (int) $row['capitulo'] . ',' . (int) $row['versiculo'],
+        ];
+      }, $resultStatement->fetchAll());
+    }
+
+    lvj_json_response(['success' => true, 'data' => [
+      'version' => lvj_bib_public_version($version),
+      'query' => $query,
+      'tema' => $tema,
+      'page' => $page,
+      'limit' => $limit,
+      'total' => $total,
+      'has_more' => $offset + count($results) < $total,
+      'temas' => $themes,
+      'resultados' => $results,
+    ]]);
+  }
+
+  if ($accion === 'concordancia') {
+    $query = lvj_bib_query_param();
+    $page = lvj_bib_int_param('page', 1, 1, 100000);
+    $limit = lvj_bib_int_param('limit', 20, 1, 40);
+    $offset = ($page - 1) * $limit;
+    $bookCode = strtoupper(lvj_bib_param('libro'));
+    if ($bookCode !== '' && !preg_match('/^[0-9A-Z]{3}$/', $bookCode)) {
+      lvj_json_response(['success' => false, 'message' => 'El filtro de libro no es válido.'], 400);
+    }
+
+    $total = lvj_bib_search_count($pdo, $versionId, $query);
+    $filteredTotal = lvj_bib_search_count($pdo, $versionId, $query, $bookCode);
+
+    $testamentStatement = $pdo->prepare(
+      'SELECT l.testamento, COUNT(*) AS total
+       FROM lvj_bib_versiculos v
+       INNER JOIN lvj_bib_libros l
+         ON l.id = v.libro_id
+        AND l.version_id = v.version_id
+        AND l.estado = 1
+        AND l.deleted_at IS NULL
+       WHERE v.version_id = :version_id
+         AND v.estado = 1
+         AND v.deleted_at IS NULL
+         AND LOCATE(:query, v.texto) > 0
+       GROUP BY l.testamento'
+    );
+    $testamentStatement->execute(['version_id' => $versionId, 'query' => $query]);
+    $testaments = ['AT' => 0, 'NT' => 0];
+    foreach ($testamentStatement->fetchAll() as $row) {
+      $key = (string) $row['testamento'];
+      if (array_key_exists($key, $testaments)) $testaments[$key] = (int) $row['total'];
+    }
+
+    $bookStatement = $pdo->prepare(
+      'SELECT l.id AS libro_id, l.codigo AS libro_codigo, l.nombre AS libro_nombre,
+              l.testamento, l.orden, COUNT(*) AS total
+       FROM lvj_bib_versiculos v
+       INNER JOIN lvj_bib_libros l
+         ON l.id = v.libro_id
+        AND l.version_id = v.version_id
+        AND l.estado = 1
+        AND l.deleted_at IS NULL
+       WHERE v.version_id = :version_id
+         AND v.estado = 1
+         AND v.deleted_at IS NULL
+         AND LOCATE(:query, v.texto) > 0
+       GROUP BY l.id, l.codigo, l.nombre, l.testamento, l.orden
+       ORDER BY total DESC, l.orden ASC'
+    );
+    $bookStatement->execute(['version_id' => $versionId, 'query' => $query]);
+    $books = array_map(static function (array $row): array {
+      return [
+        'libro_id' => (int) $row['libro_id'],
+        'libro_codigo' => (string) $row['libro_codigo'],
+        'libro_nombre' => (string) $row['libro_nombre'],
+        'testamento' => (string) $row['testamento'],
+        'total' => (int) $row['total'],
+      ];
+    }, $bookStatement->fetchAll());
+
+    $results = lvj_bib_search_rows($pdo, $versionId, $query, $limit, $offset, $bookCode);
+
+    lvj_json_response(['success' => true, 'data' => [
+      'version' => lvj_bib_public_version($version),
+      'query' => $query,
+      'page' => $page,
+      'limit' => $limit,
+      'total' => $total,
+      'total_filtrado' => $filteredTotal,
+      'has_more' => $offset + count($results) < $filteredTotal,
+      'filtro_libro' => $bookCode,
+      'testamentos' => $testaments,
+      'libros' => $books,
+      'resultados' => $results,
+    ]]);
+  }
 
   if ($accion === 'catalogo') {
     $statement = $pdo->prepare(
