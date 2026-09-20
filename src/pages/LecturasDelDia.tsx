@@ -602,16 +602,16 @@ const LecturasDelDia = () => {
         <div className="md:flex md:overflow-hidden md:rounded-[28px] md:border md:border-[#e6d8bf] md:bg-white/70">
           <DesktopSidebar activeTab={activeTab} onSelectTab={setActiveTab} />
 
-          <section className="min-w-0 flex-1 px-4 pb-28 pt-7 sm:px-6 md:px-8 md:py-8">
+          <section className="min-w-0 flex-1 px-4 pb-28 pt-3 sm:px-6 md:px-8 md:py-8">
             <header className="mx-auto max-w-[860px]">
-              <h1 className="flex items-center justify-center gap-2 border-b border-[#e6d8bf] pb-5 text-[17px] font-extrabold uppercase tracking-[0.18em] text-[#b17a12] md:justify-start md:text-lg md:tracking-[0.22em]">
+              <h1 className="hidden items-center gap-2 border-b border-[#e6d8bf] pb-5 text-lg font-extrabold uppercase tracking-[0.22em] text-[#b17a12] md:flex md:justify-start">
                 <BookOpen className="h-5 w-5" />
                 Liturgia del Día
               </h1>
 
               {liturgias.length > 0 && (
                 <div className="overflow-hidden bg-[#fffaf2]">
-                  <div className="grid grid-cols-7 border-b border-[#e6d8bf] px-2 py-4 sm:px-4">
+                  <div className="grid grid-cols-7 border-b border-[#e6d8bf] px-2 py-3 sm:px-4 md:py-4">
                     {weekDates.map((fecha, index) => {
                       const active = fecha === selectedDate;
                       const available = publishedDates.has(fecha);
