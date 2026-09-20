@@ -187,6 +187,7 @@ const LiturgicalStole = ({ color }: { color?: string }) => {
 };
 
 const ContentCard = ({
+  id,
   title,
   subtitle,
   response,
@@ -196,6 +197,7 @@ const ContentCard = ({
   mode = "normal",
   readingPreferences = DEFAULT_READING_PREFERENCES,
 }: {
+  id?: string;
   title: string;
   subtitle?: string;
   response?: string;
@@ -209,7 +211,8 @@ const ContentCard = ({
 
   return (
     <article
-      className={`rounded-2xl border bg-white p-5 text-left shadow-[0_12px_32px_-28px_rgba(8,35,71,0.45)] ${
+      id={id}
+      className={`scroll-mt-6 rounded-2xl border bg-white p-5 text-left shadow-[0_12px_32px_-28px_rgba(8,35,71,0.45)] ${
         featured ? "border-[#d4af37]" : "border-[#e6d8bf]"
       }`}
     >
@@ -670,17 +673,97 @@ const LecturasDelDia = () => {
             </header>
 
             <section className="mx-auto mt-7 max-w-[860px] rounded-[26px] border-2 border-[#d8c49d] bg-white px-5 py-6 text-center shadow-[0_16px_36px_-30px_rgba(8,35,71,0.35)] sm:px-7 sm:py-7 md:p-8">
-              <h2 className="mx-auto max-w-2xl text-[23px] font-extrabold leading-[1.18] text-[#082347] sm:text-[27px] md:text-[36px]">
+              <div className="flex items-center justify-center gap-3 text-[#082347]">
+                <BookOpen className="h-6 w-6 text-[#b17a12]" />
+                <p className="text-[16px] font-extrabold uppercase tracking-[0.08em] sm:text-[18px]">
+                  Palabra para hoy
+                </p>
+              </div>
+              <h2 className="mx-auto mt-4 max-w-2xl font-display text-[25px] italic leading-[1.24] text-[#082347] sm:text-[30px] md:text-[36px]">
                 {loading
                   ? "Cargando lecturas..."
                   : `«${stripOuterQuotes(palabraHoy)}»`}
               </h2>
+              {liturgia?.evangelio_cita && (
+                <>
+                  <div className="mx-auto mt-5 h-[2px] w-24 bg-[#c69222]" />
+                  <p className="mt-3 text-sm font-semibold text-[#536174]">
+                    {liturgia.evangelio_cita}
+                  </p>
+                </>
+              )}
             </section>
+
+            {activeTab === "liturgia" && (
+              <section className="mx-auto mt-7 max-w-[860px]">
+                <div className="mb-3 flex items-center justify-between gap-4 px-1">
+                  <h2 className="text-[13px] font-extrabold uppercase tracking-[0.22em] text-[#40506a]">
+                    Lecturas de hoy
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      document
+                        .getElementById("primera-lectura")
+                        ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                    }
+                    className="text-xs font-extrabold uppercase tracking-[0.08em] text-[#b17a12]"
+                  >
+                    Ver todas
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                  {[
+                    {
+                      id: "primera-lectura",
+                      label: "Primera lectura",
+                      citation: liturgia?.primera_lectura_cita,
+                      icon: <BookOpen className="h-5 w-5" />,
+                    },
+                    {
+                      id: "salmo-responsorial",
+                      label: "Salmo responsorial",
+                      citation: liturgia?.salmo_cita,
+                      icon: <Music2 className="h-5 w-5" />,
+                    },
+                    {
+                      id: "evangelio",
+                      label: "Evangelio",
+                      citation: liturgia?.evangelio_cita,
+                      icon: <Cross className="h-5 w-5" />,
+                    },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() =>
+                        document
+                          .getElementById(item.id)
+                          ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                      }
+                      className="min-h-[128px] rounded-2xl border border-[#e6d8bf] bg-white px-3 py-4 text-left shadow-[0_12px_28px_-24px_rgba(8,35,71,0.45)] transition active:scale-[0.98]"
+                    >
+                      <span className="mb-3 flex h-8 w-8 items-center justify-center text-[#b17a12]">
+                        {item.icon}
+                      </span>
+                      <strong className="block text-[13px] leading-tight text-[#082347] sm:text-sm">
+                        {item.label}
+                      </strong>
+                      <span className="mt-2 block line-clamp-2 text-[11px] leading-snug text-[#536174] sm:text-xs">
+                        {item.citation || "Disponible pronto"}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
 
             <div className="mx-auto mt-7 max-w-[860px]">
               {activeTab === "liturgia" && (
                 <div className="space-y-4">
                   <ContentCard
+                    id="primera-lectura"
                     title="Primera Lectura"
                     subtitle={liturgia?.primera_lectura_cita}
                     text={liturgia?.primera_lectura_texto}
@@ -689,6 +772,7 @@ const LecturasDelDia = () => {
                     readingPreferences={readingPreferences}
                   />
                   <ContentCard
+                    id="salmo-responsorial"
                     title="Salmo Responsorial"
                     subtitle={liturgia?.salmo_cita}
                     response={formatPsalmResponse(liturgia?.salmo_respuesta)}
@@ -698,6 +782,7 @@ const LecturasDelDia = () => {
                     readingPreferences={readingPreferences}
                   />
                   <ContentCard
+                    id="segunda-lectura"
                     title="Segunda Lectura"
                     subtitle={liturgia?.segunda_lectura_cita}
                     text={liturgia?.segunda_lectura_texto}
@@ -706,6 +791,7 @@ const LecturasDelDia = () => {
                     readingPreferences={readingPreferences}
                   />
                   <ContentCard
+                    id="evangelio"
                     title="Evangelio"
                     subtitle={liturgia?.evangelio_cita}
                     text={liturgia?.evangelio_texto}
