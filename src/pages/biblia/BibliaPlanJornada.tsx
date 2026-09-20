@@ -10,7 +10,8 @@ import {
   MessageCircleQuestion,
   ShieldCheck,
 } from "lucide-react";
-import { BibliaReferenciaModal } from "@/features/biblia/components/BibliaReferenciaModal";\nimport { BibliaLayout } from "./BibliaLayout";
+import { BibliaReferenciaModal } from "@/features/biblia/components/BibliaReferenciaModal";
+import { BibliaLayout } from "./BibliaLayout";
 import {
   getBiblePlanDay,
   resolvePlanProgress,
