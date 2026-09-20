@@ -7,6 +7,7 @@ import {
   Loader2,
   Sparkles,
 } from "lucide-react";
+import planesHeaderBg from "@/assets/biblia/planes-header-bg.webp";
 import { BiblePlanCover } from "@/features/biblia/components/BiblePlanCover";
 import { BibliaLayout } from "./BibliaLayout";
 import {
@@ -89,7 +90,7 @@ export default function BibliaPlanes() {
     <BibliaLayout title="Planes" hideHeader>
       <section className="relative mb-4 overflow-hidden rounded-[1.5rem] border border-[#D4AF37]/18 bg-[#070707] px-4 pb-4 pt-4 shadow-[0_16px_40px_rgba(0,0,0,0.3)]">
         <img
-          src="/images/biblia/planes-header-bg.webp?v=20260920-2"
+          src={planesHeaderBg}
           alt=""
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 h-full w-full object-cover object-right"
