@@ -87,7 +87,7 @@ export default function BibliaPlanes() {
 
   return (
     <BibliaLayout title="Planes" hideHeader>
-      <section className="relative overflow-hidden pb-4 pt-3">
+      <section className="relative overflow-hidden pb-3 pt-2">
         <div className="pointer-events-none absolute -right-8 top-1 opacity-[0.12]">
           <BookOpen className="h-32 w-32 text-[#D4AF37]" strokeWidth={0.8} />
         </div>
@@ -106,7 +106,7 @@ export default function BibliaPlanes() {
           </div>
         </div>
 
-        <p className="relative mt-3 max-w-[92%] text-[14px] leading-6 text-[#C7C0B1]">
+        <p className="relative mt-2.5 max-w-[92%] text-[14px] leading-[1.55] text-[#C7C0B1]">
           Caminos para encontrarte con Dios, crecer en su Palabra y dejar que transforme tu vida.
         </p>
       </section>
@@ -124,57 +124,57 @@ export default function BibliaPlanes() {
       ) : null}
 
       {!loading && !error && current ? (
-        <section className="mb-5 rounded-[1.35rem] border border-[#D4AF37]/45 bg-[#0A0A09] p-3.5 shadow-[0_14px_38px_rgba(0,0,0,0.34)]">
-          <div className="grid grid-cols-[48px_minmax(0,1fr)] gap-3">
-            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#D4AF37] text-black">
+        <section className="mb-5 rounded-[1.3rem] border border-[#D4AF37]/42 bg-[#0A0A09] p-3 shadow-[0_12px_32px_rgba(0,0,0,0.3)]">
+          <div className="grid grid-cols-[46px_minmax(0,1fr)_auto] items-center gap-3">
+            <span className="flex h-[46px] w-[46px] items-center justify-center rounded-[14px] bg-[#D4AF37] text-black">
               <BookOpenCheck className="h-5 w-5" />
             </span>
 
             <div className="min-w-0">
-              <p className="text-[9px] font-bold uppercase tracking-[0.23em] text-[#D4AF37]">
+              <p className="text-[8px] font-bold uppercase tracking-[0.22em] text-[#D4AF37]">
                 Continúa tu camino
               </p>
-              <h2 className="mt-1 line-clamp-2 font-display text-[18px] leading-[1.08] text-[#F8F5EA]">
+              <h2 className="mt-0.5 line-clamp-2 font-display text-[17px] leading-[1.05] text-[#F8F5EA]">
                 {current.titulo}
               </h2>
-              <p className="mt-1 text-[11px] text-[#B9B1A2]">
+              <p className="mt-1 text-[10.5px] text-[#B9B1A2]">
                 Jornada {progress[current.id].dia_actual} de {current.duracion_dias}
               </p>
             </div>
+
+            <Link
+              to={`/biblia/planes/${current.id}/jornada/${progress[current.id].dia_actual}`}
+              className="flex min-h-10 items-center justify-center gap-1 rounded-[14px] bg-[#D4AF37] px-3 text-[11px] font-extrabold text-black"
+            >
+              CONTINUAR
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
           </div>
 
-          <div className="mt-2.5 grid grid-cols-[1fr_auto] items-center gap-3">
-            <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+          <div className="mt-2.5 grid grid-cols-[1fr_auto] items-center gap-2">
+            <div className="h-[5px] overflow-hidden rounded-full bg-white/10">
               <div
                 className="h-full rounded-full bg-[#D4AF37]"
                 style={{ width: `${currentPercent}%` }}
               />
             </div>
-            <span className="text-[11px] font-semibold text-[#D4AF37]">
+            <span className="text-[10px] font-semibold text-[#D4AF37]">
               {currentPercent}%
             </span>
           </div>
-
-          <Link
-            to={`/biblia/planes/${current.id}/jornada/${progress[current.id].dia_actual}`}
-            className="mt-3 flex min-h-10 w-full items-center justify-center gap-1 rounded-xl bg-[#D4AF37] px-4 text-sm font-extrabold text-black"
-          >
-            CONTINUAR
-            <ChevronRight className="h-4 w-4" />
-          </Link>
         </section>
       ) : null}
 
       {!loading && !error && featured ? (
         <>
-          <section className="mb-6">
-            <h2 className="mb-3 font-display text-[24px] leading-none text-[#F8F5EA]">
+          <section className="mb-5">
+            <h2 className="mb-2.5 font-display text-[23px] leading-none text-[#F8F5EA]">
               Plan destacado
             </h2>
 
             <Link
               to={`/biblia/planes/${featured.id}`}
-              className="group block overflow-hidden rounded-[1.35rem] border border-[#D4AF37]/20 bg-[#0B0B0B] shadow-[0_14px_36px_rgba(0,0,0,0.28)]"
+              className="group block overflow-hidden rounded-[1.35rem] border border-[#D4AF37]/18 bg-[#0B0B0B] shadow-[0_12px_30px_rgba(0,0,0,0.24)]"
             >
               <BiblePlanCover
                 src={featured.imagen_url}
@@ -185,7 +185,7 @@ export default function BibliaPlanes() {
                 fit="stretch"
               />
 
-              <div className="p-3.5">
+              <div className="p-3.5 sm:p-4">
                 <div className="text-[9px] font-bold uppercase tracking-[0.18em] text-[#D4AF37]">
                   {featured.categoria || "Plan"} · {featured.duracion_dias} jornadas
                 </div>
@@ -211,7 +211,7 @@ export default function BibliaPlanes() {
 
           <section>
             <div className="mb-3">
-              <h2 className="font-display text-[24px] leading-none text-[#F8F5EA]">
+              <h2 className="font-display text-[23px] leading-none text-[#F8F5EA]">
                 Explora otros planes
               </h2>
               <p className="mt-1.5 max-w-[92%] text-[12px] leading-5 text-[#AAA396]">
@@ -219,18 +219,18 @@ export default function BibliaPlanes() {
               </p>
             </div>
 
-            <div className="space-y-2.5">
+            <div className="space-y-2.5 pb-1">
               {otherPlans.map((plan) => (
                 <Link
                   key={plan.id}
                   to={`/biblia/planes/${plan.id}`}
-                  className="group grid min-h-[78px] grid-cols-[76px_minmax(0,1fr)_22px] items-center gap-3 rounded-[1.15rem] border border-[#D4AF37]/14 bg-[#11110F] p-2 shadow-[0_10px_24px_rgba(0,0,0,0.2)] transition hover:border-[#D4AF37]/35"
+                  className="group grid min-h-[82px] grid-cols-[78px_minmax(0,1fr)_22px] items-center gap-3 rounded-[1.15rem] border border-[#D4AF37]/14 bg-[#11110F] p-2.5 shadow-[0_8px_20px_rgba(0,0,0,0.18)] transition hover:border-[#D4AF37]/35"
                 >
                   <BiblePlanCover
                     src={plan.imagen_url}
                     alt={plan.titulo}
-                    className="h-[62px] w-[76px] rounded-xl"
-                    fallbackClassName="h-[62px] w-[76px] rounded-xl"
+                    className="h-[64px] w-[78px] rounded-xl"
+                    fallbackClassName="h-[64px] w-[78px] rounded-xl"
                     iconClassName="h-7 w-7"
                     fit="stretch"
                   />
