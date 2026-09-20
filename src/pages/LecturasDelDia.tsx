@@ -1,20 +1,19 @@
 import {
-  ArrowLeft,
   BookOpen,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
   Cross,
   Heart,
   Headphones,
   Home,
   MessageCircleQuestion,
   Music2,
+  Settings,
   Sparkles,
   Star,
   UserRound,
+  X,
 } from "lucide-react";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/lvdj/Logo";
@@ -34,6 +33,19 @@ import {
 
 type LecturasTab = "liturgia" | "santo" | "reflexion";
 type ReadingRenderMode = "normal" | "ordo" | "psalm";
+type ReadingAlignment = "left" | "justify";
+
+interface LiturgiaReadingPreferences {
+  fontSize: 16 | 18 | 21 | 24;
+  alignment: ReadingAlignment;
+}
+
+const DEFAULT_READING_PREFERENCES: LiturgiaReadingPreferences = {
+  fontSize: 18,
+  alignment: "left",
+};
+
+const READING_PREFERENCES_KEY = "lvj_liturgia_reading_preferences_v1";
 
 const tabLabels: Record<LecturasTab, string> = {
   liturgia: "Liturgia",
@@ -175,6 +187,7 @@ const LiturgicalStole = ({ color }: { color?: string }) => {
 };
 
 const ContentCard = ({
+  id,
   title,
   subtitle,
   response,
@@ -182,7 +195,9 @@ const ContentCard = ({
   icon,
   featured = false,
   mode = "normal",
+  readingPreferences = DEFAULT_READING_PREFERENCES,
 }: {
+  id?: string;
   title: string;
   subtitle?: string;
   response?: string;
@@ -190,12 +205,14 @@ const ContentCard = ({
   icon: ReactNode;
   featured?: boolean;
   mode?: ReadingRenderMode;
+  readingPreferences?: LiturgiaReadingPreferences;
 }) => {
   if (!text && !response) return null;
 
   return (
     <article
-      className={`rounded-2xl border bg-white p-5 text-left shadow-[0_12px_32px_-28px_rgba(8,35,71,0.45)] ${
+      id={id}
+      className={`scroll-mt-6 rounded-2xl border bg-white p-5 text-left shadow-[0_12px_32px_-28px_rgba(8,35,71,0.45)] ${
         featured ? "border-[#d4af37]" : "border-[#e6d8bf]"
       }`}
     >
@@ -228,7 +245,13 @@ const ContentCard = ({
       )}
 
       {text && (
-        <div className="mt-5 text-[17px] leading-[1.78] text-[#263349]">
+        <div
+          className="mt-5 leading-[1.78] text-[#263349]"
+          style={{
+            fontSize: `${readingPreferences.fontSize}px`,
+            textAlign: readingPreferences.alignment,
+          }}
+        >
           {renderReadingText(text, mode)}
         </div>
       )}
@@ -302,7 +325,13 @@ const DesktopSidebar = ({
   </aside>
 );
 
-const SantoView = ({ santo }: { santo: SantoDelDia | null }) => {
+const SantoView = ({
+  santo,
+  readingPreferences,
+}: {
+  santo: SantoDelDia | null;
+  readingPreferences: LiturgiaReadingPreferences;
+}) => {
   if (!santo?.nombre) {
     return (
       <article className="rounded-2xl border border-[#e6d8bf] bg-white p-5 text-center text-[#263349]">
@@ -342,7 +371,13 @@ const SantoView = ({ santo }: { santo: SantoDelDia | null }) => {
               </p>
             )}
             {santo.resumen && (
-              <div className="mt-5 text-left text-[16px] leading-[1.75] text-[#263349] md:text-[17px] md:leading-[1.78]">
+              <div
+                className="mt-5 leading-[1.78] text-[#263349]"
+                style={{
+                  fontSize: `${readingPreferences.fontSize}px`,
+                  textAlign: readingPreferences.alignment,
+                }}
+              >
                 {renderReadingText(santo.resumen)}
               </div>
             )}
@@ -363,6 +398,7 @@ const SantoView = ({ santo }: { santo: SantoDelDia | null }) => {
             title={label}
             text={santo[key]}
             icon={<Sparkles className="h-5 w-5" />}
+            readingPreferences={readingPreferences}
           />
         ) : null,
       )}
@@ -373,9 +409,11 @@ const SantoView = ({ santo }: { santo: SantoDelDia | null }) => {
 const ReflectionView = ({
   lectio,
   liturgia,
+  readingPreferences,
 }: {
   lectio: LectioDivina | null;
   liturgia: LiturgiaDia | null;
+  readingPreferences: LiturgiaReadingPreferences;
 }) => {
   const content = {
     reflexion: lectio?.reflexion || liturgia?.reflexion || "",
@@ -398,26 +436,31 @@ const ReflectionView = ({
         subtitle="La Palabra de hoy para tu vida"
         text={content.reflexion}
         icon={<Sparkles className="h-5 w-5" />}
+        readingPreferences={readingPreferences}
       />
       <ContentCard
         title="Pregunta para Meditar"
         text={content.pregunta}
         icon={<MessageCircleQuestion className="h-5 w-5" />}
+        readingPreferences={readingPreferences}
       />
       <ContentCard
         title="Oración"
         text={content.oracion}
         icon={<Heart className="h-5 w-5" />}
+        readingPreferences={readingPreferences}
       />
       <ContentCard
         title="Compromiso"
         text={content.compromiso}
         icon={<CheckCircle2 className="h-5 w-5" />}
+        readingPreferences={readingPreferences}
       />
       <ContentCard
         title="Mensaje Final"
         text={content.mensaje}
         icon={<Star className="h-5 w-5" />}
+        readingPreferences={readingPreferences}
       />
       {content.audio && (
         <article className="rounded-2xl border border-[#e6d8bf] bg-white p-5">
@@ -439,20 +482,54 @@ const LecturasDelDia = () => {
   const [selectedDate, setSelectedDate] = useState(getTodayISO());
   const [activeTab, setActiveTab] = useState<LecturasTab>("liturgia");
   const [loading, setLoading] = useState(true);
-  const contentTopRef = useRef<HTMLDivElement | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const selectTab = (tab: LecturasTab) => {
+  const selectBottomTab = (tab: LecturasTab) => {
     setActiveTab(tab);
+    setSettingsOpen(false);
 
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
-        const target = contentTopRef.current;
-        if (!target) return;
-
-        const stickyTabsOffset = 76;
-        const top = target.getBoundingClientRect().top + window.scrollY - stickyTabsOffset;
-        window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+        document
+          .getElementById("lectura-contenido")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
+    });
+  };
+
+  const [readingPreferences, setReadingPreferences] =
+    useState<LiturgiaReadingPreferences>(() => {
+      if (typeof window === "undefined") return DEFAULT_READING_PREFERENCES;
+
+      try {
+        const raw = window.localStorage.getItem(READING_PREFERENCES_KEY);
+        if (!raw) return DEFAULT_READING_PREFERENCES;
+
+        const parsed = JSON.parse(raw) as Partial<LiturgiaReadingPreferences>;
+        const fontSize = [16, 18, 21, 24].includes(Number(parsed.fontSize))
+          ? (Number(parsed.fontSize) as LiturgiaReadingPreferences["fontSize"])
+          : DEFAULT_READING_PREFERENCES.fontSize;
+        const alignment =
+          parsed.alignment === "justify" ? "justify" : "left";
+
+        return { fontSize, alignment };
+      } catch {
+        return DEFAULT_READING_PREFERENCES;
+      }
+    });
+
+  const updateReadingPreferences = (
+    next: Partial<LiturgiaReadingPreferences>,
+  ) => {
+    setReadingPreferences((current) => {
+      const value = { ...current, ...next };
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(
+          READING_PREFERENCES_KEY,
+          JSON.stringify(value),
+        );
+      }
+      return value;
     });
   };
 
@@ -521,15 +598,6 @@ const LecturasDelDia = () => {
   const lectio = lectios.find((item) => item.fecha === selectedDate) ?? null;
   const santo =
     santos.find((item) => santoMatchesDate(item, selectedDate)) ?? null;
-  const selectedIndex = liturgias.findIndex(
-    (item) => item.fecha === selectedDate,
-  );
-  const previousDate =
-    selectedIndex > 0 ? liturgias[selectedIndex - 1]?.fecha : undefined;
-  const nextDate =
-    selectedIndex >= 0 && selectedIndex < liturgias.length - 1
-      ? liturgias[selectedIndex + 1]?.fecha
-      : undefined;
   const weekDates = useMemo(() => getWeekDates(selectedDate), [selectedDate]);
   const publishedDates = useMemo(
     () => new Set(liturgias.map((item) => item.fecha)),
@@ -541,31 +609,23 @@ const LecturasDelDia = () => {
 
   return (
     <main className="lvj-reading-page min-h-screen bg-[#fff8ec] text-[#071a33]">
-      <Link
-        to="/"
-        className="fixed left-[max(18px,env(safe-area-inset-left))] top-[max(1.75rem,env(safe-area-inset-top))] z-[999] inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#d4af37]/50 bg-[#111111] text-[#f8f5ea] md:hidden"
-        aria-label="Volver al inicio"
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Link>
-
       <div
         className="mx-auto w-full md:px-5 md:py-8"
         style={{ maxWidth: "1240px" }}
       >
         <div className="md:flex md:overflow-hidden md:rounded-[28px] md:border md:border-[#e6d8bf] md:bg-white/70">
-          <DesktopSidebar activeTab={activeTab} onSelectTab={selectTab} />
+          <DesktopSidebar activeTab={activeTab} onSelectTab={setActiveTab} />
 
-          <section className="min-w-0 flex-1 px-4 pb-14 pt-7 sm:px-6 md:px-8 md:py-8">
+          <section className="min-w-0 flex-1 px-4 pb-28 pt-3 sm:px-6 md:px-8 md:py-8">
             <header className="mx-auto max-w-[860px]">
-              <h1 className="flex items-center justify-center gap-2 border-b border-[#e6d8bf] pb-5 text-[17px] font-extrabold uppercase tracking-[0.18em] text-[#b17a12] md:justify-start md:text-lg md:tracking-[0.22em]">
+              <h1 className="hidden items-center gap-2 border-b border-[#e6d8bf] pb-5 text-lg font-extrabold uppercase tracking-[0.22em] text-[#b17a12] md:flex md:justify-start">
                 <BookOpen className="h-5 w-5" />
                 Liturgia del Día
               </h1>
 
               {liturgias.length > 0 && (
                 <div className="overflow-hidden bg-[#fffaf2]">
-                  <div className="grid grid-cols-7 border-b border-[#e6d8bf] px-2 py-4 sm:px-4">
+                  <div className="grid grid-cols-7 border-b border-[#e6d8bf] px-2 py-3 sm:px-4 md:py-4">
                     {weekDates.map((fecha, index) => {
                       const active = fecha === selectedDate;
                       const available = publishedDates.has(fecha);
@@ -575,7 +635,7 @@ const LecturasDelDia = () => {
                           type="button"
                           disabled={!available}
                           onClick={() => setSelectedDate(fecha)}
-                          className={`mx-auto flex h-12 w-10 items-center justify-center rounded-xl text-[19px] font-extrabold transition sm:h-14 sm:w-12 sm:text-[20px] ${
+                          className={`mx-auto flex h-10 w-9 items-center justify-center rounded-[11px] text-[17px] font-extrabold transition sm:h-12 sm:w-11 sm:text-[18px] ${
                             active
                               ? "border border-[#a97812] bg-[#d4af37] text-[#082347] shadow-[0_6px_16px_-8px_rgba(8,35,71,0.65)]"
                               : available
@@ -590,135 +650,362 @@ const LecturasDelDia = () => {
                     })}
                   </div>
 
-                  <div className="relative flex min-h-[230px] items-center justify-center px-4 py-8">
-                    <button
-                      type="button"
-                      onClick={() => previousDate && setSelectedDate(previousDate)}
-                      disabled={!previousDate}
-                      className="absolute left-2 flex h-10 w-10 items-center justify-center rounded-full text-[#082347] disabled:opacity-20"
-                      aria-label="Día anterior"
-                    >
-                      <ChevronLeft className="h-6 w-6" />
-                    </button>
-
+                  <div className="flex min-h-[145px] items-center justify-center px-4 py-4">
                     <div className="text-center">
-                      <div className="mx-auto flex h-[136px] w-[126px] flex-col items-center justify-center rounded-[24px] bg-[#082347] text-white shadow-[0_18px_34px_-22px_rgba(8,35,71,0.85)]">
-                        <span className="text-[21px] font-bold leading-none">
+                      <div className="mx-auto flex h-[98px] w-[90px] flex-col items-center justify-center rounded-[18px] bg-[#082347] text-white shadow-[0_14px_26px_-20px_rgba(8,35,71,0.8)]">
+                        <span className="text-[16px] font-bold leading-none">
                           {dateCard.weekday}
                         </span>
-                        <span className="mt-1 text-[48px] font-extrabold leading-none">
+                        <span className="mt-1 text-[30px] font-extrabold leading-none">
                           {dateCard.day}
                         </span>
-                        <span className="mt-1 text-[20px] font-extrabold leading-none text-[#d4af37]">
+                        <span className="mt-1 text-[14px] font-extrabold leading-none text-[#d4af37]">
                           {dateCard.month}
                         </span>
                       </div>
-                      <div className="mt-3 text-[20px] font-extrabold text-[#40506a]">
+                      <div className="mt-2 text-[16px] font-extrabold text-[#40506a]">
                         {dateCard.year}
                       </div>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={() => nextDate && setSelectedDate(nextDate)}
-                      disabled={!nextDate}
-                      className="absolute right-2 flex h-10 w-10 items-center justify-center rounded-full text-[#082347] disabled:opacity-20"
-                      aria-label="Día siguiente"
-                    >
-                      <ChevronRight className="h-6 w-6" />
-                    </button>
                   </div>
                 </div>
               )}
 
-              <div className="bg-[#f3eadb]/55 px-4 pb-7 pt-4 text-center">
-                <h2 className="font-display text-[35px] leading-[1.08] text-[#082347] sm:text-[44px]">
+              <div className="bg-[#f3eadb]/55 px-4 pb-6 pt-4 text-center">
+                <h2 className="font-display text-[30px] leading-[1.1] text-[#082347] sm:text-[40px]">
                   {liturgia?.celebracion || "Liturgia del Día"}
                 </h2>
-                <p className="mt-5 text-[17px] font-extrabold text-[#40506a]">
+                <p className="mt-4 text-[15px] font-extrabold text-[#40506a] sm:text-[16px]">
                   Calendario litúrgico de Colombia
                 </p>
-                <div className="mx-auto mt-2 h-[3px] w-3/4 max-w-[480px] bg-[#c69222]" />
-                <div className="mt-5 flex items-center justify-center gap-3 text-[17px] font-extrabold uppercase text-[#082347]">
+                <div className="mx-auto mt-3 h-[2px] w-[72%] max-w-[420px] bg-[#c69222]" />
+                <div className="mt-4 flex items-center justify-center gap-2.5 text-[15px] font-extrabold uppercase text-[#082347] sm:text-[16px]">
                   <LiturgicalStole color={liturgia?.color_liturgico} />
                   <span>{liturgia?.tiempo_liturgico || "Tiempo litúrgico"}</span>
                 </div>
               </div>
             </header>
 
-            <section className="mx-auto mt-7 max-w-[860px] rounded-[26px] border-2 border-[#d8c49d] bg-white px-5 py-6 text-center shadow-[0_16px_36px_-30px_rgba(8,35,71,0.35)] sm:px-7 sm:py-7 md:p-8">
-              <h2 className="mx-auto max-w-2xl text-[23px] font-extrabold leading-[1.18] text-[#082347] sm:text-[27px] md:text-[36px]">
+            <section className="mx-auto mt-5 max-w-[860px] rounded-[22px] border-2 border-[#d8c49d] bg-white px-4 py-5 text-center shadow-[0_14px_32px_-28px_rgba(8,35,71,0.32)] sm:px-6 sm:py-6 md:p-8">
+              <div className="flex items-center justify-center gap-3 text-[#082347]">
+                <BookOpen className="h-5 w-5 text-[#b17a12]" />
+                <p className="text-[14px] font-extrabold uppercase tracking-[0.08em] sm:text-[16px]">
+                  Palabra para hoy
+                </p>
+              </div>
+              <h2 className="mx-auto mt-3 max-w-2xl font-display text-[22px] italic leading-[1.24] text-[#082347] sm:text-[27px] md:text-[34px]">
                 {loading
                   ? "Cargando lecturas..."
                   : `«${stripOuterQuotes(palabraHoy)}»`}
               </h2>
+              {liturgia?.evangelio_cita && (
+                <>
+                  <div className="mx-auto mt-4 h-[2px] w-20 bg-[#c69222]" />
+                  <p className="mt-2 text-[12px] font-semibold text-[#536174] sm:text-sm">
+                    {liturgia.evangelio_cita}
+                  </p>
+                </>
+              )}
             </section>
 
-            <nav className="sticky top-3 z-30 mx-auto mt-5 grid max-w-[860px] grid-cols-3 gap-1 rounded-xl bg-[#efe5d4] p-1">
-              {(Object.keys(tabLabels) as LecturasTab[]).map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => selectTab(tab)}
-                  className={`rounded-lg px-4 py-2.5 text-sm font-bold ${
-                    activeTab === tab
-                      ? "bg-[#082347] text-white"
-                      : "text-[#071a33]"
-                  }`}
-                >
-                  {tabLabels[tab]}
-                </button>
-              ))}
-            </nav>
+            {activeTab === "liturgia" && (
+              <section className="mx-auto mt-5 max-w-[860px]">
+                <div className="mb-3 flex items-center justify-between gap-4 px-1">
+                  <h2 className="text-[13px] font-extrabold uppercase tracking-[0.22em] text-[#40506a]">
+                    Lecturas de hoy
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      document
+                        .getElementById("primera-lectura")
+                        ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                    }
+                    className="text-xs font-extrabold uppercase tracking-[0.08em] text-[#b17a12]"
+                  >
+                    Ver todas
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                  {[
+                    {
+                      id: "primera-lectura",
+                      label: "Primera lectura",
+                      citation: liturgia?.primera_lectura_cita,
+                      icon: <BookOpen className="h-[18px] w-[18px]" />,
+                    },
+                    {
+                      id: "salmo-responsorial",
+                      label: "Salmo responsorial",
+                      citation: liturgia?.salmo_cita,
+                      icon: <Music2 className="h-[18px] w-[18px]" />,
+                    },
+                    {
+                      id: "evangelio",
+                      label: "Evangelio",
+                      citation: liturgia?.evangelio_cita,
+                      icon: <Cross className="h-[18px] w-[18px]" />,
+                    },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() =>
+                        document
+                          .getElementById(item.id)
+                          ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                      }
+                      className="min-h-[108px] rounded-[14px] border border-[#e6d8bf] bg-white px-2.5 py-3 text-left shadow-[0_10px_24px_-22px_rgba(8,35,71,0.4)] transition active:scale-[0.98]"
+                    >
+                      <span className="mb-2 flex h-7 w-7 items-center justify-center text-[#b17a12]">
+                        {item.icon}
+                      </span>
+                      <strong className="block text-[12px] leading-[1.15] text-[#082347] sm:text-[13px]">
+                        {item.label}
+                      </strong>
+                      <span className="mt-1.5 block line-clamp-2 text-[10px] leading-snug text-[#536174] sm:text-[11px]">
+                        {item.citation || "Disponible pronto"}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
 
             <div
-              ref={contentTopRef}
-              className="mx-auto mt-5 max-w-[860px] scroll-mt-20"
+              id="lectura-contenido"
+              className="mx-auto mt-7 max-w-[860px] scroll-mt-2"
             >
               {activeTab === "liturgia" && (
                 <div className="space-y-4">
                   <ContentCard
+                    id="primera-lectura"
                     title="Primera Lectura"
                     subtitle={liturgia?.primera_lectura_cita}
                     text={liturgia?.primera_lectura_texto}
                     icon={<BookOpen className="h-5 w-5" />}
                     mode="ordo"
+                    readingPreferences={readingPreferences}
                   />
                   <ContentCard
+                    id="salmo-responsorial"
                     title="Salmo Responsorial"
                     subtitle={liturgia?.salmo_cita}
                     response={formatPsalmResponse(liturgia?.salmo_respuesta)}
                     text={liturgia?.salmo_texto}
                     icon={<Music2 className="h-5 w-5" />}
                     mode="psalm"
+                    readingPreferences={readingPreferences}
                   />
                   <ContentCard
+                    id="segunda-lectura"
                     title="Segunda Lectura"
                     subtitle={liturgia?.segunda_lectura_cita}
                     text={liturgia?.segunda_lectura_texto}
                     icon={<BookOpen className="h-5 w-5" />}
                     mode="ordo"
+                    readingPreferences={readingPreferences}
                   />
                   <ContentCard
+                    id="evangelio"
                     title="Evangelio"
                     subtitle={liturgia?.evangelio_cita}
                     text={liturgia?.evangelio_texto}
                     icon={<Cross className="h-5 w-5" />}
                     featured
                     mode="ordo"
+                    readingPreferences={readingPreferences}
                   />
                 </div>
               )}
 
-              {activeTab === "santo" && <SantoView santo={santo} />}
+              {activeTab === "santo" && (
+                <SantoView
+                  santo={santo}
+                  readingPreferences={readingPreferences}
+                />
+              )}
 
               {activeTab === "reflexion" && (
-                <ReflectionView lectio={lectio} liturgia={liturgia} />
+                <ReflectionView
+                  lectio={lectio}
+                  liturgia={liturgia}
+                  readingPreferences={readingPreferences}
+                />
               )}
             </div>
           </section>
         </div>
       </div>
+
+      {settingsOpen && (
+        <div className="fixed inset-0 z-[1000] flex items-end bg-black/35 md:hidden">
+          <button
+            type="button"
+            aria-label="Cerrar configuración"
+            className="absolute inset-0"
+            onClick={() => setSettingsOpen(false)}
+          />
+          <section
+            className="relative w-full rounded-t-[28px] border-t border-[#d8c49d] bg-[#fffaf2] px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5 shadow-[0_-18px_50px_-30px_rgba(8,35,71,0.55)]"
+            aria-label="Configuración de lectura"
+          >
+            <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-[#d8c49d]" />
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#b17a12]">
+                  Configuración
+                </p>
+                <h2 className="mt-1 text-xl font-extrabold text-[#082347]">
+                  Aa · Formato de texto
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSettingsOpen(false)}
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-[#e6d8bf] bg-white text-[#082347]"
+                aria-label="Cerrar configuración"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mt-6 space-y-6">
+              <fieldset>
+                <legend className="mb-3 text-sm font-extrabold text-[#40506a]">
+                  Tamaño del texto
+                </legend>
+                <div className="grid grid-cols-4 gap-2">
+                  {([
+                    [16, "Pequeño"],
+                    [18, "Normal"],
+                    [21, "Grande"],
+                    [24, "Muy grande"],
+                  ] as const).map(([size, label]) => (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => updateReadingPreferences({ fontSize: size })}
+                      className={`min-h-12 rounded-xl border px-2 text-xs font-bold transition ${
+                        readingPreferences.fontSize === size
+                          ? "border-[#b17a12] bg-[#d4af37] text-[#082347]"
+                          : "border-[#e6d8bf] bg-white text-[#40506a]"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend className="mb-3 text-sm font-extrabold text-[#40506a]">
+                  Alineación
+                </legend>
+                <div className="grid grid-cols-2 gap-3">
+                  {([
+                    ["left", "Izquierda"],
+                    ["justify", "Justificada"],
+                  ] as const).map(([alignment, label]) => (
+                    <button
+                      key={alignment}
+                      type="button"
+                      onClick={() =>
+                        updateReadingPreferences({ alignment })
+                      }
+                      className={`min-h-12 rounded-xl border px-4 text-sm font-bold transition ${
+                        readingPreferences.alignment === alignment
+                          ? "border-[#b17a12] bg-[#d4af37] text-[#082347]"
+                          : "border-[#e6d8bf] bg-white text-[#40506a]"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            </div>
+          </section>
+        </div>
+      )}
+
+      <nav
+        className="fixed inset-x-0 bottom-0 z-[900] border-t border-[#e6d8bf] bg-[#fffdf8]/95 pb-[max(0.4rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_-24px_rgba(8,35,71,0.45)] backdrop-blur md:hidden"
+        aria-label="Navegación de Liturgia"
+      >
+        <div className="mx-auto grid max-w-[560px] grid-cols-5 px-1">
+          <Link
+            to="/"
+            className="flex min-h-[60px] flex-col items-center justify-center gap-0.5 px-1 text-center text-[10px] font-semibold leading-[1.05] text-[#536174]"
+          >
+            <Home className="h-5 w-5" />
+            <span>Home</span>
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => selectBottomTab("liturgia")}
+            className={`relative flex min-h-[60px] flex-col items-center justify-center gap-0.5 px-1 text-center text-[10px] font-semibold leading-[1.05] ${
+              activeTab === "liturgia" && !settingsOpen
+                ? "text-[#b17a12]"
+                : "text-[#536174]"
+            }`}
+          >
+            <BookOpen className="h-5 w-5" />
+            <span>Liturgia</span>
+            {activeTab === "liturgia" && !settingsOpen && (
+              <span className="absolute bottom-0 h-1.5 w-1.5 rounded-full bg-[#b17a12]" />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => selectBottomTab("santo")}
+            className={`relative flex min-h-[60px] flex-col items-center justify-center gap-0.5 px-1 text-center text-[10px] font-semibold leading-[1.05] ${
+              activeTab === "santo" && !settingsOpen
+                ? "text-[#b17a12]"
+                : "text-[#536174]"
+            }`}
+          >
+            <UserRound className="h-5 w-5" />
+            <span>Santo</span>
+            {activeTab === "santo" && !settingsOpen && (
+              <span className="absolute bottom-0 h-1.5 w-1.5 rounded-full bg-[#b17a12]" />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => selectBottomTab("reflexion")}
+            className={`relative flex min-h-[60px] flex-col items-center justify-center gap-0.5 px-1 text-center text-[10px] font-semibold leading-[1.05] ${
+              activeTab === "reflexion" && !settingsOpen
+                ? "text-[#b17a12]"
+                : "text-[#536174]"
+            }`}
+          >
+            <MessageCircleQuestion className="h-5 w-5" />
+            <span>Reflexión</span>
+            {activeTab === "reflexion" && !settingsOpen && (
+              <span className="absolute bottom-0 h-1.5 w-1.5 rounded-full bg-[#b17a12]" />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSettingsOpen(true)}
+            className={`relative flex min-h-[60px] flex-col items-center justify-center gap-0.5 px-1 text-center text-[10px] font-semibold leading-[1.05] ${
+              settingsOpen ? "text-[#b17a12]" : "text-[#536174]"
+            }`}
+          >
+            <Settings className="h-5 w-5" />
+            <span>Configuración</span>
+            {settingsOpen && (
+              <span className="absolute bottom-0 h-1.5 w-1.5 rounded-full bg-[#b17a12]" />
+            )}
+          </button>
+        </div>
+      </nav>
     </main>
   );
 };
