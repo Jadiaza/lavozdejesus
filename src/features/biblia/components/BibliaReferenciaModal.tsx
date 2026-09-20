@@ -327,39 +327,50 @@ export function BibliaReferenciaContenido({
             <section
               id={"plan-reading-" + index}
               key={passage.referencia + "-" + index}
-              className={"scroll-mt-24 overflow-hidden rounded-[1.35rem] border transition " + (
+              className={"scroll-mt-24 transition " + (
                 isActive
-                  ? "border-[#D4AF37]/65 bg-[linear-gradient(145deg,rgba(212,175,55,0.08),rgba(8,8,8,0.98))] shadow-[0_16px_48px_rgba(0,0,0,0.28)]"
-                  : "border-white/10 bg-[#090909]"
+                  ? "border-0 bg-transparent"
+                  : "overflow-hidden rounded-[1.15rem] border border-white/10 bg-[#090909]"
               )}
             >
-              <button type="button" onClick={() => setActiveIndex(index)} className="flex w-full items-center gap-3 px-4 py-4 text-left" aria-expanded={isActive}>
-                <span className={"flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border " + (
-                  isActive || done ? "border-[#D4AF37]/35 bg-[#D4AF37]/10 text-[#E7C35D]" : "border-white/10 bg-white/[0.02] text-[#9E9A91]"
+              <button
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                className={"flex w-full items-center gap-3 text-left " + (
+                  isActive
+                    ? "border-b border-[#D4AF37]/22 px-1 pb-3 pt-2"
+                    : "px-4 py-3"
+                )}
+                aria-expanded={isActive}
+              >
+                <span className={"flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border " + (
+                  isActive || done ? "border-[#D4AF37]/30 bg-[#D4AF37]/8 text-[#E7C35D]" : "border-white/10 bg-white/[0.02] text-[#9E9A91]"
                 )}>
                   {done ? <CheckCircle2 className="h-5 w-5" /> : <BookOpen className="h-5 w-5" />}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-display text-[1.35rem] leading-none text-[#F8F5EA]">{passage.referencia}</span>
-                  <span className="mt-1.5 block text-[9px] font-semibold uppercase tracking-[0.24em] text-[#AFA89B]">Biblia Platense · Straubinger</span>
+                  <span className="block font-display text-[1.28rem] leading-none text-[#F8F5EA]">{passage.referencia}</span>
+                  <span className="mt-1 block text-[9px] font-medium tracking-[0.08em] text-[#9F998F]">Biblia Platense · Straubinger</span>
                 </span>
                 {isActive ? <ChevronUp className="h-5 w-5 shrink-0 text-[#E7C35D]" /> : <ChevronDown className="h-5 w-5 shrink-0 text-[#8F8A80]" />}
               </button>
 
               {isActive ? (
-                <div className="border-t border-[#D4AF37]/12 px-4 pb-4 pt-4">
-                  <div className="space-y-4">
+                <div className="pb-2 pt-4">
+                  <div className="space-y-3 px-1">
                     {passage.versiculos.map((verse) => (
-                      <p key={verse.id} className="font-display text-[19px] leading-[1.75] text-[#E8E2D7]">
-                        <sup className="mr-2 align-super font-sans text-[10px] font-bold text-[#D4AF37]">{verse.versiculo}</sup>
+                      <p key={verse.id} className="font-display text-[18px] leading-[1.62] text-[#E8E2D7]">
+                        <sup className="mr-1.5 align-super font-sans text-[10px] font-bold text-[#D4AF37]">{verse.versiculo}</sup>
                         {verse.texto}
                       </p>
                     ))}
                   </div>
-                  <button type="button" onClick={markCurrentAndContinue} className="mt-6 flex min-h-12 w-full items-center justify-between rounded-xl border border-[#D4AF37]/28 bg-[#11100D] px-4 font-semibold text-[#E7C35D] transition active:scale-[0.99]">
-                    <span>{done ? "Continuar lectura" : "Marcar leído y continuar"}</span>
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
+                  <div className="mt-5 border-t border-[#D4AF37]/16 pt-3">
+                    <button type="button" onClick={markCurrentAndContinue} className="flex min-h-11 w-full items-center justify-between px-1 font-semibold text-[#E7C35D] transition active:scale-[0.99]">
+                      <span>{done ? "Continuar lectura" : "Marcar leído y continuar"}</span>
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
+                  </div>
                 </div>
               ) : null}
             </section>
