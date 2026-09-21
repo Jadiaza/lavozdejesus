@@ -77,7 +77,7 @@ const getVisibleItems = (compact: boolean) =>
 
 export const QuickAccess = ({ compact = false }: { compact?: boolean }) => (
   <div>
-    <div className="mb-3 px-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-gold/90">
+    <div className="mb-3 px-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-[var(--lvj-theme-accent)]">
       Accesos Rapidos
     </div>
 
@@ -88,15 +88,18 @@ export const QuickAccess = ({ compact = false }: { compact?: boolean }) => (
     >
       {getVisibleItems(compact).map((item) => {
         const className =
-          "group relative flex aspect-square cursor-pointer flex-col items-center justify-center gap-2.5 rounded-2xl glass gold-border p-1.5 transition hover:bg-[hsl(var(--gold)/0.08)] active:scale-95";
+          "group relative flex aspect-square cursor-pointer flex-col items-center justify-center gap-2.5 rounded-2xl border p-1.5 transition active:scale-95";
         const content = (
           <>
             <span className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-radial-gold opacity-0 transition group-hover:opacity-60" />
 
-            <img
-              src={item.image}
-              alt={item.label}
-              className="pointer-events-none relative h-11 w-11 object-contain"
+            <span
+              aria-hidden="true"
+              className="lvj-theme-icon-mask pointer-events-none relative h-11 w-11"
+              style={{
+                WebkitMaskImage: `url("${item.image}")`,
+                maskImage: `url("${item.image}")`,
+              }}
             />
 
             <span className="pointer-events-none relative flex min-h-[28px] flex-col items-center justify-start text-center leading-tight">
@@ -118,11 +121,29 @@ export const QuickAccess = ({ compact = false }: { compact?: boolean }) => (
         );
 
         return item.to ? (
-          <Link key={item.label} to={item.to} className={className}>
+          <Link
+            key={item.label}
+            to={item.to}
+            className={className}
+            style={{
+              backgroundColor: "var(--lvj-theme-card)",
+              borderColor: "var(--lvj-theme-border)",
+              color: "var(--lvj-card-text)",
+            }}
+          >
             {content}
           </Link>
         ) : (
-          <button key={item.label} type="button" className={className}>
+          <button
+            key={item.label}
+            type="button"
+            className={className}
+            style={{
+              backgroundColor: "var(--lvj-theme-card)",
+              borderColor: "var(--lvj-theme-border)",
+              color: "var(--lvj-card-text)",
+            }}
+          >
             {content}
           </button>
         );
