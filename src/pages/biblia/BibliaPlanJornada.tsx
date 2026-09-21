@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   BookOpen,
@@ -11,6 +12,13 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { BibliaReferenciaContenido } from "@/features/biblia/components/BibliaReferenciaModal";
+import ReadingSettingsSheet from "@/features/reading/ReadingSettingsSheet";
+import {
+  READING_FONT_FAMILIES,
+  READING_THEME_PALETTES,
+  type ReadingPreferences,
+} from "@/features/reading/readingPreferences";
+import { useReadingPreferences } from "@/features/reading/useReadingPreferences";
 import { BibliaLayout } from "./BibliaLayout";
 import {
   getBiblePlanDay,
@@ -29,7 +37,7 @@ function journeyTitle(title: string) {
   return title.replace(/^D[ií]a\s+\d+\s*[—–-]\s*/i, "").trim() || title;
 }
 
-function SpiritualText({ text }: { text: string }) {
+function SpiritualText({ text, preferences }: { text: string; preferences: ReadingPreferences }) {
   const blocks = text
     .split(/\n\s*\n/)
     .map((item) => item.trim())
@@ -41,14 +49,21 @@ function SpiritualText({ text }: { text: string }) {
         sectionLabels.has(block) ? (
           <h3
             key={`${block}-${index}`}
-            className="pt-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#D4AF37]"
+            className="pt-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--plan-reading-accent)]"
           >
             {block}
           </h3>
         ) : (
           <p
             key={index}
-            className="whitespace-pre-line text-[15px] leading-7 text-[#DDD7C9]"
+            className="whitespace-pre-line text-[var(--plan-reading-text)]"
+            style={{
+              fontFamily: READING_FONT_FAMILIES[preferences.fuente],
+              fontSize: `${preferences.tam}px`,
+              fontWeight: preferences.pesoFuente,
+              lineHeight: preferences.interlineado,
+              textAlign: preferences.alineacion === "justificada" ? "justify" : "left",
+            }}
           >
             {block}
           </p>
@@ -68,6 +83,8 @@ export default function BibliaPlanJornada() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [readingProgress, setReadingProgress] = useState({ completed: 0, total: 0 });
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const { preferences: readingPreferences } = useReadingPreferences();
 
   useEffect(() => {
     let active = true;
@@ -149,8 +166,34 @@ export default function BibliaPlanJornada() {
     ? Math.round((readingProgress.completed / readingProgress.total) * 100)
     : 0;
 
+  const readingTheme = READING_THEME_PALETTES[readingPreferences.tema];
+  const readingWidth = readingPreferences.margenLectura === "amplio" ? "38rem" : readingPreferences.margenLectura === "normal" ? "48rem" : "56rem";
+
   return (
-    <BibliaLayout title="Planes">
+    <BibliaLayout
+      title="Planes"
+      headerAction={
+        <button
+          type="button"
+          onClick={() => setSettingsOpen(true)}
+          aria-label="Formato de lectura"
+          className="flex h-10 min-w-10 items-center justify-center rounded-full border border-[#D4AF37]/35 bg-[#111111] px-2 font-display text-lg text-[#F2D27A]"
+        >
+          Aa
+        </button>
+      }
+    >
+      <div
+        className="mx-auto rounded-[1.35rem] transition-colors"
+        style={{
+          "--plan-reading-text": readingTheme.text,
+          "--plan-reading-accent": readingTheme.accent,
+          "--plan-reading-border": readingTheme.border,
+          color: readingTheme.text,
+          backgroundColor: readingTheme.background,
+          maxWidth: readingWidth,
+        } as CSSProperties}
+      >
       <div className="mb-4 flex items-center justify-between gap-3">
         <Link
           to={`/biblia/planes/${plan.id}`}
@@ -196,7 +239,7 @@ export default function BibliaPlanJornada() {
               Dispón tu corazón
             </h2>
           </div>
-          <SpiritualText text={jornada.oracion_inicial} />
+          <SpiritualText text={jornada.oracion_inicial} preferences={readingPreferences} />
         </section>
       ) : null}
 
@@ -220,7 +263,7 @@ export default function BibliaPlanJornada() {
 
       {jornada.descripcion ? (
         <section className="mb-4 rounded-[1.5rem] border border-[#D4AF37]/15 bg-[#0B0B0B] p-5">
-          <SpiritualText text={jornada.descripcion} />
+          <SpiritualText text={jornada.descripcion} preferences={readingPreferences} />
         </section>
       ) : null}
 
@@ -232,7 +275,7 @@ export default function BibliaPlanJornada() {
               Camina con la Palabra
             </h2>
           </div>
-          <SpiritualText text={jornada.motivacion} />
+          <SpiritualText text={jornada.motivacion} preferences={readingPreferences} />
         </section>
       ) : null}
 
@@ -244,7 +287,7 @@ export default function BibliaPlanJornada() {
               Oremos
             </h2>
           </div>
-          <SpiritualText text={jornada.oracion_final} />
+          <SpiritualText text={jornada.oracion_final} preferences={readingPreferences} />
         </section>
       ) : null}
 
@@ -300,6 +343,7 @@ export default function BibliaPlanJornada() {
           </Link>
         ) : null}
       </div>
+      <ReadingSettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} eyebrow="Biblia · Planes" />
     </BibliaLayout>
   );
 }
