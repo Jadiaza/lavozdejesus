@@ -68,6 +68,48 @@
     --lvj-font-title: 'Cormorant Garamond', Georgia, serif;
     --lvj-font-text: 'Montserrat', Arial, sans-serif;
 
+    --lvj-theme-primary: #d4af37;
+    --lvj-theme-secondary: #12110e;
+    --lvj-theme-accent: #d4af37;
+    --lvj-theme-text: #f8f5ea;
+    --lvj-theme-text-muted: #c9c3b4;
+    --lvj-theme-background: #050505;
+    --lvj-theme-card: #0b0b0a;
+    --lvj-theme-surface: #12110e;
+    --lvj-theme-border: #5e5030;
+
+    --lvj-icon: #d4af37;
+    --lvj-icon-active: #f0d77d;
+    --lvj-icon-inactive: #9d988d;
+    --lvj-card-text: #f8f5ea;
+    --lvj-card-icon: #d4af37;
+
+    --lvj-button-primary-bg: #d4af37;
+    --lvj-button-primary-text: #050505;
+    --lvj-button-primary-border: #d4af37;
+    --lvj-button-secondary-bg: #12110e;
+    --lvj-button-secondary-text: #f8f5ea;
+    --lvj-button-secondary-border: #5e5030;
+
+    --lvj-nav-bg: #050505;
+    --lvj-nav-border: #5e5030;
+    --lvj-nav-icon-active: #d4af37;
+    --lvj-nav-icon-inactive: #9d988d;
+    --lvj-nav-text-active: #d4af37;
+    --lvj-nav-text-inactive: #9d988d;
+    --lvj-nav-indicator: #d4af37;
+
+    --lvj-overlay: #050505;
+    --lvj-overlay-opacity: 0.36;
+    --lvj-input-bg: #12110e;
+    --lvj-input-border: #5e5030;
+    --lvj-progress-bg: #2a2925;
+    --lvj-progress-fill: #d4af37;
+    --lvj-success: #2e7d32;
+    --lvj-warning: #d69e2e;
+    --lvj-error: #c53030;
+    --lvj-info: #123c69;
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -156,6 +198,44 @@
 }
 
 @layer components {
+  .lvj-theme-card {
+    background: var(--lvj-theme-card);
+    color: var(--lvj-card-text);
+    border-color: var(--lvj-theme-border);
+  }
+
+  .lvj-btn-primary {
+    background: var(--lvj-button-primary-bg);
+    color: var(--lvj-button-primary-text);
+    border-color: var(--lvj-button-primary-border);
+  }
+
+  .lvj-btn-secondary {
+    background: var(--lvj-button-secondary-bg);
+    color: var(--lvj-button-secondary-text);
+    border-color: var(--lvj-button-secondary-border);
+  }
+
+  button.bg-gradient-gold,
+  a.bg-gradient-gold {
+    color: var(--lvj-button-primary-text);
+    border-color: var(--lvj-button-primary-border);
+  }
+
+  .lvj-theme-icon {
+    color: var(--lvj-icon);
+  }
+
+  .lvj-theme-icon-mask {
+    background-color: var(--lvj-card-icon);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+  }
+
   .biblia-eink-paper {
     border-color: rgb(75 75 68 / 0.22);
     background-color: #e5e5dd;
