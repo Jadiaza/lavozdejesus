@@ -88,17 +88,17 @@ export const GospelCard = ({
 
   return (
     <article
-      className={`relative overflow-hidden rounded-2xl glass gold-border shadow-deep ${className}`}
+      className={`relative overflow-hidden rounded-2xl gold-border bg-card shadow-deep ${className}`}
     >
       <div className="absolute inset-0">
         <img
           src={bible}
           alt=""
-          className="h-full w-full object-cover opacity-55"
+          className="h-full w-full object-cover opacity-85"
         />
 
-        <div className="absolute inset-0 bg-gradient-to-b from-card/42 via-card/28 to-card/58" />
-        <div className="absolute inset-0 bg-gradient-radial-gold opacity-10 mix-blend-screen" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/10 to-background/55" />
+        <div className="absolute inset-0 bg-gradient-radial-gold opacity-[0.06] mix-blend-screen" />
       </div>
 
       <div className="relative flex h-full flex-col px-5 py-5">
@@ -111,12 +111,12 @@ export const GospelCard = ({
         </div>
 
         <div className="mx-auto flex flex-1 max-w-[22rem] flex-col justify-center">
-          <p className="text-center text-[15px] font-semibold leading-snug text-foreground/95 sm:text-base">
+          <p className="text-center text-[15px] font-semibold leading-snug text-foreground sm:text-base [text-shadow:0_2px_8px_rgba(0,0,0,0.9)]">
             {palabraDisplay.frase}
           </p>
 
           {palabraDisplay.referencia && (
-            <p className="mt-3 text-left text-sm font-semibold leading-tight text-gold">
+            <p className="mt-3 text-left text-sm font-semibold leading-tight text-gold [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
               {palabraDisplay.referencia}
             </p>
           )}
