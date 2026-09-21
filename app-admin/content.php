@@ -1698,6 +1698,133 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           : 'No se pudo actualizar la capilla. Revisa los datos e intenta nuevamente.';
       }
     }
+  } elseif ($table === 'lvj_cfg_apariencia' && $action === 'import_themes') {
+    try {
+      $upload = $_FILES['themes_json'] ?? null;
+      if (!is_array($upload) || (int) ($upload['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+        throw new RuntimeException('Selecciona un archivo JSON válido.');
+      }
+
+      $tmpName = (string) ($upload['tmp_name'] ?? '');
+      $originalName = (string) ($upload['name'] ?? '');
+      $size = (int) ($upload['size'] ?? 0);
+      if ($tmpName === '' || !is_uploaded_file($tmpName)) {
+        throw new RuntimeException('No fue posible validar el archivo subido.');
+      }
+      if ($size <= 0 || $size > 1024 * 1024) {
+        throw new RuntimeException('El archivo JSON debe pesar menos de 1 MB.');
+      }
+      if (strtolower(pathinfo($originalName, PATHINFO_EXTENSION)) !== 'json') {
+        throw new RuntimeException('El archivo debe tener extensión .json.');
+      }
+
+      $raw = file_get_contents($tmpName);
+      if ($raw === false || trim($raw) === '') {
+        throw new RuntimeException('El archivo JSON está vacío.');
+      }
+
+      $payload = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+      $themes = is_array($payload['themes'] ?? null) ? $payload['themes'] : (is_array($payload) ? $payload : []);
+      if (!$themes) {
+        throw new RuntimeException('El JSON no contiene una colección de temas.');
+      }
+
+      $map = content_column_map($columns);
+      $allowedFields = [
+        'emisora_id',
+        'nombre_tema',
+        'color_primario',
+        'color_secundario',
+        'color_acento',
+        'color_texto',
+        'color_fondo',
+        'color_card',
+        'color_borde',
+        'tipografia_titulos',
+        'tipografia_texto',
+        'modo',
+      ];
+      $allowedFields = array_values(array_filter($allowedFields, static fn($field) => isset($map[$field])));
+
+      if (!in_array('nombre_tema', $allowedFields, true)) {
+        throw new RuntimeException('La tabla lvj_cfg_apariencia no contiene nombre_tema.');
+      }
+
+      $defaultEmitterId = max(1, (int) ($payload['default_emisora_id'] ?? 1));
+      $imported = 0;
+      $skipped = 0;
+      $pdo->beginTransaction();
+
+      foreach ($themes as $theme) {
+        if (!is_array($theme)) {
+          $skipped++;
+          continue;
+        }
+
+        $name = trim((string) ($theme['nombre_tema'] ?? ''));
+        $emitterId = max(1, (int) ($theme['emisora_id'] ?? $defaultEmitterId));
+        if ($name === '') {
+          $skipped++;
+          continue;
+        }
+
+        $duplicateStmt = $pdo->prepare('SELECT id FROM lvj_cfg_apariencia WHERE emisora_id = :emisora_id AND LOWER(TRIM(nombre_tema)) = LOWER(TRIM(:nombre_tema)) LIMIT 1');
+        $duplicateStmt->execute([
+          'emisora_id' => $emitterId,
+          'nombre_tema' => $name,
+        ]);
+        if ($duplicateStmt->fetchColumn()) {
+          $skipped++;
+          continue;
+        }
+
+        $data = [];
+        foreach ($allowedFields as $field) {
+          if ($field === 'emisora_id') {
+            $data[$field] = $emitterId;
+            continue;
+          }
+          if (array_key_exists($field, $theme)) {
+            $data[$field] = is_string($theme[$field]) ? trim($theme[$field]) : $theme[$field];
+          }
+        }
+
+        foreach (['color_primario', 'color_secundario', 'color_acento', 'color_texto', 'color_fondo', 'color_card', 'color_borde'] as $colorField) {
+          if (!isset($data[$colorField]) || $data[$colorField] === '') continue;
+          if (!preg_match('/^#[0-9a-fA-F]{6}$/', (string) $data[$colorField])) {
+            throw new RuntimeException('El tema "' . $name . '" contiene un color inválido en ' . $colorField . '.');
+          }
+          $data[$colorField] = strtoupper((string) $data[$colorField]);
+        }
+
+        if (isset($map['activo'])) {
+          $data['activo'] = 0;
+        }
+
+        $fields = array_keys($data);
+        if (!$fields) {
+          $skipped++;
+          continue;
+        }
+
+        $placeholders = array_map(static fn($field) => ':' . $field, $fields);
+        $stmt = $pdo->prepare('INSERT INTO lvj_cfg_apariencia (`' . implode('`,`', $fields) . '`) VALUES (' . implode(',', $placeholders) . ')');
+        $stmt->execute($data);
+        $imported++;
+      }
+
+      $pdo->commit();
+      log_activity('import_themes', $table, null, 'Temas importados: ' . $imported . '; omitidos: ' . $skipped);
+      header('Location: content.php?module=' . urlencode($moduleKey) . '&table=' . urlencode($table) . '&imported=' . $imported . '&skipped=' . $skipped);
+      exit;
+    } catch (Throwable $themeImportError) {
+      if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+      }
+      $error = $themeImportError instanceof JsonException
+        ? 'El archivo no contiene JSON válido.'
+        : $themeImportError->getMessage();
+    }
   } elseif ($table === 'lvj_cfg_apariencia' && in_array($action, ['activate_theme', 'duplicate_theme'], true)) {
     $id = (int) ($_POST['id'] ?? 0);
     if ($id <= 0) {
@@ -1915,6 +2042,14 @@ if (isset($_GET['saved'])) {
 if (isset($_GET['synced'])) {
   $message = 'Sincronizacion completada: ' . max(0, (int) $_GET['synced']) . ' cuentas revisadas.';
 }
+if ($table === 'lvj_cfg_apariencia' && isset($_GET['imported'])) {
+  $message = 'Importación completada: ' . max(0, (int) $_GET['imported']) . ' temas creados';
+  $skippedThemes = max(0, (int) ($_GET['skipped'] ?? 0));
+  if ($skippedThemes > 0) {
+    $message .= ' y ' . $skippedThemes . ' omitidos por duplicado o datos incompletos';
+  }
+  $message .= '. El tema activo actual se conservó.';
+}
 
 if ($editId > 0 && $columns) {
   try {
@@ -2059,6 +2194,15 @@ require __DIR__ . '/includes/header.php';
       <?php elseif ($columns && !$readOnly): ?>
         <?php if ($table === 'lvj_ora_oraciones'): ?>
           <a class="btn btn-soft" href="importar-oraciones-devocionario.php">Importar colección</a>
+        <?php endif; ?>
+        <?php if ($table === 'lvj_cfg_apariencia'): ?>
+          <form method="post" enctype="multipart/form-data" class="theme-import-form" data-theme-import-form>
+            <?php echo csrf_field(); ?>
+            <input type="hidden" name="action" value="import_themes">
+            <input type="hidden" name="table" value="lvj_cfg_apariencia">
+            <input type="file" name="themes_json" accept=".json,application/json" hidden data-theme-json-input>
+            <button class="btn btn-soft" type="button" data-theme-json-trigger>Importar JSON</button>
+          </form>
         <?php endif; ?>
         <a class="btn btn-gold add-record-button" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&action=new"><span>+</span> <?php echo $table === 'lvj_cfg_apariencia' ? 'Nuevo tema' : 'Agregar registro'; ?></a>
       <?php endif; ?>
@@ -2433,6 +2577,23 @@ require __DIR__ . '/includes/header.php';
 <?php if ($table === 'lvj_cfg_apariencia'): ?>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+  var importForm = document.querySelector('[data-theme-import-form]');
+  var importInput = document.querySelector('[data-theme-json-input]');
+  var importTrigger = document.querySelector('[data-theme-json-trigger]');
+  if (importForm && importInput && importTrigger) {
+    importTrigger.addEventListener('click', function () {
+      importInput.click();
+    });
+    importInput.addEventListener('change', function () {
+      if (!importInput.files || !importInput.files.length) return;
+      if (window.confirm('¿Importar los temas del archivo JSON? El tema activo actual no cambiará.')) {
+        importForm.submit();
+      } else {
+        importInput.value = '';
+      }
+    });
+  }
+
   var preview = document.querySelector('[data-theme-preview]');
   var map = {
     color_primario: '--preview-primary',
