@@ -24,22 +24,35 @@ type MenuItem = {
   description?: string;
   to: string;
   icon: typeof Settings;
+  external?: boolean;
 };
 
 const Section = ({ title, items }: { title: string; items: MenuItem[] }) => (
   <section className="mt-7">
     <h2 className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.24em] text-[#D4AF37]">{title}</h2>
     <div className="divide-y divide-white/[0.07] border-y border-white/[0.07]">
-      {items.map(({ label, description, to, icon: Icon }) => (
-        <Link key={label} to={to} className="flex min-h-[62px] items-center gap-3 px-1 py-2.5 transition hover:bg-white/[0.025]">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#D4AF37]/[0.08] text-[#D4AF37]"><Icon className="h-5 w-5" strokeWidth={1.7} /></span>
-          <span className="min-w-0 flex-1">
-            <strong className="block text-sm font-semibold text-[#F8F5EA]">{label}</strong>
-            {description && <span className="mt-0.5 block text-[11px] leading-4 text-[#8F897C]">{description}</span>}
-          </span>
-          <ChevronRight className="h-4 w-4 shrink-0 text-[#D4AF37]/60" />
-        </Link>
-      ))}
+      {items.map(({ label, description, to, icon: Icon, external }) => {
+        const content = (
+          <>
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#D4AF37]/[0.08] text-[#D4AF37]"><Icon className="h-5 w-5" strokeWidth={1.7} /></span>
+            <span className="min-w-0 flex-1">
+              <strong className="block text-sm font-semibold text-[#F8F5EA]">{label}</strong>
+              {description && <span className="mt-0.5 block text-[11px] leading-4 text-[#8F897C]">{description}</span>}
+            </span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-[#D4AF37]/60" />
+          </>
+        );
+
+        return external ? (
+          <a key={label} href={to} target="_blank" rel="noreferrer" className="flex min-h-[62px] items-center gap-3 px-1 py-2.5 transition hover:bg-white/[0.025]">
+            {content}
+          </a>
+        ) : (
+          <Link key={label} to={to} className="flex min-h-[62px] items-center gap-3 px-1 py-2.5 transition hover:bg-white/[0.025]">
+            {content}
+          </Link>
+        );
+      })}
     </div>
   </section>
 );
@@ -63,7 +76,7 @@ export default function More() {
   const help: MenuItem[] = [
     { label: "Ayuda y contacto", description: "Comunícate con La Voz de Jesús", to: "/contacto", icon: HelpCircle },
     { label: "Acerca de LVJPRAYER", description: "Misión e identidad de la aplicación", to: "/acerca-de", icon: Info },
-    { label: "Política de privacidad", to: "/politica-de-privacidad", icon: ShieldCheck },
+    { label: "Política de privacidad", description: "Consulta la política vigente de La Voz de Jesús", to: "https://panelapp.lavozdejesus.co/privacy_policy.php", icon: ShieldCheck, external: true },
     { label: "Términos y condiciones", to: "/terminos-y-condiciones", icon: FileText },
   ];
 
