@@ -87,13 +87,13 @@ const PrayerHomeHeader = () => (
 
 const PrayerNav = ({ active = "Oraciones", theme = "oscuro" }: { active?: string; theme?: ReadingTheme }) => {
   const items = [[Home, "Inicio", "/"], [Bell, "Oraciones", "/oraciones"], [BookOpen, "Liturgia", "/oraciones/liturgia"], [Heart, "Favoritos", "/oraciones/mis-oraciones"], [Settings, "Ajustes", "/oraciones/recordatorios"]] as const;
-  const palette = theme === "light"
-    ? { background: "#f3eee3", inactive: "#4b5563", active: "#9a6a10", border: "rgba(138,97,18,.28)" }
-    : theme === "sepia"
-      ? { background: "#e4d3b2", inactive: "#554938", active: "#7c5416", border: "rgba(124,84,22,.32)" }
-      : theme === "contrast"
-        ? { background: "#000000", inactive: "#ffffff", active: "#ffd54f", border: "rgba(255,213,79,.38)" }
-        : { background: "#061018", inactive: "rgba(255,255,255,.70)", active: "#efbd52", border: "rgba(216,167,64,.25)" };
+  const sharedTheme = READING_THEME_PALETTES[theme];
+  const palette = {
+    background: sharedTheme.surface,
+    inactive: sharedTheme.muted,
+    active: sharedTheme.accent,
+    border: sharedTheme.border,
+  };
   return <nav style={{ backgroundColor: palette.background, borderColor: palette.border }} className="fixed inset-x-0 bottom-0 z-30 mx-auto min-h-[4.4rem] max-w-[430px] border-t px-2 pb-[max(.65rem,env(safe-area-inset-bottom))] pt-2.5 shadow-[0_-8px_24px_rgba(0,0,0,.12)]"><div className="flex justify-around">{items.map(([Icon, label, to]) => <Link key={label} to={to} onClick={tactileFeedback} style={{ color: active === label ? palette.active : palette.inactive }} className="flex min-w-0 flex-1 flex-col items-center gap-1 text-[9px] font-medium transition active:scale-95"><Icon className="h-[20px] w-[20px]" strokeWidth={active === label ? 2.3 : 1.65} />{label}</Link>)}</div></nav>;
 };
 
