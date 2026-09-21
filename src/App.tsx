@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { RadioPlayerProvider } from "@/context/RadioPlayerContext";
 import Index from "./pages/Index.tsx";
 import PrayerReminderScheduler from "@/modules/prayers/components/PrayerReminderScheduler";
+import AppThemeSync from "@/features/theme/AppThemeSync";
 
 const RosarioHome = lazy(() => import("@/modules/rosary/pages/RosarioHome"));
 const RosarioModalidad = lazy(() => import("@/modules/rosary/pages/RosarioModalidad"));
@@ -79,6 +80,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <RadioPlayerProvider>
+        <AppThemeSync />
         <PrayerReminderScheduler />
         <BrowserRouter>
           <Suspense fallback={<div className="min-h-screen bg-background" aria-label="Cargando contenido" />}>
