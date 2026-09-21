@@ -26,7 +26,7 @@ const defaultItems = [
   { icon: Radio, label: "Radio", to: "/radio" },
   { icon: HandHeart, label: "Oracion", to: "/oraciones" },
   { icon: CalendarRange, label: "Programas", to: "/programacion" },
-  { icon: MoreHorizontal, label: "Mas", to: "/" },
+  { icon: MoreHorizontal, label: "Mas", to: "/mas" },
 ];
 
 const capillaItems = [
@@ -34,7 +34,7 @@ const capillaItems = [
   { icon: Radio, label: "Radio", to: "/radio" },
   { icon: Church, label: "Capilla", to: "/capilla" },
   { icon: BookOpen, label: "Biblia", to: "/biblia" },
-  { icon: MoreHorizontal, label: "Mas", to: "/" },
+  { icon: MoreHorizontal, label: "Mas", to: "/mas" },
 ];
 
 const podcastItems = [
@@ -42,7 +42,7 @@ const podcastItems = [
   { icon: Radio, label: "Radio", to: "/radio" },
   { icon: Church, label: "Capilla", to: "/capilla" },
   { icon: Headphones, label: "Podcast", to: "/podcast" },
-  { icon: MoreHorizontal, label: "Mas", to: "/" },
+  { icon: MoreHorizontal, label: "Mas", to: "/mas" },
 ];
 
 export const BottomNav = ({
