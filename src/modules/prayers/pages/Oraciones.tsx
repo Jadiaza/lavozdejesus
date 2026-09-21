@@ -6,9 +6,10 @@ import {
   Shield, ShieldCheck, Sparkles, Sun, Volume2,
 } from "lucide-react";
 import liturgyHoursHero from "@/assets/liturgy-hours-hero.webp";
-import PrayerFormatSheet from "../components/PrayerFormatSheet";
+import ReadingSettingsSheet from "@/features/reading/ReadingSettingsSheet";
+import { READING_THEME_PALETTES, type ReadingTheme } from "@/features/reading/readingPreferences";
+import { useReadingPreferences } from "@/features/reading/useReadingPreferences";
 import { PrayerReader } from "../components/PrayerReader";
-import { usePrayerPreferences } from "../hooks/usePrayerPreferences";
 import { liturgyHoursService } from "../services/liturgyHoursService";
 import type { LiturgyHourResponse, LiturgyParagraph } from "../types/liturgyHours";
 import {
@@ -84,7 +85,7 @@ const PrayerHomeHeader = () => (
   </header>
 );
 
-const PrayerNav = ({ active = "Oraciones", theme = "dark" }: { active?: string; theme?: "dark" | "light" | "sepia" | "contrast" }) => {
+const PrayerNav = ({ active = "Oraciones", theme = "oscuro" }: { active?: string; theme?: ReadingTheme }) => {
   const items = [[Home, "Inicio", "/"], [Bell, "Oraciones", "/oraciones"], [BookOpen, "Liturgia", "/oraciones/liturgia"], [Heart, "Favoritos", "/oraciones/mis-oraciones"], [Settings, "Ajustes", "/oraciones/recordatorios"]] as const;
   const palette = theme === "light"
     ? { background: "#f3eee3", inactive: "#4b5563", active: "#9a6a10", border: "rgba(138,97,18,.28)" }
@@ -147,14 +148,14 @@ export function LiturgiaReader() {
   const [loading, setLoading] = useState(true);
   const [reload, setReload] = useState(0);
   const [formatOpen, setFormatOpen] = useState(false);
-  const { preferences, update, reset } = usePrayerPreferences();
-  const readingTheme = preferences.theme === "light"
-    ? { background: "#fffdf7", color: "#1f2933", header: "rgba(255,253,247,.96)", accent: "#8a6112" }
-    : preferences.theme === "sepia"
-      ? { background: "#f2e6cc", color: "#3f3124", header: "rgba(242,230,204,.96)", accent: "#7c5416" }
-      : preferences.theme === "contrast"
-        ? { background: "#000000", color: "#ffffff", header: "rgba(0,0,0,.96)", accent: "#ffd54f" }
-        : { background: "#030a10", color: "#f6f0e6", header: "rgba(4,16,25,.94)", accent: "#efbd52" };
+  const { preferences } = useReadingPreferences();
+  const sharedReadingTheme = READING_THEME_PALETTES[preferences.tema];
+  const readingTheme = {
+    background: sharedReadingTheme.background,
+    color: sharedReadingTheme.text,
+    header: preferences.tema === "claro" ? "rgba(255,253,248,.96)" : preferences.tema === "sepia" ? "rgba(238,233,217,.96)" : "rgba(5,5,5,.94)",
+    accent: sharedReadingTheme.accent,
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -194,9 +195,9 @@ export function LiturgiaReader() {
           <footer className="mt-10 border-t border-current/20 pt-4 text-center text-xs opacity-55">Fuente: {content.fuente.nombre} · Presentado por LVJPRAYER</footer>
         </PrayerReader> : null}
       </main>
-      <PrayerNav active="Liturgia" theme={preferences.theme} />
+      <PrayerNav active="Liturgia" theme={preferences.tema} />
     </div>
-    <PrayerFormatSheet open={formatOpen} preferences={preferences} onChange={update} onReset={reset} onClose={() => setFormatOpen(false)} />
+    <ReadingSettingsSheet open={formatOpen} onClose={() => setFormatOpen(false)} eyebrow="Oraciones" />
   </div>;
 }
 
@@ -266,21 +267,14 @@ export function OracionDetalle() {
   const [downloaded, setDownloaded] = useState(false);
   const [prayedToday, setPrayedToday] = useState(false);
   const [dailyCount, setDailyCount] = useState(0);
-  const { preferences, update, reset } = usePrayerPreferences();
-  const titleColor = preferences.theme === "light"
-    ? "#8a6112"
-    : preferences.theme === "sepia"
-      ? "#7c5416"
-      : preferences.theme === "contrast"
-        ? "#ffd54f"
-        : "#efbd52";
-  const readingTheme = preferences.theme === "light"
-    ? { background: "#fffdf7", color: "#1f2933", header: "rgba(255,253,247,.94)" }
-    : preferences.theme === "sepia"
-      ? { background: "#f2e6cc", color: "#3f3124", header: "rgba(242,230,204,.94)" }
-      : preferences.theme === "contrast"
-        ? { background: "#000000", color: "#ffffff", header: "rgba(0,0,0,.94)" }
-        : { background: "#030a10", color: "#f6f0e6", header: "rgba(4,16,25,.90)" };
+  const { preferences } = useReadingPreferences();
+  const sharedReadingTheme = READING_THEME_PALETTES[preferences.tema];
+  const titleColor = sharedReadingTheme.accent;
+  const readingTheme = {
+    background: sharedReadingTheme.background,
+    color: sharedReadingTheme.text,
+    header: preferences.tema === "claro" ? "rgba(255,253,248,.94)" : preferences.tema === "sepia" ? "rgba(238,233,217,.94)" : "rgba(5,5,5,.90)",
+  };
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true); setError("");
@@ -378,9 +372,9 @@ export function OracionDetalle() {
           <p className="mt-3 text-center text-xs opacity-60">Hoy has rezado {dailyCount} {dailyCount === 1 ? "oración" : "oraciones"}</p>
         </> : null}
       </main>
-      <PrayerNav active="Oraciones" theme={preferences.theme} />
+      <PrayerNav active="Oraciones" theme={preferences.tema} />
     </div>
-    <PrayerFormatSheet open={formatOpen} preferences={preferences} onChange={update} onReset={reset} onClose={() => setFormatOpen(false)} />
+    <ReadingSettingsSheet open={formatOpen} onClose={() => setFormatOpen(false)} eyebrow="Oraciones" />
   </div>;
 }
 
