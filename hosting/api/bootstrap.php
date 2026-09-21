@@ -77,9 +77,14 @@ function lvj_json_response(array $payload, int $status = 200): void
       }
     }
   }
-  header($requestMethod === 'GET' && !$hasAuthorization
+  $forceNoStore = defined('LVJ_FORCE_NO_STORE') && LVJ_FORCE_NO_STORE === true;
+  header(!$forceNoStore && $requestMethod === 'GET' && !$hasAuthorization
     ? 'Cache-Control: public, max-age=300, stale-while-revalidate=3600'
-    : 'Cache-Control: no-store');
+    : 'Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+  if ($forceNoStore) {
+    header('Pragma: no-cache');
+    header('Expires: 0');
+  }
 
   $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
   $allowedOrigins = [
