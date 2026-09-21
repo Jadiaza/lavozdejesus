@@ -157,11 +157,36 @@ require __DIR__ . '/includes/header.php';
       <a class="btn btn-soft" href="https://panelapp.lavozdejesus.co/privacy_policy.php" target="_blank" rel="noopener">Ver publicación</a>
     </div>
 
-    <label class="legal-editor-field">
-      Contenido
-      <span class="field-help">Puedes usar encabezados, párrafos, negritas, listas y enlaces.</span>
-      <textarea name="app_privacy_policy" rows="24" spellcheck="true"><?php echo e((string) ($row['app_privacy_policy'] ?? '')); ?></textarea>
-    </label>
+    <div class="legal-editor-field" data-legal-editor>
+      <div class="legal-editor-heading">
+        <div>
+          <strong>Contenido</strong>
+          <span class="field-help">Edita en vista normal o revisa directamente el HTML.</span>
+        </div>
+        <div class="legal-view-tabs" role="tablist" aria-label="Vista del editor de política de privacidad">
+          <button type="button" class="active" data-editor-mode="visual" aria-selected="true">Vista normal</button>
+          <button type="button" data-editor-mode="html" aria-selected="false">HTML</button>
+        </div>
+      </div>
+
+      <div class="legal-rich-toolbar" data-editor-toolbar aria-label="Herramientas de formato">
+        <button type="button" data-command="bold" title="Negrita"><strong>B</strong></button>
+        <button type="button" data-command="italic" title="Cursiva"><em>I</em></button>
+        <button type="button" data-command="underline" title="Subrayado"><u>U</u></button>
+        <span class="legal-toolbar-separator"></span>
+        <button type="button" data-block="h2" title="Título">H2</button>
+        <button type="button" data-block="h3" title="Subtítulo">H3</button>
+        <button type="button" data-block="p" title="Párrafo">P</button>
+        <span class="legal-toolbar-separator"></span>
+        <button type="button" data-command="insertUnorderedList" title="Lista con viñetas">• Lista</button>
+        <button type="button" data-command="insertOrderedList" title="Lista numerada">1. Lista</button>
+        <button type="button" data-command="createLink" title="Insertar enlace">Enlace</button>
+        <button type="button" data-command="removeFormat" title="Limpiar formato">Limpiar</button>
+      </div>
+
+      <div class="legal-visual-editor" data-visual-editor contenteditable="true" spellcheck="true" aria-label="Editor visual de política de privacidad"><?php echo (string) ($row['app_privacy_policy'] ?? ''); ?></div>
+      <textarea class="legal-html-editor" data-html-editor name="app_privacy_policy" rows="24" spellcheck="false" hidden><?php echo e((string) ($row['app_privacy_policy'] ?? '')); ?></textarea>
+    </div>
   </section>
 
   <section class="panel legal-document-card">
@@ -174,11 +199,36 @@ require __DIR__ . '/includes/header.php';
       <a class="btn btn-soft" href="https://panelapp.lavozdejesus.co/term_of_use.php" target="_blank" rel="noopener">Ver publicación</a>
     </div>
 
-    <label class="legal-editor-field">
-      Contenido
-      <span class="field-help">El formulario actualiza directamente <code>settings.app_term_of_use</code>.</span>
-      <textarea name="app_term_of_use" rows="24" spellcheck="true"><?php echo e((string) ($row['app_term_of_use'] ?? '')); ?></textarea>
-    </label>
+    <div class="legal-editor-field" data-legal-editor>
+      <div class="legal-editor-heading">
+        <div>
+          <strong>Contenido</strong>
+          <span class="field-help">Edita en vista normal o revisa directamente el HTML.</span>
+        </div>
+        <div class="legal-view-tabs" role="tablist" aria-label="Vista del editor de términos y condiciones">
+          <button type="button" class="active" data-editor-mode="visual" aria-selected="true">Vista normal</button>
+          <button type="button" data-editor-mode="html" aria-selected="false">HTML</button>
+        </div>
+      </div>
+
+      <div class="legal-rich-toolbar" data-editor-toolbar aria-label="Herramientas de formato">
+        <button type="button" data-command="bold" title="Negrita"><strong>B</strong></button>
+        <button type="button" data-command="italic" title="Cursiva"><em>I</em></button>
+        <button type="button" data-command="underline" title="Subrayado"><u>U</u></button>
+        <span class="legal-toolbar-separator"></span>
+        <button type="button" data-block="h2" title="Título">H2</button>
+        <button type="button" data-block="h3" title="Subtítulo">H3</button>
+        <button type="button" data-block="p" title="Párrafo">P</button>
+        <span class="legal-toolbar-separator"></span>
+        <button type="button" data-command="insertUnorderedList" title="Lista con viñetas">• Lista</button>
+        <button type="button" data-command="insertOrderedList" title="Lista numerada">1. Lista</button>
+        <button type="button" data-command="createLink" title="Insertar enlace">Enlace</button>
+        <button type="button" data-command="removeFormat" title="Limpiar formato">Limpiar</button>
+      </div>
+
+      <div class="legal-visual-editor" data-visual-editor contenteditable="true" spellcheck="true" aria-label="Editor visual de términos y condiciones"><?php echo (string) ($row['app_term_of_use'] ?? ''); ?></div>
+      <textarea class="legal-html-editor" data-html-editor name="app_term_of_use" rows="24" spellcheck="false" hidden><?php echo e((string) ($row['app_term_of_use'] ?? '')); ?></textarea>
+    </div>
   </section>
 
   <div class="legal-sticky-actions">
@@ -187,5 +237,99 @@ require __DIR__ . '/includes/header.php';
   </div>
 </form>
 <?php endif; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var form = document.querySelector('.legal-admin-form');
+  var editors = Array.from(document.querySelectorAll('[data-legal-editor]'));
+
+  editors.forEach(function (editor) {
+    var visual = editor.querySelector('[data-visual-editor]');
+    var html = editor.querySelector('[data-html-editor]');
+    var toolbar = editor.querySelector('[data-editor-toolbar]');
+    var modeButtons = Array.from(editor.querySelectorAll('[data-editor-mode]'));
+
+    if (!visual || !html) return;
+
+    function syncVisualToHtml() {
+      html.value = visual.innerHTML.trim();
+    }
+
+    function syncHtmlToVisual() {
+      visual.innerHTML = html.value;
+    }
+
+    function setMode(mode) {
+      var visualMode = mode === 'visual';
+      if (visualMode) syncHtmlToVisual();
+      else syncVisualToHtml();
+
+      visual.hidden = !visualMode;
+      html.hidden = visualMode;
+      if (toolbar) toolbar.hidden = !visualMode;
+
+      modeButtons.forEach(function (button) {
+        var active = button.getAttribute('data-editor-mode') === mode;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+    }
+
+    modeButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        setMode(button.getAttribute('data-editor-mode') || 'visual');
+      });
+    });
+
+    if (toolbar) {
+      toolbar.addEventListener('mousedown', function (event) {
+        if (event.target.closest('button')) event.preventDefault();
+      });
+
+      toolbar.addEventListener('click', function (event) {
+        var button = event.target.closest('button');
+        if (!button) return;
+
+        visual.focus();
+
+        var block = button.getAttribute('data-block');
+        if (block) {
+          document.execCommand('formatBlock', false, block);
+          syncVisualToHtml();
+          return;
+        }
+
+        var command = button.getAttribute('data-command');
+        if (!command) return;
+
+        if (command === 'createLink') {
+          var url = window.prompt('Escribe la URL del enlace:');
+          if (!url) return;
+          var safeUrl = /^https?:\/\//i.test(url) || /^mailto:/i.test(url) ? url : 'https://' + url;
+          document.execCommand('createLink', false, safeUrl);
+        } else {
+          document.execCommand(command, false);
+        }
+
+        syncVisualToHtml();
+      });
+    }
+
+    visual.addEventListener('input', syncVisualToHtml);
+    html.addEventListener('input', syncHtmlToVisual);
+    setMode('visual');
+  });
+
+  if (form) {
+    form.addEventListener('submit', function () {
+      editors.forEach(function (editor) {
+        var visual = editor.querySelector('[data-visual-editor]');
+        var html = editor.querySelector('[data-html-editor]');
+        if (visual && html && !visual.hidden) html.value = visual.innerHTML.trim();
+      });
+    });
+  }
+});
+</script>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>
