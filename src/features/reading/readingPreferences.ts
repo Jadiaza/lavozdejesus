@@ -43,12 +43,63 @@ const STORAGE_KEY = "prefsLectura";
 
 export async function loadReadingPreferences(): Promise<ReadingPreferences> {
   const saved = await getMeta<Partial<ReadingPreferences> & { fuente?: ReadingFont | "bookerly" }>(STORAGE_KEY);
-  if (!saved) return DEFAULT_READING_PREFERENCES;
-  return {
-    ...DEFAULT_READING_PREFERENCES,
-    ...saved,
-    fuente: !saved.fuente || saved.fuente === "bookerly" ? "literata" : saved.fuente,
-  };
+  if (saved) {
+    return {
+      ...DEFAULT_READING_PREFERENCES,
+      ...saved,
+      fuente: !saved.fuente || saved.fuente === "bookerly" ? "literata" : saved.fuente,
+    };
+  }
+
+  // Compatibilidad hacia atrás: migra una sola vez las preferencias locales
+  // que Oraciones y Liturgia guardaban antes de compartir prefsLectura.
+  if (typeof window !== "undefined") {
+    try {
+      const prayerRaw = window.localStorage.getItem("lvj-prayer-preferences-v1");
+      if (prayerRaw) {
+        const legacy = JSON.parse(prayerRaw) as {
+          theme?: string;
+          font?: string;
+          fontSize?: number;
+          alignment?: string;
+          lineHeight?: number;
+          focusedWidth?: boolean;
+        };
+        const migrated: ReadingPreferences = {
+          ...DEFAULT_READING_PREFERENCES,
+          tema: legacy.theme === "light" ? "claro" : legacy.theme === "sepia" ? "sepia" : "oscuro",
+          fuente: legacy.font === "sans" ? "sans" : legacy.font === "serif" ? "georgia" : "literata",
+          tam: Math.min(26, Math.max(13, Number(legacy.fontSize) || DEFAULT_READING_PREFERENCES.tam)),
+          interlineado: Number(legacy.lineHeight) || DEFAULT_READING_PREFERENCES.interlineado,
+          alineacion: legacy.alignment === "justify" ? "justificada" : "izquierda",
+          margenLectura: legacy.focusedWidth ? "amplio" : "normal",
+        };
+        await setMeta(STORAGE_KEY, migrated);
+        return migrated;
+      }
+
+      const liturgyRaw = window.localStorage.getItem("lvj_liturgia_reading_preferences_v1");
+      if (liturgyRaw) {
+        const legacy = JSON.parse(liturgyRaw) as {
+          theme?: string;
+          fontSize?: number;
+          alignment?: string;
+        };
+        const migrated: ReadingPreferences = {
+          ...DEFAULT_READING_PREFERENCES,
+          tema: legacy.theme === "claro" ? "claro" : legacy.theme === "sepia" ? "sepia" : "oscuro",
+          tam: Math.min(26, Math.max(13, Number(legacy.fontSize) || DEFAULT_READING_PREFERENCES.tam)),
+          alineacion: legacy.alignment === "justify" ? "justificada" : "izquierda",
+        };
+        await setMeta(STORAGE_KEY, migrated);
+        return migrated;
+      }
+    } catch {
+      // Si una preferencia legacy está dañada, se conservan los valores oficiales.
+    }
+  }
+
+  return DEFAULT_READING_PREFERENCES;
 }
 
 export async function saveReadingPreferences(value: ReadingPreferences): Promise<void> {
