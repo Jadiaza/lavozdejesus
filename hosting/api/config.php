@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+define('LVJ_FORCE_NO_STORE', true);
 require __DIR__ . '/bootstrap.php';
 
 try {
