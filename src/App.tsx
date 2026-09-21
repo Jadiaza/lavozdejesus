@@ -58,6 +58,9 @@ const BibliaLibros = lazy(() => import("./pages/biblia/BibliaLibros.tsx"));
 const BibliaFavoritos = lazy(() => import("./pages/biblia/BibliaFavoritos.tsx"));
 const BibliaMiBiblia = lazy(() => import("./pages/biblia/BibliaMiBiblia.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
+const More = lazy(() => import("./pages/More.tsx"));
+const Settings = lazy(() => import("./pages/Settings.tsx"));
+const ReadingSettings = lazy(() => import("./pages/ReadingSettings.tsx"));
 const AcercaDe = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.AcercaDe })));
 const Devociones = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Devociones })));
 const Donar = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Donar })));
@@ -107,6 +110,9 @@ const App = () => (
               <Route path="/biblia/planes/:planId" element={<BibliaPlanDetalle />} />
               <Route path="/biblia/planes/:planId/jornada/:dia" element={<BibliaPlanJornada />} />
               <Route path="/biblia/:section" element={<BibliaProximamente />} />
+              <Route path="/mas" element={<More />} />
+              <Route path="/configuraciones" element={<Settings />} />
+              <Route path="/configuraciones/lectura" element={<ReadingSettings />} />
               <Route path="/acceso" element={<Auth />} />
               <Route path="/acceso/recuperar" element={<Auth />} />
               <Route path="/devociones" element={<Devociones />} />
