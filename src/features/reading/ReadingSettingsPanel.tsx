@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { AlignJustify, AlignLeft, Check, RotateCcw } from "lucide-react";
 import {
   DEFAULT_READING_PREFERENCES,
@@ -108,7 +108,7 @@ export default function ReadingSettingsPanel() {
 
           <SettingRow label="Ancho">
             <div className="grid flex-1 grid-cols-3 gap-2">
-              {([["amplio", "Amplio"], ["normal", "Normal"], ["estrecho", "Estrecho"]] as Array<[ReadingWidth, string]>).map(([value, label]) => (
+              {([["estrecho", "Amplio"], ["normal", "Normal"], ["amplio", "Estrecho"]] as Array<[ReadingWidth, string]>).map(([value, label]) => (
                 <button key={value} type="button" onClick={() => update({ margenLectura: value })} className={`min-h-12 rounded-lg border text-[10px] ${prefs.margenLectura === value ? selected : idle}`}>{label}</button>
               ))}
             </div>
@@ -138,6 +138,6 @@ export default function ReadingSettingsPanel() {
   );
 }
 
-function SettingRow({ label, children }: { label: string; children: React.ReactNode }) {
+function SettingRow({ label, children }: { label: string; children: ReactNode }) {
   return <div className="flex min-h-20 items-center gap-3 py-3"><span className="w-20 shrink-0 text-xs text-[#C9C3B3]">{label}</span>{children}</div>;
 }
