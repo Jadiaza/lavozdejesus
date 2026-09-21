@@ -94,11 +94,11 @@ export const GospelCard = ({
         <img
           src={bible}
           alt=""
-          className="h-full w-full object-cover opacity-85"
+          className="h-full w-full object-cover"
         />
 
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/10 to-background/55" />
-        <div className="absolute inset-0 bg-gradient-radial-gold opacity-[0.06] mix-blend-screen" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,5,0.56)_0%,rgba(5,5,5,0.42)_45%,rgba(5,5,5,0.24)_72%,rgba(5,5,5,0.12)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background/30 to-transparent" />
       </div>
 
       <div className="relative flex h-full flex-col px-5 py-5">
