@@ -342,6 +342,10 @@ function content_editable_columns(array $columns, string $table = ''): array
       return false;
     }
 
+    if ($table === 'lvj_cfg_apariencia' && $field === 'activo') {
+      return false;
+    }
+
     return !content_is_auto_column($column) && !content_is_derived_column($table, $field);
   }));
 }
@@ -1389,7 +1393,7 @@ function content_inactive_filter(array $columns, string $table = ''): string
 {
   $map = content_column_map($columns);
 
-  if ($table === 'lvj_com_usuarios') {
+  if (in_array($table, ['lvj_com_usuarios', 'lvj_cfg_apariencia'], true)) {
     return '';
   }
 
@@ -1796,6 +1800,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!$error && $table === 'lvj_cfg_apariencia') {
+      if ($id <= 0 && content_has_column($columns, 'activo')) {
+        $data['activo'] = 0;
+      }
       foreach (['color_primario', 'color_secundario', 'color_acento', 'color_texto', 'color_fondo', 'color_card', 'color_borde'] as $colorField) {
         if (!array_key_exists($colorField, $data)) continue;
         $colorValue = trim((string) $data[$colorField]);
@@ -1871,7 +1878,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           throw new RuntimeException('No puedes eliminar el tema general activo. Activa otro tema primero.');
         }
       }
-      $stmt = content_delete_statement($pdo, $table, $primaryColumn, $columns);
+      if ($table === 'lvj_cfg_apariencia') {
+        $stmt = $pdo->prepare("DELETE FROM lvj_cfg_apariencia WHERE {$primaryColumn} = :id AND activo = 0 LIMIT 1");
+      } else {
+        $stmt = content_delete_statement($pdo, $table, $primaryColumn, $columns);
+      }
       $stmt->execute(['id' => $id]);
       log_activity('delete', $table, $id, 'Registro eliminado o desactivado');
       header('Location: content.php?module=' . urlencode($moduleKey) . '&table=' . urlencode($table) . '&deleted=1');
@@ -1973,7 +1984,9 @@ try {
     $offset = ($page - 1) * $perPage;
     $orderSql = $table === 'lvj_capillas' && content_has_column($columns, 'prioridad')
       ? " ORDER BY prioridad ASC, {$primaryColumn} DESC"
-      : " ORDER BY {$primaryColumn} DESC";
+      : ($table === 'lvj_cfg_apariencia'
+        ? " ORDER BY activo DESC, {$primaryColumn} DESC"
+        : " ORDER BY {$primaryColumn} DESC");
     $stmt = $pdo->prepare("SELECT * FROM {$table}{$whereSql}{$orderSql} LIMIT {$perPage} OFFSET {$offset}");
     $stmt->execute($params);
     $rows = $stmt->fetchAll();
