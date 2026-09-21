@@ -17,6 +17,13 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/lvdj/Logo";
+import ReadingSettingsSheet from "@/features/reading/ReadingSettingsSheet";
+import {
+  READING_FONT_FAMILIES,
+  READING_THEME_PALETTES,
+  type ReadingPreferences,
+} from "@/features/reading/readingPreferences";
+import { useReadingPreferences } from "@/features/reading/useReadingPreferences";
 import {
   LectioDivina,
   LiturgiaDia,
@@ -33,69 +40,6 @@ import {
 
 type LecturasTab = "liturgia" | "santo" | "reflexion";
 type ReadingRenderMode = "normal" | "ordo" | "psalm";
-type ReadingAlignment = "left" | "justify";
-
-type LiturgiaTheme = "oscuro" | "claro" | "sepia";
-
-interface LiturgiaReadingPreferences {
-  fontSize: 16 | 18 | 21 | 24;
-  alignment: ReadingAlignment;
-  theme: LiturgiaTheme;
-}
-
-const DEFAULT_READING_PREFERENCES: LiturgiaReadingPreferences = {
-  fontSize: 18,
-  alignment: "left",
-  theme: "oscuro",
-};
-
-const LITURGIA_THEMES: Record<
-  LiturgiaTheme,
-  {
-    label: string;
-    background: string;
-    surface: string;
-    soft: string;
-    text: string;
-    muted: string;
-    border: string;
-    nav: string;
-  }
-> = {
-  oscuro: {
-    label: "Oscuro",
-    background: "#050505",
-    surface: "#0d1117",
-    soft: "#111111",
-    text: "#f8f5ea",
-    muted: "#b8b2a6",
-    border: "rgba(212,175,55,.28)",
-    nav: "rgba(5,5,5,.96)",
-  },
-  claro: {
-    label: "Claro",
-    background: "#f8f5ea",
-    surface: "#fffdf8",
-    soft: "#f3eadb",
-    text: "#082347",
-    muted: "#536174",
-    border: "#e6d8bf",
-    nav: "rgba(255,253,248,.96)",
-  },
-  sepia: {
-    label: "Tinta",
-    background: "#e7e1cf",
-    surface: "#eee9d9",
-    soft: "#ddd5bf",
-    text: "#20211d",
-    muted: "#5f5b4d",
-    border: "rgba(95,91,77,.34)",
-    nav: "rgba(231,225,207,.96)",
-  },
-};
-
-const READING_PREFERENCES_KEY = "lvj_liturgia_reading_preferences_v1";
-
 const tabLabels: Record<LecturasTab, string> = {
   liturgia: "Liturgia",
   santo: "Santo",
@@ -271,7 +215,7 @@ const ContentCard = ({
   featured = false,
   integrated = false,
   mode = "normal",
-  readingPreferences = DEFAULT_READING_PREFERENCES,
+  readingPreferences,
 }: {
   id?: string;
   title: string;
@@ -282,7 +226,7 @@ const ContentCard = ({
   featured?: boolean;
   integrated?: boolean;
   mode?: ReadingRenderMode;
-  readingPreferences?: LiturgiaReadingPreferences;
+  readingPreferences: ReadingPreferences;
 }) => {
   if (!text && !response) return null;
 
@@ -352,8 +296,11 @@ const ContentCard = ({
             integrated ? "mt-6" : "mt-5"
           }`}
           style={{
-            fontSize: `${readingPreferences.fontSize}px`,
-            textAlign: readingPreferences.alignment,
+            fontFamily: READING_FONT_FAMILIES[readingPreferences.fuente],
+            fontSize: `${readingPreferences.tam}px`,
+            fontWeight: readingPreferences.pesoFuente,
+            lineHeight: readingPreferences.interlineado,
+            textAlign: readingPreferences.alineacion === "justificada" ? "justify" : "left",
           }}
         >
           {renderReadingText(text, mode)}
@@ -434,7 +381,7 @@ const SantoView = ({
   readingPreferences,
 }: {
   santo: SantoDelDia | null;
-  readingPreferences: LiturgiaReadingPreferences;
+  readingPreferences: ReadingPreferences;
 }) => {
   if (!santo?.nombre) {
     return (
@@ -478,8 +425,11 @@ const SantoView = ({
               <div
                 className="mt-5 leading-[1.78] text-[var(--lit-text)]"
                 style={{
-                  fontSize: `${readingPreferences.fontSize}px`,
-                  textAlign: readingPreferences.alignment,
+                  fontFamily: READING_FONT_FAMILIES[readingPreferences.fuente],
+                  fontSize: `${readingPreferences.tam}px`,
+                  fontWeight: readingPreferences.pesoFuente,
+                  lineHeight: readingPreferences.interlineado,
+                  textAlign: readingPreferences.alineacion === "justificada" ? "justify" : "left",
                 }}
               >
                 {renderReadingText(santo.resumen)}
@@ -517,7 +467,7 @@ const ReflectionView = ({
 }: {
   lectio: LectioDivina | null;
   liturgia: LiturgiaDia | null;
-  readingPreferences: LiturgiaReadingPreferences;
+  readingPreferences: ReadingPreferences;
 }) => {
   const content = {
     reflexion: lectio?.reflexion || liturgia?.reflexion || "",
@@ -601,45 +551,7 @@ const LecturasDelDia = () => {
     });
   };
 
-  const [readingPreferences, setReadingPreferences] =
-    useState<LiturgiaReadingPreferences>(() => {
-      if (typeof window === "undefined") return DEFAULT_READING_PREFERENCES;
-
-      try {
-        const raw = window.localStorage.getItem(READING_PREFERENCES_KEY);
-        if (!raw) return DEFAULT_READING_PREFERENCES;
-
-        const parsed = JSON.parse(raw) as Partial<LiturgiaReadingPreferences>;
-        const fontSize = [16, 18, 21, 24].includes(Number(parsed.fontSize))
-          ? (Number(parsed.fontSize) as LiturgiaReadingPreferences["fontSize"])
-          : DEFAULT_READING_PREFERENCES.fontSize;
-        const alignment =
-          parsed.alignment === "justify" ? "justify" : "left";
-        const theme: LiturgiaTheme =
-          parsed.theme === "claro" || parsed.theme === "sepia"
-            ? parsed.theme
-            : "oscuro";
-
-        return { fontSize, alignment, theme };
-      } catch {
-        return DEFAULT_READING_PREFERENCES;
-      }
-    });
-
-  const updateReadingPreferences = (
-    next: Partial<LiturgiaReadingPreferences>,
-  ) => {
-    setReadingPreferences((current) => {
-      const value = { ...current, ...next };
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(
-          READING_PREFERENCES_KEY,
-          JSON.stringify(value),
-        );
-      }
-      return value;
-    });
-  };
+  const { preferences: readingPreferences } = useReadingPreferences();
 
   useEffect(() => {
     let mounted = true;
@@ -714,7 +626,12 @@ const LecturasDelDia = () => {
   const palabraHoy =
     liturgia?.palabra_hoy || "La Palabra para hoy estará disponible pronto.";
   const dateCard = formatDateCard(selectedDate);
-  const activeTheme = LITURGIA_THEMES[readingPreferences.theme];
+  const sharedTheme = READING_THEME_PALETTES[readingPreferences.tema];
+  const activeTheme = {
+    ...sharedTheme,
+    soft: readingPreferences.tema === "claro" ? "#F3EADB" : readingPreferences.tema === "sepia" ? "#DDD5BF" : "#111111",
+    nav: sharedTheme.surface,
+  };
 
   return (
     <main
@@ -965,127 +882,11 @@ const LecturasDelDia = () => {
         </div>
       </div>
 
-      {settingsOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-end bg-black/35 md:hidden">
-          <button
-            type="button"
-            aria-label="Cerrar configuración"
-            className="absolute inset-0"
-            onClick={() => setSettingsOpen(false)}
-          />
-          <section
-            className="relative w-full rounded-t-[28px] border-t border-[var(--lit-border)] bg-[var(--lit-surface)] px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5 shadow-[0_-18px_50px_-30px_rgba(8,35,71,0.55)]"
-            aria-label="Configuración de lectura"
-          >
-            <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-[#d8c49d]" />
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#b17a12]">
-                  Configuración
-                </p>
-                <h2 className="mt-1 text-xl font-extrabold text-[var(--lit-text)]">
-                  Aa · Formato de texto
-                </h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSettingsOpen(false)}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--lit-border)] bg-[var(--lit-surface)] text-[var(--lit-text)]"
-                aria-label="Cerrar configuración"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="mt-6 space-y-6">
-              <fieldset>
-                <legend className="mb-3 text-sm font-extrabold text-[var(--lit-muted)]">
-                  Tema
-                </legend>
-                <div className="grid grid-cols-3 gap-2">
-                  {(Object.keys(LITURGIA_THEMES) as LiturgiaTheme[]).map((theme) => (
-                    <button
-                      key={theme}
-                      type="button"
-                      onClick={() => updateReadingPreferences({ theme })}
-                      className={`min-h-20 rounded-xl border p-2 text-xs font-bold transition ${
-                        readingPreferences.theme === theme
-                          ? "border-[#d4af37] bg-[#d4af37]/15 text-[#d4af37]"
-                          : "border-[var(--lit-border)] text-[var(--lit-muted)]"
-                      }`}
-                    >
-                      <span
-                        className={`mx-auto mb-2 block h-9 w-9 rounded-full border ${
-                          theme === "claro"
-                            ? "border-stone-300 bg-[#f8f5ea]"
-                            : theme === "sepia"
-                              ? "border-[#756e5d] bg-[#e7e1cf]"
-                              : "border-stone-700 bg-[#111111]"
-                        }`}
-                      />
-                      {LITURGIA_THEMES[theme].label}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-
-              <fieldset>
-                <legend className="mb-3 text-sm font-extrabold text-[var(--lit-muted)]">
-                  Tamaño del texto
-                </legend>
-                <div className="grid grid-cols-4 gap-2">
-                  {([
-                    [16, "Pequeño"],
-                    [18, "Normal"],
-                    [21, "Grande"],
-                    [24, "Muy grande"],
-                  ] as const).map(([size, label]) => (
-                    <button
-                      key={size}
-                      type="button"
-                      onClick={() => updateReadingPreferences({ fontSize: size })}
-                      className={`min-h-12 rounded-xl border px-2 text-xs font-bold transition ${
-                        readingPreferences.fontSize === size
-                          ? "border-[#b17a12] bg-[#d4af37] text-[var(--lit-text)]"
-                          : "border-[var(--lit-border)] bg-[var(--lit-surface)] text-[var(--lit-muted)]"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-
-              <fieldset>
-                <legend className="mb-3 text-sm font-extrabold text-[var(--lit-muted)]">
-                  Alineación
-                </legend>
-                <div className="grid grid-cols-2 gap-3">
-                  {([
-                    ["left", "Izquierda"],
-                    ["justify", "Justificada"],
-                  ] as const).map(([alignment, label]) => (
-                    <button
-                      key={alignment}
-                      type="button"
-                      onClick={() =>
-                        updateReadingPreferences({ alignment })
-                      }
-                      className={`min-h-12 rounded-xl border px-4 text-sm font-bold transition ${
-                        readingPreferences.alignment === alignment
-                          ? "border-[#b17a12] bg-[#d4af37] text-[var(--lit-text)]"
-                          : "border-[var(--lit-border)] bg-[var(--lit-surface)] text-[var(--lit-muted)]"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-            </div>
-          </section>
-        </div>
-      )}
+      <ReadingSettingsSheet
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        eyebrow="Liturgia"
+      />
 
       <nav
         className="fixed inset-x-0 bottom-0 z-[900] border-t border-[var(--lit-border)] bg-[var(--lit-nav)] pb-[max(0.4rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_-24px_rgba(8,35,71,0.45)] backdrop-blur md:hidden"
