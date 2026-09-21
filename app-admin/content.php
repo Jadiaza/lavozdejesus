@@ -987,6 +987,19 @@ function content_field_html(PDO $pdo, string $table, array $column, array $row =
   $required = $isRequired ? ' required' : '';
   $fieldClass = content_field_class($field, $type);
 
+  if ($table === 'lvj_cfg_apariencia' && strpos($field, 'color_') === 0) {
+    $colorValue = trim((string) $value);
+    if (!preg_match('/^#[0-9a-fA-F]{6}$/', $colorValue)) {
+      $colorValue = '#D4AF37';
+    }
+
+    return '<label class="content-field theme-color-field">' . e($label)
+      . '<span class="theme-color-control">'
+      . '<input type="color" value="' . e($colorValue) . '" data-theme-color-picker="' . e($field) . '" aria-label="' . e($label) . '">'
+      . '<input type="text" name="' . e($field) . '" value="' . e($colorValue) . '" pattern="^#[0-9A-Fa-f]{6}$" maxlength="7" data-theme-color-text="' . e($field) . '"' . $required . '>'
+      . '</span></label>';
+  }
+
   if ($table === 'lvj_ora_oraciones' && $field === 'tipo') {
     return content_select_html($field, $label, $value ?: 'independiente', [
       ['value' => 'independiente', 'label' => 'Oración independiente'],
@@ -1674,6 +1687,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           : 'No se pudo actualizar la capilla. Revisa los datos e intenta nuevamente.';
       }
     }
+  } elseif ($table === 'lvj_cfg_apariencia' && in_array($action, ['activate_theme', 'duplicate_theme'], true)) {
+    $id = (int) ($_POST['id'] ?? 0);
+    if ($id <= 0) {
+      $error = 'Tema no válido.';
+    } else {
+      try {
+        $themeStmt = $pdo->prepare('SELECT * FROM lvj_cfg_apariencia WHERE id = :id LIMIT 1');
+        $themeStmt->execute(['id' => $id]);
+        $themeRow = $themeStmt->fetch();
+        if (!$themeRow) {
+          throw new RuntimeException('El tema seleccionado no existe.');
+        }
+
+        if ($action === 'activate_theme') {
+          $emitterId = (int) ($themeRow['emisora_id'] ?? 0);
+          if ($emitterId <= 0) {
+            throw new RuntimeException('El tema no tiene una emisora asociada.');
+          }
+
+          $pdo->beginTransaction();
+          $off = $pdo->prepare('UPDATE lvj_cfg_apariencia SET activo = 0' . content_update_timestamp_clause($columns) . ' WHERE emisora_id = :emisora_id');
+          $off->execute(['emisora_id' => $emitterId]);
+          $on = $pdo->prepare('UPDATE lvj_cfg_apariencia SET activo = 1' . content_update_timestamp_clause($columns) . ' WHERE id = :id AND emisora_id = :emisora_id LIMIT 1');
+          $on->execute(['id' => $id, 'emisora_id' => $emitterId]);
+          $pdo->commit();
+
+          log_activity('activate_theme', $table, $id, 'Tema general activado para LVJPRAYER');
+          header('Location: content.php?module=' . urlencode($moduleKey) . '&table=' . urlencode($table) . '&saved=theme_activated');
+          exit;
+        }
+
+        $map = content_column_map($columns);
+        $copy = [];
+        foreach ($editableColumns as $column) {
+          $field = (string) $column['Field'];
+          $copy[$field] = $themeRow[$field] ?? ($column['Default'] ?? null);
+        }
+        if (isset($copy['nombre_tema'])) {
+          $copy['nombre_tema'] = trim((string) $copy['nombre_tema']) . ' copia';
+        }
+        if (isset($map['activo'])) {
+          $copy['activo'] = 0;
+        }
+
+        $fields = array_keys($copy);
+        $placeholders = array_map(static fn($field) => ':' . $field, $fields);
+        $stmt = $pdo->prepare('INSERT INTO lvj_cfg_apariencia (' . implode(', ', $fields) . ') VALUES (' . implode(', ', $placeholders) . ')');
+        $stmt->execute($copy);
+        $newId = (int) $pdo->lastInsertId();
+        log_activity('duplicate_theme', $table, $newId, 'Tema duplicado desde #' . $id);
+        header('Location: content.php?module=' . urlencode($moduleKey) . '&table=' . urlencode($table) . '&edit=' . $newId . '&saved=theme_duplicated');
+        exit;
+      } catch (Throwable $themeError) {
+        if ($pdo->inTransaction()) {
+          $pdo->rollBack();
+        }
+        $error = $themeError->getMessage();
+      }
+    }
   } elseif ($table === 'lvj_com_usuarios' && $action === 'sync_supabase') {
     try {
       $synced = content_sync_supabase_users($pdo, $columns);
@@ -1719,6 +1791,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $duplicateStmt->execute($duplicateParams);
         if ($duplicateStmt->fetchColumn()) {
           $error = 'Ya existe un santo registrado con ese nombre.';
+        }
+      }
+    }
+
+    if (!$error && $table === 'lvj_cfg_apariencia') {
+      foreach (['color_primario', 'color_secundario', 'color_acento', 'color_texto', 'color_fondo', 'color_card', 'color_borde'] as $colorField) {
+        if (!array_key_exists($colorField, $data)) continue;
+        $colorValue = trim((string) $data[$colorField]);
+        if ($colorValue !== '' && !preg_match('/^#[0-9a-fA-F]{6}$/', $colorValue)) {
+          $error = 'El valor de ' . content_label($colorField) . ' debe usar formato hexadecimal #RRGGBB.';
+          break;
         }
       }
     }
@@ -1781,6 +1864,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   } elseif ($action === 'delete') {
     $id = (int) ($_POST['id'] ?? 0);
     try {
+      if ($table === 'lvj_cfg_apariencia') {
+        $activeStmt = $pdo->prepare('SELECT activo FROM lvj_cfg_apariencia WHERE id = :id LIMIT 1');
+        $activeStmt->execute(['id' => $id]);
+        if ((int) $activeStmt->fetchColumn() === 1) {
+          throw new RuntimeException('No puedes eliminar el tema general activo. Activa otro tema primero.');
+        }
+      }
       $stmt = content_delete_statement($pdo, $table, $primaryColumn, $columns);
       $stmt->execute(['id' => $id]);
       log_activity('delete', $table, $id, 'Registro eliminado o desactivado');
@@ -1798,7 +1888,11 @@ if (isset($_GET['deleted'])) {
 if (isset($_GET['saved'])) {
   $message = $_GET['saved'] === 'activated'
     ? 'La capilla y su stream principal están activos en la aplicación.'
-    : ($_GET['saved'] === 'updated' ? 'Registro actualizado.' : 'Registro creado.');
+    : ($_GET['saved'] === 'theme_activated'
+      ? 'Tema general activado. LVJPRAYER lo recibirá desde la configuración oficial.'
+      : ($_GET['saved'] === 'theme_duplicated'
+        ? 'Tema duplicado. Puedes editarlo antes de activarlo.'
+        : ($_GET['saved'] === 'updated' ? 'Registro actualizado.' : 'Registro creado.')));
 }
 if (isset($_GET['synced'])) {
   $message = 'Sincronizacion completada: ' . max(0, (int) $_GET['synced']) . ' cuentas revisadas.';
@@ -1930,7 +2024,9 @@ require __DIR__ . '/includes/header.php';
         ? 'Consulta las cuentas registradas, su confirmacion de correo y controla el acceso al estudio biblico con IA.'
         : ($table === 'lvj_ora_oraciones'
           ? 'Administra oraciones independientes o vinculadas a una devoción. El texto, la presentación y el estado editorial quedan preparados para LVJPRAYER.'
-          : 'Gestiona el contenido que luego consumira la app. La vista principal muestra registros; los formularios se abren solo para crear o editar.'); ?></p>
+          : ($table === 'lvj_cfg_apariencia'
+            ? 'Administra visualmente las máscaras generales de LVJPRAYER. Solo el tema marcado como activo se aplica globalmente; las preferencias Aa de lectura siguen siendo independientes.'
+            : 'Gestiona el contenido que luego consumira la app. La vista principal muestra registros; los formularios se abren solo para crear o editar.')); ?></p>
     </div>
     <div class="content-actions-bar">
       <?php if ($table === 'lvj_com_usuarios' && $columns): ?>
@@ -1944,7 +2040,7 @@ require __DIR__ . '/includes/header.php';
         <?php if ($table === 'lvj_ora_oraciones'): ?>
           <a class="btn btn-soft" href="importar-oraciones-devocionario.php">Importar colección</a>
         <?php endif; ?>
-        <a class="btn btn-gold add-record-button" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&action=new"><span>+</span> Agregar registro</a>
+        <a class="btn btn-gold add-record-button" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&action=new"><span>+</span> <?php echo $table === 'lvj_cfg_apariencia' ? 'Nuevo tema' : 'Agregar registro'; ?></a>
       <?php endif; ?>
     </div>
   </div>
@@ -1966,6 +2062,31 @@ require __DIR__ . '/includes/header.php';
 
     <?php if ($table === 'lvj_com_usuarios'): ?>
       <div class="alert alert-success">La contraseña se administra de forma segura en Supabase Auth. Este panel no la muestra, no la recibe y no la almacena en MySQL.</div>
+    <?php endif; ?>
+
+    <?php if ($table === 'lvj_cfg_apariencia'): ?>
+      <?php
+        $previewPrimary = (string) ($editRow['color_primario'] ?? '#D4AF37');
+        $previewSecondary = (string) ($editRow['color_secundario'] ?? '#0B1F33');
+        $previewAccent = (string) ($editRow['color_acento'] ?? '#D4AF37');
+        $previewText = (string) ($editRow['color_texto'] ?? '#F8F5EA');
+        $previewBg = (string) ($editRow['color_fondo'] ?? '#03070F');
+        $previewCard = (string) ($editRow['color_card'] ?? '#111722');
+        $previewBorder = (string) ($editRow['color_borde'] ?? '#3D3422');
+      ?>
+      <div class="theme-editor-layout">
+        <div class="theme-editor-note">
+          <strong>Apariencia general de la app</strong>
+          <span>Este tema controla la máscara institucional de LVJPRAYER. No modifica Oscuro, Claro o Tinta de las pantallas de lectura ni elimina los botones Aa existentes.</span>
+        </div>
+        <div class="theme-phone-preview" data-theme-preview style="--preview-primary:<?php echo e($previewPrimary); ?>;--preview-secondary:<?php echo e($previewSecondary); ?>;--preview-accent:<?php echo e($previewAccent); ?>;--preview-text:<?php echo e($previewText); ?>;--preview-bg:<?php echo e($previewBg); ?>;--preview-card:<?php echo e($previewCard); ?>;--preview-border:<?php echo e($previewBorder); ?>">
+          <div class="theme-phone-top"><span>La Voz de Jesús</span><b>LVJPRAYER</b></div>
+          <div class="theme-phone-hero"><span>EN VIVO</span><strong>Radio Católica</strong><small>Alabando y anunciando al Señor</small></div>
+          <div class="theme-phone-card"><i></i><div><strong>Capilla Virtual</strong><small>Adoración Eucarística</small></div></div>
+          <div class="theme-phone-card"><i></i><div><strong>Palabra de Dios</strong><small>Lecturas y formación</small></div></div>
+          <div class="theme-phone-nav"><span>Inicio</span><span>Radio</span><span>Oración</span><span>Más</span></div>
+        </div>
+      </div>
     <?php endif; ?>
 
     <?php if ($table === 'lvj_ora_oraciones'): ?>
@@ -2048,6 +2169,93 @@ require __DIR__ . '/includes/header.php';
   </section>
 <?php endif; ?>
 
+<?php if ($table === 'lvj_cfg_apariencia'): ?>
+<section class="panel content-records-panel content-grid-card theme-library">
+  <div class="panel-header content-list-header">
+    <div>
+      <h2>Temas de la aplicación</h2>
+      <p class="muted">Selecciona visualmente la máscara general. Guardar o duplicar no cambia la app hasta pulsar Activar.</p>
+    </div>
+    <span class="badge records-badge"><?php echo (int) $totalRows; ?> temas</span>
+  </div>
+
+  <div class="theme-admin-grid">
+    <?php foreach ($rows as $row): ?>
+      <?php
+        $themeActive = (int) ($row['activo'] ?? 0) === 1;
+        $themePrimary = (string) ($row['color_primario'] ?? '#D4AF37');
+        $themeSecondary = (string) ($row['color_secundario'] ?? '#0B1F33');
+        $themeAccent = (string) ($row['color_acento'] ?? '#D4AF37');
+        $themeText = (string) ($row['color_texto'] ?? '#F8F5EA');
+        $themeBg = (string) ($row['color_fondo'] ?? '#03070F');
+        $themeCard = (string) ($row['color_card'] ?? '#111722');
+        $themeBorder = (string) ($row['color_borde'] ?? '#3D3422');
+      ?>
+      <article class="theme-admin-card<?php echo $themeActive ? ' is-active' : ''; ?>">
+        <div class="theme-card-preview" style="--preview-primary:<?php echo e($themePrimary); ?>;--preview-secondary:<?php echo e($themeSecondary); ?>;--preview-accent:<?php echo e($themeAccent); ?>;--preview-text:<?php echo e($themeText); ?>;--preview-bg:<?php echo e($themeBg); ?>;--preview-card:<?php echo e($themeCard); ?>;--preview-border:<?php echo e($themeBorder); ?>">
+          <div class="theme-card-header"><i></i><span>LVJPRAYER</span></div>
+          <div class="theme-card-hero"><strong>La Voz de Jesús</strong><small>Radio Católica</small></div>
+          <div class="theme-card-row"><i></i><span></span></div>
+          <div class="theme-card-row"><i></i><span></span></div>
+          <div class="theme-card-bottom"><b></b><b></b><b></b><b></b></div>
+        </div>
+
+        <div class="theme-card-body">
+          <div class="theme-card-title">
+            <div>
+              <strong><?php echo e((string) ($row['nombre_tema'] ?? ('Tema #' . $row['id']))); ?></strong>
+              <small><?php echo e((string) ($row['modo'] ?? 'Tema general')); ?></small>
+            </div>
+            <?php if ($themeActive): ?><span class="status-pill status-active">Activo</span><?php endif; ?>
+          </div>
+
+          <div class="theme-swatches" aria-label="Paleta del tema">
+            <?php foreach ([$themePrimary, $themeSecondary, $themeAccent, $themeBg, $themeCard] as $swatch): ?>
+              <span style="background:<?php echo e($swatch); ?>"></span>
+            <?php endforeach; ?>
+          </div>
+
+          <div class="theme-card-actions">
+            <a class="action-button action-edit" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&edit=<?php echo (int) $row['id']; ?>">Editar</a>
+            <?php if (!$themeActive): ?>
+              <form method="post" onsubmit="return confirm('¿Activar este tema como apariencia general de LVJPRAYER?');">
+                <?php echo csrf_field(); ?>
+                <input type="hidden" name="action" value="activate_theme">
+                <input type="hidden" name="table" value="lvj_cfg_apariencia">
+                <input type="hidden" name="id" value="<?php echo (int) $row['id']; ?>">
+                <button class="action-button theme-activate-button" type="submit">Activar</button>
+              </form>
+            <?php endif; ?>
+            <form method="post">
+              <?php echo csrf_field(); ?>
+              <input type="hidden" name="action" value="duplicate_theme">
+              <input type="hidden" name="table" value="lvj_cfg_apariencia">
+              <input type="hidden" name="id" value="<?php echo (int) $row['id']; ?>">
+              <button class="action-button" type="submit">Duplicar</button>
+            </form>
+            <?php if (!$themeActive): ?>
+              <form method="post" onsubmit="return confirm('¿Eliminar o desactivar este tema?');">
+                <?php echo csrf_field(); ?>
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="table" value="lvj_cfg_apariencia">
+                <input type="hidden" name="id" value="<?php echo (int) $row['id']; ?>">
+                <button class="action-button action-delete danger-action" type="submit">Eliminar</button>
+              </form>
+            <?php endif; ?>
+          </div>
+        </div>
+      </article>
+    <?php endforeach; ?>
+
+    <?php if (!$rows): ?>
+      <div class="theme-empty-state">
+        <strong>Aún no hay temas configurados.</strong>
+        <span>Crea el primer tema general de LVJPRAYER.</span>
+      </div>
+    <?php endif; ?>
+  </div>
+</section>
+<?php else: ?>
 <section class="panel content-records-panel content-grid-card">
   <div class="panel-header content-list-header">
     <div>
@@ -2199,5 +2407,42 @@ require __DIR__ . '/includes/header.php';
     <?php endif; ?>
   </div>
 </section>
+
+<?php endif; // lvj_cfg_apariencia custom library ?>
+
+<?php if ($table === 'lvj_cfg_apariencia'): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var preview = document.querySelector('[data-theme-preview]');
+  var map = {
+    color_primario: '--preview-primary',
+    color_secundario: '--preview-secondary',
+    color_acento: '--preview-accent',
+    color_texto: '--preview-text',
+    color_fondo: '--preview-bg',
+    color_card: '--preview-card',
+    color_borde: '--preview-border'
+  };
+
+  Object.keys(map).forEach(function (field) {
+    var picker = document.querySelector('[data-theme-color-picker="' + field + '"]');
+    var textInput = document.querySelector('[data-theme-color-text="' + field + '"]');
+    if (!picker || !textInput) return;
+
+    var apply = function (value) {
+      if (!/^#[0-9a-fA-F]{6}$/.test(value)) return;
+      picker.value = value;
+      textInput.value = value.toUpperCase();
+      if (preview) preview.style.setProperty(map[field], value);
+    };
+
+    picker.addEventListener('input', function () { apply(picker.value); });
+    textInput.addEventListener('input', function () {
+      if (/^#[0-9a-fA-F]{6}$/.test(textInput.value)) apply(textInput.value);
+    });
+  });
+});
+</script>
+<?php endif; ?>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>
