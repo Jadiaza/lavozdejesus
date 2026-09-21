@@ -65,6 +65,8 @@
     --lvj-ivory: #f8f5ea;
     --lvj-ivory-muted: #c9c3b4;
     --lvj-sacred-border: rgb(212 175 55 / 0.26);
+    --lvj-font-title: 'Cormorant Garamond', Georgia, serif;
+    --lvj-font-text: 'Montserrat', Arial, sans-serif;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -142,12 +144,12 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--lvj-font-text, 'Montserrat', sans-serif);
     font-feature-settings: "ss01", "cv11";
   }
 
  h1, h2, h3, h4 {
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--lvj-font-title, 'Cormorant Garamond', Georgia, serif);
   font-weight: 700;
   letter-spacing: 0;
   }
