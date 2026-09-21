@@ -5734,3 +5734,27 @@ Panel Administrativo
             ├── Configuración
             └── Auditoría
 ```
+
+
+---
+
+## Control visual global de LVJPRAYER (septiembre de 2026)
+
+La apariencia institucional de la aplicación se administra exclusivamente desde `lvj_cfg_apariencia`.
+No se crearán tablas paralelas para temas visuales.
+
+Reglas obligatorias:
+
+- Solo un tema puede estar activo por `emisora_id`.
+- La activación se realiza desde `app-admin → Configuración → Apariencia`.
+- La PWA consume el tema activo mediante `/api/config`.
+- Los temas globales controlan fondo, superficies, tarjetas, botones, iconos, navegación,
+  formularios, progreso, estados, bordes, overlays y tipografías.
+- Las preferencias personales de lectura continúan separadas en `prefsLectura`;
+  no deben ser sustituidas por el tema global.
+- Los nuevos campos visuales se agregan mediante migraciones idempotentes y nunca se
+  ejecutan automáticamente en producción.
+- Los endpoints deben tolerar temporalmente el esquema anterior mientras la migración
+  aún no se haya aplicado.
+- Los componentes compartidos deben consumir variables CSS del tema y evitar colores
+  hardcodeados cuando el elemento pertenezca a la apariencia institucional.
