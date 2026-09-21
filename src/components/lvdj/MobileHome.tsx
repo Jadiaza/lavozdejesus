@@ -37,7 +37,7 @@ const MobileHomeAdFallback = () => (
 
       <Link
         to="/contacto"
-        className="shrink-0 rounded-full bg-gradient-gold px-4 py-2 text-xs font-extrabold text-navy-deep shadow-gold active:scale-95"
+        className="shrink-0 rounded-full bg-accent px-4 py-2 text-xs font-extrabold text-accent-foreground shadow-gold active:scale-95"
       >
         Paute aqui
       </Link>
@@ -116,7 +116,7 @@ export const MobileHome = () => {
         <section className="relative z-10 -mt-7 px-4">
           <Link
             to="/capilla"
-            className="group flex min-h-[88px] items-center gap-3 rounded-2xl border border-gold/45 bg-gradient-to-br from-[#f6c54a] via-[#e2a925] to-[#b98012] px-3 py-4 text-[#070b14] shadow-[0_18px_42px_rgba(0,0,0,0.38)] transition active:scale-[0.985] min-[380px]:min-h-[92px] min-[380px]:gap-4 min-[380px]:p-4"
+            className="group flex min-h-[88px] items-center gap-3 rounded-2xl border border-accent/70 bg-accent px-3 py-4 text-accent-foreground shadow-[0_18px_42px_rgba(0,0,0,0.38)] transition active:scale-[0.985] min-[380px]:min-h-[92px] min-[380px]:gap-4 min-[380px]:p-4"
             aria-label="Entrar a la Capilla Virtual"
           >
             <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-navy-deep shadow-[inset_0_0_0_1px_rgba(246,197,74,0.45),0_8px_22px_rgba(0,0,0,0.28)] min-[380px]:h-16 min-[380px]:w-16">
@@ -132,10 +132,10 @@ export const MobileHome = () => {
                 <span className="min-[380px]:hidden">Capilla</span>
                 <span className="hidden min-[380px]:inline">Entrar a la Capilla</span>
               </span>
-              <span className="mt-1.5 block truncate whitespace-nowrap text-[0.78rem] font-semibold leading-[1.1] text-black/82 min-[380px]:hidden">
+              <span className="mt-1.5 block truncate whitespace-nowrap text-[0.78rem] font-semibold leading-[1.1] text-accent-foreground/80 min-[380px]:hidden">
                 {"Adoraci\u00f3n 24/7"}
               </span>
-              <span className="mt-1.5 hidden truncate whitespace-nowrap text-[0.9rem] font-semibold leading-[1.1] text-black/82 min-[380px]:block">
+              <span className="mt-1.5 hidden truncate whitespace-nowrap text-[0.9rem] font-semibold leading-[1.1] text-accent-foreground/80 min-[380px]:block">
                 {"Adoraci\u00f3n Eucar\u00edstica 24/7"}
               </span>
             </span>
