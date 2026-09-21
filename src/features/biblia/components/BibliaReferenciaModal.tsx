@@ -12,6 +12,11 @@ import {
   type BibliaReferenciaResuelta,
 } from "@/features/biblia/referenceSearch";
 import {
+  READING_FONT_FAMILIES,
+  READING_THEME_PALETTES,
+} from "@/features/reading/readingPreferences";
+import { useReadingPreferences } from "@/features/reading/useReadingPreferences";
+import {
   getBibliaCapitulo,
   getBibliaCatalogo,
   type BibliaLibro,
@@ -192,6 +197,9 @@ export function BibliaReferenciaContenido({
   const [activeIndex, setActiveIndex] = useState(0);
   const [completed, setCompleted] = useState<number[]>([]);
   const references = useMemo(() => splitReferences(referencia), [referencia]);
+  const { preferences: readingPreferences } = useReadingPreferences();
+  const readingTheme = READING_THEME_PALETTES[readingPreferences.tema];
+  const readingWidth = readingPreferences.margenLectura === "amplio" ? "38rem" : readingPreferences.margenLectura === "normal" ? "48rem" : "56rem";
 
   useEffect(() => {
     let active = true;
@@ -372,9 +380,19 @@ export function BibliaReferenciaContenido({
 
               {isActive ? (
                 <div className="pb-2 pt-3">
-                  <div className="space-y-2.5 px-0.5">
+                  <div className="mx-auto space-y-2.5 px-0.5" style={{ maxWidth: readingWidth }}>
                     {passage.versiculos.map((verse) => (
-                      <p key={verse.id} className="font-display text-[17.5px] leading-[1.58] text-[#E8E2D7]">
+                      <p
+                        key={verse.id}
+                        style={{
+                          color: readingTheme.text,
+                          fontFamily: READING_FONT_FAMILIES[readingPreferences.fuente],
+                          fontSize: `${readingPreferences.tam}px`,
+                          fontWeight: readingPreferences.pesoFuente,
+                          lineHeight: readingPreferences.interlineado,
+                          textAlign: readingPreferences.alineacion === "justificada" ? "justify" : "left",
+                        }}
+                      >
                         <sup className="mr-1 align-super font-sans text-[9.5px] font-bold text-[#D4AF37]">{verse.versiculo}</sup>
                         {verse.texto}
                       </p>
@@ -410,6 +428,8 @@ export function BibliaReferenciaModal({
   const [error, setError] = useState("");
 
   const references = useMemo(() => splitReferences(referencia), [referencia]);
+  const { preferences: readingPreferences } = useReadingPreferences();
+  const readingTheme = READING_THEME_PALETTES[readingPreferences.tema];
 
   useEffect(() => {
     if (!open || books.length > 0) return;
@@ -495,7 +515,7 @@ export function BibliaReferenciaModal({
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[82vh] w-[calc(100%-1.5rem)] max-w-xl overflow-hidden rounded-[1.4rem] border-[#D4AF37]/35 bg-[#090909] p-0 text-[#F8F5EA] shadow-[0_28px_90px_rgba(0,0,0,0.72)]">
+        <DialogContent style={{ backgroundColor: readingTheme.surface, color: readingTheme.text, borderColor: readingTheme.border }} className="max-h-[82vh] w-[calc(100%-1.5rem)] max-w-xl overflow-hidden rounded-[1.4rem] border p-0 shadow-[0_28px_90px_rgba(0,0,0,0.72)]">
           <DialogHeader className="border-b border-[#D4AF37]/15 px-5 pb-4 pt-5 pr-12 text-left">
             <div className="flex items-center gap-2 text-[#D4AF37]">
               <BookOpen className="h-4 w-4" />
@@ -503,10 +523,10 @@ export function BibliaReferenciaModal({
                 Palabra de Dios
               </span>
             </div>
-            <DialogTitle className="font-display text-2xl leading-tight text-[#F8F5EA]">
+            <DialogTitle style={{ color: readingTheme.text }} className="font-display text-2xl leading-tight">
               {referencia}
             </DialogTitle>
-            <DialogDescription className="text-xs text-[#8F897C]">
+            <DialogDescription style={{ color: readingTheme.muted }} className="text-xs">
               Biblia Platense / Straubinger · LVJPRAYER
             </DialogDescription>
           </DialogHeader>
@@ -531,7 +551,7 @@ export function BibliaReferenciaModal({
                     ) : null}
                     <div className="space-y-3">
                       {passage.versiculos.map((verse) => (
-                        <p key={verse.id} className="text-[16px] leading-7 text-[#E6E0D4]">
+                        <p key={verse.id} style={{ color: readingTheme.text, fontFamily: READING_FONT_FAMILIES[readingPreferences.fuente], fontSize: `${readingPreferences.tam}px`, fontWeight: readingPreferences.pesoFuente, lineHeight: readingPreferences.interlineado, textAlign: readingPreferences.alineacion === "justificada" ? "justify" : "left" }}>
                           <sup className="mr-1.5 text-[10px] font-bold text-[#D4AF37]">
                             {verse.versiculo}
                           </sup>
