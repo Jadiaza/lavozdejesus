@@ -94,7 +94,7 @@ export const GospelCard = ({
         <img
           src={bible}
           alt=""
-          className="h-full w-full object-cover"
+          className="h-full w-full scale-[0.92] object-cover object-center"
         />
 
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,5,0.56)_0%,rgba(5,5,5,0.42)_45%,rgba(5,5,5,0.24)_72%,rgba(5,5,5,0.12)_100%)]" />
