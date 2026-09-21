@@ -15,6 +15,20 @@ export interface ReadingPreferences {
   margenLectura: ReadingWidth;
 }
 
+export const READING_FONT_FAMILIES: Record<ReadingFont, string> = {
+  literata: "'Literata', Georgia, serif",
+  georgia: "Georgia, 'Times New Roman', serif",
+  garamond: "'EB Garamond', Garamond, serif",
+  atkinson: "'Atkinson Hyperlegible', Arial, sans-serif",
+  sans: "'Montserrat', system-ui, sans-serif",
+};
+
+export const READING_THEME_PALETTES: Record<ReadingTheme, { background: string; surface: string; text: string; muted: string; accent: string; border: string }> = {
+  oscuro: { background: "#050505", surface: "#0B0B0B", text: "#F8F5EA", muted: "#B8B2A6", accent: "#D4AF37", border: "rgba(212,175,55,.24)" },
+  claro: { background: "#F8F5EA", surface: "#FFFDF8", text: "#17140D", muted: "#665F54", accent: "#9A6A10", border: "rgba(138,97,18,.25)" },
+  sepia: { background: "#E7E1CF", surface: "#EEE9D9", text: "#20211D", muted: "#5F5B4D", accent: "#7C5416", border: "rgba(95,91,77,.34)" },
+};
+
 export const DEFAULT_READING_PREFERENCES: ReadingPreferences = {
   tam: 17,
   tema: "oscuro",
