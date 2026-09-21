@@ -77,7 +77,7 @@ export default function More() {
     { label: "Ayuda y contacto", description: "Comunícate con La Voz de Jesús", to: "/contacto", icon: HelpCircle },
     { label: "Acerca de LVJPRAYER", description: "Misión e identidad de la aplicación", to: "/acerca-de", icon: Info },
     { label: "Política de privacidad", description: "Consulta la política vigente de La Voz de Jesús", to: "https://panelapp.lavozdejesus.co/privacy_policy.php", icon: ShieldCheck, external: true },
-    { label: "Términos y condiciones", to: "/terminos-y-condiciones", icon: FileText },
+    { label: "Términos y condiciones", description: "Consulta las condiciones vigentes de uso", to: "https://panelapp.lavozdejesus.co/term_of_use.php", icon: FileText, external: true },
   ];
 
   return (
