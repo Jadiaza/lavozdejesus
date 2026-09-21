@@ -66,33 +66,71 @@ export function applyAppTheme(config: ThemeConfig) {
   const secondary = normalizeHex(config.color_secundario, "#0B1F33");
   const accent = normalizeHex(config.color_acento, "#D4AF37");
   const text = normalizeHex(config.color_texto, "#FFFFFF");
+  const textMuted = normalizeHex(config.color_texto_secundario, text);
   const background = normalizeHex(config.color_fondo, "#061826");
   const card = normalizeHex(config.color_card, "#102B45");
+  const surface = normalizeHex(config.color_surface, secondary);
   const border = normalizeHex(config.color_borde, "#D4AF37");
-  const accentForeground = readableForeground(accent);
+
+  const icon = normalizeHex(config.color_icono, accent);
+  const iconActive = normalizeHex(config.color_icono_activo, icon);
+  const iconInactive = normalizeHex(config.color_icono_inactivo, textMuted);
+
+  const buttonPrimaryBg = normalizeHex(config.color_boton_primario_fondo, accent);
+  const buttonPrimaryText = normalizeHex(config.color_boton_primario_texto, readableForeground(buttonPrimaryBg));
+  const buttonPrimaryBorder = normalizeHex(config.color_boton_primario_borde, buttonPrimaryBg);
+  const buttonSecondaryBg = normalizeHex(config.color_boton_secundario_fondo, card);
+  const buttonSecondaryText = normalizeHex(config.color_boton_secundario_texto, text);
+  const buttonSecondaryBorder = normalizeHex(config.color_boton_secundario_borde, border);
+
+  const navBg = normalizeHex(config.color_nav_fondo, background);
+  const navBorder = normalizeHex(config.color_nav_borde, border);
+  const navIconActive = normalizeHex(config.color_nav_icono_activo, iconActive);
+  const navIconInactive = normalizeHex(config.color_nav_icono_inactivo, iconInactive);
+  const navTextActive = normalizeHex(config.color_nav_texto_activo, navIconActive);
+  const navTextInactive = normalizeHex(config.color_nav_texto_inactivo, textMuted);
+  const navIndicator = normalizeHex(config.color_nav_indicador, navIconActive);
+
+  const cardText = normalizeHex(config.color_card_texto, text);
+  const cardIcon = normalizeHex(config.color_card_icono, icon);
+  const overlay = normalizeHex(config.color_overlay, background);
+  const inputBg = normalizeHex(config.color_input_fondo, surface);
+  const inputBorder = normalizeHex(config.color_input_borde, border);
+  const progressBg = normalizeHex(config.color_progress_fondo, surface);
+  const progressFill = normalizeHex(config.color_progress_relleno, accent);
+  const success = normalizeHex(config.color_exito, "#2E7D32");
+  const warning = normalizeHex(config.color_advertencia, "#D69E2E");
+  const error = normalizeHex(config.color_error, "#C53030");
+  const info = normalizeHex(config.color_info, primary);
+
+  const opacityRaw = Number(config.overlay_opacidad);
+  const overlayOpacity = Number.isFinite(opacityRaw)
+    ? Math.max(0, Math.min(1, opacityRaw))
+    : 0.36;
 
   const hslVars: Record<string, string> = {
     "--background": hexToHslTriplet(background),
     "--foreground": hexToHslTriplet(text),
     "--card": hexToHslTriplet(card),
-    "--card-foreground": hexToHslTriplet(text),
+    "--card-foreground": hexToHslTriplet(cardText),
     "--popover": hexToHslTriplet(card),
-    "--popover-foreground": hexToHslTriplet(text),
+    "--popover-foreground": hexToHslTriplet(cardText),
     "--primary": hexToHslTriplet(primary),
     "--primary-foreground": hexToHslTriplet(readableForeground(primary)),
     "--secondary": hexToHslTriplet(secondary),
     "--secondary-foreground": hexToHslTriplet(text),
     "--accent": hexToHslTriplet(accent),
-    "--accent-foreground": hexToHslTriplet(accentForeground),
-    "--muted": hexToHslTriplet(secondary),
-    "--muted-foreground": hexToHslTriplet(text),
+    "--accent-foreground": hexToHslTriplet(readableForeground(accent)),
+    "--muted": hexToHslTriplet(surface),
+    "--muted-foreground": hexToHslTriplet(textMuted),
     "--border": hexToHslTriplet(border),
-    "--input": hexToHslTriplet(secondary),
+    "--input": hexToHslTriplet(inputBg),
     "--ring": hexToHslTriplet(accent),
-    "--gold": hexToHslTriplet(accent),
-    "--gold-bright": hexToHslTriplet(accent),
+    "--destructive": hexToHslTriplet(error),
+    "--gold": hexToHslTriplet(icon),
+    "--gold-bright": hexToHslTriplet(iconActive),
     "--gold-deep": hexToHslTriplet(primary),
-    "--navy": hexToHslTriplet(secondary),
+    "--navy": hexToHslTriplet(surface),
     "--navy-deep": hexToHslTriplet(background),
   };
 
@@ -101,27 +139,64 @@ export function applyAppTheme(config: ThemeConfig) {
   const rawVars: Record<string, string> = {
     "--lvj-black": background,
     "--lvj-surface": card,
-    "--lvj-surface-raised": secondary,
-    "--lvj-gold": accent,
-    "--lvj-gold-bright": accent,
+    "--lvj-surface-raised": surface,
+    "--lvj-gold": icon,
+    "--lvj-gold-bright": iconActive,
     "--lvj-gold-deep": primary,
     "--lvj-ivory": text,
-    "--lvj-ivory-muted": text,
+    "--lvj-ivory-muted": textMuted,
     "--lvj-sacred-border": border,
+
     "--lvj-theme-primary": primary,
     "--lvj-theme-secondary": secondary,
     "--lvj-theme-accent": accent,
     "--lvj-theme-text": text,
+    "--lvj-theme-text-muted": textMuted,
     "--lvj-theme-background": background,
     "--lvj-theme-card": card,
+    "--lvj-theme-surface": surface,
     "--lvj-theme-border": border,
+
+    "--lvj-icon": icon,
+    "--lvj-icon-active": iconActive,
+    "--lvj-icon-inactive": iconInactive,
+    "--lvj-card-text": cardText,
+    "--lvj-card-icon": cardIcon,
+
+    "--lvj-button-primary-bg": buttonPrimaryBg,
+    "--lvj-button-primary-text": buttonPrimaryText,
+    "--lvj-button-primary-border": buttonPrimaryBorder,
+    "--lvj-button-secondary-bg": buttonSecondaryBg,
+    "--lvj-button-secondary-text": buttonSecondaryText,
+    "--lvj-button-secondary-border": buttonSecondaryBorder,
+
+    "--lvj-nav-bg": navBg,
+    "--lvj-nav-border": navBorder,
+    "--lvj-nav-icon-active": navIconActive,
+    "--lvj-nav-icon-inactive": navIconInactive,
+    "--lvj-nav-text-active": navTextActive,
+    "--lvj-nav-text-inactive": navTextInactive,
+    "--lvj-nav-indicator": navIndicator,
+
+    "--lvj-overlay": overlay,
+    "--lvj-overlay-opacity": String(overlayOpacity),
+    "--lvj-input-bg": inputBg,
+    "--lvj-input-border": inputBorder,
+    "--lvj-progress-bg": progressBg,
+    "--lvj-progress-fill": progressFill,
+    "--lvj-success": success,
+    "--lvj-warning": warning,
+    "--lvj-error": error,
+    "--lvj-info": info,
+
     "--lvj-font-title": fontFamily(config.tipografia_titulos, "title"),
     "--lvj-font-text": fontFamily(config.tipografia_texto, "text"),
-    "--gradient-gold": `linear-gradient(135deg, ${accent}, ${primary})`,
-    "--gradient-navy": `linear-gradient(180deg, ${secondary}, ${background})`,
-    "--gradient-hero": `linear-gradient(180deg, ${secondary}99 0%, ${background}E6 72%, ${background} 100%)`,
-    "--glass": `${card}CC`,
-    "--glass-border": border,
+
+    "--gradient-gold": `linear-gradient(135deg, ${buttonPrimaryBg}, ${buttonPrimaryBg})`,
+    "--gradient-navy": `linear-gradient(180deg, ${surface}, ${background})`,
+    "--gradient-hero": `linear-gradient(180deg, ${overlay}66 0%, ${background}D9 72%, ${background} 100%)`,
+    "--glass": `${card}E6`,
+    "--glass-border": navBorder,
   };
 
   Object.entries(rawVars).forEach(([name, value]) => root.style.setProperty(name, value));
