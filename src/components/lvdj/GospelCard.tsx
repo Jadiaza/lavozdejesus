@@ -97,8 +97,8 @@ export const GospelCard = ({
           className="h-full w-full scale-[0.92] object-cover object-center"
         />
 
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,5,0.56)_0%,rgba(5,5,5,0.42)_45%,rgba(5,5,5,0.24)_72%,rgba(5,5,5,0.12)_100%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background/30 to-transparent" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,5,0.64)_0%,rgba(5,5,5,0.50)_45%,rgba(5,5,5,0.32)_72%,rgba(5,5,5,0.18)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background/42 to-transparent" />
       </div>
 
       <div className="relative flex h-full flex-col px-5 py-5">
@@ -111,12 +111,12 @@ export const GospelCard = ({
         </div>
 
         <div className="mx-auto flex flex-1 max-w-[22rem] flex-col justify-center">
-          <p className="text-center text-[15px] font-semibold leading-snug text-foreground sm:text-base [text-shadow:0_2px_8px_rgba(0,0,0,0.9)]">
+          <p className="text-center text-[15px] font-semibold leading-snug text-foreground sm:text-base [text-shadow:0_2px_10px_rgba(0,0,0,0.95)]">
             {palabraDisplay.frase}
           </p>
 
           {palabraDisplay.referencia && (
-            <p className="mt-3 text-left text-sm font-semibold leading-tight text-gold [text-shadow:0_2px_8px_rgba(0,0,0,0.85)]">
+            <p className="mt-3 text-left text-sm font-semibold leading-tight text-gold [text-shadow:0_2px_10px_rgba(0,0,0,0.9)]">
               {palabraDisplay.referencia}
             </p>
           )}
