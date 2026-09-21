@@ -240,6 +240,36 @@ function content_label(string $column): string
     'prioridad' => 'Prioridad',
     'updated_at' => 'Actualizado',
     'activo' => 'Activo',
+    'color_texto_secundario' => 'Texto secundario',
+    'color_surface' => 'Superficie secundaria',
+    'color_icono' => 'Icono general',
+    'color_icono_activo' => 'Icono activo',
+    'color_icono_inactivo' => 'Icono inactivo',
+    'color_boton_primario_fondo' => 'Botón primario · Fondo',
+    'color_boton_primario_texto' => 'Botón primario · Texto',
+    'color_boton_primario_borde' => 'Botón primario · Borde',
+    'color_boton_secundario_fondo' => 'Botón secundario · Fondo',
+    'color_boton_secundario_texto' => 'Botón secundario · Texto',
+    'color_boton_secundario_borde' => 'Botón secundario · Borde',
+    'color_nav_fondo' => 'Navegación · Fondo',
+    'color_nav_borde' => 'Navegación · Borde',
+    'color_nav_icono_activo' => 'Navegación · Icono activo',
+    'color_nav_icono_inactivo' => 'Navegación · Icono inactivo',
+    'color_nav_texto_activo' => 'Navegación · Texto activo',
+    'color_nav_texto_inactivo' => 'Navegación · Texto inactivo',
+    'color_nav_indicador' => 'Navegación · Indicador',
+    'color_card_texto' => 'Tarjetas · Texto',
+    'color_card_icono' => 'Tarjetas · Iconos',
+    'color_overlay' => 'Capa sobre imágenes',
+    'overlay_opacidad' => 'Opacidad de capa',
+    'color_input_fondo' => 'Campos · Fondo',
+    'color_input_borde' => 'Campos · Borde',
+    'color_progress_fondo' => 'Progreso · Fondo',
+    'color_progress_relleno' => 'Progreso · Relleno',
+    'color_exito' => 'Estado · Éxito',
+    'color_advertencia' => 'Estado · Advertencia',
+    'color_error' => 'Estado · Error',
+    'color_info' => 'Estado · Información',
     'status' => 'Estado',
     'locutor_id' => 'Locutor',
     'conductor_id' => 'Conductor',
@@ -489,6 +519,17 @@ function content_order_columns_for_form(array $columns, string $table): array
 
 function content_form_sections(string $table): array
 {
+  if ($table === 'lvj_cfg_apariencia') {
+    return [
+      'base' => 'Base',
+      'botones_iconos' => 'Botones e iconos',
+      'navegacion' => 'Navegación',
+      'superficies' => 'Tarjetas y superficies',
+      'estados' => 'Estados y progreso',
+      'tipografia' => 'Tipografía',
+    ];
+  }
+
   if ($table === 'lvj_capillas') {
     return [
       'identidad' => 'Identidad',
@@ -527,6 +568,36 @@ function content_form_sections(string $table): array
 
 function content_field_section(string $table, string $field): string
 {
+  if ($table === 'lvj_cfg_apariencia') {
+    if (in_array($field, [
+      'emisora_id', 'nombre_tema', 'color_primario', 'color_secundario', 'color_acento',
+      'color_texto', 'color_texto_secundario', 'color_fondo', 'color_borde', 'modo',
+    ], true)) return 'base';
+
+    if (in_array($field, [
+      'color_icono', 'color_icono_activo', 'color_icono_inactivo',
+      'color_boton_primario_fondo', 'color_boton_primario_texto', 'color_boton_primario_borde',
+      'color_boton_secundario_fondo', 'color_boton_secundario_texto', 'color_boton_secundario_borde',
+    ], true)) return 'botones_iconos';
+
+    if (in_array($field, [
+      'color_nav_fondo', 'color_nav_borde', 'color_nav_icono_activo', 'color_nav_icono_inactivo',
+      'color_nav_texto_activo', 'color_nav_texto_inactivo', 'color_nav_indicador',
+    ], true)) return 'navegacion';
+
+    if (in_array($field, [
+      'color_card', 'color_card_texto', 'color_card_icono', 'color_surface',
+      'color_overlay', 'overlay_opacidad', 'color_input_fondo', 'color_input_borde',
+    ], true)) return 'superficies';
+
+    if (in_array($field, [
+      'color_progress_fondo', 'color_progress_relleno',
+      'color_exito', 'color_advertencia', 'color_error', 'color_info',
+    ], true)) return 'estados';
+
+    return 'tipografia';
+  }
+
   if ($table === 'lvj_ora_oraciones') {
     if (in_array($field, ['tipo', 'devocion_id', 'titulo', 'subtitulo', 'categoria', 'descripcion'], true)) return 'identidad';
     if (in_array($field, ['texto_completo', 'contenido_json'], true)) return 'contenido';
@@ -1743,6 +1814,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'tipografia_titulos',
         'tipografia_texto',
         'modo',
+        'color_texto_secundario',
+        'color_surface',
+        'color_icono',
+        'color_icono_activo',
+        'color_icono_inactivo',
+        'color_boton_primario_fondo',
+        'color_boton_primario_texto',
+        'color_boton_primario_borde',
+        'color_boton_secundario_fondo',
+        'color_boton_secundario_texto',
+        'color_boton_secundario_borde',
+        'color_nav_fondo',
+        'color_nav_borde',
+        'color_nav_icono_activo',
+        'color_nav_icono_inactivo',
+        'color_nav_texto_activo',
+        'color_nav_texto_inactivo',
+        'color_nav_indicador',
+        'color_card_texto',
+        'color_card_icono',
+        'color_overlay',
+        'overlay_opacidad',
+        'color_input_fondo',
+        'color_input_borde',
+        'color_progress_fondo',
+        'color_progress_relleno',
+        'color_exito',
+        'color_advertencia',
+        'color_error',
+        'color_info',
       ];
       $allowedFields = array_values(array_filter($allowedFields, static fn($field) => isset($map[$field])));
 
@@ -1789,12 +1890,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           }
         }
 
-        foreach (['color_primario', 'color_secundario', 'color_acento', 'color_texto', 'color_fondo', 'color_card', 'color_borde'] as $colorField) {
-          if (!isset($data[$colorField]) || $data[$colorField] === '') continue;
-          if (!preg_match('/^#[0-9a-fA-F]{6}$/', (string) $data[$colorField])) {
-            throw new RuntimeException('El tema "' . $name . '" contiene un color inválido en ' . $colorField . '.');
+        foreach ($data as $field => $fieldValue) {
+          if (strpos($field, 'color_') !== 0 || $fieldValue === null || $fieldValue === '') continue;
+          if (!preg_match('/^#[0-9a-fA-F]{6}$/', (string) $fieldValue)) {
+            throw new RuntimeException('El tema "' . $name . '" contiene un color inválido en ' . $field . '.');
           }
-          $data[$colorField] = strtoupper((string) $data[$colorField]);
+          $data[$field] = strtoupper((string) $fieldValue);
+        }
+        if (array_key_exists('overlay_opacidad', $data) && $data['overlay_opacidad'] !== null && $data['overlay_opacidad'] !== '') {
+          $opacity = (float) $data['overlay_opacidad'];
+          if ($opacity < 0 || $opacity > 1) {
+            throw new RuntimeException('El tema "' . $name . '" debe usar overlay_opacidad entre 0 y 1.');
+          }
+          $data['overlay_opacidad'] = number_format($opacity, 2, '.', '');
         }
 
         if (isset($map['activo'])) {
@@ -1937,12 +2045,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       if ($id <= 0 && content_has_column($columns, 'activo')) {
         $data['activo'] = 0;
       }
-      foreach (['color_primario', 'color_secundario', 'color_acento', 'color_texto', 'color_fondo', 'color_card', 'color_borde'] as $colorField) {
-        if (!array_key_exists($colorField, $data)) continue;
-        $colorValue = trim((string) $data[$colorField]);
+      foreach ($data as $field => $fieldValue) {
+        if (strpos($field, 'color_') !== 0) continue;
+        $colorValue = trim((string) $fieldValue);
         if ($colorValue !== '' && !preg_match('/^#[0-9a-fA-F]{6}$/', $colorValue)) {
-          $error = 'El valor de ' . content_label($colorField) . ' debe usar formato hexadecimal #RRGGBB.';
+          $error = 'El valor de ' . content_label($field) . ' debe usar formato hexadecimal #RRGGBB.';
           break;
+        }
+        if ($colorValue !== '') $data[$field] = strtoupper($colorValue);
+      }
+      if (!$error && array_key_exists('overlay_opacidad', $data)) {
+        $opacity = (float) ($data['overlay_opacidad'] ?? 0);
+        if ($opacity < 0 || $opacity > 1) {
+          $error = 'La opacidad de capa debe estar entre 0 y 1.';
+        } else {
+          $data['overlay_opacidad'] = number_format($opacity, 2, '.', '');
         }
       }
     }
