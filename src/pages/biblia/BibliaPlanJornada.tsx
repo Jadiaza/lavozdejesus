@@ -189,6 +189,8 @@ export default function BibliaPlanJornada() {
           "--plan-reading-text": readingTheme.text,
           "--plan-reading-accent": readingTheme.accent,
           "--plan-reading-border": readingTheme.border,
+          "--plan-reading-surface": readingTheme.surface,
+          "--plan-reading-muted": readingTheme.muted,
           color: readingTheme.text,
           backgroundColor: readingTheme.background,
           maxWidth: readingWidth,
@@ -197,7 +199,7 @@ export default function BibliaPlanJornada() {
       <div className="mb-4 flex items-center justify-between gap-3">
         <Link
           to={`/biblia/planes/${plan.id}`}
-          className="min-w-0 truncate text-xs font-semibold uppercase tracking-[0.14em] text-[#A9A294]"
+          className="min-w-0 truncate text-xs font-semibold uppercase tracking-[0.14em] text-[var(--plan-reading-muted)]"
         >
           {plan.titulo}
         </Link>
@@ -210,7 +212,7 @@ export default function BibliaPlanJornada() {
         <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#D4AF37]">
           Jornada {jornada.dia} de {plan.duracion_dias}
         </p>
-        <h1 className="mt-2 font-display text-[2.05rem] leading-[1.08] text-[#F8F5EA] sm:text-4xl">
+        <h1 className="mt-2 font-display text-[2.05rem] leading-[1.08] text-[var(--plan-reading-text)] sm:text-4xl">
           {journeyTitle(jornada.titulo)}
         </h1>
 
@@ -223,7 +225,7 @@ export default function BibliaPlanJornada() {
               }}
             />
           </div>
-          <span className="shrink-0 text-[11px] text-[#AAA397]">
+          <span className="shrink-0 text-[11px] text-[var(--plan-reading-muted)]">
             {readingProgress.total
               ? `${readingProgress.completed} de ${readingProgress.total} lecturas · ${readingPercentage}%`
               : `${annualPercentage}% del plan`}
@@ -232,7 +234,7 @@ export default function BibliaPlanJornada() {
       </header>
 
       {jornada.oracion_inicial ? (
-        <section className="mb-4 rounded-[1.5rem] border border-[#D4AF37]/18 bg-[#0B0B0B] p-5">
+        <section className="mb-4 rounded-[1.5rem] border border-[var(--plan-reading-border)] bg-[var(--plan-reading-surface)] p-5">
           <div className="mb-3 flex items-center gap-2 text-[#D4AF37]">
             <Flame className="h-4 w-4" />
             <h2 className="text-[11px] font-bold uppercase tracking-[0.2em]">
@@ -245,7 +247,7 @@ export default function BibliaPlanJornada() {
 
       {jornada.lectura ? (
         <section className="mb-5">
-          <div className="mb-4 flex items-center gap-2 border-b border-[#D4AF37]/18 pb-3 text-[#D4AF37]">
+          <div className="mb-4 flex items-center gap-2 border-b border-[var(--plan-reading-border)] pb-3 text-[#D4AF37]">
             <BookOpen className="h-4 w-4" />
             <h2 className="text-[11px] font-bold uppercase tracking-[0.24em]">
               Palabra de Dios
@@ -262,13 +264,13 @@ export default function BibliaPlanJornada() {
       ) : null}
 
       {jornada.descripcion ? (
-        <section className="mb-4 rounded-[1.5rem] border border-[#D4AF37]/15 bg-[#0B0B0B] p-5">
+        <section className="mb-4 rounded-[1.5rem] border border-[var(--plan-reading-border)] bg-[var(--plan-reading-surface)] p-5">
           <SpiritualText text={jornada.descripcion} preferences={readingPreferences} />
         </section>
       ) : null}
 
       {jornada.motivacion ? (
-        <section className="mb-4 rounded-[1.5rem] border border-[#D4AF37]/15 bg-[#0B0B0B] p-5">
+        <section className="mb-4 rounded-[1.5rem] border border-[var(--plan-reading-border)] bg-[var(--plan-reading-surface)] p-5">
           <div className="mb-3 flex items-center gap-2 text-[#D4AF37]">
             <MessageCircleQuestion className="h-4 w-4" />
             <h2 className="text-[11px] font-bold uppercase tracking-[0.2em]">
@@ -280,7 +282,7 @@ export default function BibliaPlanJornada() {
       ) : null}
 
       {jornada.oracion_final ? (
-        <section className="mb-5 rounded-[1.5rem] border border-[#D4AF37]/25 bg-[radial-gradient(circle_at_50%_0%,rgba(212,175,55,0.12),transparent_38%),#0B0B0B] p-5">
+        <section className="mb-5 rounded-[1.5rem] border border-[var(--plan-reading-border)] bg-[var(--plan-reading-surface)] p-5">
           <div className="mb-3 flex items-center gap-2 text-[#D4AF37]">
             <ShieldCheck className="h-4 w-4" />
             <h2 className="text-[11px] font-bold uppercase tracking-[0.2em]">
@@ -297,9 +299,9 @@ export default function BibliaPlanJornada() {
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#D4AF37]/65 text-[#E7C35D]">
               <CheckCircle2 className="h-5 w-5" />
             </span>
-            <p className="text-[12px] leading-5 text-[#B7B0A2]">
+            <p className="text-[12px] leading-5 text-[var(--plan-reading-muted)]">
               Has completado{" "}
-              <strong className="font-semibold text-[#F8F5EA]">
+              <strong className="font-semibold text-[var(--plan-reading-text)]">
                 {readingProgress.completed} de {readingProgress.total || "—"} lecturas
               </strong>
             </p>
@@ -324,7 +326,7 @@ export default function BibliaPlanJornada() {
         {jornada.dia > 1 ? (
           <Link
             to={`/biblia/planes/${plan.id}/jornada/${jornada.dia - 1}`}
-            className="flex min-h-11 items-center justify-center gap-1 rounded-xl border border-[#D4AF37]/20 bg-[#0B0B0B] text-sm text-[#C9C3B3]"
+            className="flex min-h-11 items-center justify-center gap-1 rounded-xl border border-[var(--plan-reading-border)] bg-[var(--plan-reading-surface)] text-sm text-[var(--plan-reading-muted)]"
           >
             <ChevronLeft className="h-4 w-4" />
             Anterior
@@ -336,12 +338,13 @@ export default function BibliaPlanJornada() {
         {jornada.dia < plan.duracion_dias ? (
           <Link
             to={`/biblia/planes/${plan.id}/jornada/${jornada.dia + 1}`}
-            className="flex min-h-11 items-center justify-center gap-1 rounded-xl border border-[#D4AF37]/20 bg-[#0B0B0B] text-sm text-[#C9C3B3]"
+            className="flex min-h-11 items-center justify-center gap-1 rounded-xl border border-[var(--plan-reading-border)] bg-[var(--plan-reading-surface)] text-sm text-[var(--plan-reading-muted)]"
           >
             Siguiente
             <ChevronRight className="h-4 w-4" />
           </Link>
         ) : null}
+      </div>
       </div>
       <ReadingSettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} eyebrow="Biblia · Planes" />
     </BibliaLayout>
