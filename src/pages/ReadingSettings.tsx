@@ -14,7 +14,7 @@ export default function ReadingSettings() {
 
         <section className="mt-5 flex items-start gap-3 border-b border-[#D4AF37]/10 pb-5">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#D4AF37]/10 text-[#D4AF37]"><Type className="h-5 w-5" /></span>
-          <p className="text-xs leading-5 text-[#9C9588]">Estas preferencias se guardan en <strong className="font-semibold text-[#C9C3B3]">prefsLectura</strong> y se comparten con los lectores compatibles, incluida la Biblia.</p>
+          <p className="text-xs leading-5 text-[#9C9588]">Estas preferencias se guardan en <strong className="font-semibold text-[#C9C3B3]">prefsLectura</strong> y se comparten entre Biblia (Leer, Estudio y Planes), Oraciones y Liturgia.</p>
         </section>
 
         <section className="mt-6"><ReadingSettingsPanel /></section>
