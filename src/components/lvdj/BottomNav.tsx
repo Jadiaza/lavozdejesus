@@ -60,7 +60,7 @@ export const BottomNav = ({
   return (
     <nav className="fixed inset-x-0 bottom-0 z-[9998] w-full max-w-full overflow-x-hidden xl:hidden">
       <div className="mx-auto w-full max-w-[430px]">
-        <div className="glass border-t border-[hsl(var(--gold)/0.2)] px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
+        <div className="border-t px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl" style={{ backgroundColor: "color-mix(in srgb, var(--lvj-nav-bg) 92%, transparent)", borderColor: "var(--lvj-nav-border)" }}>
           <div className="flex items-end justify-around">
             {items.map((item) => {
               const active = item.label === activeLabel;
@@ -78,19 +78,19 @@ export const BottomNav = ({
                 >
                   <item.icon
                     className={`h-5 w-5 ${
-                      active ? "text-gold" : "text-foreground/55"
+                      active ? "text-[var(--lvj-nav-icon-active)]" : "text-[var(--lvj-nav-icon-inactive)]"
                     }`}
                     strokeWidth={active ? 2 : 1.6}
                   />
                   <span
                     className={`text-[10px] ${
-                      active ? "font-medium text-gold" : "text-foreground/55"
+                      active ? "font-medium text-[var(--lvj-nav-text-active)]" : "text-[var(--lvj-nav-text-inactive)]"
                     }`}
                   >
                     {item.label}
                   </span>
                   {active && (
-                    <span className="h-0.5 w-5 rounded-full bg-gradient-gold" />
+                    <span className="h-0.5 w-5 rounded-full bg-[var(--lvj-nav-indicator)]" />
                   )}
                 </Link>
               );
