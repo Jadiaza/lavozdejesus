@@ -15,6 +15,13 @@ $modules = [
       'lvj_cfg_apariencia' => 'Apariencia',
       'lvj_cfg_redes_sociales' => 'Redes sociales',
     ],
+    'tabs' => [
+      ['label' => 'Emisora', 'table' => 'lvj_cfg_emisora'],
+      ['label' => 'App', 'table' => 'lvj_cfg_app'],
+      ['label' => 'Apariencia', 'table' => 'lvj_cfg_apariencia'],
+      ['label' => 'Redes sociales', 'table' => 'lvj_cfg_redes_sociales'],
+      ['label' => 'Legal', 'href' => 'legal.php'],
+    ],
   ],
   'radio' => [
     'title' => 'Radio en Vivo',
