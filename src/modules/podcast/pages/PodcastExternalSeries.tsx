@@ -15,6 +15,7 @@ import PodcastLayout from "@/modules/podcast/components/PodcastLayout";
 import {
   formatExternalDuration,
   getExternalPodcast,
+  getExternalPodcastCatalogItem,
   type ExternalPodcast,
   type ExternalPodcastEpisode,
 } from "@/modules/podcast/services/externalPodcastService";
@@ -43,6 +44,34 @@ const formatDate = (value: string) => {
   return formatCalendarDay(date);
 };
 
+const lastEpisodeKey = (slug: string) => `lvj:podcast:external:${slug}:last-episode`;
+const positionKey = (slug: string, id: string) => `lvj:podcast:external:${slug}:position:${id}`;
+
+const readStored = (key: string) => {
+  try {
+    return localStorage.getItem(key) || "";
+  } catch {
+    return "";
+  }
+};
+
+const readPosition = (slug: string, id: string) => {
+  try {
+    return Math.max(0, Number(localStorage.getItem(positionKey(slug, id)) || 0) || 0);
+  } catch {
+    return 0;
+  }
+};
+
+const saveProgress = (slug: string, id: string, seconds: number) => {
+  try {
+    localStorage.setItem(lastEpisodeKey(slug), id);
+    localStorage.setItem(positionKey(slug, id), String(Math.max(0, Math.floor(seconds))));
+  } catch {
+    // El podcast continúa aunque el almacenamiento local no esté disponible.
+  }
+};
+
 export default function PodcastExternalSeries() {
   const { slug = "" } = useParams();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -55,7 +84,10 @@ export default function PodcastExternalSeries() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [tab, setTab] = useState<"episodes" | "about">("episodes");
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [now, setNow] = useState(() => new Date());
+  const catalogItem = useMemo(() => getExternalPodcastCatalogItem(slug), [slug]);
+  const playbackMode = catalogItem?.playback_mode ?? "series";
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 60_000);
@@ -71,6 +103,7 @@ export default function PodcastExternalSeries() {
         if (!mounted) return;
         setPodcast(data.podcast);
         setEpisodes(data.episodes);
+        setSortOrder((catalogItem?.playback_mode ?? "series") === "daily" ? "newest" : "newest");
       })
       .catch((err) => {
         if (!mounted) return;
@@ -82,7 +115,7 @@ export default function PodcastExternalSeries() {
     return () => {
       mounted = false;
     };
-  }, [slug]);
+  }, [slug, catalogItem?.playback_mode]);
 
   const nearestEpisode = useMemo(() => {
     if (!episodes.length) return null;
@@ -113,6 +146,30 @@ export default function PodcastExternalSeries() {
     return date ? sameCalendarDay(date, bogotaCalendarDay(now)) : false;
   }, [nearestEpisode, now]);
 
+  const sortedEpisodes = useMemo(() => {
+    const next = [...episodes];
+    next.sort((a, b) => {
+      const diff = episodeTimestamp(a) - episodeTimestamp(b);
+      return sortOrder === "oldest" ? diff : -diff;
+    });
+    return next;
+  }, [episodes, sortOrder]);
+
+  const latestEpisode = useMemo(
+    () => [...episodes].sort((a, b) => episodeTimestamp(b) - episodeTimestamp(a))[0] ?? null,
+    [episodes],
+  );
+
+  const oldestEpisode = useMemo(
+    () => [...episodes].sort((a, b) => episodeTimestamp(a) - episodeTimestamp(b))[0] ?? null,
+    [episodes],
+  );
+
+  const resumeEpisode = useMemo(() => {
+    const savedId = readStored(lastEpisodeKey(slug));
+    return episodes.find((episode) => episode.id === savedId) ?? null;
+  }, [episodes, slug]);
+
   const playEpisode = async (episode: ExternalPodcastEpisode) => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -123,12 +180,33 @@ export default function PodcastExternalSeries() {
       return;
     }
 
+    const saved = readPosition(slug, episode.id);
     setCurrent(episode);
-    setCurrentTime(0);
+    setCurrentTime(saved);
     setDuration(episode.duration_seconds || 0);
     audio.src = episode.audio_url;
     audio.load();
+
+    audio.addEventListener(
+      "loadedmetadata",
+      () => {
+        if (saved > 0 && (!audio.duration || saved < audio.duration - 5)) {
+          audio.currentTime = saved;
+        }
+      },
+      { once: true },
+    );
+
     await audio.play().catch(() => setPlaying(false));
+    saveProgress(slug, episode.id, saved);
+  };
+
+  const playNext = () => {
+    if (!current) return;
+    const list = playbackMode === "series" ? sortedEpisodes : episodes;
+    const index = list.findIndex((episode) => episode.id === current.id);
+    const next = list[index + 1];
+    if (next) void playEpisode(next);
   };
 
   const progress = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
@@ -143,13 +221,16 @@ export default function PodcastExternalSeries() {
         onTimeUpdate={() => {
           const audio = audioRef.current;
           if (!audio) return;
-          setCurrentTime(audio.currentTime || 0);
+          const nextTime = audio.currentTime || 0;
+          setCurrentTime(nextTime);
           if (Number.isFinite(audio.duration)) setDuration(audio.duration);
+          if (current) saveProgress(slug, current.id, nextTime);
         }}
         onLoadedMetadata={() => {
           const audio = audioRef.current;
           if (audio && Number.isFinite(audio.duration)) setDuration(audio.duration);
         }}
+        onEnded={playNext}
       />
 
       {loading && (
@@ -204,15 +285,21 @@ export default function PodcastExternalSeries() {
                   <Headphones className="h-4.5 w-4.5 text-[#D4AF37]" />
                   {episodes.length} episodios disponibles
                 </span>
-                {nearestEpisode && (
+                {playbackMode === "daily" && nearestEpisode && (
                   <span className="inline-flex items-center gap-2.5">
                     <CalendarDays className="h-4.5 w-4.5 text-[#D4AF37]" />
                     {nearestMatchesToday ? "Episodio para hoy" : `Fecha más cercana: ${formatDate(nearestEpisode.pub_date)}`}
                   </span>
                 )}
+                {playbackMode === "series" && latestEpisode && (
+                  <span className="inline-flex items-center gap-2.5">
+                    <CalendarDays className="h-4.5 w-4.5 text-[#D4AF37]" />
+                    Serie disponible desde {formatDate(oldestEpisode?.pub_date || latestEpisode.pub_date)}
+                  </span>
+                )}
               </div>
 
-              {nearestEpisode && (
+              {playbackMode === "daily" && nearestEpisode && (
                 <button
                   type="button"
                   onClick={() => void playEpisode(nearestEpisode)}
@@ -225,6 +312,32 @@ export default function PodcastExternalSeries() {
                   )}
                   {nearestMatchesToday ? "Escuchar episodio de hoy" : "Escuchar episodio"}
                 </button>
+              )}
+
+              {playbackMode === "series" && (resumeEpisode || oldestEpisode) && (
+                <div className="mt-5 w-full max-w-[20rem] space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const target = resumeEpisode || oldestEpisode;
+                      if (target) void playEpisode(target);
+                    }}
+                    className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#F2D27A] to-[#D4AF37] px-6 py-3 text-sm font-black text-[#050505] shadow-[0_12px_30px_rgba(212,175,55,0.25)]"
+                  >
+                    <Play className="h-5 w-5 fill-current" />
+                    {resumeEpisode ? "Continuar escuchando" : "Comenzar desde el inicio"}
+                  </button>
+                  {latestEpisode && (
+                    <button
+                      type="button"
+                      onClick={() => void playEpisode(latestEpisode)}
+                      className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[#D4AF37]/65 px-5 py-2.5 text-sm font-bold text-[#F2D27A]"
+                    >
+                      <Play className="h-4 w-4 fill-current" />
+                      Escuchar el más reciente
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </section>
@@ -268,8 +381,31 @@ export default function PodcastExternalSeries() {
                 <span className="text-xs text-[#F8F5EA]/42">{episodes.length} disponibles</span>
               </div>
 
+              {playbackMode === "series" && (
+                <div className="mb-4 grid grid-cols-2 rounded-full border border-[#D4AF37]/20 bg-[#0A0A0A] p-1">
+                  <button
+                    type="button"
+                    onClick={() => setSortOrder("newest")}
+                    className={`rounded-full px-3 py-2 text-xs font-bold transition ${
+                      sortOrder === "newest" ? "bg-[#D4AF37] text-[#050505]" : "text-[#F8F5EA]/55"
+                    }`}
+                  >
+                    Más recientes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSortOrder("oldest")}
+                    className={`rounded-full px-3 py-2 text-xs font-bold transition ${
+                      sortOrder === "oldest" ? "bg-[#D4AF37] text-[#050505]" : "text-[#F8F5EA]/55"
+                    }`}
+                  >
+                    Más antiguos
+                  </button>
+                </div>
+              )}
+
               <div className="space-y-3 pb-28">
-                {episodes.map((episode) => {
+                {(playbackMode === "series" ? sortedEpisodes : episodes).map((episode) => {
                   const active = current?.id === episode.id;
                   return (
                     <article
