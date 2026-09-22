@@ -48,11 +48,22 @@ interface ApiEnvelope<T> {
   message?: string;
 }
 
+const DIOS_TE_HABLA_IMAGE =
+  "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/biblia/planes/images/dios-te-habla.png";
+
 const baseUrl = ((import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "https://lavozdejesus.co")
   .trim()
   .replace(/\/+$/, "");
 const apiUrl = (import.meta.env.VITE_BIBLE_PLANS_API_URL as string | undefined)?.trim() || `${baseUrl}/api/biblia-planes.php`;
 const localKey = (planId: number) => `planProgress:${planId}`;
+
+function normalizePlanAssets(plan: BiblePlan): BiblePlan {
+  const title = plan.titulo.trim().toLocaleLowerCase("es");
+  if (title.startsWith("dios te habla: un año con la biblia")) {
+    return { ...plan, imagen_url: DIOS_TE_HABLA_IMAGE };
+  }
+  return plan;
+}
 
 async function parse<T>(response: Response): Promise<T> {
   const payload = (await response.json().catch(() => null)) as ApiEnvelope<T> | null;
@@ -84,13 +95,18 @@ const authHeaders = (token: string) => {
 
 export async function listBiblePlans(): Promise<BiblePlan[]> {
   const data = await request<{ planes: BiblePlan[] }>({ accion: "catalogo" });
-  return data.planes ?? [];
+  return (data.planes ?? []).map(normalizePlanAssets);
 }
 
-export const getBiblePlan = (id: number) => request<BiblePlanDetail>({ accion: "detalle", id });
+export async function getBiblePlan(id: number): Promise<BiblePlanDetail> {
+  const data = await request<BiblePlanDetail>({ accion: "detalle", id });
+  return { ...data, plan: normalizePlanAssets(data.plan) };
+}
 
-export const getBiblePlanDay = (planId: number, day: number) =>
-  request<BiblePlanJourney>({ accion: "jornada", plan_id: planId, dia: day });
+export async function getBiblePlanDay(planId: number, day: number): Promise<BiblePlanJourney> {
+  const data = await request<BiblePlanJourney>({ accion: "jornada", plan_id: planId, dia: day });
+  return { ...data, plan: normalizePlanAssets(data.plan) };
+}
 
 export async function getLocalPlanProgress(planId: number): Promise<BiblePlanProgress | null> {
   return getMeta<BiblePlanProgress>(localKey(planId));
