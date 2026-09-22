@@ -378,8 +378,7 @@ export default function PodcastExternalSeries() {
                 <span className="text-xs text-[#F8F5EA]/42">{episodes.length} disponibles</span>
               </div>
 
-              {playbackMode === "series" && (
-                <div className="mb-4 grid grid-cols-2 rounded-full border border-[#D4AF37]/20 bg-[#0A0A0A] p-1">
+              <div className="mb-4 grid grid-cols-2 rounded-full border border-[#D4AF37]/20 bg-[#0A0A0A] p-1">
                   <button
                     type="button"
                     onClick={() => setSortOrder("newest")}
@@ -399,10 +398,9 @@ export default function PodcastExternalSeries() {
                     Más antiguos
                   </button>
                 </div>
-              )}
 
               <div className="space-y-3 pb-28">
-                {(playbackMode === "series" ? sortedEpisodes : episodes).map((episode) => {
+                {sortedEpisodes.map((episode) => {
                   const active = current?.id === episode.id;
                   return (
                     <article
