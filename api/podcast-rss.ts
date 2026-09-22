@@ -22,12 +22,6 @@ const SOURCES: Record<string, SourceConfig> = {
     category: "Biblia",
     strictImageMatch: true,
   },
-  laudes: {
-    feed: "https://laudes.captivate.fm/rssfeed",
-    fallbackTitle: "Laudes",
-    category: "Oración",
-    strictImageMatch: true,
-  },
   "platicando-en-catolico": {
     feed: "https://feeds.captivate.fm/catolico/",
     fallbackTitle: "Platicando en Católico",
