@@ -57,6 +57,12 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     category: "Oración",
   },
   {
+    slug: "conocete-en-el-espejo",
+    title: "Conócete en el Espejo con Sheila Morataya",
+    subtitle: "Sheila Morataya · Juan Diego Network",
+    category: "Sanación interior",
+  },
+  {
     slug: "platicando-en-catolico",
     title: "Platicando en Católico",
     subtitle: "Juan Diego Network",
