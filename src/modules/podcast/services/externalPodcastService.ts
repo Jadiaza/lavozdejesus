@@ -39,6 +39,24 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     category: "Biblia",
   },
   {
+    slug: "que-haria-jesus",
+    title: "¿Qué Haría Jesús?",
+    subtitle: "New Fire · Reflexión diaria del Evangelio",
+    category: "Evangelio",
+  },
+  {
+    slug: "evangelio-del-dia",
+    title: "Evangelio del día",
+    subtitle: "Fr. Jonathan Vásquez, O. de M.",
+    category: "Evangelio",
+  },
+  {
+    slug: "10-minutos-con-jesus",
+    title: "10 Minutos con Jesús",
+    subtitle: "Oración y meditación diaria",
+    category: "Oración",
+  },
+  {
     slug: "platicando-en-catolico",
     title: "Platicando en Católico",
     subtitle: "Juan Diego Network",
@@ -85,24 +103,6 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     title: "Pasión por el Evangelio",
     subtitle: "Exégesis del Evangelio dominical",
     category: "Evangelio",
-  },
-  {
-    slug: "que-haria-jesus",
-    title: "¿Qué Haría Jesús?",
-    subtitle: "New Fire · Reflexión diaria del Evangelio",
-    category: "Evangelio",
-  },
-  {
-    slug: "evangelio-del-dia",
-    title: "Evangelio del día",
-    subtitle: "Fr. Jonathan Vásquez, O. de M.",
-    category: "Evangelio",
-  },
-  {
-    slug: "10-minutos-con-jesus",
-    title: "10 Minutos con Jesús",
-    subtitle: "Oración y meditación diaria",
-    category: "Oración",
   },
 ];
 
