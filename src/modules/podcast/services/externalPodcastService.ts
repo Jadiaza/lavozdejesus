@@ -1,8 +1,11 @@
+export type ExternalPodcastPlaybackMode = "daily" | "series";
+
 export type ExternalPodcastCatalogItem = {
   slug: string;
   title: string;
   subtitle: string;
   category: string;
+  playback_mode: ExternalPodcastPlaybackMode;
 };
 
 export type ExternalPodcastEpisode = {
@@ -37,78 +40,91 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     title: "La Biblia en un Año",
     subtitle: "Fray Sergio Serrano, OP · Juan Diego Network",
     category: "Biblia",
+    playback_mode: "daily",
   },
   {
     slug: "que-haria-jesus",
     title: "¿Qué Haría Jesús?",
     subtitle: "New Fire · Reflexión diaria del Evangelio",
     category: "Evangelio",
+    playback_mode: "daily",
   },
   {
     slug: "evangelio-del-dia",
     title: "Evangelio del día",
     subtitle: "Fr. Jonathan Vásquez, O. de M.",
     category: "Evangelio",
+    playback_mode: "daily",
   },
   {
     slug: "10-minutos-con-jesus",
     title: "10 Minutos con Jesús",
     subtitle: "Oración y meditación diaria",
     category: "Oración",
+    playback_mode: "series",
   },
   {
     slug: "conocete-en-el-espejo",
     title: "Conócete en el Espejo con Sheila Morataya",
     subtitle: "Sheila Morataya · Juan Diego Network",
     category: "Sanación interior",
+    playback_mode: "series",
   },
   {
     slug: "platicando-en-catolico",
     title: "Platicando en Católico",
     subtitle: "Juan Diego Network",
     category: "Actualidad católica",
+    playback_mode: "series",
   },
   {
     slug: "conoce-ama-vive-tu-fe",
     title: "CONOCE AMA Y VIVE TU FE",
     subtitle: "Luis Román",
     category: "Formación",
+    playback_mode: "series",
   },
   {
     slug: "salve-maria",
     title: "Salve María - Podcast Católico",
     subtitle: "Heraldos del Evangelio",
     category: "Espiritualidad",
+    playback_mode: "series",
   },
   {
     slug: "escuela-de-cristo",
     title: "Escuela de Cristo",
     subtitle: "La Antigua Guatemala",
     category: "Tradición y espiritualidad",
+    playback_mode: "series",
   },
   {
     slug: "eco-catolico",
     title: "Eco Católico",
     subtitle: "Leonor Asilis",
     category: "Fe y vida",
+    playback_mode: "series",
   },
   {
     slug: "club-de-los-buhos",
     title: "El Club de los Búhos",
     subtitle: "Mauricio I. Pérez",
     category: "Formación",
+    playback_mode: "series",
   },
   {
     slug: "podcast-mauricio-perez",
     title: "El Podcast de Mauricio Pérez",
     subtitle: "Actualidad, espiritualidad y formación",
     category: "Formación",
+    playback_mode: "series",
   },
   {
     slug: "pasion-por-el-evangelio",
     title: "Pasión por el Evangelio",
     subtitle: "Exégesis del Evangelio dominical",
     category: "Evangelio",
+    playback_mode: "series",
   },
 ];
 
@@ -157,4 +173,9 @@ export function formatExternalDuration(seconds: number): string {
   const secs = total % 60;
   if (hours > 0) return `${hours}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   return `${minutes}:${String(secs).padStart(2, "0")}`;
+}
+
+
+export function getExternalPodcastCatalogItem(slug: string): ExternalPodcastCatalogItem | undefined {
+  return EXTERNAL_PODCASTS.find((podcast) => podcast.slug === slug);
 }
