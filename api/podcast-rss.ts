@@ -63,6 +63,21 @@ const SOURCES: Record<string, SourceConfig> = {
     fallbackTitle: "Pasión por el Evangelio",
     category: "Evangelio",
   },
+  "que-haria-jesus": {
+    feed: "https://feeds.simplecast.com/LnlzKthb",
+    fallbackTitle: "¿Qué Haría Jesús?",
+    category: "Evangelio",
+  },
+  "evangelio-del-dia": {
+    feed: "https://feeds.buzzsprout.com/2197801.rss",
+    fallbackTitle: "Evangelio del día",
+    category: "Evangelio",
+  },
+  "10-minutos-con-jesus": {
+    feed: "https://www.spreaker.com/show/3226894/episodes/feed",
+    fallbackTitle: "10 Minutos con Jesús",
+    category: "Oración",
+  },
 };
 
 const decodeXml = (value: string) =>
