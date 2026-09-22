@@ -78,6 +78,11 @@ const SOURCES: Record<string, SourceConfig> = {
     fallbackTitle: "10 Minutos con Jesús",
     category: "Oración",
   },
+  "conocete-en-el-espejo": {
+    feed: "https://feeds.captivate.fm/sheila",
+    fallbackTitle: "Conócete en el Espejo con Sheila Morataya",
+    category: "Sanación interior",
+  },
 };
 
 const decodeXml = (value: string) =>
