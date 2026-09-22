@@ -66,6 +66,7 @@ export default function PodcastSeries() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [tab, setTab] = useState<"episodes" | "about">("episodes");
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
 
   const load = async () => {
     setLoading(true);
@@ -88,8 +89,24 @@ export default function PodcastSeries() {
     void load();
   }, []);
 
+  const chronologicalEpisodes = useMemo(
+    () => [...episodes].sort((a, b) => a.day_number - b.day_number),
+    [episodes],
+  );
+
+  const sortedEpisodes = useMemo(
+    () =>
+      sortOrder === "oldest"
+        ? chronologicalEpisodes
+        : [...chronologicalEpisodes].reverse(),
+    [chronologicalEpisodes, sortOrder],
+  );
+
+  const firstEpisode = chronologicalEpisodes[0] ?? null;
+  const latestEpisode = chronologicalEpisodes[chronologicalEpisodes.length - 1] ?? null;
+
   const resumeEpisode = useMemo(
-    () => episodes.find((episode) => episode.id === resumeEpisodeId) ?? episodes[0] ?? null,
+    () => episodes.find((episode) => episode.id === resumeEpisodeId) ?? null,
     [episodes, resumeEpisodeId],
   );
 
@@ -136,8 +153,8 @@ export default function PodcastSeries() {
 
   const playNext = () => {
     if (!currentEpisode) return;
-    const index = episodes.findIndex((episode) => episode.id === currentEpisode.id);
-    const next = episodes[index + 1];
+    const index = chronologicalEpisodes.findIndex((episode) => episode.id === currentEpisode.id);
+    const next = chronologicalEpisodes[index + 1];
     if (next) void playEpisode(next);
   };
 
@@ -229,19 +246,45 @@ export default function PodcastSeries() {
                 </span>
               </div>
 
-              {resumeEpisode && (
-                <button
-                  type="button"
-                  onClick={() => void playEpisode(resumeEpisode)}
-                  className="mt-5 inline-flex min-h-12 w-full max-w-[20rem] items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#F2D27A] to-[#D4AF37] px-6 py-3 text-sm font-black text-[#050505] shadow-[0_12px_30px_rgba(212,175,55,0.25)]"
-                >
-                  {currentEpisode?.id === resumeEpisode.id && isPlaying ? (
-                    <Pause className="h-5 w-5 fill-current" />
-                  ) : (
-                    <Play className="h-5 w-5 fill-current" />
+              {(firstEpisode || resumeEpisode) && (
+                <div className="mt-5 w-full max-w-[20rem] space-y-2">
+                  {resumeEpisode && readSavedPosition(resumeEpisode.id) > 5 && (
+                    <button
+                      type="button"
+                      onClick={() => void playEpisode(resumeEpisode)}
+                      className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#F2D27A] to-[#D4AF37] px-6 py-3 text-sm font-black text-[#050505] shadow-[0_12px_30px_rgba(212,175,55,0.25)]"
+                    >
+                      {currentEpisode?.id === resumeEpisode.id && isPlaying ? (
+                        <Pause className="h-5 w-5 fill-current" />
+                      ) : (
+                        <Play className="h-5 w-5 fill-current" />
+                      )}
+                      Continuar escuchando
+                    </button>
                   )}
-                  {readSavedPosition(resumeEpisode.id) > 5 ? "Continuar escuchando" : "Reproducir primer episodio"}
-                </button>
+
+                  {firstEpisode && (
+                    <button
+                      type="button"
+                      onClick={() => void playEpisode(firstEpisode)}
+                      className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[#D4AF37]/65 px-5 py-2.5 text-sm font-bold text-[#F2D27A]"
+                    >
+                      <Play className="h-4 w-4 fill-current" />
+                      Reproducir primer capítulo
+                    </button>
+                  )}
+
+                  {latestEpisode && (
+                    <button
+                      type="button"
+                      onClick={() => void playEpisode(latestEpisode)}
+                      className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[#D4AF37]/65 px-5 py-2.5 text-sm font-bold text-[#F2D27A]"
+                    >
+                      <Play className="h-4 w-4 fill-current" />
+                      Reproducir capítulo más reciente
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </section>
@@ -283,8 +326,29 @@ export default function PodcastSeries() {
                 <span className="text-xs text-[#F8F5EA]/42">{episodes.length} disponibles</span>
               </div>
 
+              <div className="mb-4 grid grid-cols-2 rounded-full border border-[#D4AF37]/20 bg-[#0A0A0A] p-1">
+                <button
+                  type="button"
+                  onClick={() => setSortOrder("newest")}
+                  className={`rounded-full px-3 py-2 text-xs font-bold transition ${
+                    sortOrder === "newest" ? "bg-[#D4AF37] text-[#050505]" : "text-[#F8F5EA]/55"
+                  }`}
+                >
+                  Más recientes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSortOrder("oldest")}
+                  className={`rounded-full px-3 py-2 text-xs font-bold transition ${
+                    sortOrder === "oldest" ? "bg-[#D4AF37] text-[#050505]" : "text-[#F8F5EA]/55"
+                  }`}
+                >
+                  Más antiguos
+                </button>
+              </div>
+
               <div className="space-y-3 pb-28">
-                {episodes.map((episode) => {
+                {sortedEpisodes.map((episode) => {
                   const active = currentEpisode?.id === episode.id;
                   const saved = readSavedPosition(episode.id);
                   const total = episode.duration_seconds || episode.estimated_minutes * 60;
