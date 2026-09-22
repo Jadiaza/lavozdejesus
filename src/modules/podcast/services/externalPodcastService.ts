@@ -39,12 +39,6 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     category: "Biblia",
   },
   {
-    slug: "laudes",
-    title: "Laudes",
-    subtitle: "Oración de la mañana con toda la Iglesia",
-    category: "Oración",
-  },
-  {
     slug: "platicando-en-catolico",
     title: "Platicando en Católico",
     subtitle: "Juan Diego Network",
