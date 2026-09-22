@@ -246,33 +246,31 @@ export default function PodcastSeries() {
                 </span>
               </div>
 
-              {(firstEpisode || resumeEpisode) && (
+              {firstEpisode && (
                 <div className="mt-5 w-full max-w-[20rem] space-y-2">
-                  {resumeEpisode && readSavedPosition(resumeEpisode.id) > 5 && (
-                    <button
-                      type="button"
-                      onClick={() => void playEpisode(resumeEpisode)}
-                      className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#F2D27A] to-[#D4AF37] px-6 py-3 text-sm font-black text-[#050505] shadow-[0_12px_30px_rgba(212,175,55,0.25)]"
-                    >
-                      {currentEpisode?.id === resumeEpisode.id && isPlaying ? (
-                        <Pause className="h-5 w-5 fill-current" />
-                      ) : (
-                        <Play className="h-5 w-5 fill-current" />
-                      )}
-                      Continuar escuchando
-                    </button>
-                  )}
-
-                  {firstEpisode && (
-                    <button
-                      type="button"
-                      onClick={() => void playEpisode(firstEpisode)}
-                      className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[#D4AF37]/65 px-5 py-2.5 text-sm font-bold text-[#F2D27A]"
-                    >
-                      <Play className="h-4 w-4 fill-current" />
-                      Reproducir primer capítulo
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const target =
+                        resumeEpisode && readSavedPosition(resumeEpisode.id) > 5
+                          ? resumeEpisode
+                          : firstEpisode;
+                      void playEpisode(target);
+                    }}
+                    className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#F2D27A] to-[#D4AF37] px-6 py-3 text-sm font-black text-[#050505] shadow-[0_12px_30px_rgba(212,175,55,0.25)]"
+                  >
+                    {resumeEpisode &&
+                    readSavedPosition(resumeEpisode.id) > 5 &&
+                    currentEpisode?.id === resumeEpisode.id &&
+                    isPlaying ? (
+                      <Pause className="h-5 w-5 fill-current" />
+                    ) : (
+                      <Play className="h-5 w-5 fill-current" />
+                    )}
+                    {resumeEpisode && readSavedPosition(resumeEpisode.id) > 5
+                      ? "Continuar escuchando"
+                      : "Comenzar desde el primer episodio"}
+                  </button>
 
                   {latestEpisode && (
                     <button
@@ -281,7 +279,7 @@ export default function PodcastSeries() {
                       className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[#D4AF37]/65 px-5 py-2.5 text-sm font-bold text-[#F2D27A]"
                     >
                       <Play className="h-4 w-4 fill-current" />
-                      Reproducir capítulo más reciente
+                      Escuchar episodio más reciente
                     </button>
                   )}
                 </div>
