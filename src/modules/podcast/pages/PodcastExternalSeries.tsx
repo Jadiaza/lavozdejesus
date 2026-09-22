@@ -155,15 +155,13 @@ export default function PodcastExternalSeries() {
     return next;
   }, [episodes, sortOrder]);
 
-  const latestEpisode = useMemo(
-    () => [...episodes].sort((a, b) => episodeTimestamp(b) - episodeTimestamp(a))[0] ?? null,
+  const chronologicalEpisodes = useMemo(
+    () => [...episodes].sort((a, b) => episodeTimestamp(a) - episodeTimestamp(b)),
     [episodes],
   );
 
-  const oldestEpisode = useMemo(
-    () => [...episodes].sort((a, b) => episodeTimestamp(a) - episodeTimestamp(b))[0] ?? null,
-    [episodes],
-  );
+  const latestEpisode = chronologicalEpisodes[chronologicalEpisodes.length - 1] ?? null;
+  const oldestEpisode = chronologicalEpisodes[0] ?? null;
 
   const resumeEpisode = useMemo(() => {
     const savedId = readStored(lastEpisodeKey(slug));
@@ -202,10 +200,9 @@ export default function PodcastExternalSeries() {
   };
 
   const playNext = () => {
-    if (!current) return;
-    const list = playbackMode === "series" ? sortedEpisodes : episodes;
-    const index = list.findIndex((episode) => episode.id === current.id);
-    const next = list[index + 1];
+    if (!current || playbackMode !== "series") return;
+    const index = chronologicalEpisodes.findIndex((episode) => episode.id === current.id);
+    const next = chronologicalEpisodes[index + 1];
     if (next) void playEpisode(next);
   };
 
