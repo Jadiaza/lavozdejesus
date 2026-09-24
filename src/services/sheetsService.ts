@@ -260,9 +260,9 @@ const SANTORAL_API_URL =
   (import.meta.env.VITE_SANTORAL_API_URL as string | undefined) ??
   buildApiUrl("/api/santoral");
 
-const PROGRAMACION_API_URL =
-  (import.meta.env.VITE_PROGRAMACION_API_URL as string | undefined) ??
-  buildApiUrl("/api/programacion");
+// Programación usa la función serverless del mismo despliegue de Vercel.
+// Así la PWA no depende de la ruta /api/programacion.php del hosting.
+const PROGRAMACION_API_URL = "/api/programacion";
 
 const CAPILLA_API_URL =
   (import.meta.env.VITE_CAPILLA_API_URL as string | undefined) ??
