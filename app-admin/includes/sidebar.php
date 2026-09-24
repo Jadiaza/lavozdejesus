@@ -69,7 +69,7 @@ $aiTrainingActive = $currentAdminPage === 'ia-entrenamiento.php' || $currentModu
 
     <span class="side-nav-section-label">Emisora</span>
     <a class="<?php echo side_nav_active('', 'radio', ''); ?>" href="content.php?module=radio"><span class="nav-icon">R</span> Radio en Vivo</a>
-    <a class="<?php echo side_nav_active('', 'radio', 'lvj_rad_programacion'); ?>" href="content.php?module=radio&amp;table=lvj_rad_programacion"><span class="nav-icon">Pr</span> Programacion</a>
+    <a class="<?php echo $currentAdminPage === 'programacion.php' ? 'active' : ''; ?>" href="programacion.php"><span class="nav-icon">Pr</span> Programacion</a>
     <a class="<?php echo side_nav_active('', 'podcast'); ?>" href="content.php?module=podcast"><span class="nav-icon">Pc</span> Podcast</a>
 
     <span class="side-nav-section-label">Capilla y Oracion</span>
