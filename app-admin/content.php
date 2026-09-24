@@ -2224,6 +2224,11 @@ if ($editId > 0 && $columns) {
 $formMode = (string) ($_GET['action'] ?? '');
 $showForm = !$readOnly && (($formMode === 'new' && $table !== 'lvj_com_usuarios') || ($editId > 0 && $editRow));
 $search = trim((string) ($_GET['q'] ?? ''));
+$scheduleDay = $table === 'lvj_rad_programacion' ? trim((string) ($_GET['dia'] ?? '')) : '';
+$scheduleDays = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'];
+if ($scheduleDay !== '' && !in_array($scheduleDay, $scheduleDays, true)) {
+  $scheduleDay = '';
+}
 $page = max(1, (int) ($_GET['page'] ?? 1));
 $perPage = 20;
 $totalRows = 0;
@@ -2239,6 +2244,11 @@ try {
   $where = $columns ? content_inactive_filter($columns, $table) : '';
   if ($where) {
     $whereParts[] = $where;
+  }
+
+  if ($table === 'lvj_rad_programacion' && $scheduleDay !== '' && content_has_column($columns, 'dia_semana')) {
+    $whereParts[] = 'LOWER(dia_semana) = LOWER(:schedule_day)';
+    $params['schedule_day'] = $scheduleDay;
   }
 
   if ($search !== '' && $listColumns) {
@@ -2273,7 +2283,9 @@ try {
       ? " ORDER BY prioridad ASC, {$primaryColumn} DESC"
       : ($table === 'lvj_cfg_apariencia'
         ? " ORDER BY activo DESC, {$primaryColumn} DESC"
-        : " ORDER BY {$primaryColumn} DESC");
+        : ($table === 'lvj_rad_programacion' && content_has_column($columns, 'hora_inicio')
+          ? " ORDER BY FIELD(LOWER(dia_semana),'lunes','martes','miercoles','jueves','viernes','sabado','domingo'), hora_inicio ASC, {$primaryColumn} ASC"
+          : " ORDER BY {$primaryColumn} DESC"));
     $stmt = $pdo->prepare("SELECT * FROM {$table}{$whereSql}{$orderSql} LIMIT {$perPage} OFFSET {$offset}");
     $stmt->execute($params);
     $rows = $stmt->fetchAll();
@@ -2585,6 +2597,16 @@ require __DIR__ . '/includes/header.php';
     </div>
   </div>
 
+  <?php if ($table === 'lvj_rad_programacion'): ?>
+    <div class="content-step-tabs schedule-day-tabs" aria-label="Filtrar programación por día">
+      <a class="<?php echo $scheduleDay === '' ? 'active' : ''; ?>" href="content.php?module=radio&amp;table=lvj_rad_programacion">Todos</a>
+      <?php foreach ($scheduleDays as $day): ?>
+        <a class="<?php echo $scheduleDay === $day ? 'active' : ''; ?>" href="content.php?<?php echo e(http_build_query(['module' => 'radio', 'table' => 'lvj_rad_programacion', 'dia' => $day])); ?>"><?php echo e($day); ?></a>
+      <?php endforeach; ?>
+    </div>
+    <p class="muted schedule-day-help">Selecciona un día para ver su parrilla ordenada desde la primera hora hasta la última.</p>
+  <?php endif; ?>
+
   <div class="table-wrap">
     <table class="admin-grid-table">
       <thead>
@@ -2693,6 +2715,9 @@ require __DIR__ . '/includes/header.php';
           $paginationBase = ['module' => $moduleKey, 'table' => $table];
           if ($search !== '') {
             $paginationBase['q'] = $search;
+          }
+          if ($table === 'lvj_rad_programacion' && $scheduleDay !== '') {
+            $paginationBase['dia'] = $scheduleDay;
           }
         ?>
         <?php if ($page > 1): ?>
