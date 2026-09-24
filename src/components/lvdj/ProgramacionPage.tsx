@@ -35,81 +35,6 @@ import {
   isSameProgramDay,
   parseTimeToMinutes,
 } from "@/utils/programacion";
-import cathedralImage from "@/assets/cathedral-bg.jpg";
-import monstranceImage from "@/assets/monstrance-hero.jpg";
-import rosaryImage from "@/assets/rosary.jpg";
-
-const fallbackPrograms: Programa[] = [
-  {
-    id: "rosario-0600",
-    horaInicio: "06:00 AM",
-    horaFin: "07:00 AM",
-    nombre: "Santo Rosario",
-    descripcion: "Meditacion de los misterios del Rosario.",
-    categoria: "Devocion",
-    dia: "diario",
-    icono: "rosary",
-    imagenUrl: rosaryImage,
-  },
-  {
-    id: "laudes-0700",
-    horaInicio: "07:00 AM",
-    horaFin: "08:00 AM",
-    nombre: "Laudes",
-    descripcion: "Oracion de la manana para ofrecer el dia al Senor.",
-    categoria: "Oracion",
-    dia: "diario",
-  },
-  {
-    id: "misa-1000",
-    horaInicio: "10:00 AM",
-    horaFin: "11:00 AM",
-    nombre: "Santa Misa",
-    descripcion: "Celebracion de la Eucaristia.",
-    categoria: "Liturgia",
-    dia: "diario",
-    enVivo: true,
-    imagenUrl: cathedralImage,
-  },
-  {
-    id: "misericordia-1500",
-    horaInicio: "03:00 PM",
-    horaFin: "04:00 PM",
-    nombre: "Coronilla de la Divina Misericordia",
-    descripcion: "Confia en la misericordia infinita de Jesus.",
-    categoria: "Devocion",
-    dia: "diario",
-  },
-  {
-    id: "adoracion-1900",
-    horaInicio: "07:00 PM",
-    horaFin: "08:00 PM",
-    nombre: "Adoracion Eucaristica",
-    descripcion: "Un tiempo para adorar al Senor en el Santisimo.",
-    categoria: "Liturgia",
-    dia: "diario",
-    imagenUrl: monstranceImage,
-  },
-  {
-    id: "lectio-2100",
-    horaInicio: "09:00 PM",
-    horaFin: "10:00 PM",
-    nombre: "Lectio Divina",
-    descripcion: "Escucha, medita y vive la Palabra de Dios.",
-    categoria: "Formacion",
-    dia: "diario",
-  },
-  {
-    id: "completas-2200",
-    horaInicio: "10:00 PM",
-    horaFin: "10:30 PM",
-    nombre: "Completas",
-    descripcion: "Oracion de la noche para descansar en Dios.",
-    categoria: "Descanso",
-    dia: "diario",
-  },
-];
-
 const desktopLinks = [
   { label: "Inicio", icon: Home, to: "/" },
   { label: "Radio en vivo", icon: Radio, to: "/radio" },
@@ -205,24 +130,19 @@ export const ProgramacionPage = () => {
   }, []);
 
   const programs = useMemo(
-    () =>
-      remotePrograms.length
-        ? remotePrograms.map((program) => toPrograma(program, now))
-        : fallbackPrograms,
+    () => remotePrograms.map((program) => toPrograma(program, now)),
     [now, remotePrograms],
   );
 
-  const radioPrograms = useMemo(() => programs.map(toRadioProgram), [programs]);
+  const radioPrograms = useMemo(() => remotePrograms, [remotePrograms]);
 
   const liveProgram =
-    programs.find((program) => program.enVivo) ??
-    programs.find((program) => program.id === "misa-1000") ??
-    programs[0];
+    programs.find((program) => program.enVivo) ?? null;
 
   const nextProgram = useMemo(() => {
     const next = getNextProgram(radioPrograms, now);
-    return programs.find((program) => program.id === next?.id) ?? programs[1];
-  }, [now, programs, radioPrograms]);
+    return next ? toPrograma(next, now) : null;
+  }, [now, radioPrograms]);
 
   const today = now.getDay();
   const schedule: DaySchedule[] = useMemo(
@@ -363,20 +283,26 @@ export const ProgramacionPage = () => {
 
           <div className="grid min-w-0 max-w-full gap-4 2xl:grid-cols-[minmax(0,1fr)_260px]">
             <div className="min-w-0 max-w-full space-y-4 sm:space-y-5">
-              <section className="grid min-w-0 max-w-full gap-4 sm:gap-5 xl:grid-cols-2">
-                <ProgramHeroCard
-                  eyebrow="En vivo ahora"
-                  program={liveProgram}
-                  variant="live"
-                  onAction={openRadio}
-                />
-                <ProgramHeroCard
-                  eyebrow="Proximo programa"
-                  program={nextProgram}
-                  variant="next"
-                  onAction={openProgramDetail}
-                />
-              </section>
+              {(liveProgram || nextProgram) && (
+                <section className="grid min-w-0 max-w-full gap-4 sm:gap-5 xl:grid-cols-2">
+                  {liveProgram && (
+                    <ProgramHeroCard
+                      eyebrow="En vivo ahora"
+                      program={liveProgram}
+                      variant="live"
+                      onAction={openRadio}
+                    />
+                  )}
+                  {nextProgram && (
+                    <ProgramHeroCard
+                      eyebrow="Proximo programa"
+                      program={nextProgram}
+                      variant="next"
+                      onAction={openProgramDetail}
+                    />
+                  )}
+                </section>
+              )}
 
               <div className="flex min-w-0 max-w-full flex-col gap-6">
                 <WeeklySchedule
