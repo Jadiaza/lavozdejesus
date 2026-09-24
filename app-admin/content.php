@@ -32,6 +32,12 @@ $modules = [
       'lvj_rad_programacion' => 'Programacion',
       'lvj_rad_locutores' => 'Locutores',
     ],
+    'tabs' => [
+      ['label' => 'Streams', 'table' => 'lvj_rad_streams'],
+      ['label' => 'Programas', 'table' => 'lvj_rad_programas'],
+      ['label' => 'Programación', 'href' => 'programacion.php'],
+      ['label' => 'Locutores', 'table' => 'lvj_rad_locutores'],
+    ],
   ],
   'liturgia' => [
     'title' => 'Liturgia',
