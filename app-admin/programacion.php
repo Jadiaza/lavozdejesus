@@ -198,6 +198,15 @@ require __DIR__ . '/includes/header.php';
 @media(max-width:600px){.schedule-days{display:flex;overflow-x:auto;padding-bottom:5px}.schedule-day{min-width:110px}.schedule-form{grid-template-columns:1fr}.admin-grid-table th:nth-child(1),.admin-grid-table td:nth-child(1){display:none}}
 </style>
 
+<nav class="content-toolbar" aria-label="Secciones de Radio en Vivo">
+  <div class="content-tabs">
+    <a href="content.php?module=radio&amp;table=lvj_rad_streams">Streams</a>
+    <a href="content.php?module=radio&amp;table=lvj_rad_programas">Programas</a>
+    <a class="active" href="programacion.php">Programación</a>
+    <a href="content.php?module=radio&amp;table=lvj_rad_locutores">Locutores</a>
+  </div>
+</nav>
+
 <?php if ($message !== ''): ?><div class="alert alert-success"><?php echo e($message); ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="alert alert-error"><?php echo e($error); ?></div><?php endif; ?>
 
