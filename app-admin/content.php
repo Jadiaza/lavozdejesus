@@ -988,8 +988,36 @@ function content_status_label($value): array
   return [$raw !== '' ? ucfirst($raw) : 'Sin estado', 'neutral'];
 }
 
-function content_cell_html(string $table, string $field, $value): string
+function content_program_name(PDO $pdo, $programId): string
 {
+  static $programNames = null;
+
+  if ($programNames === null) {
+    $programNames = [];
+    try {
+      $rows = $pdo->query("SELECT id, nombre FROM lvj_rad_programas ORDER BY nombre ASC")->fetchAll();
+      foreach ($rows as $program) {
+        $id = trim((string) ($program['id'] ?? ''));
+        $name = trim((string) ($program['nombre'] ?? ''));
+        if ($id !== '' && $name !== '') {
+          $programNames[$id] = $name;
+        }
+      }
+    } catch (Throwable $error) {
+      // Keep the original id visible if the related catalog cannot be read.
+    }
+  }
+
+  $id = trim((string) $programId);
+  return $programNames[$id] ?? $id;
+}
+
+function content_cell_html(string $table, string $field, $value, ?PDO $pdo = null): string
+{
+  if ($table === 'lvj_rad_programacion' && $field === 'programa_id' && $pdo) {
+    $name = content_program_name($pdo, $value);
+    return e($name !== '' ? $name : 'Programa #' . (string) $value);
+  }
   if ($table === 'lvj_ora_oraciones' && $field === 'estado_revision') {
     [$label, $state] = content_status_label($value);
     if ((string) $value === 'revision') [$label, $state] = ['En revisión', 'draft'];
@@ -2572,7 +2600,7 @@ require __DIR__ . '/includes/header.php';
           <tr>
             <?php foreach ($visibleListColumns as $column): ?>
               <?php $field = (string) $column['Field']; ?>
-              <td><?php echo content_cell_html($table, $field, $row[$field] ?? ''); ?></td>
+              <td><?php echo content_cell_html($table, $field, $row[$field] ?? '', $pdo); ?></td>
             <?php endforeach; ?>
             <?php if (!$readOnly): ?><td class="actions grid-actions">
               <a class="action-button action-edit" title="Editar registro" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&edit=<?php echo (int) $row['id']; ?>">Editar</a>
