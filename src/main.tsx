@@ -22,7 +22,7 @@ if (isPasswordRecoveryLink && window.location.pathname !== "/acceso/recuperar") 
 const rootElement = document.getElementById("root")!;
 const isMobileViewport = window.matchMedia("(max-width: 767px)").matches;
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const mobileSplashDelay = prefersReducedMotion ? 1_100 : 3_250;
+const mobileSplashDelay = prefersReducedMotion ? 1_000 : 3_000;
 
 const renderApp = () => {
   createRoot(rootElement).render(<App />);
