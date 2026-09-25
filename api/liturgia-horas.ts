@@ -10,6 +10,7 @@ type ApiResponse = {
 
 const HOURS = new Set(["oficio", "laudes", "tercia", "sexta", "nona", "visperas", "completas"]);
 const MONTHS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+const HOUR_TITLE_PATTERN = /^(?:OFICIO DE LECTURA|LAUDES|(?:HORA\s+)?(?:TERCIA|SEXTA|NONA)|(?:I{1,2}\s+)?V[ÍI]SPERAS|COMPLETAS)$/i;
 
 const SECTION_NAMES: Array<[RegExp, string]> = [
   [/^INVOCACI[ÓO]N INICIAL$/i, "invocacion"],
@@ -96,7 +97,7 @@ const parseHour = (html: string) => {
       continue;
     }
 
-    if (/^(OFICIO DE LECTURA|LAUDES|TERCIA|SEXTA|NONA|V[ÍI]SPERAS|COMPLETAS)$/i.test(line)) continue;
+    if (HOUR_TITLE_PATTERN.test(line)) continue;
     current.contenido.push({ tipo: paragraphType(line), texto: line });
   }
 
@@ -105,7 +106,7 @@ const parseHour = (html: string) => {
 };
 
 const parseDay = (html: string) => {
-  const lines = htmlToLines(html).filter((line) => !/^(Oficio de Lectura|Laudes|Tercia|Sexta|Nona|Vísperas|Completas)$/i.test(line));
+  const lines = htmlToLines(html).filter((line) => !HOUR_TITLE_PATTERN.test(line));
   return {
     tiempo_liturgico: lines[0] ?? "",
     celebracion: lines[1] ?? "",
