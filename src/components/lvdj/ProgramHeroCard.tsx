@@ -37,7 +37,7 @@ export const ProgramHeroCard = ({
   const Icon = variant === "live" ? Radio : Clock;
 
   return (
-    <article className={cn("overflow-hidden rounded-2xl border border-gold/45 bg-[#020814] shadow-deep", className)}>
+    <article className={cn("overflow-hidden bg-[#020814]", className)}>
       <div className="relative min-h-[300px] overflow-hidden sm:min-h-[360px]">
         {program.imagenUrl ? (
           <img src={program.imagenUrl} alt="" className="absolute inset-0 h-full w-full object-cover" loading="eager" />
@@ -65,7 +65,7 @@ export const ProgramHeroCard = ({
       </div>
 
       {variant === "live" && nextProgram && (
-        <button type="button" onClick={() => onNextAction?.(nextProgram)} className="grid w-full grid-cols-[44px_minmax(0,1fr)_38px] items-center gap-3 border-t border-gold/35 px-5 py-4 text-left sm:px-7">
+        <button type="button" onClick={() => onNextAction?.(nextProgram)} className="grid w-full grid-cols-[44px_minmax(0,1fr)_38px] items-center gap-3 border-t border-gold/25 px-5 py-4 text-left sm:px-7">
           <Clock className="h-8 w-8 text-gold" strokeWidth={1.8} />
           <span className="min-w-0">
             <span className="block text-[10px] font-extrabold uppercase tracking-[0.12em] text-gold sm:text-xs">Próximo programa</span>
