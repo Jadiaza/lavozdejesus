@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { RadioPlayerProvider } from "@/context/RadioPlayerContext";
 import Index from "./pages/Index.tsx";
+import Programacion from "./pages/Programacion.tsx";
 import PrayerReminderScheduler from "@/modules/prayers/components/PrayerReminderScheduler";
 import AppThemeSync from "@/features/theme/AppThemeSync";
 
@@ -38,7 +39,6 @@ const PrayerReminders = lazy(() => import("@/modules/prayers/pages/Oraciones").t
 
 const Contacto = lazy(() => import("./pages/Contacto.tsx"));
 const LecturasDelDia = lazy(() => import("./pages/LecturasDelDia.tsx"));
-const Programacion = lazy(() => import("./pages/Programacion.tsx"));
 const Radio = lazy(() => import("./pages/Radio.tsx"));
 const Capilla = lazy(() => import("./pages/Capilla.tsx"));
 const Intenciones = lazy(() => import("./pages/Intenciones.tsx"));
