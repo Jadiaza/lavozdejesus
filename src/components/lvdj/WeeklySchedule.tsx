@@ -98,7 +98,7 @@ export const WeeklySchedule = ({
         ))}
       </div>
 
-      <div className="max-h-[520px] space-y-3 overflow-y-auto pr-1">
+      <div className="space-y-3">
         {visibleSchedules.map((daySchedule) => (
           <div
             key={daySchedule.dia}
@@ -116,7 +116,7 @@ export const WeeklySchedule = ({
               return (
                 <article
                   key={`${daySchedule.dia}-${program.id}`}
-                  className="grid min-h-[64px] w-full grid-cols-[64px_26px_minmax(0,1fr)_32px] items-center gap-2 border-b border-gold/10 px-2 py-3 last:border-b-0 sm:grid-cols-[94px_40px_minmax(0,1fr)_40px] sm:px-3 sm:gap-3"
+                  className="grid min-h-[56px] w-full grid-cols-[68px_24px_minmax(0,1fr)_32px] items-center gap-2 border-b border-gold/10 px-2 py-2.5 last:border-b-0 sm:grid-cols-[94px_36px_minmax(0,1fr)_40px] sm:px-3 sm:gap-3"
                 >
                   <div className="text-xs font-extrabold text-gold sm:text-sm">
                     {program.horaInicio}
