@@ -78,21 +78,14 @@ export const WeeklySchedule = ({
         <div>
           <div className="flex items-center gap-2 text-lg font-extrabold uppercase leading-tight text-gold sm:text-xl">
             <CalendarDays className="h-5 w-5" />
-            Programacion semanal
+            Semana
           </div>
           <p className="mt-1 text-sm text-foreground/70">
             Selecciona un día para ver su programación
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={onToggleFullWeek}
-          className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide text-gold hover:text-gold-bright sm:gap-2 sm:text-xs"
-        >
-          {showFullWeek ? "Ver resumen" : "Ver programación completa"}
-          <ChevronRight className="h-4 w-4" />
-        </button>
+
       </div>
 
       <div className="mb-3 flex max-w-full gap-2 overflow-x-auto px-1 pb-1 sm:px-0">
@@ -166,14 +159,14 @@ export const WeeklySchedule = ({
         ))}
       </div>
 
-      {!showFullWeek && selectedSchedule.programas.length > 6 && (
+      {selectedSchedule.programas.length > 6 && (
         <button
           type="button"
           onClick={onToggleFullWeek}
-          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full border border-gold px-4 py-3 text-xs font-extrabold uppercase tracking-wide text-gold transition hover:bg-gold/10"
+          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full border border-gold/70 px-4 py-3 text-xs font-extrabold uppercase tracking-wide text-gold transition hover:bg-gold/10"
         >
-          Ver programación completa
-          <ChevronRight className="h-4 w-4" />
+          {showFullWeek ? "Ver resumen" : "Ver programación completa"}
+          <ChevronRight className={cn("h-4 w-4 transition-transform", showFullWeek && "rotate-180")} />
         </button>
       )}
     </section>
