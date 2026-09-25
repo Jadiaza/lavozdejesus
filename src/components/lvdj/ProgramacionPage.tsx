@@ -161,17 +161,19 @@ export const ProgramacionPage = () => {
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-navy-deep text-foreground">
       <div className="mx-auto w-full max-w-[1180px] overflow-x-hidden">
         <main className="min-w-0 max-w-full overflow-x-hidden px-3 pb-28 pt-5 sm:px-6 xl:px-8">
-          <div className="mb-4 flex items-end gap-3 px-1 sm:mb-5 sm:px-0">
-            <CalendarDays className="mb-1 h-8 w-8 text-gold sm:h-9 sm:w-9" />
-            <div>
-              <h1 className="font-display text-3xl font-semibold leading-none text-foreground sm:text-5xl">
+          <header className="mb-5 flex items-center gap-3 px-1 sm:mb-6 sm:px-0">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F2D27A] via-[#D4AF37] to-[#9B7417] shadow-[0_0_26px_rgba(212,175,55,0.3)]">
+              <CalendarDays className="h-5 w-5 text-[#050505]" strokeWidth={1.8} />
+            </span>
+            <div className="min-w-0">
+              <div className="text-[9px] font-semibold uppercase tracking-[0.3em] text-[#D4AF37]">
+                La Voz de Jesús
+              </div>
+              <h1 className="font-display text-[clamp(1.82rem,8.5vw,2.35rem)] leading-none text-[#F8F5EA]">
                 Programación
               </h1>
-              <p className="mt-2 text-sm text-foreground/70">
-                Conoce nuestra programación diaria y semanal
-              </p>
             </div>
-          </div>
+          </header>
 
           <div className="min-w-0 max-w-full">
             <div className="min-w-0 max-w-full space-y-4 sm:space-y-5">
