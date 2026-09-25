@@ -56,6 +56,9 @@ export const WeeklySchedule = ({
   );
 
   const visibleSchedules = showFullWeek ? schedule : [selectedSchedule];
+  const displayedSchedules = showFullWeek
+    ? visibleSchedules
+    : visibleSchedules.map((day) => ({ ...day, programas: day.programas.slice(0, 6) }));
 
   return (
     <section className="glass h-full w-full max-w-full overflow-hidden rounded-2xl gold-border p-3 shadow-deep sm:p-5">
@@ -99,7 +102,7 @@ export const WeeklySchedule = ({
       </div>
 
       <div className="space-y-3">
-        {visibleSchedules.map((daySchedule) => (
+        {displayedSchedules.map((daySchedule) => (
           <div
             key={daySchedule.dia}
             className="w-full max-w-full overflow-hidden rounded-2xl border border-gold/15 bg-black/10"
@@ -160,6 +163,17 @@ export const WeeklySchedule = ({
           </div>
         ))}
       </div>
+
+      {!showFullWeek && selectedSchedule.programas.length > 6 && (
+        <button
+          type="button"
+          onClick={onToggleFullWeek}
+          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-gold/70 px-4 py-3 text-xs font-extrabold uppercase tracking-wide text-gold transition hover:bg-gold/10"
+        >
+          Ver programación completa
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      )}
     </section>
   );
 };
