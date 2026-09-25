@@ -48,15 +48,15 @@ export const ProgramHeroCard = ({
         <img
           src={program.imagenUrl}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-40"
+          className="absolute inset-0 h-full w-full object-cover opacity-65"
           loading="lazy"
         />
       ) : (
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_35%,hsl(var(--gold)/0.28),transparent_38%),linear-gradient(135deg,hsl(var(--navy-deep)),hsl(var(--navy)))]" />
       )}
 
-      <div className="absolute inset-0 bg-gradient-to-r from-navy-deep via-navy-deep/80 to-navy-deep/40" />
-      <div className="absolute inset-0 bg-gradient-to-t from-navy-deep/90 via-transparent to-black/25" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-navy-deep/75 to-navy-deep/20" />
+      <div className="absolute inset-0 bg-gradient-to-t from-navy-deep/95 via-transparent to-black/35" />
 
       <div className="relative z-10 flex min-h-[235px] min-w-0 max-w-[520px] flex-col sm:min-h-[285px]">
         <div className="mb-4 flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-gold sm:mb-5 sm:text-xs sm:tracking-[0.16em]">
@@ -64,7 +64,7 @@ export const ProgramHeroCard = ({
           {eyebrow}
         </div>
 
-        <h2 className="font-sans text-3xl font-bold leading-none text-foreground sm:text-5xl lg:text-4xl xl:text-5xl">
+        <h2 className="font-display text-4xl font-semibold leading-[0.95] text-[#F8F5EA] sm:text-5xl lg:text-5xl">
           {program.nombre}
         </h2>
 
@@ -74,7 +74,7 @@ export const ProgramHeroCard = ({
         </div>
 
         {variant === "live" && (
-          <p className="mt-3 max-w-[320px] text-sm leading-relaxed text-foreground/80">
+          <p className="mt-3 max-w-[360px] text-sm leading-relaxed text-foreground/85 sm:text-base">
             {program.descripcion}
           </p>
         )}
