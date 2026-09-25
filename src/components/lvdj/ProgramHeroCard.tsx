@@ -1,4 +1,4 @@
-import { BookOpen, ChevronRight, Clock, Play, Radio } from "lucide-react";
+import { BookOpen, CalendarDays, ChevronRight, Clock, Play, Radio } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface Programa {
@@ -23,6 +23,8 @@ interface ProgramHeroCardProps {
   onAction?: (program: Programa) => void;
   nextProgram?: Programa;
   onNextAction?: (program: Programa) => void;
+  brandedHeader?: boolean;
+  fallbackImage?: string;
 }
 
 export const ProgramHeroCard = ({
@@ -33,21 +35,35 @@ export const ProgramHeroCard = ({
   onAction,
   nextProgram,
   onNextAction,
+  brandedHeader = false,
+  fallbackImage,
 }: ProgramHeroCardProps) => {
   const Icon = variant === "live" ? Radio : Clock;
 
   return (
     <article className={cn("overflow-visible bg-transparent", className)}>
-      <div className="relative min-h-[240px] overflow-hidden sm:min-h-[320px]">
-        {program.imagenUrl ? (
-          <img src={program.imagenUrl} alt="" className="absolute inset-0 h-full w-full object-cover" loading="eager" />
+      <div className="relative overflow-hidden">
+        {program.imagenUrl || fallbackImage ? (
+          <img src={program.imagenUrl || fallbackImage} alt="" className="absolute inset-0 h-full w-full object-cover" loading="eager" />
         ) : (
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_35%,hsl(var(--gold)/0.3),transparent_38%),linear-gradient(135deg,#020814,#101827)]" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/70 to-black/15" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/72 to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-black/45" />
 
-        <div className="relative z-10 flex min-h-[240px] max-w-[76%] flex-col p-5 sm:min-h-[320px] sm:max-w-[72%] sm:p-7">
+        {brandedHeader && (
+          <div className="relative z-10 flex items-center gap-3 border-b border-gold/25 px-5 pb-5 pt-6 sm:px-7 sm:pb-6 sm:pt-8">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F7D95D] via-[#D4AF37] to-[#A67C00] shadow-[0_0_26px_rgba(212,175,55,.35)]">
+              <CalendarDays className="h-7 w-7 text-[#050505]" strokeWidth={1.8} />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-[10px] font-semibold uppercase tracking-[0.3em] text-[#E6C54A] sm:text-xs">La Voz de Jesús</span>
+              <span className="block font-display text-[clamp(2rem,9vw,3rem)] leading-none text-[#FFF8E8]">Programación</span>
+            </span>
+          </div>
+        )}
+
+        <div className="relative z-10 flex min-h-[260px] max-w-[82%] flex-col px-5 pb-7 pt-7 sm:min-h-[330px] sm:max-w-[72%] sm:px-7 sm:pb-8 sm:pt-8">
           <div className="mb-3 flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-gold sm:text-sm">
             <Icon className="h-5 w-5" />
             {variant === "live" && <span className="h-2.5 w-2.5 rounded-full bg-red-600 shadow-[0_0_12px_rgba(220,38,38,.9)]" />}
