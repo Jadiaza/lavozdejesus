@@ -21,6 +21,8 @@ interface ProgramHeroCardProps {
   variant: "live" | "next";
   className?: string;
   onAction?: (program: Programa) => void;
+  nextProgram?: Programa;
+  onNextAction?: (program: Programa) => void;
 }
 
 export const ProgramHeroCard = ({
@@ -29,14 +31,16 @@ export const ProgramHeroCard = ({
   variant,
   className,
   onAction,
+  nextProgram,
+  onNextAction,
 }: ProgramHeroCardProps) => {
   const Icon = variant === "live" ? Radio : Clock;
 
   return (
     <article
       className={cn(
-        "relative min-h-[230px] w-full max-w-full overflow-hidden rounded-2xl gold-border bg-navy-deep/80 p-5 shadow-deep",
-        "sm:min-h-[300px] sm:p-6 lg:min-h-[255px]",
+        "relative w-full max-w-full overflow-hidden rounded-2xl gold-border bg-navy-deep/80 p-5 shadow-deep",
+        "sm:p-6",
         className,
       )}
     >
@@ -54,7 +58,7 @@ export const ProgramHeroCard = ({
       <div className="absolute inset-0 bg-gradient-to-r from-navy-deep via-navy-deep/80 to-navy-deep/40" />
       <div className="absolute inset-0 bg-gradient-to-t from-navy-deep/90 via-transparent to-black/25" />
 
-      <div className="relative z-10 flex h-full min-w-0 max-w-[420px] flex-col">
+      <div className="relative z-10 flex min-h-[235px] min-w-0 max-w-[520px] flex-col sm:min-h-[285px]">
         <div className="mb-4 flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-gold sm:mb-5 sm:text-xs sm:tracking-[0.16em]">
           <Icon className="h-4 w-4" />
           {eyebrow}
@@ -93,6 +97,22 @@ export const ProgramHeroCard = ({
           {variant === "live" ? "Escuchar ahora" : "Ver detalles"}
         </button>
       </div>
+
+      {variant === "live" && nextProgram && (
+        <button
+          type="button"
+          onClick={() => onNextAction?.(nextProgram)}
+          className="relative z-10 mt-5 grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-t border-gold/35 pt-4 text-left"
+        >
+          <Clock className="h-6 w-6 text-gold" />
+          <span className="min-w-0">
+            <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-gold sm:text-xs">Próximo programa</span>
+            <span className="mt-1 block truncate font-display text-lg font-semibold text-foreground sm:text-xl">{nextProgram.nombre}</span>
+            <span className="block text-xs font-bold text-gold sm:text-sm">{nextProgram.horaInicio}{nextProgram.horaFin ? ` - ${nextProgram.horaFin}` : ""}</span>
+          </span>
+          <ChevronRight className="h-5 w-5 text-gold" />
+        </button>
+      )}
     </article>
   );
 };
