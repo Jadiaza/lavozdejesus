@@ -58,7 +58,19 @@ export const WeeklySchedule = ({
   const visibleSchedules = showFullWeek ? schedule : [selectedSchedule];
   const displayedSchedules = showFullWeek
     ? visibleSchedules
-    : visibleSchedules.map((day) => ({ ...day, programas: day.programas.slice(0, 6) }));
+    : visibleSchedules.map((day) => {
+        if (day.dia !== "Hoy") {
+          return { ...day, programas: day.programas.slice(0, 6) };
+        }
+
+        const liveIndex = day.programas.findIndex((program) => program.enVivo);
+        const startIndex = liveIndex >= 0 ? liveIndex : 0;
+
+        return {
+          ...day,
+          programas: day.programas.slice(startIndex, startIndex + 6),
+        };
+      });
 
   return (
     <section className="glass h-full w-full max-w-full overflow-hidden rounded-2xl gold-border p-3 shadow-deep sm:p-5">
@@ -131,8 +143,8 @@ export const WeeklySchedule = ({
                         {program.nombre}
                       </h3>
                       {program.enVivo && (
-                        <span className="rounded-md border border-gold/50 px-2 py-0.5 text-[10px] font-extrabold uppercase text-gold">
-                          En vivo
+                        <span className="rounded-md bg-gold px-2 py-0.5 text-[10px] font-extrabold uppercase text-navy-deep shadow-gold">
+                          Reproduciendo
                         </span>
                       )}
                     </div>
