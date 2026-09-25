@@ -169,6 +169,23 @@
           0%, 100% { opacity: .55; transform: scale(.96); }
           50% { opacity: 1; transform: scale(1.04); }
         }
+        /* En la PWA instalada Android/iOS ya existe una pantalla nativa de arranque.
+           Evitamos repetir LVJPRAYER en el splash HTML y pasamos directamente a
+           la firma "By La Voz de Jesús". En navegador se conserva la secuencia completa. */
+        @media (display-mode: standalone) {
+          .initial-splash__brand { display: none; }
+          .initial-splash::after,
+          .initial-splash__flare { display: none; }
+          .initial-splash__signature {
+            opacity: 0;
+            animation: lvj-signature-standalone 2.05s .12s ease-in-out forwards;
+          }
+        }
+        @keyframes lvj-signature-standalone {
+          0% { opacity: 0; transform: translateY(8px); }
+          20%, 86% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; }
+        }
         @media (prefers-reduced-motion: reduce) {
           .initial-splash::before, .initial-splash::after, .initial-splash__brand,
           .initial-splash__wordmark, .initial-splash__flare, .initial-splash__signature {
