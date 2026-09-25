@@ -52,7 +52,7 @@ const toPrograma = (program: ProgramacionRadio, now: Date): Programa => ({
   id: program.id || `${program.hora_inicio}-${program.programa}`,
   nombre: program.programa,
   descripcion:
-    program.descripcion || "Un espacio de fe y esperanza en La Voz de Jesus.",
+    program.descripcion || "",
   horaInicio: formatTime(program.hora_inicio),
   horaFin: program.hora_fin ? formatTime(program.hora_fin) : undefined,
   dia: program.dia_semana || "diario",
