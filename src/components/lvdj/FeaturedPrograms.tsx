@@ -28,7 +28,7 @@ export const FeaturedPrograms = () => {
   const visibleFeatured = showAllFeatured ? featured : featured.slice(0, 5);
 
   return (
-    <section className="glass h-full w-full max-w-full overflow-hidden rounded-2xl gold-border p-3 shadow-deep sm:p-5">
+    <section className="w-full max-w-full overflow-hidden rounded-2xl border border-gold/45 bg-[#020814] p-3 shadow-deep sm:p-5">
       <div className="mb-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-base font-extrabold uppercase text-gold sm:text-lg">
           <Star className="h-5 w-5 fill-gold" />
@@ -56,12 +56,12 @@ export const FeaturedPrograms = () => {
 
         <div
           ref={carouselRef}
-          className="flex max-h-[420px] max-w-full snap-x gap-4 overflow-x-auto overflow-y-hidden pb-4"
+          className="grid max-w-full grid-cols-4 gap-2 overflow-hidden pb-1 sm:gap-3"
         >
           {visibleFeatured.map((program) => (
             <article
               key={program.title}
-              className="relative h-[210px] w-[124px] shrink-0 snap-start overflow-hidden rounded-xl gold-border bg-navy-deep shadow-deep sm:h-[245px] sm:w-[172px] xl:h-[255px]"
+              className="relative aspect-[.72] min-w-0 overflow-hidden rounded-xl border border-gold/45 bg-navy-deep shadow-deep"
             >
               <img
                 src={program.image}
@@ -70,7 +70,7 @@ export const FeaturedPrograms = () => {
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-transparent" />
-              <h3 className="absolute inset-x-2 bottom-4 text-center font-display text-lg font-bold uppercase leading-tight text-gold-bright sm:inset-x-3 sm:bottom-5 sm:text-xl">
+              <h3 className="absolute inset-x-1.5 bottom-3 text-center text-[10px] font-extrabold uppercase leading-tight text-gold-bright sm:inset-x-2 sm:text-sm">
                 {program.title}
               </h3>
             </article>
@@ -87,16 +87,6 @@ export const FeaturedPrograms = () => {
         </button>
       </div>
 
-      <div className="flex justify-center gap-3">
-        {[0, 1, 2, 3].map((dot) => (
-          <span
-            key={dot}
-            className={`h-2.5 w-2.5 rounded-full ${
-              dot === 0 ? "bg-gold" : "bg-foreground/20"
-            }`}
-          />
-        ))}
-      </div>
     </section>
   );
 };
