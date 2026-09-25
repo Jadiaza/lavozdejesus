@@ -184,7 +184,10 @@ export function LiturgiaReader() {
   const majorSectionTypes = new Set(["himno", "salmodia", "lectura", "primera_lectura", "segunda_lectura", "cantico_evangelico", "preces", "oracion", "conclusion"]);
   const visibleSections = content?.secciones.map((section) => ({
     ...section,
-    contenido: section.contenido.filter((paragraph) => !/^\(Oración de (?:la mañana|la tarde|la noche)\)$/i.test(paragraph.texto)),
+    contenido: section.contenido.filter((paragraph) =>
+      !/^\(Oración de (?:la mañana|la tarde|la noche)\)$/i.test(paragraph.texto)
+      && !/^(?:OFICIO DE LECTURA|LAUDES|(?:HORA\s+)?(?:TERCIA|SEXTA|NONA)|(?:I{1,2}\s+)?V[ÍI]SPERAS|COMPLETAS)$/i.test(paragraph.texto)
+    ),
   })).filter((section) => section.contenido.length > 0) ?? [];
 
   return <div style={{ backgroundColor: readingTheme.background, color: readingTheme.color }} className="min-h-dvh transition-colors duration-300">
