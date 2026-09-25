@@ -1,7 +1,4 @@
-import {
-  CalendarDays,
-  ChevronRight,
-} from "lucide-react";
+import { CalendarDays, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -21,6 +18,36 @@ import {
   isSameProgramDay,
   parseTimeToMinutes,
 } from "@/utils/programacion";
+const ProgramDetailModal = ({
+  program,
+  onClose,
+  onListen,
+}: {
+  program: Programa;
+  onClose: () => void;
+  onListen: () => void;
+}) => (
+  <div className="fixed inset-0 z-[70] flex items-end bg-black/70 p-3 backdrop-blur-sm sm:items-center sm:justify-center">
+    <article className="w-full max-w-lg overflow-hidden rounded-2xl gold-border bg-navy-deep shadow-deep">
+      {program.imagenUrl && (
+        <div className="relative h-40">
+          <img src={program.imagenUrl} alt="" className="h-full w-full object-cover opacity-65" />
+          <div className="absolute inset-0 bg-gradient-to-t from-navy-deep to-transparent" />
+        </div>
+      )}
+      <div className="p-5">
+        <h2 className="font-display text-3xl font-semibold leading-tight">{program.nombre}</h2>
+        <p className="mt-3 text-sm leading-relaxed text-foreground/75">{program.descripcion}</p>
+        <div className="mt-4 text-sm font-bold text-gold">{program.horaInicio}{program.horaFin ? ` - ${program.horaFin}` : ""}</div>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <button type="button" onClick={onClose} className="rounded-lg gold-border px-5 py-3 text-xs font-extrabold uppercase tracking-wide text-gold">Cerrar</button>
+          <button type="button" onClick={onListen} className="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-gold px-5 py-3 text-xs font-extrabold uppercase tracking-wide text-navy-deep shadow-gold">Escuchar ahora<ChevronRight className="h-4 w-4" /></button>
+        </div>
+      </div>
+    </article>
+  </div>
+);
+
 const toPrograma = (program: ProgramacionRadio, now: Date): Programa => ({
   id: program.id || `${program.hora_inicio}-${program.programa}`,
   nombre: program.programa,
