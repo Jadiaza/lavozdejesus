@@ -133,22 +133,38 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
 
   const [year, month, day] = fecha.split("-");
   const monthSlug = MONTHS[Number(month) - 1];
-  const variantPath = variante === 1 ? "" : `${variante}/`;
-  const baseUrl = `https://liturgiadelashoras.github.io/sync/${year}/${monthSlug}/${day}/${variantPath}`;
+  const dayBaseUrl = `https://liturgiadelashoras.github.io/sync/${year}/${monthSlug}/${day}/`;
+  // La fuente publica algunos días directamente en la carpeta de la fecha y
+  // otros dentro de /1, /2 o /3. La primera opción también vive en /1 cuando
+  // ese día ofrece varias celebraciones (por ejemplo, una memoria local).
+  const candidateBaseUrls = variante === 1
+    ? [`${dayBaseUrl}1/`, dayBaseUrl]
+    : [`${dayBaseUrl}${variante}/`];
 
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 9000);
-    const [dayResponse, hourResponse] = await Promise.all([
-      fetch(`${baseUrl}index.htm`, { signal: controller.signal, headers: { "User-Agent": "LVJPRAYER/1.0" } }),
-      fetch(`${baseUrl}${hora}.htm`, { signal: controller.signal, headers: { "User-Agent": "LVJPRAYER/1.0" } }),
-    ]);
+    let selected: { baseUrl: string; dayResponse: Response; hourResponse: Response } | null = null;
+
+    for (const baseUrl of candidateBaseUrls) {
+      const [dayResponse, hourResponse] = await Promise.all([
+        fetch(`${baseUrl}index.htm`, { signal: controller.signal, headers: { "User-Agent": "LVJPRAYER/1.0" } }),
+        fetch(`${baseUrl}${hora}.htm`, { signal: controller.signal, headers: { "User-Agent": "LVJPRAYER/1.0" } }),
+      ]);
+
+      if (dayResponse.ok && hourResponse.ok) {
+        selected = { baseUrl, dayResponse, hourResponse };
+        break;
+      }
+    }
     clearTimeout(timeout);
 
-    if (!dayResponse.ok || !hourResponse.ok) {
+    if (!selected) {
       res.status(404).json({ ok: false, error: "CONTENIDO_NO_DISPONIBLE" });
       return;
     }
+
+    const { baseUrl, dayResponse, hourResponse } = selected;
 
     const decoder = new TextDecoder("iso-8859-1");
     const [dayHtml, hourHtml] = await Promise.all([
