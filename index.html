@@ -6,7 +6,7 @@
     <title>La Voz de Jesús · Radio Católica 24/7</title>
     <meta name="description" content="Radio Católica La Voz de Jesús. Adora al Santísimo, escucha la Santa Misa, el Santo Rosario y reflexiones del Evangelio 24/7." />
     <meta name="author" content="La Voz de Jesús" />
-    <meta name="theme-color" content="#0a0f1f" />
+    <meta name="theme-color" content="#050505" />
 
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" href="/favicon2.png" type="image/png" sizes="32x32" />
@@ -14,7 +14,7 @@
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Voz de Jesús" />
+    <meta name="apple-mobile-web-app-title" content="LVJPRAYER" />
 
     <meta property="og:title" content="La Voz de Jesús · Radio Católica 24/7" />
     <meta property="og:description" content="Adora al Santísimo y acompaña tu día con oración, Evangelio y música sacra." />
@@ -49,70 +49,145 @@
           align-items: center;
           justify-content: center;
           overflow: hidden;
-          background: #020713;
+          background:
+            radial-gradient(circle at 50% 52%, rgba(196, 145, 52, .11), transparent 31%),
+            linear-gradient(180deg, #050505 0%, #090806 55%, #030303 100%);
+          color: #fff;
+          isolation: isolate;
         }
-
         .initial-splash::before {
           content: "";
           position: absolute;
+          width: min(92vw, 620px);
+          height: min(92vw, 620px);
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(225, 178, 83, .11), rgba(225, 178, 83, .025) 42%, transparent 68%);
+          filter: blur(10px);
+          animation: lvj-breathe 2.8s ease-in-out infinite;
+        }
+        .initial-splash::after {
+          content: "";
+          position: absolute;
+          left: 10%;
+          right: 10%;
+          top: 56%;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(213,164,72,.18), rgba(244,207,127,.72), rgba(213,164,72,.18), transparent);
+          box-shadow: 0 0 15px rgba(218,171,79,.28);
+          transform: scaleX(0);
+          animation: lvj-line 1.45s .62s ease-out forwards;
+        }
+        .initial-splash__brand,
+        .initial-splash__signature {
+          position: absolute;
           inset: 0;
-          background: radial-gradient(circle at center, rgba(224, 164, 50, 0.18), transparent 42%);
-        }
-
-        .initial-splash__content {
-          position: relative;
           display: flex;
-          width: min(72vw, 280px);
-          flex-direction: column;
           align-items: center;
+          justify-content: center;
+          flex-direction: column;
+          padding: 28px;
+          text-align: center;
         }
-
-        .initial-splash__logo {
-          width: min(58vw, 220px);
-          height: auto;
-          filter: brightness(1.2) drop-shadow(0 0 18px rgba(212, 165, 76, 0.55));
+        .initial-splash__brand {
+          animation: lvj-brand 2.15s ease-in-out forwards;
         }
-
-        .initial-splash__track {
-          margin-top: 24px;
+        .initial-splash__wordmark {
+          margin: 0;
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: clamp(2.25rem, 10.5vw, 4.5rem);
+          font-weight: 700;
+          line-height: .95;
+          letter-spacing: -.055em;
+          white-space: nowrap;
+          transform: translateY(10px) scale(.97);
+          opacity: 0;
+          animation: lvj-wordmark 1.15s .12s cubic-bezier(.2,.8,.2,1) forwards;
+          text-shadow: 0 5px 22px rgba(0,0,0,.9);
+        }
+        .initial-splash__lvj {
+          background: linear-gradient(180deg, #fff2b6 0%, #d6a744 38%, #8c5b13 72%, #f0ce76 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          filter: drop-shadow(0 0 10px rgba(216,166,66,.28));
+        }
+        .initial-splash__prayer {
+          background: linear-gradient(180deg, #ffffff 0%, #e7e4dc 48%, #9e9b95 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+        .initial-splash__flare {
+          position: absolute;
+          top: 56%;
+          left: 50%;
+          width: 7px;
           height: 7px;
-          width: 100%;
-          overflow: hidden;
-          border: 1px solid rgba(255, 186, 97, 0.28);
-          border-radius: 9999px;
-          background: rgba(0, 0, 0, 0.38);
-          box-shadow: 0 0 18px rgba(245, 132, 35, 0.25);
+          border-radius: 50%;
+          background: #fff8dc;
+          opacity: 0;
+          box-shadow: 0 0 7px #fff, 0 0 20px #d9a84c, 0 0 48px rgba(217,168,76,.72);
+          animation: lvj-flare 1.25s .7s ease-out forwards;
         }
-
-        .initial-splash__bar {
-          height: 100%;
-          width: 50%;
-          border-radius: inherit;
-          background: linear-gradient(90deg, #f97316, #fcd34d, #fb923c);
-          box-shadow: 0 0 18px rgba(245, 132, 35, 0.6);
-          animation: initial-splash-loader 1.05s ease-in-out infinite;
+        .initial-splash__signature {
+          opacity: 0;
+          animation: lvj-signature 1.5s 1.82s ease-in-out forwards;
         }
-
-        @keyframes initial-splash-loader {
-          0% {
-            transform: translateX(-105%);
+        .initial-splash__by {
+          margin-bottom: 12px;
+          color: rgba(240,211,151,.68);
+          font: 400 .72rem/1.2 Arial, sans-serif;
+          letter-spacing: .36em;
+          text-transform: uppercase;
+        }
+        .initial-splash__signature img {
+          width: min(52vw, 205px);
+          height: auto;
+          filter: brightness(1.14) drop-shadow(0 0 18px rgba(212,165,76,.35));
+        }
+        @keyframes lvj-wordmark {
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes lvj-line {
+          to { transform: scaleX(1); }
+        }
+        @keyframes lvj-flare {
+          0% { opacity: 0; transform: scale(.4); }
+          35% { opacity: 1; transform: scale(1.4); }
+          100% { opacity: .25; transform: scale(.75); }
+        }
+        @keyframes lvj-brand {
+          0%, 72% { opacity: 1; }
+          100% { opacity: 0; transform: scale(1.018); }
+        }
+        @keyframes lvj-signature {
+          0%, 8% { opacity: 0; transform: translateY(8px); }
+          35%, 88% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; }
+        }
+        @keyframes lvj-breathe {
+          0%, 100% { opacity: .55; transform: scale(.96); }
+          50% { opacity: 1; transform: scale(1.04); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .initial-splash::before, .initial-splash::after, .initial-splash__brand,
+          .initial-splash__wordmark, .initial-splash__flare, .initial-splash__signature {
+            animation: none !important;
           }
-
-          48% {
-            transform: translateX(35%);
-          }
-
-          100% {
-            transform: translateX(205%);
-          }
+          .initial-splash::after { transform: scaleX(1); }
+          .initial-splash__wordmark { opacity: 1; transform: none; }
+          .initial-splash__brand { opacity: 1; }
+          .initial-splash__signature { display: none; }
         }
       </style>
-      <div class="initial-splash" aria-label="Cargando La Voz de Jesús">
-        <div class="initial-splash__content">
-          <img class="initial-splash__logo" src="/logo.png" alt="La Voz de Jesús" />
-          <div class="initial-splash__track" aria-hidden="true">
-            <div class="initial-splash__bar"></div>
-          </div>
+      <div class="initial-splash" role="status" aria-label="Iniciando LVJPRAYER">
+        <div class="initial-splash__brand" aria-hidden="true">
+          <p class="initial-splash__wordmark"><span class="initial-splash__lvj">LVJ</span><span class="initial-splash__prayer">PRAYER</span></p>
+          <span class="initial-splash__flare"></span>
+        </div>
+        <div class="initial-splash__signature" aria-hidden="true">
+          <span class="initial-splash__by">By</span>
+          <img src="/logo.png" alt="" />
         </div>
       </div>
     </div>
