@@ -81,9 +81,26 @@ export const ProgramHeroCard = ({
       </div>
 
       {variant === "live" && nextProgram && (
-        <button type="button" onClick={() => onNextAction?.(nextProgram)} className="mt-3 grid w-full grid-cols-[38px_minmax(0,1fr)_36px] items-center gap-3 border-t border-gold/20 bg-[#020814] px-5 py-3 text-left sm:grid-cols-[44px_minmax(0,1fr)_38px] sm:px-7 sm:py-4">
-          <Clock className="h-7 w-7 text-gold sm:h-8 sm:w-8" strokeWidth={1.8} />
-          <span className="min-w-0">
+        <button
+          type="button"
+          onClick={() => onNextAction?.(nextProgram)}
+          className="relative mt-3 grid min-h-[108px] w-full grid-cols-[38px_minmax(0,1fr)_36px] items-center gap-3 overflow-hidden px-5 py-4 text-left sm:min-h-[124px] sm:grid-cols-[44px_minmax(0,1fr)_38px] sm:px-7"
+        >
+          {nextProgram.imagenUrl || fallbackImage ? (
+            <img
+              src={nextProgram.imagenUrl || fallbackImage}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_40%,hsl(var(--gold)/0.18),transparent_35%),linear-gradient(135deg,#020814,#101827)]" />
+          )}
+          <span className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/78 to-black/45" />
+          <span className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/35" />
+
+          <Clock className="relative z-10 h-7 w-7 text-gold sm:h-8 sm:w-8" strokeWidth={1.8} />
+          <span className="relative z-10 min-w-0">
             <span className="block text-[10px] font-extrabold uppercase tracking-[0.12em] text-gold sm:text-xs">Próximo programa</span>
             <span className="mt-1 flex min-w-0 items-center gap-2">
               <BookOpen className="h-6 w-6 shrink-0 text-gold" />
@@ -91,7 +108,7 @@ export const ProgramHeroCard = ({
             </span>
             <span className="ml-8 block text-xs font-extrabold text-gold sm:text-sm">{nextProgram.horaInicio}{nextProgram.horaFin ? ` - ${nextProgram.horaFin}` : ""}</span>
           </span>
-          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-gold text-gold"><ChevronRight className="h-5 w-5" /></span>
+          <span className="relative z-10 flex h-9 w-9 items-center justify-center rounded-full border border-gold text-gold"><ChevronRight className="h-5 w-5" /></span>
         </button>
       )}
     </article>
