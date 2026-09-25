@@ -169,29 +169,47 @@ export function LiturgiaReader() {
   }, [hora, reload]);
 
   const paragraphClass = (paragraph: LiturgyParagraph) => {
-    if (paragraph.tipo === "antifona") return "font-semibold text-[var(--prayer-accent)]";
-    if (paragraph.tipo === "respuesta") return "pl-3 font-semibold text-[var(--prayer-accent)]";
+    if (paragraph.tipo === "antifona" || paragraph.tipo === "respuesta") return "text-left";
     if (paragraph.tipo === "rubrica") return "text-sm italic text-[var(--prayer-accent)] opacity-80";
     if (paragraph.tipo === "subtitulo") return "font-semibold uppercase tracking-wide text-[var(--prayer-accent)]";
-    return "";
+    return "text-left";
   };
+
+  const renderParagraph = (paragraph: LiturgyParagraph) => {
+    const marked = paragraph.texto.match(/^(Ant(?:\s*\d+)?\.|[VR]\.)\s*(.*)$/i);
+    if (!marked) return paragraph.texto;
+    return <><strong className="mr-1.5 font-semibold text-[var(--prayer-accent)]">{marked[1]}</strong><span>{marked[2]}</span></>;
+  };
+
+  const majorSectionTypes = new Set(["himno", "salmodia", "lectura", "primera_lectura", "segunda_lectura", "cantico_evangelico", "preces", "oracion", "conclusion"]);
+  const visibleSections = content?.secciones.map((section) => ({
+    ...section,
+    contenido: section.contenido.filter((paragraph) => !/^\(Oración de (?:la mañana|la tarde|la noche)\)$/i.test(paragraph.texto)),
+  })).filter((section) => section.contenido.length > 0) ?? [];
 
   return <div style={{ backgroundColor: readingTheme.background, color: readingTheme.color }} className="min-h-dvh transition-colors duration-300">
     <div style={{ backgroundColor: readingTheme.background }} className="mx-auto min-h-dvh max-w-[430px] border-x border-current/[0.04] transition-colors duration-300">
-      <header style={{ backgroundColor: readingTheme.header, borderColor: `${readingTheme.accent}33` }} className="sticky top-0 z-30 grid h-[4.8rem] grid-cols-[3.5rem_1fr_3.5rem] items-center border-b px-3 backdrop-blur-xl transition-colors duration-300">
+      <header style={{ backgroundColor: readingTheme.header, borderColor: `${readingTheme.accent}33` }} className="sticky top-0 z-30 grid h-[4.25rem] grid-cols-[3.5rem_1fr_3.5rem] items-center border-b px-3 backdrop-blur-xl transition-colors duration-300">
         <button type="button" onClick={() => navigate(-1)} aria-label="Volver" style={{ color: readingTheme.accent }} className="flex h-11 w-11 items-center justify-center"><ArrowLeft className="h-7 w-7" /></button>
         <div className="min-w-0 text-center"><Sparkles style={{ color: readingTheme.accent }} className="mx-auto h-4 w-4" /><h1 style={{ color: readingTheme.accent }} className="truncate text-sm font-bold uppercase tracking-wide">{data[1]}</h1></div>
         <button type="button" onClick={() => setFormatOpen(true)} aria-label="Formato de lectura" style={{ color: readingTheme.accent }} className="flex h-11 w-11 items-center justify-center font-serif text-2xl font-semibold">Aa</button>
       </header>
 
       <main className="px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4">
-        <div className="mb-7 text-left"><p className="text-sm capitalize opacity-65">{content?.fecha_texto || todayLabel()}</p>{content ? <p style={{ color: readingTheme.accent }} className="mt-1 text-[11px] font-semibold uppercase tracking-wider">{content.celebracion}</p> : null}</div>
+        <div className="mb-5 text-left"><p className="text-sm capitalize opacity-65">{content?.fecha_texto || todayLabel()}</p></div>
 
         {loading ? <div className="flex min-h-[62dvh] flex-col items-center justify-center"><LoaderCircle style={{ color: readingTheme.accent }} className="h-8 w-8 animate-spin" /><p className="mt-3 text-sm opacity-65">Preparando la oración de la Iglesia…</p></div> : null}
         {!loading && error ? <div className="flex min-h-[55dvh] flex-col items-center justify-center p-6 text-center"><AlertCircle style={{ color: readingTheme.accent }} className="h-9 w-9" /><p className="mt-3 text-sm opacity-75">{error}</p><button type="button" onClick={() => setReload((value) => value + 1)} style={{ borderColor: readingTheme.accent, color: readingTheme.accent }} className="mt-5 flex items-center gap-2 rounded-full border px-5 py-3 text-xs font-bold"><RefreshCw className="h-4 w-4" />REINTENTAR</button></div> : null}
         {!loading && content ? <PrayerReader preferences={preferences} integrated>
-          <div className="mb-7 border-b border-current/20 pb-5 text-left"><p className="text-xs font-semibold uppercase tracking-[.18em] text-[var(--prayer-accent)]">{content.tiempo_liturgico}</p><h2 className="mt-2 text-[clamp(1.55rem,7vw,2rem)] font-bold leading-tight">{content.celebracion}</h2>{content.detalle ? <p className="mt-2 text-sm opacity-65">{content.detalle}</p> : null}</div>
-          <div className="space-y-9">{content.secciones.map((section, index) => <section key={`${section.tipo}-${index}`}><h3 className="mb-4 border-b border-current/20 pb-2 text-left text-lg font-bold text-[var(--prayer-accent)]">{section.titulo}</h3><div className="space-y-4">{section.contenido.map((paragraph, paragraphIndex) => <p key={paragraphIndex} className={paragraphClass(paragraph)}>{paragraph.texto}</p>)}</div></section>)}</div>
+          <div className="mb-7 border-b border-current/20 pb-5 text-left"><p className="text-xs font-semibold uppercase tracking-[.18em] text-[var(--prayer-accent)]">{content.tiempo_liturgico}</p><h2 className="mt-2 text-[clamp(1.45rem,6.4vw,1.9rem)] font-bold leading-tight">{content.celebracion}</h2>{content.detalle ? <p className="mt-2 text-sm opacity-65">{content.detalle}</p> : null}</div>
+          <div className="space-y-8">{visibleSections.map((section, index) => {
+            const isIntro = section.tipo === "inicio";
+            const isMajor = majorSectionTypes.has(section.tipo);
+            return <section key={`${section.tipo}-${index}`} className={isMajor ? "border-t border-current/15 pt-6" : ""}>
+              {!isIntro ? <h3 className="mb-3 text-left text-lg font-bold text-[var(--prayer-accent)]">{section.titulo}</h3> : null}
+              <div className="space-y-4">{section.contenido.map((paragraph, paragraphIndex) => <p key={paragraphIndex} className={paragraphClass(paragraph)}>{renderParagraph(paragraph)}</p>)}</div>
+            </section>;
+          })}</div>
           <footer className="mt-10 border-t border-current/20 pt-4 text-center text-xs opacity-55">Fuente: {content.fuente.nombre} · Presentado por LVJPRAYER</footer>
         </PrayerReader> : null}
       </main>
