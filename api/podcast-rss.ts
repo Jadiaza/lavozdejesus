@@ -22,6 +22,11 @@ const SOURCES: Record<string, SourceConfig> = {
     category: "Biblia",
     strictImageMatch: true,
   },
+  "dios-te-habla": {
+    feed: "https://podcast.zenomedia.com/api/public/podcasts/c8760adb-2534-4ce5-a7e6-99b0debd5665/rss",
+    fallbackTitle: "Dios te habla: Un año con la Biblia en armonía",
+    category: "Biblia",
+  },
   "platicando-en-catolico": {
     feed: "https://feeds.captivate.fm/catolico/",
     fallbackTitle: "Platicando en Católico",
