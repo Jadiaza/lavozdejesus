@@ -37,8 +37,8 @@ export const ProgramHeroCard = ({
   const Icon = variant === "live" ? Radio : Clock;
 
   return (
-    <article className={cn("overflow-hidden bg-[#020814]", className)}>
-      <div className="relative min-h-[300px] overflow-hidden sm:min-h-[360px]">
+    <article className={cn("overflow-visible bg-transparent", className)}>
+      <div className="relative min-h-[280px] overflow-hidden sm:min-h-[340px]">
         {program.imagenUrl ? (
           <img src={program.imagenUrl} alt="" className="absolute inset-0 h-full w-full object-cover" loading="eager" />
         ) : (
@@ -47,7 +47,7 @@ export const ProgramHeroCard = ({
         <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/70 to-black/15" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/20" />
 
-        <div className="relative z-10 flex min-h-[300px] max-w-[72%] flex-col p-5 sm:min-h-[360px] sm:p-7">
+        <div className="relative z-10 flex min-h-[280px] max-w-[72%] flex-col p-5 sm:min-h-[340px] sm:p-7">
           <div className="mb-3 flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-gold sm:text-sm">
             <Icon className="h-5 w-5" />
             {variant === "live" && <span className="h-2.5 w-2.5 rounded-full bg-red-600 shadow-[0_0_12px_rgba(220,38,38,.9)]" />}
@@ -65,7 +65,7 @@ export const ProgramHeroCard = ({
       </div>
 
       {variant === "live" && nextProgram && (
-        <button type="button" onClick={() => onNextAction?.(nextProgram)} className="grid w-full grid-cols-[44px_minmax(0,1fr)_38px] items-center gap-3 border-t border-gold/25 px-5 py-4 text-left sm:px-7">
+        <button type="button" onClick={() => onNextAction?.(nextProgram)} className="mt-4 grid w-full grid-cols-[44px_minmax(0,1fr)_38px] items-center gap-3 bg-[#020814] px-5 py-4 text-left sm:px-7">
           <Clock className="h-8 w-8 text-gold" strokeWidth={1.8} />
           <span className="min-w-0">
             <span className="block text-[10px] font-extrabold uppercase tracking-[0.12em] text-gold sm:text-xs">Próximo programa</span>
