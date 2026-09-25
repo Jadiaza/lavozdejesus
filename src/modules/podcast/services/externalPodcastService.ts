@@ -43,6 +43,13 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     playback_mode: "daily",
   },
   {
+    slug: "dios-te-habla",
+    title: "Dios te habla: Un año con la Biblia en armonía",
+    subtitle: "La Voz de Jesús · Lectura bíblica sincrónica · 365 jornadas",
+    category: "Biblia",
+    playback_mode: "daily",
+  },
+  {
     slug: "que-haria-jesus",
     title: "¿Qué Haría Jesús?",
     subtitle: "New Fire · Reflexión diaria del Evangelio",
