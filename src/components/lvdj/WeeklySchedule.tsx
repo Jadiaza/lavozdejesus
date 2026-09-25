@@ -55,7 +55,7 @@ export const WeeklySchedule = ({
     [schedule, selectedDay],
   );
 
-  const visibleSchedules = showFullWeek ? schedule : [selectedSchedule];
+  const visibleSchedules = [selectedSchedule];
   const displayedSchedules = showFullWeek
     ? visibleSchedules
     : visibleSchedules.map((day) => {
@@ -73,7 +73,7 @@ export const WeeklySchedule = ({
       });
 
   return (
-    <section className="w-full max-w-full overflow-hidden rounded-2xl border border-gold/45 bg-[#020814] p-3 shadow-deep sm:p-5">
+    <section className="w-full max-w-full overflow-hidden bg-transparent py-2 sm:py-3">
       <div className="mb-3 flex items-start justify-between gap-3 px-1 sm:px-0">
         <div>
           <div className="flex items-center gap-2 text-lg font-extrabold uppercase leading-tight text-gold sm:text-xl">
@@ -90,7 +90,7 @@ export const WeeklySchedule = ({
           onClick={onToggleFullWeek}
           className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide text-gold hover:text-gold-bright sm:gap-2 sm:text-xs"
         >
-          {showFullWeek ? "Ver dia activo" : "Ver semana completa"}
+          {showFullWeek ? "Ver resumen" : "Ver programación completa"}
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
@@ -119,11 +119,7 @@ export const WeeklySchedule = ({
             key={daySchedule.dia}
             className="w-full max-w-full overflow-hidden border-y border-gold/15 bg-black/10"
           >
-            {showFullWeek && (
-              <div className="border-b border-gold/10 bg-gold/10 px-3 py-2 text-xs font-extrabold uppercase tracking-wide text-gold">
-                {daySchedule.dia}
-              </div>
-            )}
+
             {daySchedule.programas.map((program) => {
               const Icon =
                 categoryIcons[normalize(program.categoria)] ?? CalendarDays;
