@@ -38,7 +38,15 @@ const ProgramDetailModal = ({
       )}
       <div className="p-5">
         <h2 className="font-display text-3xl font-semibold leading-tight">{program.nombre}</h2>
-        <p className="mt-3 text-sm leading-relaxed text-foreground/75">{program.descripcion}</p>
+        <div className="mt-3 space-y-3 text-sm leading-relaxed text-foreground/75">
+          {program.descripcion
+            .split(/\r?\n\s*\r?\n|\r?\n/)
+            .map((paragraph) => paragraph.trim())
+            .filter(Boolean)
+            .map((paragraph, index) => (
+              <p key={`${program.id}-paragraph-${index}`}>{paragraph}</p>
+            ))}
+        </div>
         <div className="mt-4 text-sm font-bold text-gold">{program.horaInicio}{program.horaFin ? ` - ${program.horaFin}` : ""}</div>
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           <button type="button" onClick={onClose} className="rounded-lg gold-border px-5 py-3 text-xs font-extrabold uppercase tracking-wide text-gold">Cerrar</button>
