@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import cathedralBg from "@/assets/cathedral-bg.jpg";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -161,20 +161,7 @@ export const ProgramacionPage = () => {
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-navy-deep text-foreground">
       <div className="mx-auto w-full max-w-[1180px] overflow-x-hidden">
-        <header className="relative overflow-hidden border-b border-gold/30">
-          <img src={cathedralBg} alt="" className="absolute inset-0 h-full w-full object-cover opacity-55" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#020814] via-[#020814]/90 to-[#020814]/25" />
-          <div className="relative flex items-center gap-3 px-4 py-5 sm:px-6 sm:py-7 xl:px-8">
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F7D95D] via-[#D4AF37] to-[#A67C00] shadow-[0_0_26px_rgba(212,175,55,.35)]">
-              <CalendarDays className="h-7 w-7 text-[#050505]" strokeWidth={1.8} />
-            </span>
-            <div className="min-w-0">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.3em] text-[#E6C54A]">La Voz de Jesús</div>
-              <h1 className="font-display text-[clamp(2rem,9vw,3rem)] leading-none text-[#FFF8E8]">Programación</h1>
-            </div>
-          </div>
-        </header>
-        <main className="min-w-0 max-w-full overflow-x-hidden px-3 pb-28 pt-3 sm:px-6 xl:px-8">
+        <main className="min-w-0 max-w-full overflow-x-hidden pb-28">
 
           <div className="min-w-0 max-w-full">
             <div className="min-w-0 max-w-full space-y-4 sm:space-y-5">
@@ -188,12 +175,14 @@ export const ProgramacionPage = () => {
                       onAction={openRadio}
                       nextProgram={nextProgram ?? undefined}
                       onNextAction={openProgramDetail}
+                      brandedHeader
+                      fallbackImage={cathedralBg}
                     />
                   )}
                 </section>
               )}
 
-              <div className="flex min-w-0 max-w-full flex-col gap-6">
+              <div className="flex min-w-0 max-w-full flex-col gap-6 px-3 sm:px-6 xl:px-8">
                 <WeeklySchedule
                   schedule={schedule}
                   showFullWeek={showFullWeek}
