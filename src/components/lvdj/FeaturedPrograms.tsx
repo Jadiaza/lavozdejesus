@@ -28,7 +28,7 @@ export const FeaturedPrograms = () => {
   const visibleFeatured = showAllFeatured ? featured : featured.slice(0, 5);
 
   return (
-    <section className="w-full max-w-full overflow-hidden rounded-2xl border border-gold/45 bg-[#020814] p-3 shadow-deep sm:p-5">
+    <section className="w-full max-w-full overflow-hidden bg-transparent py-2 sm:py-3">
       <div className="mb-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-base font-extrabold uppercase text-gold sm:text-lg">
           <Star className="h-5 w-5 fill-gold" />
