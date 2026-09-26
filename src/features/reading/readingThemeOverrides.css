@@ -1,0 +1,39 @@
+/* Ajustes visuales compartidos del lector.
+   `sepia` es el identificador histórico del tema Tinta/e-ink. */
+
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] {
+  color: #000 !important;
+}
+
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] > button[aria-expanded="true"] {
+  background: #000 !important;
+  color: #fff !important;
+  border: 1px solid #000 !important;
+  border-radius: 1.05rem !important;
+  padding-left: .875rem !important;
+  padding-right: .875rem !important;
+}
+
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] > button[aria-expanded="true"] * {
+  color: #fff !important;
+  stroke: currentColor !important;
+}
+
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] > button[aria-expanded="false"] {
+  background: #fff !important;
+  color: #000 !important;
+}
+
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] > button[aria-expanded="false"] * {
+  color: #000 !important;
+  stroke: currentColor !important;
+}
+
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] sup {
+  color: #000 !important;
+  font-weight: 700 !important;
+}
+
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] svg {
+  stroke: currentColor;
+}
