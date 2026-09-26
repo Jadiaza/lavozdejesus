@@ -16,6 +16,7 @@ import {
 import {
   EXTERNAL_PODCASTS,
   getExternalPodcastMetadata,
+  getSpotifyPodcastMetadata,
 } from "@/modules/podcast/services/externalPodcastService";
 import "@/modules/podcast/podcast-home.css";
 
@@ -52,6 +53,11 @@ export default function PodcastHome() {
 
     void Promise.allSettled(
       EXTERNAL_PODCASTS.map(async (podcast) => {
+        if (podcast.source === "spotify" && podcast.spotify_show_id) {
+          const metadata = await getSpotifyPodcastMetadata(podcast.spotify_show_id);
+          return { slug: podcast.slug, image_url: metadata.image_url };
+        }
+
         const metadata = await getExternalPodcastMetadata(podcast.slug);
         return { slug: podcast.slug, image_url: metadata.image_url };
       }),
@@ -155,10 +161,15 @@ export default function PodcastHome() {
         <div className="podcast-shelf" aria-label="Podcasts recomendados">
           {EXTERNAL_PODCASTS.map((podcast, index) => {
             const cover = coverMap[podcast.slug];
+            const target =
+              podcast.source === "spotify"
+                ? `/podcast/spotify/${podcast.slug}`
+                : `/podcast/rss/${podcast.slug}`;
+
             return (
               <Link
                 key={podcast.slug}
-                to={`/podcast/rss/${podcast.slug}`}
+                to={target}
                 className="podcast-tile"
                 aria-label={`Abrir ${podcast.title}`}
               >
