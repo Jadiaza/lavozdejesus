@@ -38,6 +38,7 @@ const decodeEntities = (value: string) => {
     Aacute: "Á", Eacute: "É", Iacute: "Í", Oacute: "Ó", Uacute: "Ú",
     ntilde: "ñ", Ntilde: "Ñ", uuml: "ü", Uuml: "Ü",
     laquo: "«", raquo: "»", ndash: "–", mdash: "—", dagger: "†",
+    iexcl: "¡", iquest: "¿",
   };
   return value
     .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
@@ -109,7 +110,13 @@ const parseLines = (input: string[], hora?: string) => {
     if (matched) {
       flush();
       current = { tipo: matched[1], titulo: TITLES[matched[1]], contenido: [] };
-      const remainder = line.replace(matched[0], "").trim();
+      const remainder = matched[1] === "lectura"
+        ? line.replace(/^LECTURA BREVE\s*/i, "").trim()
+        : matched[1] === "primera_lectura"
+          ? line.replace(/^PRIMERA LECTURA\s*/i, "").trim()
+          : matched[1] === "segunda_lectura"
+            ? line.replace(/^SEGUNDA LECTURA\s*/i, "").trim()
+            : line.replace(matched[0], "").trim();
       if (remainder) current.contenido.push({ tipo: "subtitulo", texto: remainder });
       continue;
     }
