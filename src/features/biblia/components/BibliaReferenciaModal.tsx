@@ -1,1 +1,76 @@
-PLACEHOLDER
+import { useEffect, useMemo, useState } from "react";
+import { BookOpen, CheckCircle2, ChevronDown, ChevronRight, ChevronUp, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { resolverReferenciaBiblica, type BibliaReferenciaResuelta } from "@/features/biblia/referenceSearch";
+import { READING_FONT_FAMILIES, READING_THEME_PALETTES } from "@/features/reading/readingPreferences";
+import { useReadingPreferences } from "@/features/reading/useReadingPreferences";
+import { getBibliaCapitulo, getBibliaCatalogo, type BibliaLibro, type BibliaVersiculo } from "@/services/bibliaService";
+
+const VERSION = "SPAPLATENSE";
+interface Passage { referencia: string; libro: BibliaLibro; capitulo: number; versiculos: BibliaVersiculo[]; }
+interface ExpandedReference extends BibliaReferenciaResuelta { hastaFinalCapitulo?: boolean; }
+type ExpandedReferenceResult = { ok: true; data: ExpandedReference[] } | { ok: false; message: string };
+
+function splitReferences(value: string) { return value.split(/[;·]/).map((item) => item.trim()).filter(Boolean); }
+function expandReference(input: string, books: BibliaLibro[]): ExpandedReferenceResult {
+  const normalizedDashes = input.replace(/[–—]/g, "-");
+  const crossChapter = normalizedDashes.match(/^(.+?)\s+(\d{1,3})\s*[:,]\s*(\d{1,3})\s*-\s*(\d{1,3})\s*[:,]\s*(\d{1,3})$/);
+  if (crossChapter) {
+    const [, bookPart, startChapterRaw, startVerseRaw, endChapterRaw, endVerseRaw] = crossChapter;
+    const startChapter = Number(startChapterRaw), startVerse = Number(startVerseRaw), endChapter = Number(endChapterRaw), endVerse = Number(endVerseRaw);
+    const startResolved = resolverReferenciaBiblica(`${bookPart} ${startChapter}`, books); if (!startResolved.ok) return startResolved;
+    const endResolved = resolverReferenciaBiblica(`${bookPart} ${endChapter}`, books); if (!endResolved.ok) return endResolved;
+    if (startResolved.data.libro.codigo !== endResolved.data.libro.codigo || endChapter < startChapter || startVerse < 1 || endVerse < 1) return { ok: false, message: "El rango bíblico no es válido." };
+    const data: ExpandedReference[] = [];
+    for (let chapter = startChapter; chapter <= endChapter; chapter += 1) data.push({ libro: startResolved.data.libro, capitulo: chapter, versiculoInicio: chapter === startChapter ? startVerse : undefined, versiculoFin: chapter === endChapter ? endVerse : undefined, hastaFinalCapitulo: chapter === startChapter && chapter !== endChapter, referencia: `${startResolved.data.libro.nombre} ${chapter}` });
+    return { ok: true, data };
+  }
+  const chapterRange = normalizedDashes.match(/^(.+?)\s+(\d{1,3})\s*-\s*(\d{1,3})$/);
+  if (chapterRange) {
+    const [, bookPart, startRaw, endRaw] = chapterRange; const startChapter = Number(startRaw), endChapter = Number(endRaw);
+    const startResolved = resolverReferenciaBiblica(`${bookPart} ${startChapter}`, books); if (!startResolved.ok) return startResolved;
+    if (endChapter < startChapter || endChapter > startResolved.data.libro.capitulos) return { ok: false, message: `${startResolved.data.libro.nombre} no tiene ese rango de capítulos.` };
+    return { ok: true, data: Array.from({ length: endChapter - startChapter + 1 }, (_, index) => { const chapter = startChapter + index; return { libro: startResolved.data.libro, capitulo: chapter, referencia: `${startResolved.data.libro.nombre} ${chapter}` }; }) };
+  }
+  const resolved = resolverReferenciaBiblica(normalizedDashes, books); return resolved.ok ? { ok: true, data: [resolved.data] } : resolved;
+}
+
+async function loadResolvedPassage(resolved: ExpandedReference): Promise<Passage> {
+  const chapter = await getBibliaCapitulo(resolved.libro.codigo, resolved.capitulo, VERSION);
+  const start = resolved.versiculoInicio; const end = resolved.hastaFinalCapitulo ? Number.POSITIVE_INFINITY : resolved.versiculoFin ?? start;
+  const verses = start === undefined ? resolved.versiculoFin === undefined ? chapter.versiculos : chapter.versiculos.filter((verse) => verse.versiculo <= resolved.versiculoFin!) : chapter.versiculos.filter((verse) => verse.versiculo >= start && verse.versiculo <= (end ?? start));
+  if (!verses.length) throw new Error(`No encontramos ${resolved.referencia} en la Biblia disponible.`);
+  return { referencia: resolved.referencia, libro: resolved.libro, capitulo: resolved.capitulo, versiculos: verses };
+}
+
+export function BibliaReferenciaContenido({ referencia, storageKey, onProgressChange }: { referencia: string; storageKey?: string; onProgressChange?: (completed: number, total: number) => void; }) {
+  const [books, setBooks] = useState<BibliaLibro[]>([]), [passages, setPassages] = useState<Passage[]>([]), [loading, setLoading] = useState(true), [error, setError] = useState(""), [activeIndex, setActiveIndex] = useState(0), [completed, setCompleted] = useState<number[]>([]);
+  const references = useMemo(() => splitReferences(referencia), [referencia]);
+  const { preferences: readingPreferences } = useReadingPreferences(); const readingTheme = READING_THEME_PALETTES[readingPreferences.tema]; const isInk = readingPreferences.tema === "sepia";
+  const readingWidth = readingPreferences.margenLectura === "amplio" ? "38rem" : readingPreferences.margenLectura === "normal" ? "48rem" : "56rem";
+  useEffect(() => { let active = true; setLoading(true); setError(""); getBibliaCatalogo(VERSION).then((catalog) => { if (active) setBooks(catalog.libros); }).catch((cause) => { if (active) { setError(cause instanceof Error ? cause.message : "No fue posible consultar la Biblia."); setLoading(false); } }); return () => { active = false; }; }, []);
+  useEffect(() => { if (!books.length) return; let active = true; setLoading(true); setError(""); const resolved = references.map((item) => expandReference(item, books)); const invalid = resolved.find((item) => !item.ok); if (invalid && !invalid.ok) { setPassages([]); setError(invalid.message); setLoading(false); return; } const expanded = resolved.flatMap((item) => item.ok ? item.data : []); Promise.all(expanded.map(loadResolvedPassage)).then((items) => { if (!active) return; setPassages(items); setActiveIndex(0); if (storageKey) try { const raw = window.localStorage.getItem(storageKey); const saved = raw ? JSON.parse(raw) : null; const restored = Array.isArray(saved?.completed) ? saved.completed.filter((value: unknown) => Number.isInteger(value) && Number(value) >= 0 && Number(value) < items.length) : []; setCompleted(restored); if (Number.isInteger(saved?.activeIndex) && saved.activeIndex >= 0 && saved.activeIndex < items.length) setActiveIndex(saved.activeIndex); } catch { setCompleted([]); } }).catch((cause) => { if (active) { setPassages([]); setError(cause instanceof Error ? cause.message : "No fue posible consultar la Biblia."); } }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, [books, references, storageKey]);
+  useEffect(() => { if (!passages.length) return; onProgressChange?.(completed.length, passages.length); if (!storageKey) return; try { window.localStorage.setItem(storageKey, JSON.stringify({ completed, activeIndex })); } catch {} }, [activeIndex, completed, onProgressChange, passages.length, storageKey]);
+  const markCurrentAndContinue = () => { if (!passages.length) return; setCompleted((current) => current.includes(activeIndex) ? current : [...current, activeIndex].sort((a,b) => a-b)); if (activeIndex < passages.length - 1) { const nextIndex = activeIndex + 1; setActiveIndex(nextIndex); window.requestAnimationFrame(() => document.getElementById("plan-reading-" + nextIndex)?.scrollIntoView({ behavior: "smooth", block: "start" })); } };
+  const shortLabel = (passage: Passage) => (passage.libro.abreviatura?.replace(/\.$/, "") || passage.libro.nombre.slice(0,3)) + " " + passage.capitulo;
+  if (loading) return <div className="flex min-h-36 items-center justify-center" role="status"><Loader2 className="h-6 w-6 animate-spin" style={{ color: readingTheme.accent }} /></div>;
+  if (error) return <div className="rounded-2xl border border-red-500/25 p-4 text-sm leading-relaxed">{error}</div>;
+  return <div className="space-y-4">
+    <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">{passages.map((passage,index) => { const isActive=activeIndex===index; const done=completed.includes(index); return <button key={`chip-${passage.referencia}-${index}`} type="button" onClick={() => { setActiveIndex(index); window.requestAnimationFrame(() => document.getElementById("plan-reading-"+index)?.scrollIntoView({behavior:"smooth",block:"start"})); }} className="shrink-0 rounded-full border px-4 py-1.5 font-display text-[15px] transition" style={isActive ? {background:isInk?"#000000":"linear-gradient(135deg,#F2D27A,#D4AF37)",color:isInk?"#FFFFFF":"#0A0906",borderColor:isInk?"#000000":"#E7C35D"} : {background:readingTheme.surface,color:readingTheme.text,borderColor:readingTheme.border}}>{shortLabel(passage)}</button>; })}</div>
+    <div className="space-y-3">{passages.map((passage,index) => { const isActive=activeIndex===index; const done=completed.includes(index); return <section id={`plan-reading-${index}`} key={`${passage.referencia}-${index}`} className={isActive?"scroll-mt-24":"scroll-mt-24 overflow-hidden rounded-[1.05rem] border transition"} style={isActive?{border:0,borderRadius:0,boxShadow:"none",background:"transparent",overflow:"visible"}:{background:readingTheme.surface,borderColor:readingTheme.border}}>
+      <button type="button" onClick={() => setActiveIndex(index)} className={`flex w-full items-center gap-3 text-left ${isActive?"px-0 pb-2.5 pt-1":"px-3.5 py-2.5"}`} aria-expanded={isActive}>
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center" style={{color:readingTheme.text}}>{done?<CheckCircle2 className="h-5 w-5"/>:<BookOpen className="h-5 w-5"/>}</span>
+        <span className="min-w-0 flex-1"><span className="block font-display text-[1.22rem] font-semibold leading-none" style={{color:readingTheme.text}}>{passage.referencia}</span><span className="mt-1 block text-[8.5px] font-medium tracking-[0.06em]" style={{color:readingTheme.muted}}>Biblia Platense · Straubinger</span></span>
+        {isActive?<ChevronUp className="h-5 w-5 shrink-0" style={{color:readingTheme.text}}/>:<ChevronDown className="h-5 w-5 shrink-0" style={{color:readingTheme.text}}/>}
+      </button>
+      {isActive?<div className="pb-2 pt-3"><div className="mx-auto space-y-2.5 px-0.5" style={{maxWidth:readingWidth}}>{passage.versiculos.map((verse)=><p key={verse.id} style={{color:readingTheme.text,fontFamily:READING_FONT_FAMILIES[readingPreferences.fuente],fontSize:`${readingPreferences.tam}px`,fontWeight:readingPreferences.pesoFuente,lineHeight:readingPreferences.interlineado,textAlign:readingPreferences.alineacion==="justificada"?"justify":"left"}}><sup className="mr-1 align-super font-sans text-[9.5px] font-bold" style={{color:readingTheme.accent}}>{verse.versiculo}</sup>{verse.texto}</p>)}</div><div className="mt-4 border-t pt-2.5" style={{borderColor:readingTheme.border}}><button type="button" onClick={markCurrentAndContinue} className="flex min-h-10 w-full items-center justify-between px-0.5 font-semibold transition active:scale-[0.99]" style={{color:readingTheme.accent}}><span>{done?"Continuar lectura":"Marcar leído y continuar"}</span><ChevronRight className="h-5 w-5"/></button></div></div>:null}
+    </section>; })}</div>
+  </div>;
+}
+
+export function BibliaReferenciaModal({ referencia, className="" }: { referencia:string; className?:string }) {
+ const [open,setOpen]=useState(false), [books,setBooks]=useState<BibliaLibro[]>([]), [passages,setPassages]=useState<Passage[]>([]), [loading,setLoading]=useState(false), [error,setError]=useState(""); const references=useMemo(()=>splitReferences(referencia),[referencia]); const {preferences:readingPreferences}=useReadingPreferences(); const readingTheme=READING_THEME_PALETTES[readingPreferences.tema];
+ useEffect(()=>{if(!open||books.length>0)return;let active=true;setLoading(true);setError("");getBibliaCatalogo(VERSION).then(c=>{if(active)setBooks(c.libros)}).catch(c=>{if(active)setError(c instanceof Error?c.message:"No fue posible consultar la Biblia.")}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[open,books.length]);
+ useEffect(()=>{if(!open||!books.length)return;let active=true;setLoading(true);setError("");const resolved=references.map(i=>expandReference(i,books));const invalid=resolved.find(i=>!i.ok);if(invalid&&!invalid.ok){setPassages([]);setError(invalid.message);setLoading(false);return}Promise.all(resolved.flatMap(i=>i.ok?i.data:[]).map(loadResolvedPassage)).then(items=>{if(active)setPassages(items)}).catch(c=>{if(active){setPassages([]);setError(c instanceof Error?c.message:"No fue posible consultar la Biblia.")}}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[open,books,references]);
+ return <><button type="button" onClick={()=>setOpen(true)} className={`inline-flex items-center gap-1.5 text-left font-display text-xl underline decoration-1 underline-offset-4 transition ${className}`} style={{color:readingTheme.text,textDecorationColor:readingTheme.accent}} aria-label={`Consultar ${referencia} en la Biblia`}><span>{referencia}</span><BookOpen className="h-4 w-4 shrink-0" style={{color:readingTheme.accent}}/></button><Dialog open={open} onOpenChange={setOpen}><DialogContent style={{backgroundColor:readingTheme.surface,color:readingTheme.text,borderColor:readingTheme.border}} className="max-h-[82vh] w-[calc(100%-1.5rem)] max-w-xl overflow-hidden rounded-[1.4rem] border p-0 shadow-[0_28px_90px_rgba(0,0,0,0.72)]"><DialogHeader className="border-b px-5 pb-4 pt-5 pr-12 text-left" style={{borderColor:readingTheme.border}}><div className="flex items-center gap-2" style={{color:readingTheme.accent}}><BookOpen className="h-4 w-4"/><span className="text-[10px] font-bold uppercase tracking-[0.2em]">Palabra de Dios</span></div><DialogTitle style={{color:readingTheme.text}} className="font-display text-2xl leading-tight">{referencia}</DialogTitle><DialogDescription style={{color:readingTheme.muted}} className="text-xs">Biblia Platense / Straubinger · LVJPRAYER</DialogDescription></DialogHeader><div className="max-h-[65vh] overflow-y-auto px-5 py-5">{loading?<div className="flex min-h-40 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" style={{color:readingTheme.accent}}/></div>:error?<div className="rounded-2xl border p-4 text-sm leading-relaxed">{error}</div>:<div className="space-y-6">{passages.map((passage,index)=><section key={`${passage.referencia}-${index}`}>{passages.length>1?<h3 className="mb-3 text-xs font-bold uppercase tracking-[0.16em]" style={{color:readingTheme.accent}}>{passage.referencia}</h3>:null}<div className="space-y-3">{passage.versiculos.map(verse=><p key={verse.id} style={{color:readingTheme.text,fontFamily:READING_FONT_FAMILIES[readingPreferences.fuente],fontSize:`${readingPreferences.tam}px`,fontWeight:readingPreferences.pesoFuente,lineHeight:readingPreferences.interlineado,textAlign:readingPreferences.alineacion==="justificada"?"justify":"left"}}><sup className="mr-1.5 text-[10px] font-bold" style={{color:readingTheme.accent}}>{verse.versiculo}</sup>{verse.texto}</p>)}</div></section>)}</div>}</div></DialogContent></Dialog></>;
+}
