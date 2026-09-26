@@ -4,6 +4,7 @@ import "@fontsource/literata/latin-600.css";
 import "@fontsource/literata/latin-700.css";
 import App from "./App.tsx";
 import "./index.css";
+import "./eink-theme.css";
 import { registerSW } from "./pwa/registerSW";
 
 const hashParameters = new URLSearchParams(window.location.hash.replace(/^#/, ""));
