@@ -5,6 +5,22 @@ html[data-reading-theme="sepia"] section[id^="plan-reading-"] {
   color: #000 !important;
 }
 
+/* Selectores superiores de referencias: mismo comportamiento e-ink que las tarjetas. */
+html[data-reading-theme="sepia"] .no-scrollbar > button {
+  background: #fff !important;
+  color: #000 !important;
+  border-color: #8a8a8a !important;
+  font-weight: 700 !important;
+}
+
+html[data-reading-theme="sepia"] .no-scrollbar > button[aria-pressed="true"],
+html[data-reading-theme="sepia"] .no-scrollbar > button[data-active="true"] {
+  background: #000 !important;
+  color: #fff !important;
+  border-color: #000 !important;
+}
+
+/* Tarjeta bíblica activa. */
 html[data-reading-theme="sepia"] section[id^="plan-reading-"] > button[aria-expanded="true"] {
   background: #000 !important;
   color: #fff !important;
@@ -19,6 +35,7 @@ html[data-reading-theme="sepia"] section[id^="plan-reading-"] > button[aria-expa
   stroke: currentColor !important;
 }
 
+/* Tarjetas no activas. */
 html[data-reading-theme="sepia"] section[id^="plan-reading-"] > button[aria-expanded="false"] {
   background: #fff !important;
   color: #000 !important;
@@ -27,6 +44,15 @@ html[data-reading-theme="sepia"] section[id^="plan-reading-"] > button[aria-expa
 html[data-reading-theme="sepia"] section[id^="plan-reading-"] > button[aria-expanded="false"] * {
   color: #000 !important;
   stroke: currentColor !important;
+}
+
+/* Títulos y referencias con jerarquía tipográfica de lector. */
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] > button span.block.font-display,
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] h1,
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] h2,
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] h3,
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] h4 {
+  font-weight: 700 !important;
 }
 
 html[data-reading-theme="sepia"] section[id^="plan-reading-"] sup {
