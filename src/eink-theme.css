@@ -23,9 +23,7 @@
   stroke: currentColor !important;
 }
 
-.biblia-eink-paper svg [fill]:not([fill="none"]) {
-  fill: currentColor !important;
-}
+.biblia-eink-paper svg [fill]:not([fill="none"]) { fill: currentColor !important; }
 
 .biblia-eink-paper section,
 .biblia-eink-paper article,
@@ -51,12 +49,9 @@
   color: #000000 !important;
 }
 
-.biblia-eink-paper ::selection {
-  background: #d7d7d7 !important;
-  color: #000000 !important;
-}
+.biblia-eink-paper ::selection { background: #d7d7d7 !important; color: #000000 !important; }
 
-/* Estudio bíblico: Tinta ocupa toda la pantalla como una página de e-book. */
+/* Estudio bíblico */
 .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper),
 .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) main,
 .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header,
@@ -68,15 +63,11 @@
   box-shadow: none !important;
 }
 
-.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header {
-  border-color: #b8b8b8 !important;
-}
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header { border-color: #b8b8b8 !important; }
 
 .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) *,
 .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) a,
-.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) button {
-  color: #000000 !important;
-}
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) button { color: #000000 !important; }
 
 .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) svg,
 .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) svg * {
@@ -84,11 +75,8 @@
   stroke: currentColor !important;
 }
 
-.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) svg [fill]:not([fill="none"]) {
-  fill: currentColor !important;
-}
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) svg [fill]:not([fill="none"]) { fill: currentColor !important; }
 
-/* En Tinta no se conserva el dorado institucional: Aa e iconos también son negros. */
 .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) button[aria-label="Formato de lectura"],
 .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) a[aria-label="Volver"] {
   color: #000000 !important;
@@ -112,21 +100,13 @@
   border-color: #a8a8a8 !important;
 }
 
-/* Los códigos y etiquetas del estudio pierden color en modo Tinta. */
 .study-reader-host article.study-theme-ink .proposition-label-pp,
 .study-reader-host article.study-theme-ink .proposition-label-ps,
-.study-reader-host article.study-theme-ink .study-themed-muted {
-  color: #000000 !important;
-}
+.study-reader-host article.study-theme-ink .study-themed-muted { color: #000000 !important; }
 
-.study-reader-host article.study-theme-ink .study-desktop-tabs button[aria-pressed="true"] {
-  background: #000000 !important;
-  color: #ffffff !important;
-}
+.study-reader-host article.study-theme-ink .study-desktop-tabs button[aria-pressed="true"] { background: #000000 !important; color: #ffffff !important; }
 
-/* PLANES — Tinta debe reproducir el lector e-ink de Biblia, no el diseño dorado del plan.
-   El contenedor de jornada expone las variables de la paleta compartida. Cuando el acento
-   es negro estamos en Tinta; esta regla neutraliza los estilos editoriales propios del plan. */
+/* PLANES — Tinta */
 .biblia-layout-shell:has([style*="--plan-reading-accent: #000000"]) main {
   background: #ffffff !important;
   background-image: none !important;
@@ -162,14 +142,8 @@
 }
 
 [style*="--plan-reading-accent: #000000"] svg,
-[style*="--plan-reading-accent: #000000"] svg * {
-  color: #000000 !important;
-  stroke: currentColor !important;
-}
-
-[style*="--plan-reading-accent: #000000"] svg [fill]:not([fill="none"]) {
-  fill: currentColor !important;
-}
+[style*="--plan-reading-accent: #000000"] svg * { color: #000000 !important; stroke: currentColor !important; }
+[style*="--plan-reading-accent: #000000"] svg [fill]:not([fill="none"]) { fill: currentColor !important; }
 
 [style*="--plan-reading-accent: #000000"] button,
 [style*="--plan-reading-accent: #000000"] a {
@@ -178,22 +152,23 @@
   box-shadow: none !important;
 }
 
-/* Acción principal: contraste e-ink equivalente a una selección de Kindle. */
-[style*="--plan-reading-accent: #000000"] button:not([disabled]) {
+/* Chips de referencias bíblicas: nunca negro sobre negro.
+   En Tinta se presentan como controles e-ink blancos con texto negro. */
+[style*="--plan-reading-accent: #000000"] .no-scrollbar button {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #777777 !important;
+  box-shadow: none !important;
+}
+
+[style*="--plan-reading-accent: #000000"] .no-scrollbar button * {
   color: #000000 !important;
 }
 
-[style*="--plan-reading-accent: #000000"] button[class*="linear-gradient"] {
-  background: #000000 !important;
-  color: #ffffff !important;
-}
-
-[style*="--plan-reading-accent: #000000"] button[class*="linear-gradient"] * {
-  color: #ffffff !important;
-  stroke: currentColor !important;
-}
+/* Acción principal */
+[style*="--plan-reading-accent: #000000"] button:not([disabled]) { color: #000000 !important; }
+[style*="--plan-reading-accent: #000000"] button[class*="linear-gradient"] { background: #000000 !important; color: #ffffff !important; }
+[style*="--plan-reading-accent: #000000"] button[class*="linear-gradient"] * { color: #ffffff !important; stroke: currentColor !important; }
 
 /* La barra de progreso también queda monocromática. */
-[style*="--plan-reading-accent: #000000"] [class*="linear-gradient(90deg"] {
-  background: #000000 !important;
-}
+[style*="--plan-reading-accent: #000000"] [class*="linear-gradient(90deg"] { background: #000000 !important; }
