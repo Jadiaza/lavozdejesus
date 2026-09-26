@@ -22,11 +22,6 @@ const SOURCES: Record<string, SourceConfig> = {
     category: "Biblia",
     strictImageMatch: true,
   },
-  "dios-te-habla": {
-    feed: "https://podcast.zenomedia.com/api/public/podcasts/c8760adb-2534-4ce5-a7e6-99b0debd5665/rss",
-    fallbackTitle: "Dios te habla: Un año con la Biblia en armonía",
-    category: "Biblia",
-  },
   "platicando-en-catolico": {
     feed: "https://feeds.captivate.fm/catolico/",
     fallbackTitle: "Platicando en Católico",
@@ -89,6 +84,9 @@ const SOURCES: Record<string, SourceConfig> = {
     category: "Sanación interior",
   },
 };
+
+const DIOS_TE_HABLA_COVER =
+  "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/biblia/planes/images/dios-te-habla.png";
 
 const HABLEMOS_SHOW_ID = "4idQCcElpG4VPisFYJ3WMf";
 const HABLEMOS_R2_BASE =
@@ -174,6 +172,25 @@ const imagesMatch = (episodeImage: string, channelImage: string) => {
   return episode === channel;
 };
 
+function serveDiosTeHabla(metaOnly: boolean, res: ApiResponse) {
+  const podcast = {
+    slug: "dios-te-habla",
+    title: "Dios te habla: Un año con la Biblia en armonía",
+    description:
+      "Un recorrido católico de 365 jornadas por la historia de la salvación, armonizando el Antiguo Testamento, el Nuevo Testamento y los Salmos para descubrir cómo toda la Escritura conduce al encuentro con Dios.",
+    author: "La Voz de Jesús",
+    image_url: DIOS_TE_HABLA_COVER,
+    category: "Biblia",
+    source: "lvj",
+  };
+
+  res.setHeader(
+    "Cache-Control",
+    metaOnly ? "s-maxage=21600, stale-while-revalidate=86400" : "s-maxage=300, stale-while-revalidate=3600",
+  );
+  res.status(200).json(metaOnly ? { podcast } : { podcast, episodes: [] });
+}
+
 const hablemosAudioUrl = (season: number, episode: number, title: string) => {
   const file = `T${season} E${episode} - ${title}.mp3`;
   return `${HABLEMOS_R2_BASE}/T${season}/${encodeURIComponent(file)}`;
@@ -246,6 +263,11 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug || "";
   const rawMeta = req.query?.meta;
   const metaOnly = (Array.isArray(rawMeta) ? rawMeta[0] : rawMeta) === "1";
+
+  if (slug === "dios-te-habla") {
+    serveDiosTeHabla(metaOnly, res);
+    return;
+  }
 
   if (slug === "hablemos-de-exorcismos") {
     await serveHablemos(metaOnly, res);
