@@ -31,7 +31,7 @@ export type ExternalPodcast = {
   author: string;
   image_url: string;
   category: string;
-  source: "rss" | "lvj_r2";
+  source: "rss" | "lvj" | "lvj_r2";
 };
 
 export type ExternalPodcastResponse = {
@@ -54,7 +54,7 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     subtitle: "La Voz de Jesús · Lectura bíblica sincrónica · 365 jornadas",
     category: "Biblia",
     playback_mode: "daily",
-    source: "rss",
+    source: "lvj",
   },
   {
     slug: "que-haria-jesus",
@@ -166,6 +166,9 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
 const endpointForSlug = (slug: string, meta = false) => {
   if (slug === "hablemos-de-exorcismos") {
     return `/api/podcast-hablemos-exorcismos${meta ? "?meta=1" : ""}`;
+  }
+  if (slug === "dios-te-habla") {
+    return `/api/podcast-dios-te-habla${meta ? "?meta=1" : ""}`;
   }
   return `/api/podcast-rss?slug=${encodeURIComponent(slug)}${meta ? "&meta=1" : ""}`;
 };
