@@ -168,19 +168,29 @@ export function LiturgiaReader() {
     return () => controller.abort();
   }, [hora, reload]);
 
-  const isRomanHeading = (text: string) => /^[IVXLCDM]+\\.?$/i.test(text.trim());
+  const isRomanHeading = (text: string) => /^[IVXLCDM]+\.?$/i.test(text.trim());
+  const isPsalmHeading = (text: string) => /^Salmo\b/i.test(text.trim());
+  const isBiblicalEpigraph = (text: string) => /\([^()]*\d+[^()]*\)\.?$/.test(text.trim());
+
+  const formatPsalmHeading = (text: string) => {
+    const normalized = text.toLocaleLowerCase("es").replace(/^salmo\b/i, "Salmo");
+    return normalized.replace(/^(Salmo\s+\S+\s+)([a-záéíóúüñ])/i, (_, prefix, firstLetter) =>
+      prefix + firstLetter.toLocaleUpperCase("es"));
+  };
 
   const paragraphClass = (paragraph: LiturgyParagraph) => {
     if (isRomanHeading(paragraph.texto)) return "text-left font-bold uppercase text-[var(--prayer-accent)]";
     if (paragraph.tipo === "antifona" || paragraph.tipo === "respuesta") return "text-left";
     if (paragraph.tipo === "rubrica") return "text-sm italic text-[var(--prayer-accent)] opacity-85";
+    if (paragraph.tipo === "subtitulo" && isPsalmHeading(paragraph.texto)) return "font-bold tracking-wide text-[var(--prayer-accent)]";
     if (paragraph.tipo === "subtitulo") return "font-bold uppercase tracking-wide text-[var(--prayer-accent)]";
     return "text-left";
   };
 
   const renderParagraph = (paragraph: LiturgyParagraph) => {
     if (isRomanHeading(paragraph.texto)) return paragraph.texto.toLocaleUpperCase("es");
-    const marked = paragraph.texto.match(/^(Ant(?:\\s*\\d+)?\\.|[VR]\\.)\\s*(.*)$/i);
+    if (isPsalmHeading(paragraph.texto)) return formatPsalmHeading(paragraph.texto);
+    const marked = paragraph.texto.match(/^(Ant(?:\s*\d+)?\.|[VR]\.)\s*(.*)$/i);
     if (!marked) return paragraph.texto;
     return <><strong className="mr-1.5 font-bold text-[var(--prayer-accent)]">{marked[1]}</strong><span>{marked[2]}</span></>;
   };
@@ -214,7 +224,11 @@ export function LiturgiaReader() {
             const isMajor = majorSectionTypes.has(section.tipo);
             return <section key={`${section.tipo}-${index}`} className={isMajor ? "border-t border-current/15 pt-5" : ""}>
               {!isIntro ? <h3 className="mb-2 text-left text-lg font-bold uppercase text-[var(--prayer-accent)]">{section.titulo}</h3> : null}
-              <div className="space-y-2.5 leading-[1.45]">{section.contenido.map((paragraph, paragraphIndex) => <p key={paragraphIndex} className={paragraphClass(paragraph)}>{renderParagraph(paragraph)}</p>)}</div>
+              <div className="space-y-2.5 leading-[1.45]">{section.contenido.map((paragraph, paragraphIndex) => {
+                const previous = section.contenido[paragraphIndex - 1];
+                const biblicalEpigraph = paragraph.tipo === "texto" && previous?.tipo === "subtitulo" && isBiblicalEpigraph(paragraph.texto);
+                return <p key={paragraphIndex} className={`${paragraphClass(paragraph)}${biblicalEpigraph ? " italic" : ""}`}>{renderParagraph(paragraph)}</p>;
+              })}</div>
             </section>;
           })}</div>
           <footer className="mt-10 border-t border-current/20 pt-4 text-center text-xs opacity-55">Fuente: {content.fuente.nombre} · Presentado por LVJPRAYER</footer>
