@@ -5,19 +5,13 @@ html[data-reading-theme="sepia"] section[id^="plan-reading-"] {
   color: #000 !important;
 }
 
-/* Selectores superiores de referencias: mismo comportamiento e-ink que las tarjetas. */
+/*
+ * Selectores superiores de referencias.
+ * El componente ya calcula el estado activo con activeIndex y lo aplica inline.
+ * No usamos !important aquí para no bloquear ese estado dinámico.
+ */
 html[data-reading-theme="sepia"] .no-scrollbar > button {
-  background: #fff !important;
-  color: #000 !important;
-  border-color: #8a8a8a !important;
   font-weight: 700 !important;
-}
-
-html[data-reading-theme="sepia"] .no-scrollbar > button[aria-pressed="true"],
-html[data-reading-theme="sepia"] .no-scrollbar > button[data-active="true"] {
-  background: #000 !important;
-  color: #fff !important;
-  border-color: #000 !important;
 }
 
 /* Tarjeta bíblica activa. */
@@ -53,6 +47,21 @@ html[data-reading-theme="sepia"] section[id^="plan-reading-"] h2,
 html[data-reading-theme="sepia"] section[id^="plan-reading-"] h3,
 html[data-reading-theme="sepia"] section[id^="plan-reading-"] h4 {
   font-weight: 700 !important;
+}
+
+/* Encabezados de sección del plan (Palabra de Dios, etc.) en Tinta. */
+html[data-reading-theme="sepia"] [style*="--plan-reading-text"] section > div[class*="border-b"] {
+  color: #000 !important;
+}
+
+html[data-reading-theme="sepia"] [style*="--plan-reading-text"] section > div[class*="border-b"] h2 {
+  color: #000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-reading-theme="sepia"] [style*="--plan-reading-text"] section > div[class*="border-b"] svg {
+  color: #000 !important;
+  stroke: #000 !important;
 }
 
 html[data-reading-theme="sepia"] section[id^="plan-reading-"] sup {
