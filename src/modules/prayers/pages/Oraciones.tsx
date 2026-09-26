@@ -168,17 +168,21 @@ export function LiturgiaReader() {
     return () => controller.abort();
   }, [hora, reload]);
 
+  const isRomanHeading = (text: string) => /^[IVXLCDM]+\\.?$/i.test(text.trim());
+
   const paragraphClass = (paragraph: LiturgyParagraph) => {
+    if (isRomanHeading(paragraph.texto)) return "text-left font-bold uppercase text-[var(--prayer-accent)]";
     if (paragraph.tipo === "antifona" || paragraph.tipo === "respuesta") return "text-left";
-    if (paragraph.tipo === "rubrica") return "text-sm italic text-[var(--prayer-accent)] opacity-80";
-    if (paragraph.tipo === "subtitulo") return "font-semibold uppercase tracking-wide text-[var(--prayer-accent)]";
+    if (paragraph.tipo === "rubrica") return "text-sm italic text-[var(--prayer-accent)] opacity-85";
+    if (paragraph.tipo === "subtitulo") return "font-bold uppercase tracking-wide text-[var(--prayer-accent)]";
     return "text-left";
   };
 
   const renderParagraph = (paragraph: LiturgyParagraph) => {
-    const marked = paragraph.texto.match(/^(Ant(?:\s*\d+)?\.|[VR]\.)\s*(.*)$/i);
+    if (isRomanHeading(paragraph.texto)) return paragraph.texto.toLocaleUpperCase("es");
+    const marked = paragraph.texto.match(/^(Ant(?:\\s*\\d+)?\\.|[VR]\\.)\\s*(.*)$/i);
     if (!marked) return paragraph.texto;
-    return <><strong className="mr-1.5 font-semibold text-[var(--prayer-accent)]">{marked[1]}</strong><span>{marked[2]}</span></>;
+    return <><strong className="mr-1.5 font-bold text-[var(--prayer-accent)]">{marked[1]}</strong><span>{marked[2]}</span></>;
   };
 
   const majorSectionTypes = new Set(["himno", "salmodia", "lectura", "primera_lectura", "segunda_lectura", "cantico_evangelico", "preces", "oracion", "conclusion"]);
@@ -204,13 +208,13 @@ export function LiturgiaReader() {
         {loading ? <div className="flex min-h-[62dvh] flex-col items-center justify-center"><LoaderCircle style={{ color: readingTheme.accent }} className="h-8 w-8 animate-spin" /><p className="mt-3 text-sm opacity-65">Preparando la oración de la Iglesia…</p></div> : null}
         {!loading && error ? <div className="flex min-h-[55dvh] flex-col items-center justify-center p-6 text-center"><AlertCircle style={{ color: readingTheme.accent }} className="h-9 w-9" /><p className="mt-3 text-sm opacity-75">{error}</p><button type="button" onClick={() => setReload((value) => value + 1)} style={{ borderColor: readingTheme.accent, color: readingTheme.accent }} className="mt-5 flex items-center gap-2 rounded-full border px-5 py-3 text-xs font-bold"><RefreshCw className="h-4 w-4" />REINTENTAR</button></div> : null}
         {!loading && content ? <PrayerReader preferences={preferences} integrated>
-          <div className="mb-7 border-b border-current/20 pb-5 text-left"><p className="text-xs font-semibold uppercase tracking-[.18em] text-[var(--prayer-accent)]">{content.tiempo_liturgico}</p><h2 className="mt-2 text-[clamp(1.45rem,6.4vw,1.9rem)] font-bold leading-tight">{content.celebracion}</h2>{content.detalle ? <p className="mt-2 text-sm opacity-65">{content.detalle}</p> : null}</div>
-          <div className="space-y-8">{visibleSections.map((section, index) => {
+          <div className="mb-6 border-b border-current/20 pb-4 text-left"><p className="text-xs font-bold uppercase tracking-[.18em] text-[var(--prayer-accent)]">{content.tiempo_liturgico}</p><h2 className="mt-2 text-[clamp(1.45rem,6.4vw,1.9rem)] font-bold uppercase leading-tight text-[var(--prayer-accent)]">{content.celebracion}</h2>{content.detalle ? <p className="mt-2 text-sm opacity-65">{content.detalle}</p> : null}</div>
+          <div className="space-y-6">{visibleSections.map((section, index) => {
             const isIntro = section.tipo === "inicio";
             const isMajor = majorSectionTypes.has(section.tipo);
-            return <section key={`${section.tipo}-${index}`} className={isMajor ? "border-t border-current/15 pt-6" : ""}>
-              {!isIntro ? <h3 className="mb-3 text-left text-lg font-bold text-[var(--prayer-accent)]">{section.titulo}</h3> : null}
-              <div className="space-y-4">{section.contenido.map((paragraph, paragraphIndex) => <p key={paragraphIndex} className={paragraphClass(paragraph)}>{renderParagraph(paragraph)}</p>)}</div>
+            return <section key={`${section.tipo}-${index}`} className={isMajor ? "border-t border-current/15 pt-5" : ""}>
+              {!isIntro ? <h3 className="mb-2 text-left text-lg font-bold uppercase text-[var(--prayer-accent)]">{section.titulo}</h3> : null}
+              <div className="space-y-2.5 leading-[1.45]">{section.contenido.map((paragraph, paragraphIndex) => <p key={paragraphIndex} className={paragraphClass(paragraph)}>{renderParagraph(paragraph)}</p>)}</div>
             </section>;
           })}</div>
           <footer className="mt-10 border-t border-current/20 pt-4 text-center text-xs opacity-55">Fuente: {content.fuente.nombre} · Presentado por LVJPRAYER</footer>
