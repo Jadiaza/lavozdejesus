@@ -87,9 +87,14 @@ const parseLines = (input: string[], hora?: string) => {
     const selected = alternatives.find((entry) => entry.marker === hora);
     if (firstAlternative >= 0 && selected) {
       const following = alternatives.find((entry) => entry.index > selected.index);
+      const lastAlternative = alternatives[alternatives.length - 1].index;
+      const conclusion = lines.findIndex((line, index) =>
+        index > lastAlternative && /^CONCLUSI[ÓO]N$/i.test(line));
+      const selectedEnd = following?.index ?? (conclusion >= 0 ? conclusion : undefined);
       lines = [
         ...lines.slice(0, firstAlternative),
-        ...lines.slice(selected.index + 1, following?.index),
+        ...lines.slice(selected.index + 1, selectedEnd),
+        ...(conclusion >= 0 ? lines.slice(conclusion) : []),
       ];
     }
   }
