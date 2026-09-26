@@ -99,6 +99,12 @@ const HABLEMOS_EPISODES = [
   { season: 1, episode: 4, title: "La infestación diabólica" },
   { season: 1, episode: 5, title: "La acción demoníaca extraordinaria" },
   { season: 1, episode: 6, title: "Los pactos satánicos" },
+  { season: 1, episode: 7, title: "Esoterismo y Ocultismo" },
+  { season: 1, episode: 8, title: "Los maleficios" },
+  { season: 1, episode: 9, title: "Lucha contra Satanás" },
+  { season: 1, episode: 10, title: "Lucha contra Satanás - II" },
+  { season: 1, episode: 11, title: "Examen Espiritual" },
+  { season: 1, episode: 12, title: "La Virgen María terror de Satanás" },
 ] as const;
 
 const decodeXml = (value: string) =>
