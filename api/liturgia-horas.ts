@@ -78,13 +78,19 @@ const hourMarker = (line: string) => {
 const parseLines = (input: string[], hora?: string) => {
   let lines = input;
   if (hora && ["tercia", "sexta", "nona"].includes(hora)) {
-    const start = lines.findIndex((line) => hourMarker(line) === hora);
-    if (start >= 0) {
-      const relativeEnd = lines.slice(start + 1).findIndex((line) => {
-        const marker = hourMarker(line);
-        return marker !== null && marker !== hora;
-      });
-      lines = lines.slice(start + 1, relativeEnd < 0 ? undefined : start + 1 + relativeEnd);
+    // iBreviary publica el cuerpo común de la Hora intermedia y, al final,
+    // tres oraciones alternativas encabezadas TERCIA, SEXTA y NONA.
+    const alternatives = lines
+      .map((line, index) => ({ marker: hourMarker(line), index }))
+      .filter((entry) => entry.marker && /^(?:TERCIA|SEXTA|NONA)$/i.test(lines[entry.index]));
+    const firstAlternative = alternatives[0]?.index ?? -1;
+    const selected = alternatives.find((entry) => entry.marker === hora);
+    if (firstAlternative >= 0 && selected) {
+      const following = alternatives.find((entry) => entry.index > selected.index);
+      lines = [
+        ...lines.slice(0, firstAlternative),
+        ...lines.slice(selected.index + 1, following?.index),
+      ];
     }
   }
   const sections: Section[] = [];
