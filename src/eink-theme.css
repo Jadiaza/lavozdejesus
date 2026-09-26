@@ -23,7 +23,9 @@
   stroke: currentColor !important;
 }
 
-.biblia-eink-paper svg [fill]:not([fill="none"]) { fill: currentColor !important; }
+.biblia-eink-paper svg [fill]:not([fill="none"]) {
+  fill: currentColor !important;
+}
 
 .biblia-eink-paper section,
 .biblia-eink-paper article,
@@ -49,9 +51,12 @@
   color: #000000 !important;
 }
 
-.biblia-eink-paper ::selection { background: #d7d7d7 !important; color: #000000 !important; }
+.biblia-eink-paper ::selection {
+  background: #d7d7d7 !important;
+  color: #000000 !important;
+}
 
-/* Estudio bíblico */
+/* Estudio bíblico: Tinta ocupa toda la pantalla como una página de e-book. */
 .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper),
 .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) main,
 .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header,
@@ -63,11 +68,15 @@
   box-shadow: none !important;
 }
 
-.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header { border-color: #b8b8b8 !important; }
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header {
+  border-color: #b8b8b8 !important;
+}
 
 .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) *,
 .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) a,
-.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) button { color: #000000 !important; }
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) button {
+  color: #000000 !important;
+}
 
 .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) svg,
 .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) svg * {
@@ -75,7 +84,9 @@
   stroke: currentColor !important;
 }
 
-.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) svg [fill]:not([fill="none"]) { fill: currentColor !important; }
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) svg [fill]:not([fill="none"]) {
+  fill: currentColor !important;
+}
 
 .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) button[aria-label="Formato de lectura"],
 .biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) a[aria-label="Volver"] {
@@ -102,11 +113,16 @@
 
 .study-reader-host article.study-theme-ink .proposition-label-pp,
 .study-reader-host article.study-theme-ink .proposition-label-ps,
-.study-reader-host article.study-theme-ink .study-themed-muted { color: #000000 !important; }
+.study-reader-host article.study-theme-ink .study-themed-muted {
+  color: #000000 !important;
+}
 
-.study-reader-host article.study-theme-ink .study-desktop-tabs button[aria-pressed="true"] { background: #000000 !important; color: #ffffff !important; }
+.study-reader-host article.study-theme-ink .study-desktop-tabs button[aria-pressed="true"] {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
 
-/* PLANES — Tinta */
+/* PLANES — Tinta debe reproducir el lector e-ink de Biblia. */
 .biblia-layout-shell:has([style*="--plan-reading-accent: #000000"]) main {
   background: #ffffff !important;
   background-image: none !important;
@@ -142,8 +158,14 @@
 }
 
 [style*="--plan-reading-accent: #000000"] svg,
-[style*="--plan-reading-accent: #000000"] svg * { color: #000000 !important; stroke: currentColor !important; }
-[style*="--plan-reading-accent: #000000"] svg [fill]:not([fill="none"]) { fill: currentColor !important; }
+[style*="--plan-reading-accent: #000000"] svg * {
+  color: #000000 !important;
+  stroke: currentColor !important;
+}
+
+[style*="--plan-reading-accent: #000000"] svg [fill]:not([fill="none"]) {
+  fill: currentColor !important;
+}
 
 [style*="--plan-reading-accent: #000000"] button,
 [style*="--plan-reading-accent: #000000"] a {
@@ -152,23 +174,39 @@
   box-shadow: none !important;
 }
 
-/* Chips de referencias bíblicas: nunca negro sobre negro.
-   En Tinta se presentan como controles e-ink blancos con texto negro. */
-[style*="--plan-reading-accent: #000000"] .no-scrollbar button {
+[style*="--plan-reading-accent: #000000"] button:not([disabled]) {
+  color: #000000 !important;
+}
+
+[style*="--plan-reading-accent: #000000"] button[class*="linear-gradient"] {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+[style*="--plan-reading-accent: #000000"] button[class*="linear-gradient"] * {
+  color: #ffffff !important;
+  stroke: currentColor !important;
+}
+
+[style*="--plan-reading-accent: #000000"] [class*="linear-gradient(90deg"] {
+  background: #000000 !important;
+}
+
+/* Chips de referencias bíblicas en Tinta: fondo blanco y texto negro. */
+[style*="--plan-reading-accent: #000000"] .no-scrollbar > button {
   background: #ffffff !important;
+  background-image: none !important;
   color: #000000 !important;
-  border: 1px solid #777777 !important;
-  box-shadow: none !important;
+  border-color: #8a8a8a !important;
 }
 
-[style*="--plan-reading-accent: #000000"] .no-scrollbar button * {
+[style*="--plan-reading-accent: #000000"] .no-scrollbar > button * {
   color: #000000 !important;
 }
 
-/* Acción principal */
-[style*="--plan-reading-accent: #000000"] button:not([disabled]) { color: #000000 !important; }
-[style*="--plan-reading-accent: #000000"] button[class*="linear-gradient"] { background: #000000 !important; color: #ffffff !important; }
-[style*="--plan-reading-accent: #000000"] button[class*="linear-gradient"] * { color: #ffffff !important; stroke: currentColor !important; }
-
-/* La barra de progreso también queda monocromática. */
-[style*="--plan-reading-accent: #000000"] [class*="linear-gradient(90deg"] { background: #000000 !important; }
+/* PLANES — Claro: el color de página debe cubrir todo el área de lectura.
+   El ancho de lectura limita el texto, no debe producir una tarjeta crema sobre fondo negro. */
+.biblia-layout-shell:has([style*="--plan-reading-surface: #FFFDF8"]) main {
+  background: #F8F5EA !important;
+  background-image: none !important;
+}
