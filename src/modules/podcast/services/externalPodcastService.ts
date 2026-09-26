@@ -51,7 +51,7 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
   {
     slug: "dios-te-habla",
     title: "Dios te habla: Un año con la Biblia en armonía",
-    subtitle: "La Voz de Jesús · Lectura bíblica sincrónica · 365 jornadas",
+    subtitle: "La Voz de Jesús · Historia de la salvación · 365 jornadas",
     category: "Biblia",
     playback_mode: "daily",
     source: "lvj",
@@ -166,9 +166,6 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
 const endpointForSlug = (slug: string, meta = false) => {
   if (slug === "hablemos-de-exorcismos") {
     return `/api/podcast-hablemos-exorcismos${meta ? "?meta=1" : ""}`;
-  }
-  if (slug === "dios-te-habla") {
-    return `/api/podcast-dios-te-habla${meta ? "?meta=1" : ""}`;
   }
   return `/api/podcast-rss?slug=${encodeURIComponent(slug)}${meta ? "&meta=1" : ""}`;
 };
