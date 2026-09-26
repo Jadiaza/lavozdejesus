@@ -23,11 +23,13 @@ export const READING_FONT_FAMILIES: Record<ReadingFont, string> = {
   sans: "'Montserrat', system-ui, sans-serif",
 };
 
-// Paleta maestra: reproduce los tres temas oficiales de Leer Biblia.
+// Paleta maestra compartida por Biblia, Estudio, Planes, Liturgia y Oraciones.
+// El identificador histórico `sepia` corresponde visualmente al tema Tinta:
+// una pantalla e-ink monocromática, blanca, negra y gris, sin dorados ni tonos cálidos.
 export const READING_THEME_PALETTES: Record<ReadingTheme, { background: string; surface: string; text: string; muted: string; accent: string; border: string }> = {
   oscuro: { background: "#111111", surface: "#0B0B0B", text: "#F8F5EA", muted: "#C9C3B3", accent: "#D4AF37", border: "rgba(212,175,55,.20)" },
   claro: { background: "#F8F5EA", surface: "#FFFDF8", text: "#14120D", muted: "#665F54", accent: "#D4AF37", border: "rgba(212,175,55,.30)" },
-  sepia: { background: "#E7E1CF", surface: "#E7E1CF", text: "#20211D", muted: "#5F5B4D", accent: "#655A35", border: "rgba(95,91,77,.25)" },
+  sepia: { background: "#FFFFFF", surface: "#FFFFFF", text: "#000000", muted: "#5A5A5A", accent: "#000000", border: "rgba(0,0,0,.22)" },
 };
 
 export const DEFAULT_READING_PREFERENCES: ReadingPreferences = {
