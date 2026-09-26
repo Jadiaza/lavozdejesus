@@ -123,3 +123,77 @@
   background: #000000 !important;
   color: #ffffff !important;
 }
+
+/* PLANES — Tinta debe reproducir el lector e-ink de Biblia, no el diseño dorado del plan.
+   El contenedor de jornada expone las variables de la paleta compartida. Cuando el acento
+   es negro estamos en Tinta; esta regla neutraliza los estilos editoriales propios del plan. */
+.biblia-layout-shell:has([style*="--plan-reading-accent: #000000"]) main {
+  background: #ffffff !important;
+  background-image: none !important;
+}
+
+[style*="--plan-reading-accent: #000000"] {
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #000000 !important;
+  border-color: #b8b8b8 !important;
+  box-shadow: none !important;
+}
+
+[style*="--plan-reading-accent: #000000"] *,
+[style*="--plan-reading-accent: #000000"] h1,
+[style*="--plan-reading-accent: #000000"] h2,
+[style*="--plan-reading-accent: #000000"] h3,
+[style*="--plan-reading-accent: #000000"] p,
+[style*="--plan-reading-accent: #000000"] a,
+[style*="--plan-reading-accent: #000000"] span {
+  color: #000000 !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+[style*="--plan-reading-accent: #000000"] section,
+[style*="--plan-reading-accent: #000000"] article,
+[style*="--plan-reading-accent: #000000"] div {
+  background-color: transparent !important;
+  background-image: none !important;
+  border-color: #b8b8b8 !important;
+  box-shadow: none !important;
+}
+
+[style*="--plan-reading-accent: #000000"] svg,
+[style*="--plan-reading-accent: #000000"] svg * {
+  color: #000000 !important;
+  stroke: currentColor !important;
+}
+
+[style*="--plan-reading-accent: #000000"] svg [fill]:not([fill="none"]) {
+  fill: currentColor !important;
+}
+
+[style*="--plan-reading-accent: #000000"] button,
+[style*="--plan-reading-accent: #000000"] a {
+  border-color: #8a8a8a !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+/* Acción principal: contraste e-ink equivalente a una selección de Kindle. */
+[style*="--plan-reading-accent: #000000"] button:not([disabled]) {
+  color: #000000 !important;
+}
+
+[style*="--plan-reading-accent: #000000"] button[class*="linear-gradient"] {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+[style*="--plan-reading-accent: #000000"] button[class*="linear-gradient"] * {
+  color: #ffffff !important;
+  stroke: currentColor !important;
+}
+
+/* La barra de progreso también queda monocromática. */
+[style*="--plan-reading-accent: #000000"] [class*="linear-gradient(90deg"] {
+  background: #000000 !important;
+}
