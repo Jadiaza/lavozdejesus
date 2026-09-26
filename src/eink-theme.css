@@ -1,0 +1,125 @@
+/* Tema Tinta LVJPRAYER
+   Apariencia monocromática inspirada en lectores e-ink: blanco, negro y grises.
+   Se carga después de index.css para que Tinta no herede dorados ni colores de UI. */
+
+.biblia-eink-paper {
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #000000 !important;
+  border-color: #b8b8b8 !important;
+  box-shadow: none !important;
+}
+
+.biblia-eink-paper,
+.biblia-eink-paper * {
+  color: #000000 !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+.biblia-eink-paper svg,
+.biblia-eink-paper svg * {
+  color: #000000 !important;
+  stroke: currentColor !important;
+}
+
+.biblia-eink-paper svg [fill]:not([fill="none"]) {
+  fill: currentColor !important;
+}
+
+.biblia-eink-paper section,
+.biblia-eink-paper article,
+.biblia-eink-paper div {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+.biblia-eink-paper button,
+.biblia-eink-paper a,
+.biblia-eink-paper input,
+.biblia-eink-paper select,
+.biblia-eink-paper textarea {
+  color: #000000 !important;
+  border-color: #8a8a8a !important;
+  box-shadow: none !important;
+}
+
+.biblia-eink-paper mark,
+.biblia-eink-paper button[aria-pressed="true"],
+.biblia-eink-paper [aria-selected="true"] {
+  background: #dedede !important;
+  color: #000000 !important;
+}
+
+.biblia-eink-paper ::selection {
+  background: #d7d7d7 !important;
+  color: #000000 !important;
+}
+
+/* Estudio bíblico: Tinta ocupa toda la pantalla como una página de e-book. */
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper),
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) main,
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header,
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) main > aside,
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) nav {
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #000000 !important;
+  box-shadow: none !important;
+}
+
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header {
+  border-color: #b8b8b8 !important;
+}
+
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) *,
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) a,
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) button {
+  color: #000000 !important;
+}
+
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) svg,
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) svg * {
+  color: #000000 !important;
+  stroke: currentColor !important;
+}
+
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) svg [fill]:not([fill="none"]) {
+  fill: currentColor !important;
+}
+
+/* En Tinta no se conserva el dorado institucional: Aa e iconos también son negros. */
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) button[aria-label="Formato de lectura"],
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) a[aria-label="Volver"] {
+  color: #000000 !important;
+  border-color: #8a8a8a !important;
+  background: transparent !important;
+}
+
+.study-reader-host article.study-theme-ink {
+  --study-surface: #ffffff !important;
+  --study-card: #ffffff !important;
+  --study-text: #000000 !important;
+  --study-muted: #3f3f3f !important;
+  --study-border: #a8a8a8 !important;
+}
+
+.study-reader-host article.study-theme-ink .study-themed-card,
+.study-reader-host article.study-theme-ink .study-mobile-shell,
+.study-reader-host article.study-theme-ink .study-themed-header {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border-color: #a8a8a8 !important;
+}
+
+/* Los códigos y etiquetas del estudio pierden color en modo Tinta. */
+.study-reader-host article.study-theme-ink .proposition-label-pp,
+.study-reader-host article.study-theme-ink .proposition-label-ps,
+.study-reader-host article.study-theme-ink .study-themed-muted {
+  color: #000000 !important;
+}
+
+.study-reader-host article.study-theme-ink .study-desktop-tabs button[aria-pressed="true"] {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
