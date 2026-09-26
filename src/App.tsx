@@ -25,6 +25,7 @@ const RosarioInfo = lazy(() => import("@/modules/rosary/pages/RosarioInfo"));
 const Podcast = lazy(() => import("@/modules/podcast/pages/PodcastHome"));
 const PodcastSeries = lazy(() => import("@/modules/podcast/pages/PodcastSeries"));
 const PodcastExternalSeries = lazy(() => import("@/modules/podcast/pages/PodcastExternalSeries"));
+const PodcastSpotifySeries = lazy(() => import("@/modules/podcast/pages/PodcastSpotifySeries"));
 const Oraciones = lazy(() => import("@/modules/prayers/pages/Oraciones"));
 const LiturgiaHoras = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.LiturgiaHoras })));
 const LiturgiaReader = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.LiturgiaReader })));
@@ -124,6 +125,7 @@ const App = () => (
               <Route path="/podcast" element={<Podcast />} />
               <Route path="/podcast/santos-arcangeles-33-dias" element={<PodcastSeries />} />
               <Route path="/podcast/rss/:slug" element={<PodcastExternalSeries />} />
+              <Route path="/podcast/spotify/:slug" element={<PodcastSpotifySeries />} />
               <Route path="/oraciones" element={<Oraciones />} />
               <Route path="/oraciones/liturgia" element={<LiturgiaHoras />} />
               <Route path="/oraciones/liturgia/:hora" element={<LiturgiaReader />} />
