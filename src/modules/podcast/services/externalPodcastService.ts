@@ -41,7 +41,6 @@ export type ExternalPodcastResponse = {
 
 export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
   { slug: "biblia-en-un-ano", title: "La Biblia en un Año", subtitle: "Fray Sergio Serrano, OP · Juan Diego Network", category: "Biblia", playback_mode: "daily", source: "rss" },
-  { slug: "dios-te-habla", title: "Dios te habla: Un año con la Biblia en armonía", subtitle: "La Voz de Jesús · Historia de la salvación · 365 jornadas", category: "Biblia", playback_mode: "daily", source: "lvj" },
   { slug: "que-haria-jesus", title: "¿Qué Haría Jesús?", subtitle: "New Fire · Reflexión diaria del Evangelio", category: "Evangelio", playback_mode: "daily", source: "rss" },
   { slug: "evangelio-del-dia", title: "Evangelio del día", subtitle: "Fr. Jonathan Vásquez, O. de M.", category: "Evangelio", playback_mode: "daily", source: "rss" },
   { slug: "10-minutos-con-jesus", title: "10 Minutos con Jesús", subtitle: "Oración y meditación diaria", category: "Oración", playback_mode: "series", source: "rss" },
