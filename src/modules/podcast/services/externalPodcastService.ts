@@ -20,6 +20,8 @@ export type ExternalPodcastEpisode = {
   image_url: string;
   duration_seconds: number;
   pub_date: string;
+  season_number?: number;
+  episode_number?: number;
 };
 
 export type ExternalPodcast = {
