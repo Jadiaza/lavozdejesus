@@ -124,6 +124,20 @@ const durationToSeconds = (value: string) => {
   return parts[0] || 0;
 };
 
+const positiveInt = (value: string) => {
+  const parsed = Number.parseInt(value.trim(), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+};
+
+const inferSeasonEpisodeFromTitle = (title: string) => {
+  const match = title.match(/\bT(?:emporada)?\s*(\d+)\s*[-·:]?\s*E(?:pisodio)?\s*(\d+)\b/i);
+  if (!match) return {};
+  return {
+    season_number: Number.parseInt(match[1], 10),
+    episode_number: Number.parseInt(match[2], 10),
+  };
+};
+
 const getImage = (xml: string) =>
   attr(xml, "itunes:image", "href") ||
   attr(xml, "media:content", "url") ||
@@ -208,16 +222,23 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         const guid = stripHtml(tag(item, "guid")) || audioUrl;
         const durationText = stripHtml(tag(item, "itunes:duration"));
         const itemImage = getImage(item);
+        const title = stripHtml(tag(item, "title")) || `Episodio ${index + 1}`;
+        const inferred = inferSeasonEpisodeFromTitle(title);
+        const seasonNumber = positiveInt(stripHtml(tag(item, "itunes:season"))) ?? inferred.season_number;
+        const episodeNumber = positiveInt(stripHtml(tag(item, "itunes:episode"))) ?? inferred.episode_number;
+
         return {
           id: `${slug}-${index}-${guid.slice(-24)}`,
           guid,
-          title: stripHtml(tag(item, "title")) || `Episodio ${index + 1}`,
+          title,
           description: stripHtml(tag(item, "description") || tag(item, "content:encoded") || tag(item, "itunes:summary")),
           audio_url: audioUrl,
           image_url: itemImage || podcast.image_url,
           _item_image: itemImage,
           duration_seconds: durationToSeconds(durationText),
           pub_date: stripHtml(tag(item, "pubDate")),
+          season_number: seasonNumber,
+          episode_number: episodeNumber,
         };
       })
       .filter(Boolean) as Array<{
@@ -230,6 +251,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         _item_image: string;
         duration_seconds: number;
         pub_date: string;
+        season_number?: number;
+        episode_number?: number;
       }>;
 
     let filteredEpisodes = parsedEpisodes;
