@@ -1,6 +1,6 @@
 @media (max-width: 767px) {
   .biblia-layout-content > section[class*="rounded-"],
-  .biblia-layout-content > div[class*="rounded-"] {
+  .biblia-layout-content > div[class*="rounded-"]:not([style]) {
     border-color: transparent !important;
     border-radius: 0 !important;
     background: transparent !important;
