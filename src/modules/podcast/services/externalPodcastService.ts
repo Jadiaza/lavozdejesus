@@ -1,4 +1,5 @@
 export type ExternalPodcastPlaybackMode = "daily" | "series";
+export type ExternalPodcastSource = "rss" | "spotify";
 
 export type ExternalPodcastCatalogItem = {
   slug: string;
@@ -6,6 +7,8 @@ export type ExternalPodcastCatalogItem = {
   subtitle: string;
   category: string;
   playback_mode: ExternalPodcastPlaybackMode;
+  source?: ExternalPodcastSource;
+  spotify_show_id?: string;
 };
 
 export type ExternalPodcastEpisode = {
@@ -41,6 +44,7 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     subtitle: "Fray Sergio Serrano, OP · Juan Diego Network",
     category: "Biblia",
     playback_mode: "daily",
+    source: "rss",
   },
   {
     slug: "dios-te-habla",
@@ -48,6 +52,7 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     subtitle: "La Voz de Jesús · Lectura bíblica sincrónica · 365 jornadas",
     category: "Biblia",
     playback_mode: "daily",
+    source: "rss",
   },
   {
     slug: "que-haria-jesus",
@@ -55,6 +60,7 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     subtitle: "New Fire · Reflexión diaria del Evangelio",
     category: "Evangelio",
     playback_mode: "daily",
+    source: "rss",
   },
   {
     slug: "evangelio-del-dia",
@@ -62,6 +68,7 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     subtitle: "Fr. Jonathan Vásquez, O. de M.",
     category: "Evangelio",
     playback_mode: "daily",
+    source: "rss",
   },
   {
     slug: "10-minutos-con-jesus",
@@ -69,6 +76,7 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     subtitle: "Oración y meditación diaria",
     category: "Oración",
     playback_mode: "series",
+    source: "rss",
   },
   {
     slug: "conocete-en-el-espejo",
@@ -76,6 +84,16 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     subtitle: "Sheila Morataya · Juan Diego Network",
     category: "Sanación interior",
     playback_mode: "series",
+    source: "rss",
+  },
+  {
+    slug: "hablemos-de-exorcismos",
+    title: "Hablemos de Exorcismos",
+    subtitle: "P. Daniel Medina Guzmán, O.P.",
+    category: "Formación espiritual",
+    playback_mode: "series",
+    source: "spotify",
+    spotify_show_id: "4idQCcElpG4VPisFYJ3WMf",
   },
   {
     slug: "platicando-en-catolico",
@@ -83,6 +101,7 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     subtitle: "Juan Diego Network",
     category: "Actualidad católica",
     playback_mode: "series",
+    source: "rss",
   },
   {
     slug: "conoce-ama-vive-tu-fe",
@@ -90,6 +109,7 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     subtitle: "Luis Román",
     category: "Formación",
     playback_mode: "series",
+    source: "rss",
   },
   {
     slug: "salve-maria",
@@ -97,6 +117,7 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     subtitle: "Heraldos del Evangelio",
     category: "Espiritualidad",
     playback_mode: "series",
+    source: "rss",
   },
   {
     slug: "escuela-de-cristo",
@@ -104,6 +125,7 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     subtitle: "La Antigua Guatemala",
     category: "Tradición y espiritualidad",
     playback_mode: "series",
+    source: "rss",
   },
   {
     slug: "eco-catolico",
@@ -111,6 +133,7 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     subtitle: "Leonor Asilis",
     category: "Fe y vida",
     playback_mode: "series",
+    source: "rss",
   },
   {
     slug: "club-de-los-buhos",
@@ -118,6 +141,7 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     subtitle: "Mauricio I. Pérez",
     category: "Formación",
     playback_mode: "series",
+    source: "rss",
   },
   {
     slug: "podcast-mauricio-perez",
@@ -125,6 +149,7 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     subtitle: "Actualidad, espiritualidad y formación",
     category: "Formación",
     playback_mode: "series",
+    source: "rss",
   },
   {
     slug: "pasion-por-el-evangelio",
@@ -132,6 +157,7 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     subtitle: "Exégesis del Evangelio dominical",
     category: "Evangelio",
     playback_mode: "series",
+    source: "rss",
   },
 ];
 
@@ -172,6 +198,19 @@ export async function getExternalPodcastMetadata(slug: string): Promise<External
   return data.podcast;
 }
 
+export async function getSpotifyPodcastMetadata(showId: string): Promise<{ image_url: string }> {
+  const response = await fetch(`/api/podcast-spotify?show=${encodeURIComponent(showId)}`, {
+    headers: { Accept: "application/json" },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Spotify metadata ${response.status}`);
+  }
+
+  const data = (await response.json()) as { image_url?: string };
+  return { image_url: data.image_url || "" };
+}
+
 export function formatExternalDuration(seconds: number): string {
   if (!seconds || seconds < 1) return "Audio";
   const total = Math.floor(seconds);
@@ -181,7 +220,6 @@ export function formatExternalDuration(seconds: number): string {
   if (hours > 0) return `${hours}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   return `${minutes}:${String(secs).padStart(2, "0")}`;
 }
-
 
 export function getExternalPodcastCatalogItem(slug: string): ExternalPodcastCatalogItem | undefined {
   return EXTERNAL_PODCASTS.find((podcast) => podcast.slug === slug);
