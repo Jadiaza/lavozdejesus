@@ -90,6 +90,19 @@ const SOURCES: Record<string, SourceConfig> = {
   },
 };
 
+const HABLEMOS_SHOW_ID = "4idQCcElpG4VPisFYJ3WMf";
+const HABLEMOS_R2_BASE =
+  "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/podcast/hablemos_exorxismos/audio";
+
+const HABLEMOS_EPISODES = [
+  { season: 1, episode: 1, title: "Las posesiones diabólicas" },
+  { season: 1, episode: 2, title: "La obsesión diabólica" },
+  { season: 1, episode: 3, title: "La vejación diabólica" },
+  { season: 1, episode: 4, title: "La infestación diabólica" },
+  { season: 1, episode: 5, title: "La acción demoníaca extraordinaria" },
+  { season: 1, episode: 6, title: "Los pactos satánicos" },
+] as const;
+
 const decodeXml = (value: string) =>
   value
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
@@ -161,6 +174,67 @@ const imagesMatch = (episodeImage: string, channelImage: string) => {
   return episode === channel;
 };
 
+const hablemosAudioUrl = (season: number, episode: number, title: string) => {
+  const file = `T${season} E${episode} - ${title}.mp3`;
+  return `${HABLEMOS_R2_BASE}/T${season}/${encodeURIComponent(file)}`;
+};
+
+async function hablemosCover(): Promise<string> {
+  try {
+    const spotifyUrl = `https://open.spotify.com/show/${HABLEMOS_SHOW_ID}`;
+    const response = await fetch(
+      `https://open.spotify.com/oembed?url=${encodeURIComponent(spotifyUrl)}`,
+      {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "LVJPRAYER-Podcast/1.0",
+        },
+      },
+    );
+    if (!response.ok) return "";
+    const data = (await response.json()) as { thumbnail_url?: string };
+    return data.thumbnail_url || "";
+  } catch {
+    return "";
+  }
+}
+
+async function serveHablemos(metaOnly: boolean, res: ApiResponse) {
+  const imageUrl = await hablemosCover();
+  const podcast = {
+    slug: "hablemos-de-exorcismos",
+    title: "Hablemos de Exorcismos",
+    description:
+      "Espacio de formación y discernimiento espiritual con el P. Daniel Medina Guzmán, O.P., dedicado a comprender desde la fe católica temas relacionados con el exorcismo, la acción extraordinaria del maligno y la vida cristiana.",
+    author: "P. Daniel Medina Guzmán, O.P.",
+    image_url: imageUrl,
+    category: "Discernimiento espiritual",
+    source: "lvj_r2",
+  };
+
+  if (metaOnly) {
+    res.setHeader("Cache-Control", "s-maxage=21600, stale-while-revalidate=86400");
+    res.status(200).json({ podcast });
+    return;
+  }
+
+  const episodes = HABLEMOS_EPISODES.map((item) => ({
+    id: `hablemos-de-exorcismos-t${item.season}-e${item.episode}`,
+    guid: `hablemos-de-exorcismos-t${item.season}-e${item.episode}`,
+    title: `T${item.season} E${item.episode} · ${item.title}`,
+    description: "",
+    audio_url: hablemosAudioUrl(item.season, item.episode, item.title),
+    image_url: imageUrl,
+    duration_seconds: 0,
+    pub_date: "",
+    season_number: item.season,
+    episode_number: item.episode,
+  }));
+
+  res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=300");
+  res.status(200).json({ podcast, episodes });
+}
+
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method && req.method !== "GET") {
     res.setHeader("Allow", "GET");
@@ -172,8 +246,13 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug || "";
   const rawMeta = req.query?.meta;
   const metaOnly = (Array.isArray(rawMeta) ? rawMeta[0] : rawMeta) === "1";
-  const source = SOURCES[slug];
 
+  if (slug === "hablemos-de-exorcismos") {
+    await serveHablemos(metaOnly, res);
+    return;
+  }
+
+  const source = SOURCES[slug];
   if (!source) {
     res.status(404).json({ error: "PODCAST_SOURCE_NOT_FOUND" });
     return;
