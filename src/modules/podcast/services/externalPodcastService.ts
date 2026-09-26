@@ -1,5 +1,5 @@
 export type ExternalPodcastPlaybackMode = "daily" | "series";
-export type ExternalPodcastSource = "rss" | "spotify";
+export type ExternalPodcastSource = "rss" | "spotify" | "lvj";
 
 export type ExternalPodcastCatalogItem = {
   slug: string;
@@ -31,7 +31,7 @@ export type ExternalPodcast = {
   author: string;
   image_url: string;
   category: string;
-  source: "rss";
+  source: "rss" | "lvj_r2";
 };
 
 export type ExternalPodcastResponse = {
@@ -92,9 +92,9 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
     slug: "hablemos-de-exorcismos",
     title: "Hablemos de Exorcismos",
     subtitle: "P. Daniel Medina Guzmán, O.P.",
-    category: "Formación espiritual",
+    category: "Discernimiento espiritual",
     playback_mode: "series",
-    source: "spotify",
+    source: "lvj",
     spotify_show_id: "4idQCcElpG4VPisFYJ3WMf",
   },
   {
@@ -163,18 +163,25 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
   },
 ];
 
+const endpointForSlug = (slug: string, meta = false) => {
+  if (slug === "hablemos-de-exorcismos") {
+    return `/api/podcast-hablemos-exorcismos${meta ? "?meta=1" : ""}`;
+  }
+  return `/api/podcast-rss?slug=${encodeURIComponent(slug)}${meta ? "&meta=1" : ""}`;
+};
+
 export async function getExternalPodcast(slug: string): Promise<ExternalPodcastResponse> {
-  const response = await fetch(`/api/podcast-rss?slug=${encodeURIComponent(slug)}`, {
+  const response = await fetch(endpointForSlug(slug), {
     headers: { Accept: "application/json" },
   });
 
   if (!response.ok) {
-    throw new Error(`Podcast RSS ${response.status}`);
+    throw new Error(`Podcast ${response.status}`);
   }
 
   const data = (await response.json()) as Partial<ExternalPodcastResponse>;
   if (!data.podcast || !Array.isArray(data.episodes)) {
-    throw new Error("La fuente RSS no devolvió un podcast válido.");
+    throw new Error("La fuente no devolvió un podcast válido.");
   }
 
   return {
@@ -184,7 +191,7 @@ export async function getExternalPodcast(slug: string): Promise<ExternalPodcastR
 }
 
 export async function getExternalPodcastMetadata(slug: string): Promise<ExternalPodcast> {
-  const response = await fetch(`/api/podcast-rss?slug=${encodeURIComponent(slug)}&meta=1`, {
+  const response = await fetch(endpointForSlug(slug, true), {
     headers: { Accept: "application/json" },
   });
 
@@ -194,7 +201,7 @@ export async function getExternalPodcastMetadata(slug: string): Promise<External
 
   const data = (await response.json()) as { podcast?: ExternalPodcast };
   if (!data.podcast) {
-    throw new Error("La fuente RSS no devolvió metadatos válidos.");
+    throw new Error("La fuente no devolvió metadatos válidos.");
   }
 
   return data.podcast;
