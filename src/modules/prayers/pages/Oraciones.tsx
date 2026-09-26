@@ -224,7 +224,7 @@ export function LiturgiaReader() {
             const isMajor = majorSectionTypes.has(section.tipo);
             return <section key={`${section.tipo}-${index}`} className={isMajor ? "border-t border-current/15 pt-5" : ""}>
               {!isIntro ? <h3 className="mb-2 text-left text-lg font-bold uppercase text-[var(--prayer-accent)]">{section.titulo}</h3> : null}
-              <div className="space-y-2.5 leading-[1.45]">{section.contenido.map((paragraph, paragraphIndex) => {
+              <div className="space-y-1 leading-[1.38]">{section.contenido.map((paragraph, paragraphIndex) => {
                 const previous = section.contenido[paragraphIndex - 1];
                 const biblicalEpigraph = paragraph.tipo === "texto" && previous?.tipo === "subtitulo" && isBiblicalEpigraph(paragraph.texto);
                 return <p key={paragraphIndex} className={`${paragraphClass(paragraph)}${biblicalEpigraph ? " italic" : ""}`}>{renderParagraph(paragraph)}</p>;
