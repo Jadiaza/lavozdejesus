@@ -64,6 +64,9 @@ const itemType = (text: string) => {
   if (/^Ant(?:\s*\d+)?\./i.test(text)) return "antifona";
   if (/^[VR]\.\s*/i.test(text)) return "respuesta";
   if (/^(Se pueden|Todos|El presidente|Si preside)/i.test(text)) return "rubrica";
+  if (/^[IVXLCDM]+\.?$/i.test(text.trim())) return "subtitulo";
+  const letters = text.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/g, "");
+  if (letters && text.length <= 90 && text === text.toLocaleUpperCase("es")) return "subtitulo";
   if (/^(Salmo|Cántico|Lectura breve)/i.test(text)) return "subtitulo";
   return "texto";
 };
