@@ -85,28 +85,6 @@ const SOURCES: Record<string, SourceConfig> = {
   },
 };
 
-const DIOS_TE_HABLA_COVER =
-  "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/biblia/planes/images/dios-te-habla.png";
-
-const HABLEMOS_SHOW_ID = "4idQCcElpG4VPisFYJ3WMf";
-const HABLEMOS_R2_BASE =
-  "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/podcast/hablemos_exorxismos/audio";
-
-const HABLEMOS_EPISODES = [
-  { season: 1, episode: 1, title: "Las posesiones diabólicas" },
-  { season: 1, episode: 2, title: "La obsesión diabólica" },
-  { season: 1, episode: 3, title: "La vejación diabólica" },
-  { season: 1, episode: 4, title: "La infestación diabólica" },
-  { season: 1, episode: 5, title: "La acción demoníaca extraordinaria" },
-  { season: 1, episode: 6, title: "Los pactos satánicos" },
-  { season: 1, episode: 7, title: "Esoterismo y Ocultismo" },
-  { season: 1, episode: 8, title: "Los maleficios" },
-  { season: 1, episode: 9, title: "Lucha contra Satanás" },
-  { season: 1, episode: 10, title: "Lucha contra Satanás - II" },
-  { season: 1, episode: 11, title: "Examen Espiritual" },
-  { season: 1, episode: 12, title: "La Virgen María terror de Satanás" },
-] as const;
-
 const decodeXml = (value: string) =>
   value
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
@@ -178,86 +156,6 @@ const imagesMatch = (episodeImage: string, channelImage: string) => {
   return episode === channel;
 };
 
-function serveDiosTeHabla(metaOnly: boolean, res: ApiResponse) {
-  const podcast = {
-    slug: "dios-te-habla",
-    title: "Dios te habla: Un año con la Biblia en armonía",
-    description:
-      "Un recorrido católico de 365 jornadas por la historia de la salvación, armonizando el Antiguo Testamento, el Nuevo Testamento y los Salmos para descubrir cómo toda la Escritura conduce al encuentro con Dios.",
-    author: "La Voz de Jesús",
-    image_url: DIOS_TE_HABLA_COVER,
-    category: "Biblia",
-    source: "lvj",
-  };
-
-  res.setHeader(
-    "Cache-Control",
-    metaOnly ? "s-maxage=21600, stale-while-revalidate=86400" : "s-maxage=300, stale-while-revalidate=3600",
-  );
-  res.status(200).json(metaOnly ? { podcast } : { podcast, episodes: [] });
-}
-
-const hablemosAudioUrl = (season: number, episode: number, title: string) => {
-  const file = `T${season} E${episode} - ${title}.mp3`;
-  return `${HABLEMOS_R2_BASE}/T${season}/${encodeURIComponent(file)}`;
-};
-
-async function hablemosCover(): Promise<string> {
-  try {
-    const spotifyUrl = `https://open.spotify.com/show/${HABLEMOS_SHOW_ID}`;
-    const response = await fetch(
-      `https://open.spotify.com/oembed?url=${encodeURIComponent(spotifyUrl)}`,
-      {
-        headers: {
-          Accept: "application/json",
-          "User-Agent": "LVJPRAYER-Podcast/1.0",
-        },
-      },
-    );
-    if (!response.ok) return "";
-    const data = (await response.json()) as { thumbnail_url?: string };
-    return data.thumbnail_url || "";
-  } catch {
-    return "";
-  }
-}
-
-async function serveHablemos(metaOnly: boolean, res: ApiResponse) {
-  const imageUrl = await hablemosCover();
-  const podcast = {
-    slug: "hablemos-de-exorcismos",
-    title: "Hablemos de Exorcismos",
-    description:
-      "Espacio de formación y discernimiento espiritual con el P. Daniel Medina Guzmán, O.P., dedicado a comprender desde la fe católica temas relacionados con el exorcismo, la acción extraordinaria del maligno y la vida cristiana.",
-    author: "P. Daniel Medina Guzmán, O.P.",
-    image_url: imageUrl,
-    category: "Discernimiento espiritual",
-    source: "lvj_r2",
-  };
-
-  if (metaOnly) {
-    res.setHeader("Cache-Control", "s-maxage=21600, stale-while-revalidate=86400");
-    res.status(200).json({ podcast });
-    return;
-  }
-
-  const episodes = HABLEMOS_EPISODES.map((item) => ({
-    id: `hablemos-de-exorcismos-t${item.season}-e${item.episode}`,
-    guid: `hablemos-de-exorcismos-t${item.season}-e${item.episode}`,
-    title: `T${item.season} E${item.episode} · ${item.title}`,
-    description: "",
-    audio_url: hablemosAudioUrl(item.season, item.episode, item.title),
-    image_url: imageUrl,
-    duration_seconds: 0,
-    pub_date: "",
-    season_number: item.season,
-    episode_number: item.episode,
-  }));
-
-  res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=300");
-  res.status(200).json({ podcast, episodes });
-}
-
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method && req.method !== "GET") {
     res.setHeader("Allow", "GET");
@@ -269,16 +167,6 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug || "";
   const rawMeta = req.query?.meta;
   const metaOnly = (Array.isArray(rawMeta) ? rawMeta[0] : rawMeta) === "1";
-
-  if (slug === "dios-te-habla") {
-    serveDiosTeHabla(metaOnly, res);
-    return;
-  }
-
-  if (slug === "hablemos-de-exorcismos") {
-    await serveHablemos(metaOnly, res);
-    return;
-  }
 
   const source = SOURCES[slug];
   if (!source) {
@@ -326,6 +214,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         const item = match[1];
         const audioUrl = attr(item, "enclosure", "url") || attr(item, "media:content", "url");
         if (!audioUrl) return null;
+
         const guid = stripHtml(tag(item, "guid")) || audioUrl;
         const durationText = stripHtml(tag(item, "itunes:duration"));
         const itemImage = getImage(item);
@@ -368,10 +257,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       const matching = parsedEpisodes.filter((episode) =>
         imagesMatch(episode._item_image || episode.image_url, podcast.image_url),
       );
-
-      if (matching.length >= 3) {
-        filteredEpisodes = matching;
-      }
+      if (matching.length >= 3) filteredEpisodes = matching;
     }
 
     const episodes = filteredEpisodes
