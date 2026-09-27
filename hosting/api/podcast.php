@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+define('LVJ_FORCE_NO_STORE', true);
+
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
+
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 if ($origin === 'https://lvjprayer.vercel.app') {
   header('Access-Control-Allow-Origin: https://lvjprayer.vercel.app');
