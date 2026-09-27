@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if ($origin === 'https://lvjprayer.vercel.app') {
+  header('Access-Control-Allow-Origin: https://lvjprayer.vercel.app');
+  header('Vary: Origin');
+}
+
 require_once __DIR__ . '/bootstrap.php';
 
 lvj_require_method('GET');
