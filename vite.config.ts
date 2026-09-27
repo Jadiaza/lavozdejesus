@@ -50,13 +50,16 @@ export default defineConfig(() => ({
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/~oauth/],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2}"],
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
             urlPattern: ({ request, url }) =>
               request.mode === "navigate" && !url.pathname.startsWith("/~oauth"),
             handler: "NetworkFirst",
             options: {
-              cacheName: "lvdj-pages",
+              cacheName: "lvdj-pages-v2",
               networkTimeoutSeconds: 4,
               expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 },
             },
@@ -64,9 +67,9 @@ export default defineConfig(() => ({
           {
             urlPattern: ({ request, sameOrigin }) =>
               sameOrigin && ["style", "script", "worker", "font"].includes(request.destination),
-            handler: "CacheFirst",
+            handler: "StaleWhileRevalidate",
             options: {
-              cacheName: "lvdj-assets",
+              cacheName: "lvdj-assets-v2",
               expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 30 },
             },
           },
@@ -74,7 +77,7 @@ export default defineConfig(() => ({
             urlPattern: ({ request, sameOrigin }) => sameOrigin && request.destination === "image",
             handler: "CacheFirst",
             options: {
-              cacheName: "lvdj-images",
+              cacheName: "lvdj-images-v2",
               expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 },
             },
           },
