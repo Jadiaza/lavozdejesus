@@ -1,5 +1,5 @@
 export type ExternalPodcastPlaybackMode = "daily" | "series";
-export type ExternalPodcastSource = "rss" | "spotify" | "lvj";
+export type ExternalPodcastSource = "rss" | "lvj";
 
 export type ExternalPodcastCatalogItem = {
   slug: string;
@@ -8,7 +8,6 @@ export type ExternalPodcastCatalogItem = {
   category: string;
   playback_mode: ExternalPodcastPlaybackMode;
   source?: ExternalPodcastSource;
-  spotify_show_id?: string;
 };
 
 export type ExternalPodcastEpisode = {
@@ -31,7 +30,7 @@ export type ExternalPodcast = {
   author: string;
   image_url: string;
   category: string;
-  source: "rss" | "lvj" | "lvj_r2";
+  source: "rss" | "lvj" | "lvj_db";
 };
 
 export type ExternalPodcastResponse = {
@@ -45,7 +44,7 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
   { slug: "evangelio-del-dia", title: "Evangelio del día", subtitle: "Fr. Jonathan Vásquez, O. de M.", category: "Evangelio", playback_mode: "daily", source: "rss" },
   { slug: "10-minutos-con-jesus", title: "10 Minutos con Jesús", subtitle: "Oración y meditación diaria", category: "Oración", playback_mode: "series", source: "rss" },
   { slug: "conocete-en-el-espejo", title: "Conócete en el Espejo con Sheila Morataya", subtitle: "Sheila Morataya · Juan Diego Network", category: "Sanación interior", playback_mode: "series", source: "rss" },
-  { slug: "hablemos-de-exorcismos", title: "Hablemos de Exorcismos", subtitle: "P. Daniel Medina Guzmán, O.P.", category: "Discernimiento espiritual", playback_mode: "series", source: "lvj", spotify_show_id: "4idQCcElpG4VPisFYJ3WMf" },
+  { slug: "hablemos-de-exorcismos", title: "Hablemos de Exorcismos", subtitle: "P. Daniel Medina Guzmán, O.P.", category: "Discernimiento espiritual", playback_mode: "series", source: "lvj" },
   { slug: "platicando-en-catolico", title: "Platicando en Católico", subtitle: "Juan Diego Network", category: "Actualidad católica", playback_mode: "series", source: "rss" },
   { slug: "conoce-ama-vive-tu-fe", title: "CONOCE AMA Y VIVE TU FE", subtitle: "Luis Román", category: "Formación", playback_mode: "series", source: "rss" },
   { slug: "salve-maria", title: "Salve María - Podcast Católico", subtitle: "Heraldos del Evangelio", category: "Espiritualidad", playback_mode: "series", source: "rss" },
@@ -56,8 +55,17 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
   { slug: "pasion-por-el-evangelio", title: "Pasión por el Evangelio", subtitle: "Exégesis del Evangelio dominical", category: "Evangelio", playback_mode: "series", source: "rss" },
 ];
 
-const endpointForSlug = (slug: string, meta = false) =>
-  `/api/podcast-rss?slug=${encodeURIComponent(slug)}${meta ? "&meta=1" : ""}`;
+const hostingApiBase = ((import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "https://lavozdejesus.co")
+  .trim()
+  .replace(/\/$/, "");
+
+const endpointForSlug = (slug: string, meta = false) => {
+  const query = `slug=${encodeURIComponent(slug)}${meta ? "&meta=1" : ""}`;
+  if (slug === "hablemos-de-exorcismos") {
+    return `${hostingApiBase}/api/podcast.php?${query}`;
+  }
+  return `/api/podcast-rss?${query}`;
+};
 
 export async function getExternalPodcast(slug: string): Promise<ExternalPodcastResponse> {
   const response = await fetch(endpointForSlug(slug), { headers: { Accept: "application/json" } });
@@ -73,13 +81,6 @@ export async function getExternalPodcastMetadata(slug: string): Promise<External
   const data = (await response.json()) as { podcast?: ExternalPodcast };
   if (!data.podcast) throw new Error("La fuente no devolvió metadatos válidos.");
   return data.podcast;
-}
-
-export async function getSpotifyPodcastMetadata(showId: string): Promise<{ image_url: string }> {
-  const response = await fetch(`/api/podcast-spotify?show=${encodeURIComponent(showId)}`, { headers: { Accept: "application/json" } });
-  if (!response.ok) throw new Error(`Spotify metadata ${response.status}`);
-  const data = (await response.json()) as { image_url?: string };
-  return { image_url: data.image_url || "" };
 }
 
 export function formatExternalDuration(seconds: number): string {
