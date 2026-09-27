@@ -59,16 +59,29 @@ const hostingApiBase = ((import.meta.env.VITE_API_BASE_URL as string | undefined
   .trim()
   .replace(/\/$/, "");
 
+const catalogItemForSlug = (slug: string) => EXTERNAL_PODCASTS.find((podcast) => podcast.slug === slug);
+
 const endpointForSlug = (slug: string, meta = false) => {
-  const query = `slug=${encodeURIComponent(slug)}${meta ? "&meta=1" : ""}`;
-  const item = EXTERNAL_PODCASTS.find((podcast) => podcast.slug === slug);
-  return item?.source === "db"
-    ? `${hostingApiBase}/api/podcast.php?${query}`
-    : `/api/podcast-rss?${query}`;
+  const item = catalogItemForSlug(slug);
+  const baseQuery = `slug=${encodeURIComponent(slug)}${meta ? "&meta=1" : ""}`;
+
+  if (item?.source === "db") {
+    return `${hostingApiBase}/api/podcast.php?${baseQuery}&_=${Date.now()}`;
+  }
+
+  return `/api/podcast-rss?${baseQuery}`;
+};
+
+const fetchPodcastJson = (slug: string, meta = false) => {
+  const item = catalogItemForSlug(slug);
+  return fetch(endpointForSlug(slug, meta), {
+    headers: { Accept: "application/json" },
+    cache: item?.source === "db" ? "no-store" : "default",
+  });
 };
 
 export async function getExternalPodcast(slug: string): Promise<ExternalPodcastResponse> {
-  const response = await fetch(endpointForSlug(slug), { headers: { Accept: "application/json" } });
+  const response = await fetchPodcastJson(slug);
   if (!response.ok) throw new Error(`Podcast ${response.status}`);
   const data = (await response.json()) as Partial<ExternalPodcastResponse>;
   if (!data.podcast || !Array.isArray(data.episodes)) throw new Error("La fuente no devolvió un podcast válido.");
@@ -76,7 +89,7 @@ export async function getExternalPodcast(slug: string): Promise<ExternalPodcastR
 }
 
 export async function getExternalPodcastMetadata(slug: string): Promise<ExternalPodcast> {
-  const response = await fetch(endpointForSlug(slug, true), { headers: { Accept: "application/json" } });
+  const response = await fetchPodcastJson(slug, true);
   if (!response.ok) throw new Error(`Podcast metadata ${response.status}`);
   const data = (await response.json()) as { podcast?: ExternalPodcast };
   if (!data.podcast) throw new Error("La fuente no devolvió metadatos válidos.");
@@ -94,5 +107,5 @@ export function formatExternalDuration(seconds: number): string {
 }
 
 export function getExternalPodcastCatalogItem(slug: string): ExternalPodcastCatalogItem | undefined {
-  return EXTERNAL_PODCASTS.find((podcast) => podcast.slug === slug);
+  return catalogItemForSlug(slug);
 }
