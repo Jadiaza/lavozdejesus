@@ -53,6 +53,7 @@ $bibliaMaintenanceActive = in_array($currentAdminPage, [
 ], true);
 $bibliaGroupActive = $bibliaMainActive || $bibliaImportActive || $bibliaStudiesActive || $bibliaMapsActive || $bibliaCharactersActive || $bibliaMaintenanceActive;
 $aiTrainingActive = $currentAdminPage === 'ia-entrenamiento.php' || $currentModule === 'inteligencia-artificial';
+$podcastActive = $currentAdminPage === 'podcast.php' || $currentModule === 'podcast';
 ?>
 <aside class="sidebar" data-sidebar>
   <div class="brand brand-large">
@@ -70,7 +71,7 @@ $aiTrainingActive = $currentAdminPage === 'ia-entrenamiento.php' || $currentModu
     <span class="side-nav-section-label">Emisora</span>
     <a class="<?php echo side_nav_active('', 'radio', ''); ?>" href="content.php?module=radio"><span class="nav-icon">R</span> Radio en Vivo</a>
     <a class="<?php echo $currentAdminPage === 'programacion.php' ? 'active' : ''; ?>" href="programacion.php"><span class="nav-icon">Pr</span> Programacion</a>
-    <a class="<?php echo side_nav_active('', 'podcast'); ?>" href="content.php?module=podcast"><span class="nav-icon">Pc</span> Podcast</a>
+    <a class="<?php echo $podcastActive ? 'active' : ''; ?>" href="podcast.php"><span class="nav-icon">Pc</span> Podcast</a>
 
     <span class="side-nav-section-label">Capilla y Oracion</span>
     <a class="<?php echo side_nav_active('', 'capilla') === 'active' ? 'active' : ''; ?>" href="content.php?module=capilla"><span class="nav-icon">C</span> Capillas y Transmisiones</a>
