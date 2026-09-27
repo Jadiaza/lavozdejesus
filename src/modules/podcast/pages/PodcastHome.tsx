@@ -16,6 +16,7 @@ import {
 import {
   EXTERNAL_PODCASTS,
   getExternalPodcastMetadata,
+  type ExternalPodcast,
 } from "@/modules/podcast/services/externalPodcastService";
 import "@/modules/podcast/podcast-home.css";
 
@@ -27,7 +28,7 @@ export default function PodcastHome() {
   const [availableEpisodes, setAvailableEpisodes] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [coverMap, setCoverMap] = useState<Record<string, string>>({});
+  const [metadataMap, setMetadataMap] = useState<Record<string, ExternalPodcast>>({});
 
   const load = async () => {
     setLoading(true);
@@ -51,19 +52,19 @@ export default function PodcastHome() {
     let mounted = true;
 
     void Promise.allSettled(
-      EXTERNAL_PODCASTS.map(async (podcast) => {
-        const metadata = await getExternalPodcastMetadata(podcast.slug);
-        return { slug: podcast.slug, image_url: metadata.image_url };
-      }),
+      EXTERNAL_PODCASTS.map(async (podcast) => ({
+        slug: podcast.slug,
+        metadata: await getExternalPodcastMetadata(podcast.slug),
+      })),
     ).then((results) => {
       if (!mounted) return;
-      const next: Record<string, string> = {};
+      const next: Record<string, ExternalPodcast> = {};
       results.forEach((result) => {
-        if (result.status === "fulfilled" && result.value.image_url) {
-          next[result.value.slug] = result.value.image_url;
+        if (result.status === "fulfilled") {
+          next[result.value.slug] = result.value.metadata;
         }
       });
-      setCoverMap(next);
+      setMetadataMap(next);
     });
 
     return () => {
@@ -154,7 +155,11 @@ export default function PodcastHome() {
 
         <div className="podcast-shelf" aria-label="Podcasts recomendados">
           {EXTERNAL_PODCASTS.map((podcast, index) => {
-            const cover = coverMap[podcast.slug];
+            const metadata = metadataMap[podcast.slug];
+            const cover = metadata?.image_url || "";
+            const title = metadata?.title || podcast.title;
+            const subtitle = metadata?.author || podcast.subtitle;
+            const category = metadata?.category || podcast.category;
             const target = `/podcast/rss/${podcast.slug}`;
 
             return (
@@ -162,20 +167,20 @@ export default function PodcastHome() {
                 key={podcast.slug}
                 to={target}
                 className="podcast-tile"
-                aria-label={`Abrir ${podcast.title}`}
+                aria-label={`Abrir ${title}`}
               >
                 <div className="podcast-tile-cover">
                   {cover ? (
                     <img
                       src={cover}
-                      alt={`Carátula de ${podcast.title}`}
+                      alt={`Carátula de ${title}`}
                       className="h-full w-full object-cover"
                       loading="lazy"
                     />
                   ) : (
                     <>
                       <div className="podcast-tile-glow" />
-                      {podcast.category === "Biblia" ? (
+                      {category === "Biblia" ? (
                         <BookOpen className="relative z-10 h-10 w-10 text-[#F2D27A]" strokeWidth={1.25} />
                       ) : (
                         <Headphones className="relative z-10 h-10 w-10 text-[#F2D27A]" strokeWidth={1.25} />
@@ -184,9 +189,9 @@ export default function PodcastHome() {
                   )}
                   <span className="podcast-tile-number">{index + 1}</span>
                 </div>
-                <h3>{podcast.title}</h3>
-                <p>{podcast.subtitle}</p>
-                <small>{podcast.category}</small>
+                <h3>{title}</h3>
+                <p>{subtitle}</p>
+                <small>{category}</small>
               </Link>
             );
           })}
