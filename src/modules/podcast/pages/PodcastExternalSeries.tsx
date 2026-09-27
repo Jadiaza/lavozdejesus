@@ -333,7 +333,7 @@ export default function PodcastExternalSeries() {
                   </div>
                 </div>
                 <button type="button" onClick={() => setSortSheetOpen(true)} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#D4AF37]/30 bg-[#0A0A0A] px-3.5 text-[12px] font-semibold text-[#F8F5EA]/75">
-                  <SlidersHorizontal className="h-4 w-4 text-[#D4AF37]" />{sortOrder === "newest" ? "Más reciente" : "Más antiguo"}
+                  <SlidersHorizontal className="h-4 w-4 text-[#D4AF37]" />Filtrar y ordenar
                 </button>
               </div>
 
