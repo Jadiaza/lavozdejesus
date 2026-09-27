@@ -1,5 +1,5 @@
 export type ExternalPodcastPlaybackMode = "daily" | "series";
-export type ExternalPodcastSource = "rss" | "lvj";
+export type ExternalPodcastSource = "rss" | "db";
 
 export type ExternalPodcastCatalogItem = {
   slug: string;
@@ -7,7 +7,7 @@ export type ExternalPodcastCatalogItem = {
   subtitle: string;
   category: string;
   playback_mode: ExternalPodcastPlaybackMode;
-  source?: ExternalPodcastSource;
+  source: ExternalPodcastSource;
 };
 
 export type ExternalPodcastEpisode = {
@@ -30,7 +30,7 @@ export type ExternalPodcast = {
   author: string;
   image_url: string;
   category: string;
-  source: "rss" | "lvj" | "lvj_db";
+  source: "rss" | "lvj_db";
 };
 
 export type ExternalPodcastResponse = {
@@ -44,7 +44,7 @@ export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
   { slug: "evangelio-del-dia", title: "Evangelio del día", subtitle: "Fr. Jonathan Vásquez, O. de M.", category: "Evangelio", playback_mode: "daily", source: "rss" },
   { slug: "10-minutos-con-jesus", title: "10 Minutos con Jesús", subtitle: "Oración y meditación diaria", category: "Oración", playback_mode: "series", source: "rss" },
   { slug: "conocete-en-el-espejo", title: "Conócete en el Espejo con Sheila Morataya", subtitle: "Sheila Morataya · Juan Diego Network", category: "Sanación interior", playback_mode: "series", source: "rss" },
-  { slug: "hablemos-de-exorcismos", title: "Hablemos de Exorcismos", subtitle: "P. Daniel Medina Guzmán, O.P.", category: "Discernimiento espiritual", playback_mode: "series", source: "lvj" },
+  { slug: "hablemos-de-exorcismos", title: "Hablemos de Exorcismos", subtitle: "P. Daniel Medina Guzmán, O.P.", category: "Discernimiento espiritual", playback_mode: "series", source: "db" },
   { slug: "platicando-en-catolico", title: "Platicando en Católico", subtitle: "Juan Diego Network", category: "Actualidad católica", playback_mode: "series", source: "rss" },
   { slug: "conoce-ama-vive-tu-fe", title: "CONOCE AMA Y VIVE TU FE", subtitle: "Luis Román", category: "Formación", playback_mode: "series", source: "rss" },
   { slug: "salve-maria", title: "Salve María - Podcast Católico", subtitle: "Heraldos del Evangelio", category: "Espiritualidad", playback_mode: "series", source: "rss" },
@@ -61,10 +61,10 @@ const hostingApiBase = ((import.meta.env.VITE_API_BASE_URL as string | undefined
 
 const endpointForSlug = (slug: string, meta = false) => {
   const query = `slug=${encodeURIComponent(slug)}${meta ? "&meta=1" : ""}`;
-  if (slug === "hablemos-de-exorcismos") {
-    return `${hostingApiBase}/api/podcast.php?${query}`;
-  }
-  return `/api/podcast-rss?${query}`;
+  const item = EXTERNAL_PODCASTS.find((podcast) => podcast.slug === slug);
+  return item?.source === "db"
+    ? `${hostingApiBase}/api/podcast.php?${query}`
+    : `/api/podcast-rss?${query}`;
 };
 
 export async function getExternalPodcast(slug: string): Promise<ExternalPodcastResponse> {
