@@ -24,7 +24,7 @@ export default function PodcastSortSheet({ open, order, onChange, onClose }: Pod
         aria-modal="true"
         aria-label="Filtrar y ordenar episodios"
         onClick={(event) => event.stopPropagation()}
-        className="mx-auto w-full max-w-[520px] rounded-t-[1.6rem] border-t border-white/10 bg-[#1B1B1B] px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 text-[#F8F5EA] shadow-[0_-20px_55px_rgba(0,0,0,.55)]"
+        className="mx-auto max-h-[calc(100dvh-4.5rem)] w-full max-w-[520px] overflow-y-auto rounded-t-[1.6rem] border-t border-white/10 bg-[#1B1B1B] px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 text-[#F8F5EA] shadow-[0_-20px_55px_rgba(0,0,0,.55)]"
       >
         <div className="mx-auto mb-3 h-1.5 w-11 rounded-full bg-white/30" />
         <div className="flex items-center justify-between border-b border-white/10 pb-4">
@@ -37,7 +37,7 @@ export default function PodcastSortSheet({ open, order, onChange, onClose }: Pod
           </button>
         </div>
 
-        <div className="py-5">
+        <div className="py-4">
           <p className="mb-4 text-[1.05rem] font-extrabold">Filtrar</p>
           <div className="flex min-h-12 items-center justify-between text-[15px]">
             <span>Todos los episodios</span>
@@ -45,8 +45,8 @@ export default function PodcastSortSheet({ open, order, onChange, onClose }: Pod
           </div>
         </div>
 
-        <div className="border-t border-white/10 pt-5">
-          <p className="mb-3 text-[1.05rem] font-extrabold">Ordenar por</p>
+        <div className="border-t border-white/10 pt-4">
+          <p className="mb-2 text-[1.05rem] font-extrabold">Ordenar por</p>
           <button type="button" onClick={() => choose("newest")} className="flex min-h-12 w-full items-center justify-between text-left text-[15px]">
             <span>Más reciente</span>
             {order === "newest" && <Check className="h-6 w-6 text-[#D4AF37]" strokeWidth={3} />}
