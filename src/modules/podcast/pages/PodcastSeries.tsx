@@ -11,11 +11,13 @@ import {
   RotateCcw,
   RotateCw,
   Share2,
+  SlidersHorizontal,
   Sparkles,
   Volume2,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import PodcastLayout from "@/modules/podcast/components/PodcastLayout";
+import PodcastSortSheet from "@/modules/podcast/components/PodcastSortSheet";
 import {
   formatEpisodeDuration,
   getConsecrationPodcast,
@@ -77,6 +79,7 @@ export default function PodcastSeries() {
   const [error, setError] = useState("");
   const [tab, setTab] = useState<"episodes" | "about">("episodes");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  const [sortSheetOpen, setSortSheetOpen] = useState(false);
   const [playerExpanded, setPlayerExpanded] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
 
@@ -121,35 +124,24 @@ export default function PodcastSeries() {
   const playEpisode = async (episode: PodcastEpisode, expand = true) => {
     const audio = audioRef.current;
     if (!audio) return;
-
     if (currentEpisode?.id === episode.id) {
-      if (audio.paused) {
-        await audio.play().catch(() => setIsPlaying(false));
-      } else {
-        audio.pause();
-      }
+      if (audio.paused) await audio.play().catch(() => setIsPlaying(false));
+      else audio.pause();
       if (expand) setPlayerExpanded(true);
       return;
     }
-
     const saved = readSavedPosition(episode.id);
     setCurrentEpisode(episode);
     setResumeEpisodeId(episode.id);
     setCurrentTime(saved);
     setDuration(episode.duration_seconds || episode.estimated_minutes * 60 || 0);
     if (expand) setPlayerExpanded(true);
-
     audio.src = episode.audio_url;
     audio.playbackRate = playbackRate;
     audio.load();
-    audio.addEventListener(
-      "loadedmetadata",
-      () => {
-        if (saved > 0 && (!audio.duration || saved < audio.duration - 5)) audio.currentTime = saved;
-      },
-      { once: true },
-    );
-
+    audio.addEventListener("loadedmetadata", () => {
+      if (saved > 0 && (!audio.duration || saved < audio.duration - 5)) audio.currentTime = saved;
+    }, { once: true });
     await audio.play().catch(() => setIsPlaying(false));
     savePosition(episode.id, saved);
   };
@@ -231,9 +223,7 @@ export default function PodcastSeries() {
           <Headphones className="mx-auto h-10 w-10 text-[#D4AF37]" />
           <h1 className="mt-4 font-display text-2xl">No pudimos cargar la serie</h1>
           <p className="mt-2 text-sm text-[#F8F5EA]/55">{error}</p>
-          <button type="button" onClick={() => void load()} className="mt-5 rounded-full bg-gradient-to-r from-[#F2D27A] to-[#D4AF37] px-5 py-2.5 text-sm font-bold text-[#050505]">
-            Reintentar
-          </button>
+          <button type="button" onClick={() => void load()} className="mt-5 rounded-full bg-gradient-to-r from-[#F2D27A] to-[#D4AF37] px-5 py-2.5 text-sm font-bold text-[#050505]">Reintentar</button>
         </section>
       )}
 
@@ -244,9 +234,7 @@ export default function PodcastSeries() {
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,5,.98)_0%,rgba(5,5,5,.88)_46%,rgba(5,5,5,.40)_75%,rgba(5,5,5,.72)_100%)]" />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.05)_0%,rgba(5,5,5,.18)_58%,rgba(5,5,5,.98)_100%)]" />
             <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#D4AF37]/45 bg-[#050505]/65 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#F2D27A] backdrop-blur-sm">
-                <Sparkles className="h-3.5 w-3.5" /> Serie espiritual
-              </div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#D4AF37]/45 bg-[#050505]/65 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#F2D27A] backdrop-blur-sm"><Sparkles className="h-3.5 w-3.5" />Serie espiritual</div>
               <h1 className="mt-5 max-w-[21rem] font-display text-[2.55rem] font-semibold leading-[0.9] tracking-[-0.025em] text-[#F2D27A]">33 Días con los Santos Arcángeles</h1>
               <p className="mt-3 text-sm font-medium text-[#F8F5EA]/80">{series.subtitle || "San Miguel · San Gabriel · San Rafael"}</p>
               <p className="mt-4 max-w-[20rem] text-[13px] leading-relaxed text-[#F8F5EA]/62">{series.description}</p>
@@ -256,9 +244,7 @@ export default function PodcastSeries() {
               </div>
               {firstEpisode && (
                 <div className="mt-5 w-full max-w-[20rem] space-y-2">
-                  <button type="button" onClick={() => void playEpisode(resumeEpisode && readSavedPosition(resumeEpisode.id) > 5 ? resumeEpisode : firstEpisode)} className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#F2D27A] to-[#D4AF37] px-6 py-3 text-sm font-black text-[#050505]">
-                    <Play className="h-5 w-5 fill-current" />{resumeEpisode && readSavedPosition(resumeEpisode.id) > 5 ? "Continuar escuchando" : "Comenzar desde el primer episodio"}
-                  </button>
+                  <button type="button" onClick={() => void playEpisode(resumeEpisode && readSavedPosition(resumeEpisode.id) > 5 ? resumeEpisode : firstEpisode)} className="inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#F2D27A] to-[#D4AF37] px-6 py-3 text-sm font-black text-[#050505]"><Play className="h-5 w-5 fill-current" />{resumeEpisode && readSavedPosition(resumeEpisode.id) > 5 ? "Continuar escuchando" : "Comenzar desde el primer episodio"}</button>
                   {latestEpisode && <button type="button" onClick={() => void playEpisode(latestEpisode)} className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[#D4AF37]/65 px-5 py-2.5 text-sm font-bold text-[#F2D27A]"><Play className="h-4 w-4 fill-current" />Escuchar episodio más reciente</button>}
                 </div>
               )}
@@ -273,15 +259,17 @@ export default function PodcastSeries() {
           </div>
 
           {tab === "episodes" ? (
-            <section className="pt-5">
-              <div className="mb-4 flex items-end justify-between gap-3">
-                <div><p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#D4AF37]">Consagración</p><h2 className="font-display text-[2rem] font-semibold leading-none">Todos los episodios</h2></div>
-                <span className="text-xs text-[#F8F5EA]/42">{episodes.length} disponibles</span>
+            <section className="pt-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#D4AF37]">Consagración</p>
+                  <div className="mt-0.5 flex items-baseline gap-2"><h2 className="font-display text-[1.45rem] font-semibold leading-none">Episodios</h2><span className="text-[11px] text-[#F8F5EA]/42">{episodes.length}</span></div>
+                </div>
+                <button type="button" onClick={() => setSortSheetOpen(true)} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#D4AF37]/30 bg-[#0A0A0A] px-3.5 text-[12px] font-semibold text-[#F8F5EA]/75">
+                  <SlidersHorizontal className="h-4 w-4 text-[#D4AF37]" />{sortOrder === "newest" ? "Más reciente" : "Más antiguo"}
+                </button>
               </div>
-              <div className="mb-4 grid grid-cols-2 rounded-full border border-[#D4AF37]/20 bg-[#0A0A0A] p-1">
-                <button type="button" onClick={() => setSortOrder("newest")} className={`rounded-full px-3 py-2 text-xs font-bold ${sortOrder === "newest" ? "bg-[#D4AF37] text-[#050505]" : "text-[#F8F5EA]/55"}`}>Más recientes</button>
-                <button type="button" onClick={() => setSortOrder("oldest")} className={`rounded-full px-3 py-2 text-xs font-bold ${sortOrder === "oldest" ? "bg-[#D4AF37] text-[#050505]" : "text-[#F8F5EA]/55"}`}>Más antiguos</button>
-              </div>
+
               <div className="space-y-2 pb-28">
                 {sortedEpisodes.map((episode) => {
                   const active = currentEpisode?.id === episode.id;
@@ -289,18 +277,16 @@ export default function PodcastSeries() {
                   const total = episode.duration_seconds || episode.estimated_minutes * 60;
                   const savedPercent = total ? Math.min(100, Math.round((saved / total) * 100)) : 0;
                   return (
-                    <article key={episode.id} className={`grid grid-cols-[68px_1fr_46px] gap-3 rounded-[1.1rem] border p-3 ${active ? "border-[#D4AF37]/65 bg-[#D4AF37]/[0.08]" : "border-white/10 bg-[#0A0A0A]"}`}>
-                      <div className="relative h-[68px] w-[68px] overflow-hidden rounded-xl border border-[#D4AF37]/20"><img src={episode.image_url || CONSECRATION_COVER} alt="" className="h-full w-full object-cover" /><span className="absolute bottom-1 right-1 rounded bg-black/80 px-1.5 py-0.5 text-[9px] font-bold text-[#F2D27A]">D{episode.day_number}</span></div>
+                    <article key={episode.id} className={`grid grid-cols-[64px_1fr_42px] gap-3 rounded-[1rem] border p-2.5 ${active ? "border-[#D4AF37]/65 bg-[#D4AF37]/[0.08]" : "border-white/10 bg-[#0A0A0A]"}`}>
+                      <div className="relative h-16 w-16 overflow-hidden rounded-xl border border-[#D4AF37]/20"><img src={episode.image_url || CONSECRATION_COVER} alt="" className="h-full w-full object-cover" /><span className="absolute bottom-1 right-1 rounded bg-black/80 px-1.5 py-0.5 text-[8px] font-bold text-[#F2D27A]">D{episode.day_number}</span></div>
                       <div className="min-w-0">
-                        <p className="text-[11px] font-semibold text-[#D4AF37]">Día {episode.day_number}</p>
-                        <h3 className="mt-0.5 line-clamp-2 text-[15px] font-semibold leading-snug text-[#F8F5EA]">{episode.title}</h3>
-                        {(episode.summary || episode.subtitle) && <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-[#F8F5EA]/45">{episode.summary || episode.subtitle}</p>}
-                        <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-[#F8F5EA]/45"><Clock3 className="h-3.5 w-3.5" />{formatEpisodeDuration(episode)}</div>
-                        {savedPercent > 0 && <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10"><div className="h-full bg-[#D4AF37]" style={{ width: `${savedPercent}%` }} /></div>}
+                        <p className="text-[10px] font-semibold text-[#D4AF37]">Día {episode.day_number}</p>
+                        <h3 className="mt-0.5 line-clamp-2 text-[14px] font-semibold leading-snug text-[#F8F5EA]">{episode.title}</h3>
+                        {(episode.summary || episode.subtitle) && <p className="mt-1 line-clamp-1 text-[10px] leading-4 text-[#F8F5EA]/45">{episode.summary || episode.subtitle}</p>}
+                        <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-[#F8F5EA]/45"><Clock3 className="h-3.5 w-3.5" />{formatEpisodeDuration(episode)}</div>
+                        {savedPercent > 0 && <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/10"><div className="h-full bg-[#D4AF37]" style={{ width: `${savedPercent}%` }} /></div>}
                       </div>
-                      <button type="button" onClick={() => void playEpisode(episode)} aria-label={`${active && isPlaying ? "Pausar" : "Reproducir"} ${episode.title}`} className={`mt-2 flex h-11 w-11 items-center justify-center rounded-full border ${active ? "border-[#D4AF37] bg-[#D4AF37] text-[#050505]" : "border-[#D4AF37]/60 text-[#F2D27A]"}`}>
-                        {active && isPlaying ? <Pause className="h-5 w-5 fill-current" /> : <Play className="ml-0.5 h-5 w-5 fill-current" />}
-                      </button>
+                      <button type="button" onClick={() => void playEpisode(episode)} aria-label={`${active && isPlaying ? "Pausar" : "Reproducir"} ${episode.title}`} className={`mt-2 flex h-10 w-10 items-center justify-center rounded-full border ${active ? "border-[#D4AF37] bg-[#D4AF37] text-[#050505]" : "border-[#D4AF37]/60 text-[#F2D27A]"}`}>{active && isPlaying ? <Pause className="h-4.5 w-4.5 fill-current" /> : <Play className="ml-0.5 h-4.5 w-4.5 fill-current" />}</button>
                     </article>
                   );
                 })}
@@ -312,29 +298,16 @@ export default function PodcastSeries() {
         </>
       )}
 
+      <PodcastSortSheet open={sortSheetOpen} order={sortOrder} onChange={setSortOrder} onClose={() => setSortSheetOpen(false)} />
+
       {currentEpisode && playerExpanded && (
         <div className="fixed inset-0 z-[10020] overflow-y-auto bg-[linear-gradient(180deg,#18110A_0%,#0A0908_46%,#050505_100%)] text-[#F8F5EA]">
           <div className="mx-auto flex min-h-full w-full max-w-[520px] flex-col px-5 pb-8 pt-[max(20px,env(safe-area-inset-top))]">
-            <div className="flex items-center justify-between gap-4 py-2">
-              <button type="button" onClick={() => setPlayerExpanded(false)} className="flex h-11 w-11 items-center justify-center rounded-full text-[#F8F5EA]" aria-label="Minimizar reproductor"><ChevronDown className="h-8 w-8" /></button>
-              <div className="min-w-0 text-center"><p className="text-xs text-[#F8F5EA]/65">Reproduciendo desde el podcast</p><p className="truncate text-sm font-bold">33 Días con los Santos Arcángeles</p></div>
-              <div className="h-11 w-11" />
-            </div>
-
+            <div className="flex items-center justify-between gap-4 py-2"><button type="button" onClick={() => setPlayerExpanded(false)} className="flex h-11 w-11 items-center justify-center rounded-full text-[#F8F5EA]" aria-label="Minimizar reproductor"><ChevronDown className="h-8 w-8" /></button><div className="min-w-0 text-center"><p className="text-xs text-[#F8F5EA]/65">Reproduciendo desde el podcast</p><p className="truncate text-sm font-bold">33 Días con los Santos Arcángeles</p></div><div className="h-11 w-11" /></div>
             <div className="mx-auto mt-8 aspect-square w-full max-w-[420px] overflow-hidden rounded-2xl shadow-[0_22px_60px_rgba(0,0,0,.45)]"><img src={currentEpisode.image_url || CONSECRATION_COVER} alt={`Carátula de ${currentEpisode.title}`} className="h-full w-full object-cover" /></div>
-
             <div className="mt-8"><h2 className="text-[1.55rem] font-bold leading-tight">{currentEpisode.title}</h2><p className="mt-1 text-sm text-[#F8F5EA]/60">Día {currentEpisode.day_number} · 33 Días con los Santos Arcángeles</p></div>
-
             <div className="mt-7"><input type="range" min={0} max={Math.max(duration, 1)} step={1} value={Math.min(currentTime, Math.max(duration, 1))} onChange={(e) => seekTo(Number(e.target.value))} className="w-full accent-[#D4AF37]" aria-label="Progreso del episodio" /><div className="mt-1 flex justify-between text-xs text-[#F8F5EA]/55"><span>{formatClock(currentTime)}</span><span>{formatClock(duration)}</span></div></div>
-
-            <div className="mt-5 grid grid-cols-5 items-center gap-2">
-              <button type="button" onClick={cycleRate} className="text-sm font-bold">{playbackRate}x</button>
-              <button type="button" onClick={() => seekBy(-15)} className="flex justify-center" aria-label="Retroceder 15 segundos"><RotateCcw className="h-7 w-7" /></button>
-              <button type="button" onClick={() => void playEpisode(currentEpisode, false)} className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#F8F5EA] text-[#050505]" aria-label={isPlaying ? "Pausar" : "Reproducir"}>{isPlaying ? <Pause className="h-8 w-8 fill-current" /> : <Play className="ml-1 h-8 w-8 fill-current" />}</button>
-              <button type="button" onClick={() => seekBy(15)} className="flex justify-center" aria-label="Adelantar 15 segundos"><RotateCw className="h-7 w-7" /></button>
-              <button type="button" onClick={() => setTab("episodes")} className="flex justify-center" aria-label="Ver episodios"><ListMusic className="h-7 w-7" /></button>
-            </div>
-
+            <div className="mt-5 grid grid-cols-5 items-center gap-2"><button type="button" onClick={cycleRate} className="text-sm font-bold">{playbackRate}x</button><button type="button" onClick={() => seekBy(-15)} className="flex justify-center" aria-label="Retroceder 15 segundos"><RotateCcw className="h-7 w-7" /></button><button type="button" onClick={() => void playEpisode(currentEpisode, false)} className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#F8F5EA] text-[#050505]" aria-label={isPlaying ? "Pausar" : "Reproducir"}>{isPlaying ? <Pause className="h-8 w-8 fill-current" /> : <Play className="ml-1 h-8 w-8 fill-current" />}</button><button type="button" onClick={() => seekBy(15)} className="flex justify-center" aria-label="Adelantar 15 segundos"><RotateCw className="h-7 w-7" /></button><button type="button" onClick={() => setTab("episodes")} className="flex justify-center" aria-label="Ver episodios"><ListMusic className="h-7 w-7" /></button></div>
             <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-5"><button type="button" onClick={() => void shareEpisode()} className="inline-flex items-center gap-2 text-sm font-semibold text-[#F8F5EA]/75"><Share2 className="h-5 w-5" />Compartir</button><Volume2 className="h-5 w-5 text-[#F8F5EA]/55" /></div>
             {(currentEpisode.summary || currentEpisode.subtitle) && <div className="mt-7 rounded-2xl bg-white/[0.06] p-4"><p className="text-sm leading-6 text-[#F8F5EA]/72">{currentEpisode.summary || currentEpisode.subtitle}</p></div>}
           </div>
