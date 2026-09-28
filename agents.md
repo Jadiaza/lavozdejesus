@@ -4,9 +4,9 @@ Total output lines: 13122
 # AGENTS.md
 # Proyecto La Voz de Jesús (LVJ)
 ## Manual Oficial de Arquitectura y Desarrollo
-### Versión 2.1
+### Versión 2.2
 **Estado:** Documento Maestro de Desarrollo  
-**Última actualización:** Agosto de 2026  
+**Última actualización:** Septiembre de 2026  
 **Proyecto:** La Voz de Jesús – Plataforma Católica Digital  
 **Tipo de documento:** Arquitectura Oficial del Proyecto
 
@@ -5492,7 +5492,7 @@ El código fuente nunca deberá contener textos bíblicos fijos; toda la informa
 
 Este documento constituye la **especificación técnica oficial** del proyecto **La Voz de Jesús (LVJ)**.
 
-La versión 2.1 conserva la arquitectura base del sistema e incorpora como decisión oficial la automatización de la Liturgia diaria desde la Conferencia Episcopal de Colombia, la consolidación de `lvj_lit_lectura_dia` como tabla canónica y la generación supervisada de Reflexión y Lectio Divina mediante IA.
+La versión 2.2 conserva la arquitectura base del sistema e incorpora como decisión oficial la automatización de la Liturgia diaria desde la Conferencia Episcopal de Colombia, la consolidación de `lvj_lit_lectura_dia` como tabla canónica y la generación supervisada de Reflexión y Lectio Divina mediante IA.
 
 ## Cambios principales de la versión 2.1
 
@@ -5506,6 +5506,11 @@ La versión 2.1 conserva la arquitectura base del sistema e incorpora como decis
 - Se redefine el Panel de Liturgia como consola de supervisión y excepción, no como carga manual diaria.
 - Se mantiene el Santoral como servicio independiente fuera del alcance inicial.
 - Se actualizan las reglas del Backend, Panel Administrativo, Modelo Relacional y Sistema de Contenidos.
+- Se incorpora la política oficial de acceso Invitado, Registrado y Premium.
+- Se establece que todo el módulo Biblia requiere autenticación.
+- Se centraliza el control de acceso y se prohíben tablas de usuarios paralelas.
+- Se establece el registro mínimo y el patrón reutilizable de RegistrationGate.
+
 
 ---
 
@@ -5561,20 +5566,23 @@ Toda modificación relevante en la arquitectura del sistema deberá reflejarse e
 
 ## 10.16 Estudio Bíblico con IA
 
-El módulo Biblia incorpora estudios asistidos por IA sin sustituir el lector ni el comparador. La Biblia
-Platense / Straubinger es el texto principal; Torres Amat y Scío se utilizan como apoyo comparativo.
+El módulo Biblia incorpora estudios asistidos por IA sin sustituir la interpretación de la Iglesia ni el
+lector bíblico. La Biblia Platense / Straubinger es el texto principal; Torres Amat y Scío se utilizan como
+apoyo comparativo.
 
 El backend PHP es el único autorizado para reunir textos, notas y metadatos, llamar al proveedor y guardar
 resultados. La IA nunca consultará traducciones externas ni recibirá datos personales. Los estudios se
 almacenan como JSON puro en `lvj_bib_estudios_ia`; cada petición se audita en
 `lvj_bib_estudios_ia_solicitudes`. La clave de reutilización es SHA-256 del contexto normalizado y la versión
-del método. Un resultado en caché no consume el límite mensual del usuario. Los estudios aprobados,
-revisados y públicos podrán consultarse por invitados sin autenticación y sin consumo de cupo; solamente
-la generación de un contexto nuevo mediante el proveedor de IA requerirá una cuenta autenticada.
+del método. Un resultado en caché no consume el límite mensual del usuario.
 
-La generación requiere una cuenta autenticada mediante Supabase Auth. La identidad externa se relacionará
-con el usuario interno de `lvj_com_usuarios`; los roles y permisos seguirán administrándose en MySQL. La
-lectura bíblica, las notas y la comparación básica permanecerán disponibles para invitados.
+**Regla de acceso:** todo el módulo Biblia requiere una cuenta autenticada y activa. Esta regla comprende
+lectura, comparación de versiones, estudio, planes, notas, historial y cualquier otra función perteneciente
+al módulo Biblia. No se permitirá acceso bíblico anónimo mediante rutas, componentes ni APIs protegidas.
+
+La generación de estudios IA requiere además una cuenta autenticada mediante Supabase Auth y la autorización
+correspondiente para IA. La identidad externa se relacionará con el usuario interno de `lvj_com_usuarios`;
+los roles y permisos seguirán administrándose en MySQL.
 
 El módulo administrativo existente `Usuarios y Comunidad > Usuarios app` es la interfaz oficial para
 consultar y mantener estas cuentas. Solo un `super_admin` puede sincronizar identidades desde Supabase,
@@ -5582,16 +5590,17 @@ activar o suspender el acceso y autorizar el uso de IA. La sincronización utili
 `SUPABASE_SERVICE_ROLE_KEY` exclusivamente desde PHP; esta clave nunca se expondrá al frontend.
 
 `lvj_com_usuarios` almacenará el correo confirmado, `auth_provider`, `auth_subject`, `email_verificado`,
-`ia_autorizado` y `ultimo_acceso_at`. Cada operación de IA deberá validar nuevamente el token de Supabase,
-el estado del usuario y su autorización para IA antes de aplicar la cuota por `usuario_id`. El acceso por
-correo se limitará a los proveedores configurados oficialmente. Un invitado podrá consultar la comparación
-de versiones, pero deberá registrar y confirmar su correo antes de solicitar un estudio nuevo.
+`ia_autorizado` y `ultimo_acceso_at`. Cada operación protegida deberá validar nuevamente el token de
+Supabase y el estado de la cuenta antes de entregar contenido o ejecutar una operación sensible. Cada
+operación de IA deberá validar además `ia_autorizado` antes de aplicar la cuota por `usuario_id`.
 
-`lvj_com_usuarios` almacenará el correo confirmado, `auth_provider`, `auth_subject`, `email_verificado`,
-`ia_autorizado` y `ultimo_acceso_at`. Cada operación de IA deberá validar nuevamente el token de Supabase,
-el estado del usuario y su autorización para IA antes de aplicar la cuota por `usuario_id`. El acceso por
-correo se limitará a los proveedores configurados oficialmente. Un invitado podrá consultar la comparación
-de versiones, pero deberá registrar y confirmar su correo antes de solicitar un estudio nuevo.
+Los estudios aprobados, revisados y públicos podrán seguir almacenándose y administrándose como contenido
+editorial del módulo, pero su consulta dentro de LVJPRAYER permanecerá sujeta a la autenticación requerida
+por el módulo Biblia. La publicación de un estudio no constituye una excepción a la política de acceso.
+
+La autenticación deberá presentar una pantalla de acceso/registro clara y reutilizable. El usuario que intente
+entrar al módulo Biblia sin sesión será dirigido a la experiencia de registro o inicio de sesión y, después de
+autenticarse correctamente, regresará al destino bíblico solicitado.
 
 Todo estudio nuevo inicia en estado `revision`. El solicitante puede verlo con advertencia editorial; solo
 los estudios aprobados podrán marcarse `publicado`, `revisado = 1` y `es_publico = 1`. La interfaz pública
@@ -5635,7 +5644,7 @@ Ante cualquier diferencia entre la implementación del sistema y este documento,
 
 ---
 
-**Fin del documento — AGENTS.md v2.1**
+**Fin del documento — AGENTS.md v2.2**
 
 ## 10.16.1 Formato maestro y niveles del Estudio Bíblico IA
 
@@ -5683,6 +5692,217 @@ persistencia → presentación. Scío se habilitará progresivamente por libro: 
 mientras `lvj_bib_libros.estado` determine cuáles libros superaron la revisión editorial. Los libros, capítulos
 o versículos todavía no habilitados no se completarán con fuentes externas; la API y el Estudio Bíblico
 mostrarán un mensaje explícito de texto en revisión.
+
+# 10.16.1 Política de Acceso de Usuarios LVJPRAYER
+
+La plataforma establece tres estados de acceso funcional. No se crearán tablas separadas de usuarios para cada
+nivel. La identidad de usuario continuará centralizada en Supabase Auth y `lvj_com_usuarios`.
+
+## 10.16.1.1 Invitado
+
+El invitado es una persona que utiliza LVJPRAYER sin sesión autenticada. Puede consumir contenido público de
+evangelización y descubrir la plataforma, pero no dispone de funciones personales ni de acceso al módulo Biblia.
+
+Contenido público mínimo para invitados:
+
+- Inicio.
+- Radio.
+- Programación.
+- Capilla Virtual.
+- Oraciones.
+- Santo Rosario.
+- Liturgia.
+- Santos.
+- Podcast público.
+- Noticias.
+- Biblioteca pública.
+
+El contenido público no deberá exigir registro únicamente para ser consultado, escuchado o compartido, salvo que
+una regla legal, editorial o comercial específica establezca otra condición.
+
+Un invitado no podrá utilizar:
+
+- Biblia.
+- Comunidad.
+- Favoritos.
+- Notas personales.
+- Historial personal.
+- Planes personales.
+- Recordatorios.
+- Intenciones personales.
+- Sincronización de datos personales.
+- Funciones personales que dependan de una cuenta.
+
+## 10.16.1.2 Usuario registrado
+
+El usuario registrado dispone de una cuenta activa, vinculada a Supabase Auth y a `lvj_com_usuarios`.
+
+Además del contenido público, podrá utilizar:
+
+- Todo el módulo Biblia.
+- Lectura bíblica.
+- Comparación de versiones.
+- Estudio bíblico.
+- Planes bíblicos.
+- Notas bíblicas.
+- Historial y continuidad de lectura.
+- Favoritos.
+- Guardado de contenidos.
+- Recordatorios.
+- Funciones personales de oración.
+- Funciones de comunidad autorizadas.
+- Sincronización entre dispositivos.
+- Funciones IA para las que tenga autorización.
+
+El registro no deberá interpretarse como autorización automática para funciones administrativas ni para todas las
+operaciones de IA. Las autorizaciones específicas continuarán verificándose en el Backend.
+
+## 10.16.1.3 Usuario premium
+
+El nivel premium queda reservado para futuras funciones y contenidos comerciales. No deberán inventarse
+beneficios premium ni implementarse cobros hasta que exista una especificación comercial aprobada.
+
+Cuando se implemente, el nivel premium deberá utilizar la identidad existente de `lvj_com_usuarios` y una
+política centralizada de autorización. No se crearán tablas de usuarios paralelas para premium.
+
+## 10.16.1.4 Registro mínimo
+
+El registro inicial deberá solicitar únicamente los datos necesarios para crear y proteger la cuenta:
+
+- Correo electrónico.
+- Contraseña.
+- Confirmación de contraseña.
+- Aceptación de términos y política de privacidad.
+
+El nombre podrá solicitarse como dato opcional o completarse posteriormente en el perfil. No se exigirán
+teléfono, dirección u otros datos personales si no existe una necesidad funcional documentada.
+
+El correo deberá confirmarse según la configuración oficial de Supabase Auth antes de conceder acceso a las
+funciones que requieran cuenta verificada.
+
+## 10.16.1.5 Patrón de acceso y experiencia
+
+Las restricciones de acceso deberán expresarse como una política centralizada y reutilizable. No se deberán
+duplicar comprobaciones independientes por cada pantalla.
+
+El Frontend deberá utilizar un patrón equivalente a:
+
+```text
+Ruta / acción
+    ↓
+Access Control
+    ↓
+¿Invitado?
+    ├── contenido público → permitir
+    └── función protegida → RegistrationGate
+                              ↓
+                         Registro / Login
+                              ↓
+                       retorno al destino
+```
+
+El acceso al módulo Biblia deberá utilizar siempre este patrón. La experiencia de registro deberá explicar
+claramente el valor de crear una cuenta y no presentarse como un error técnico.
+
+Las funciones personales de módulos públicos deberán solicitar registro únicamente cuando el usuario intente
+utilizar la función personal, por ejemplo guardar, marcar como favorito, crear una nota o activar un
+recordatorio. El contenido público seguirá disponible para consumo.
+
+## 10.16.1.6 Protección Backend
+
+La protección de acceso no podrá depender exclusivamente del Frontend.
+
+Toda API que entregue contenido o ejecute acciones exclusivas de usuarios registrados deberá validar:
+
+1. Token de Supabase.
+2. Identidad del usuario.
+3. Correspondencia con `lvj_com_usuarios`.
+4. Estado activo de la cuenta.
+5. Permiso o autorización específica cuando corresponda.
+
+Las respuestas deberán utilizar códigos HTTP coherentes:
+
+- `401`: no autenticado.
+- `403`: autenticado pero sin autorización.
+- `404`: recurso inexistente cuando corresponda.
+
+Ocultar una opción en la PWA nunca sustituye la protección del Backend.
+
+## 10.16.1.7 Identidad y datos
+
+La identidad oficial continúa siendo:
+
+```text
+Supabase Auth
+      ↓
+auth_subject
+      ↓
+lvj_com_usuarios
+      ↓
+estado / rol / autorizaciones
+```
+
+No se crearán tablas como `lvj_usuarios_registrados`, `lvj_usuarios_biblia`,
+`lvj_usuarios_premium` ni equivalentes.
+
+Los datos personales deberán mantenerse separados del contenido editorial. Las funciones personales se
+relacionarán mediante el identificador oficial del usuario.
+
+## 10.16.1.8 Matriz funcional oficial
+
+| Funcionalidad | Invitado | Registrado | Premium |
+|---|---:|---:|---:|
+| Inicio | Sí | Sí | Sí |
+| Radio | Sí | Sí | Sí |
+| Programación | Sí | Sí | Sí |
+| Capilla Virtual | Sí | Sí | Sí |
+| Oraciones | Sí | Sí | Sí |
+| Santo Rosario | Sí | Sí | Sí |
+| Liturgia | Sí | Sí | Sí |
+| Santos | Sí | Sí | Sí |
+| Podcast público | Sí | Sí | Sí |
+| Noticias | Sí | Sí | Sí |
+| Biblioteca pública | Sí | Sí | Sí |
+| Biblia | No | Sí | Sí |
+| Comunidad | No | Sí | Sí |
+| Favoritos | No | Sí | Sí |
+| Notas personales | No | Sí | Sí |
+| Historial personal | No | Sí | Sí |
+| Planes personales | No | Sí | Sí |
+| Recordatorios | No | Sí | Sí |
+| Intenciones personales | No | Sí | Sí |
+| Sincronización personal | No | Sí | Sí |
+| IA autorizada | No | Según autorización | Según autorización |
+
+Esta matriz es la referencia funcional inicial. Cualquier modificación posterior deberá actualizar AGENTS.md
+antes de modificar la implementación.
+
+## 10.16.1.9 Regla comercial y evangelizadora
+
+El modelo de acceso debe permitir que LVJPRAYER sea evangelizador y, al mismo tiempo, construya una relación
+legítima con sus usuarios.
+
+No se deberá bloquear artificialmente contenido público para obligar a registrarse. El registro deberá tener
+valor funcional real: acceso a Biblia, personalización, conservación del progreso y funciones personales.
+
+La monetización futura deberá mantenerse separada del acceso básico a contenido evangelizador. Las funciones
+premium deberán definirse mediante una política comercial específica y no mediante restricciones improvisadas.
+
+## 10.16.1.10 Regla para desarrollo
+
+Antes de crear una nueva restricción de acceso, Codex deberá comprobar:
+
+1. Si la funcionalidad es contenido público.
+2. Si la funcionalidad es personal.
+3. Si pertenece al módulo Biblia.
+4. Si requiere cuenta registrada.
+5. Si requiere autorización adicional.
+6. Si existe ya un componente de autenticación o control de acceso reutilizable.
+7. Si la modificación requiere actualizar esta matriz.
+
+No se deberán implementar controles de acceso aislados que contradigan esta política.
+
+---
 
 ## 10.17 Centro de Formación y Supervisión IA
 
