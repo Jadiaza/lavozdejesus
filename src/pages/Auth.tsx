@@ -250,29 +250,29 @@ export default function Auth() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#030303] px-4 py-5 text-[#F8F5EA] sm:py-8">
+    <main className="relative min-h-screen overflow-hidden bg-[#030303] px-3 py-2 text-[#F8F5EA] sm:px-4 sm:py-4">
       <div
-        className="pointer-events-none fixed inset-0 bg-cover bg-center bg-no-repeat opacity-100"
+        className="pointer-events-none fixed inset-0 bg-contain bg-top bg-no-repeat opacity-100"
         style={{ backgroundImage: "url('/images/auth-bg.svg')" }}
         aria-hidden="true"
       />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(212,175,55,.12),transparent_34%),linear-gradient(180deg,rgba(0,0,0,.16),rgba(0,0,0,.78)_58%,#030303_100%)]" aria-hidden="true" />
 
-      <div className="relative z-10 mx-auto w-full max-w-[395px]">
-        <section className="relative mb-4 overflow-hidden rounded-[1.8rem] border border-[#D4AF37]/30 bg-black/30 px-5 pb-5 pt-6 text-center shadow-[0_20px_70px_rgba(0,0,0,.42)] backdrop-blur-[1px] sm:px-7 sm:pt-7">
-          <div className="relative mx-auto flex h-[72px] w-[72px] items-center justify-center rounded-full border border-[#FFF1A8]/50 bg-gradient-to-br from-[#FFE28A] via-[#D4AF37] to-[#B88716] shadow-[0_0_38px_rgba(212,175,55,.28)]">
-            <BookOpen className="h-9 w-9 text-black" strokeWidth={2.2} aria-hidden="true" />
+      <div className="relative z-10 mx-auto w-full max-w-[360px]">
+        <section className="relative mb-3 px-2 pb-1 pt-1 text-center">
+          <div className="relative mx-auto flex h-[58px] w-[58px] items-center justify-center rounded-full border border-[#FFF1A8]/50 bg-gradient-to-br from-[#FFE28A] via-[#D4AF37] to-[#B88716] shadow-[0_0_38px_rgba(212,175,55,.28)]">
+            <BookOpen className="h-7 w-7 text-black" strokeWidth={2.2} aria-hidden="true" />
           </div>
 
-          <h1 className="relative mt-4 font-display text-[2rem] font-semibold leading-none tracking-tight text-[#FFFDF5] drop-shadow-[0_2px_8px_rgba(0,0,0,.75)] sm:text-[2rem]">
+          <h1 className="relative mt-2 font-display text-[1.65rem] font-semibold leading-none tracking-tight text-[#FFFDF5] drop-shadow-[0_2px_8px_rgba(0,0,0,.75)] sm:text-[2rem]">
             Acceso a LVJPRAYER
           </h1>
 
-          <p className="relative mx-auto mt-4 max-w-[350px] text-[1rem] leading-[1.45] text-[#F6F1E6] drop-shadow-[0_2px_6px_rgba(0,0,0,.9)]">
+          <p className="relative mx-auto mt-2 max-w-[330px] text-[.82rem] leading-[1.32] text-[#F6F1E6] drop-shadow-[0_2px_6px_rgba(0,0,0,.9)]">
             Inicia sesión o crea tu cuenta para disfrutar de una experiencia personalizada en La Voz de Jesús.
           </p>
 
-          <div className="relative mt-5 grid grid-cols-4 gap-1.5">
+          <div className="relative mt-3 grid grid-cols-4 gap-1">
             <Benefit icon={UserRound} label="Tu contenido" sublabel="personalizado" />
             <Benefit icon={Heart} label="Guarda tus" sublabel="favoritos" />
             <Benefit icon={Cloud} label="Sincroniza" sublabel="en todos tus dispositivos" />
@@ -280,9 +280,9 @@ export default function Auth() {
           </div>
         </section>
 
-        <section className="rounded-[1.85rem] border border-[#D4AF37]/55 bg-[#050505]/92 p-3.5 shadow-[0_24px_80px_rgba(0,0,0,.62)] sm:p-5">
+        <section className="px-1 py-1">
           {!recovering ? (
-            <div className="grid grid-cols-2 rounded-[1.15rem] border border-[#D4AF37]/45 bg-[#0C0C0C]/95 p-1.5 shadow-inner">
+            <div className="grid grid-cols-2 border-b border-[#D4AF37]/45">
               {(["login", "register"] as const).map((item) => (
                 <button
                   key={item}
@@ -291,7 +291,7 @@ export default function Auth() {
                     setMode(item);
                     setMessage("");
                   }}
-                  className={`min-h-14 rounded-[.9rem] px-3 text-[1rem] font-bold transition-all duration-200 ${mode === item
+                  className={`min-h-11 rounded-t-xl px-2 text-[.9rem] font-bold transition-all duration-200 ${mode === item
                     ? "bg-gradient-to-r from-[#D4AF37] via-[#E7BE4C] to-[#F4D26D] text-black shadow-[0_5px_22px_rgba(212,175,55,.20)]"
                     : "text-[#C9C3B3] hover:bg-white/5 hover:text-[#F8F5EA]"}`}
                 >
@@ -306,7 +306,7 @@ export default function Auth() {
             </div>
           )}
 
-          <form onSubmit={submit} className="mt-5 space-y-4">
+          <form onSubmit={submit} className="mt-3 space-y-2.5">
             {!recovering && mode === "register" ? (
               <Field icon={UserRound} label="Nombre (opcional)" type="text" value={name} onChange={setName} autoComplete="name" placeholder="Tu nombre" />
             ) : null}
@@ -339,18 +339,18 @@ export default function Auth() {
             ) : null}
 
             {!recovering && mode === "register" ? (
-              <section className="rounded-[1.35rem] border border-[#D4AF37]/40 bg-[#0A0A0A]/95 p-4 shadow-inner">
-                <div className="mb-3 flex items-center gap-2.5">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#D4AF37]/15">
-                    <ShieldCheck className="h-5 w-5 text-[#D4AF37]" />
+              <section className="border-t border-[#D4AF37]/30 pt-2.5">
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#D4AF37]/15">
+                    <ShieldCheck className="h-4 w-4 text-[#D4AF37]" />
                   </span>
                   <div>
-                    <h2 className="text-sm font-bold text-[#F8F5EA]">Consentimientos y tratamiento de datos</h2>
+                    <h2 className="text-xs font-bold text-[#F8F5EA]">Consentimientos y tratamiento de datos</h2>
                     <p className="mt-0.5 text-[10px] text-[#8F897C]">Revisa las políticas oficiales antes de crear tu cuenta.</p>
                   </div>
                 </div>
 
-                <div className="space-y-2.5">
+                <div className="space-y-1">
                   <ConsentRow checked={acceptTerms} onChange={setAcceptTerms} icon={FileText}>
                     Acepto los <a href="https://panelapp.lavozdejesus.co/term_of_use.php" target="_blank" rel="noreferrer" className="font-semibold text-[#D4AF37] underline underline-offset-2">Términos de uso</a> de LVJPRAYER <RequiredMark />
                   </ConsentRow>
@@ -365,7 +365,7 @@ export default function Auth() {
                   </ConsentRow>
                 </div>
 
-                <p className="mt-3 flex gap-2 text-[10px] leading-relaxed text-[#777166]">
+                <p className="mt-2 flex gap-2 text-[9px] leading-relaxed text-[#777166]">
                   <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#D4AF37]" />
                   <span>Los consentimientos marcados con * son necesarios para crear la cuenta. La opción de comunicaciones es voluntaria.</span>
                 </p>
@@ -384,20 +384,20 @@ export default function Auth() {
 
             <button
               disabled={loading}
-              className="min-h-14 w-full rounded-[1rem] bg-gradient-to-r from-[#D4AF37] via-[#E7BE4C] to-[#F2D27A] px-4 py-3 text-[1rem] font-bold text-black shadow-[0_8px_28px_rgba(212,175,55,.18)] transition-transform active:scale-[.99] disabled:opacity-50"
+              className="min-h-12 w-full rounded-[.85rem] bg-gradient-to-r from-[#D4AF37] via-[#E7BE4C] to-[#F2D27A] px-4 py-3 text-[.92rem] font-bold text-black shadow-[0_8px_28px_rgba(212,175,55,.18)] transition-transform active:scale-[.99] disabled:opacity-50"
             >
               {loading ? "Procesando..." : recovering ? "Guardar nueva contraseña" : mode === "login" ? "Iniciar sesión  ›" : "Crear mi cuenta  ›"}
             </button>
           </form>
 
           {!recovering && mode === "login" ? (
-            <button type="button" disabled={loading} onClick={resetPassword} className="mt-3 min-h-11 w-full text-sm font-medium text-[#D4AF37] hover:text-[#F2D27A]">
+            <button type="button" disabled={loading} onClick={resetPassword} className="mt-1 min-h-8 w-full text-xs font-medium text-[#D4AF37] hover:text-[#F2D27A]">
               ¿Olvidaste tu contraseña?
             </button>
           ) : null}
 
           {message ? (
-            <p role={success ? "status" : "alert"} className={`mt-3 rounded-xl border p-3 text-center text-sm ${success ? "border-emerald-400/25 bg-emerald-950/20 text-emerald-200" : "border-[#D4AF37]/25 bg-[#D4AF37]/10 text-[#F2D27A]"}`}>
+            <p role={success ? "status" : "alert"} className={`mt-2 rounded-lg border p-2 text-center text-xs ${success ? "border-emerald-400/25 bg-emerald-950/20 text-emerald-200" : "border-[#D4AF37]/25 bg-[#D4AF37]/10 text-[#F2D27A]"}`}>
               {message}
             </p>
           ) : null}
@@ -410,7 +410,7 @@ export default function Auth() {
           ) : null}
 
           {!recovering ? (
-            <Link to="/" className="mt-4 block min-h-11 pt-2 text-center text-sm text-[#C9C3B3] hover:text-[#F8F5EA]">
+            <Link to="/" className="mt-1 block min-h-8 pt-1 text-center text-xs text-[#C9C3B3] hover:text-[#F8F5EA]">
               ← Volver a LVJPRAYER
             </Link>
           ) : null}
@@ -432,7 +432,7 @@ function Benefit({ icon: Icon, label, sublabel }: { icon: typeof UserRound; labe
 
 function ConsentRow({ checked, onChange, icon: Icon, children }: { checked: boolean; onChange: (value: boolean) => void; icon: typeof FileText; children: React.ReactNode }) {
   return (
-    <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-white/5 bg-[#080808] p-2.5 text-[11px] leading-relaxed text-[#C9C3B3] transition-colors hover:border-[#D4AF37]/25">
+    <label className="flex cursor-pointer items-start gap-2 border-b border-white/5 py-1.5 text-[10px] leading-relaxed text-[#C9C3B3] transition-colors hover:border-[#D4AF37]/25">
       <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-[#D4AF37]" />
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[#D4AF37]" />
       <span>{children}</span>
@@ -459,9 +459,9 @@ function Field({
   return (
     <div>
       <label className="text-xs font-semibold uppercase tracking-[.08em] text-[#D4AF37]">{label}</label>
-      <div className="mt-1 flex min-h-14 rounded-xl border border-[#D4AF37]/35 bg-[#111]/95 px-3 transition-colors focus-within:border-[#D4AF37]/75 focus-within:shadow-[0_0_0_3px_rgba(212,175,55,.08)]">
+      <div className="mt-0.5 flex min-h-11 rounded-lg border border-[#D4AF37]/35 bg-[#111]/95 px-3 transition-colors focus-within:border-[#D4AF37]/75 focus-within:shadow-[0_0_0_3px_rgba(212,175,55,.08)]">
         <Icon className="my-auto h-5 w-5 shrink-0 text-[#D4AF37]" />
-        <input {...input} value={value} onChange={(event) => onChange(event.target.value)} className="min-w-0 flex-1 bg-transparent px-3 text-[1rem] text-[#F8F5EA] outline-none placeholder:text-[#85818A]" />
+        <input {...input} value={value} onChange={(event) => onChange(event.target.value)} className="min-w-0 flex-1 bg-transparent px-2 text-[.88rem] text-[#F8F5EA] outline-none placeholder:text-[#85818A]" />
       </div>
     </div>
   );
@@ -501,7 +501,7 @@ function PasswordField({
           className="min-w-0 flex-1 bg-transparent px-3 text-[1rem] text-[#F8F5EA] outline-none placeholder:text-[#85818A]"
           placeholder={placeholder}
         />
-        <button type="button" onClick={() => setShowPassword(!showPassword)} className="min-h-11 px-1 text-[#E6E1D8]" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
+        <button type="button" onClick={() => setShowPassword(!showPassword)} className="min-h-9 px-1 text-[#E6E1D8]" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
           {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
         </button>
       </div>
