@@ -1,5 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, CheckCircle2, Cloud, Eye, EyeOff, FileText, Heart, LockKeyhole, Mail, ShieldCheck, UserRound } from "lucide-react";
+import {
+  BookOpen,
+  CheckCircle2,
+  Cloud,
+  Eye,
+  EyeOff,
+  FileText,
+  Heart,
+  LockKeyhole,
+  Mail,
+  ShieldCheck,
+  UserRound,
+} from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   bibleStudyAuth,
@@ -50,11 +62,13 @@ export default function Auth() {
   const navigate = useNavigate();
   const location = useLocation();
   const next = useMemo(() => safeDestination(location.search), [location.search]);
+
   const callbackUrl = useMemo(() => {
     const url = new URL("/acceso", window.location.origin);
     url.searchParams.set("next", next);
     return url.toString();
   }, [next]);
+
   const recoveryCallbackUrl = useMemo(() => {
     const url = new URL("/acceso/recuperar", window.location.origin);
     url.searchParams.set("next", next);
@@ -63,64 +77,223 @@ export default function Auth() {
 
   useEffect(() => {
     let active = true;
+
     const completeAccess = async () => {
       const { data, error } = await bibleStudyAuth.auth.getSession();
       if (!active) return;
+
       if (error) {
         setMessage(friendlyError(error.message));
         setLoading(false);
         return;
       }
+
       if (!data.session) {
         setLoading(false);
         return;
       }
+
       if (recovering) {
         setLoading(false);
         return;
       }
-      if (active) navigate(next, { replace: true });
+
+      navigate(next, { replace: true });
     };
+
     void completeAccess();
+
     const { data } = bibleStudyAuth.auth.onAuthStateChange((event, session) => {
       if (!active) return;
+
       if (event === "PASSWORD_RECOVERY") {
         setRecovering(true);
         setLoading(false);
         return;
       }
-      if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) void completeAccess();
+
+      if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
+        void completeAccess();
+      }
     });
-    return (
-    <main className="min-h-screen bg-[#050505] px-4 py-6 text-[#F8F5EA] sm:py-8">
-      <div className="mx-auto max-w-md">
-        <section className="relative mb-4 overflow-hidden rounded-[1.75rem] border border-[#D4AF37]/35 bg-[radial-gradient(circle_at_72%_8%,rgba(212,175,55,.20),transparent_32%),linear-gradient(145deg,#101010,#050505_70%)] p-5 text-center shadow-[0_18px_60px_rgba(0,0,0,.45)] sm:p-6">
-          <div className="pointer-events-none absolute right-[-35px] top-[-35px] h-36 w-36 rounded-full bg-[#D4AF37]/10 blur-3xl" />
-          <span className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[#FFF0B0]/40 bg-gradient-to-br from-[#F6D978] via-[#D4AF37] to-[#A77D16] shadow-[0_0_35px_rgba(212,175,55,.22)]">
-            <BookOpen className="h-7 w-7 text-black" aria-hidden="true" />
-          </span>
-          <h1 className="relative mt-4 font-display text-2xl font-bold tracking-tight sm:text-[1.7rem]">Acceso a LVJPRAYER</h1>
-          <p className="relative mx-auto mt-2 max-w-sm text-sm leading-relaxed text-[#C9C3B3]">
+
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
+  }, [navigate, next, recovering]);
+
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setMessage("");
+    setSuccess(false);
+    setRegistrationSubmitted(false);
+
+    if (!isBibleStudyAuthConfigured()) {
+      setMessage("El acceso de usuarios no está configurado en este entorno. Faltan la URL o la clave pública de Supabase.");
+      return;
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (password.length < 8) {
+      setMessage("La contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+
+    if ((mode === "register" || recovering) && password !== confirmPassword) {
+      setMessage("Las contraseñas no coinciden.");
+      return;
+    }
+
+    if (mode === "register" && (!acceptTerms || !acceptPrivacy || !acceptDataTreatment)) {
+      setMessage("Para crear tu cuenta debes aceptar los términos de uso, conocer la política de privacidad y autorizar el tratamiento de tus datos personales.");
+      return;
+    }
+
+    setLoading(true);
+    setBibleStudyRememberSession(remember);
+
+    if (recovering) {
+      const { error } = await bibleStudyAuth.auth.updateUser({ password });
+
+      if (error) {
+        setMessage(friendlyError(error.message));
+      } else {
+        await bibleStudyAuth.auth.signOut({ scope: "local" });
+        setRecovering(false);
+        setMode("login");
+        setPassword("");
+        setConfirmPassword("");
+        setSuccess(true);
+        setMessage("Contraseña establecida correctamente. Ya puedes iniciar sesión.");
+        navigate(`/acceso?next=${encodeURIComponent(next)}`, { replace: true });
+      }
+
+      setLoading(false);
+      return;
+    }
+
+    if (mode === "register") {
+      const { data, error } = await bibleStudyAuth.auth.signUp({
+        email: normalizedEmail,
+        password,
+        options: {
+          emailRedirectTo: callbackUrl,
+          data: {
+            full_name: name.trim() || "Usuario LVJ",
+            consent_terms_at: new Date().toISOString(),
+            consent_privacy_at: new Date().toISOString(),
+            consent_data_treatment_at: new Date().toISOString(),
+            consent_communications: acceptCommunications,
+          },
+        },
+      });
+
+      if (error) {
+        setMessage(friendlyError(error.message));
+      } else if (!data.session) {
+        setSuccess(true);
+        setRegistrationSubmitted(true);
+        setMessage("Solicitud recibida. Si el correo es nuevo, recibirás un enlace de confirmación. Si ya lo habías usado antes, inicia sesión o establece una contraseña.");
+      }
+    } else {
+      const { error } = await bibleStudyAuth.auth.signInWithPassword({
+        email: normalizedEmail,
+        password,
+      });
+
+      if (error) setMessage(friendlyError(error.message));
+    }
+
+    setLoading(false);
+  };
+
+  const resetPassword = async () => {
+    if (!isBibleStudyAuthConfigured()) {
+      setMessage("El acceso de usuarios no está configurado en este entorno. Faltan la URL o la clave pública de Supabase.");
+      return;
+    }
+
+    if (!email.trim()) {
+      setMessage("Escribe primero el correo de tu cuenta.");
+      return;
+    }
+
+    setLoading(true);
+    setMessage("");
+
+    const { error } = await bibleStudyAuth.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: recoveryCallbackUrl,
+    });
+
+    setSuccess(!error);
+    setMessage(error ? friendlyError(error.message) : "Te enviamos un enlace para restablecer tu contraseña.");
+    setLoading(false);
+  };
+
+  const resendConfirmation = async () => {
+    if (!email.trim()) return;
+
+    setLoading(true);
+    setMessage("");
+
+    const { error } = await bibleStudyAuth.auth.resend({
+      type: "signup",
+      email: email.trim().toLowerCase(),
+      options: { emailRedirectTo: callbackUrl },
+    });
+
+    setSuccess(!error);
+    setMessage(error ? friendlyError(error.message) : "Si la cuenta está pendiente de confirmación, enviamos un nuevo enlace. Revisa también correo no deseado.");
+    setLoading(false);
+  };
+
+  return (
+    <main className="relative min-h-screen overflow-hidden bg-[#030303] px-4 py-5 text-[#F8F5EA] sm:py-8">
+      <div
+        className="pointer-events-none fixed inset-0 bg-cover bg-center bg-no-repeat opacity-100"
+        style={{ backgroundImage: "url('/images/auth-bg.webp')" }}
+        aria-hidden="true"
+      />
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(212,175,55,.12),transparent_34%),linear-gradient(180deg,rgba(0,0,0,.16),rgba(0,0,0,.78)_58%,#030303_100%)]" aria-hidden="true" />
+
+      <div className="relative z-10 mx-auto w-full max-w-[430px]">
+        <section className="relative mb-4 overflow-hidden rounded-[1.8rem] border border-[#D4AF37]/30 bg-black/20 px-5 pb-5 pt-6 text-center shadow-[0_20px_70px_rgba(0,0,0,.42)] backdrop-blur-[1px] sm:px-7 sm:pt-7">
+          <div className="relative mx-auto flex h-[72px] w-[72px] items-center justify-center rounded-full border border-[#FFF1A8]/50 bg-gradient-to-br from-[#FFE28A] via-[#D4AF37] to-[#B88716] shadow-[0_0_38px_rgba(212,175,55,.28)]">
+            <BookOpen className="h-9 w-9 text-black" strokeWidth={2.2} aria-hidden="true" />
+          </div>
+
+          <h1 className="relative mt-4 font-display text-[2rem] font-semibold leading-none tracking-tight text-[#FFFDF5] drop-shadow-[0_2px_8px_rgba(0,0,0,.75)] sm:text-[2.2rem]">
+            Acceso a LVJPRAYER
+          </h1>
+
+          <p className="relative mx-auto mt-4 max-w-[350px] text-[1rem] leading-[1.45] text-[#F6F1E6] drop-shadow-[0_2px_6px_rgba(0,0,0,.9)]">
             Inicia sesión o crea tu cuenta para disfrutar de una experiencia personalizada en La Voz de Jesús.
           </p>
 
-          <div className="relative mt-5 grid grid-cols-4 gap-2 border-t border-[#D4AF37]/15 pt-4">
+          <div className="relative mt-6 grid grid-cols-4 gap-1.5">
             <Benefit icon={UserRound} label="Tu contenido" sublabel="personalizado" />
             <Benefit icon={Heart} label="Guarda tus" sublabel="favoritos" />
-            <Benefit icon={Cloud} label="Sincroniza" sublabel="en tus dispositivos" />
+            <Benefit icon={Cloud} label="Sincroniza" sublabel="en todos tus dispositivos" />
             <Benefit icon={ShieldCheck} label="Privacidad" sublabel="y seguridad" />
           </div>
         </section>
 
-        <section className="rounded-[1.85rem] border border-[#D4AF37]/45 bg-[#080808] p-4 shadow-[0_22px_70px_rgba(0,0,0,.55)] sm:p-5">
+        <section className="rounded-[1.85rem] border border-[#D4AF37]/55 bg-[#050505]/90 p-4 shadow-[0_24px_80px_rgba(0,0,0,.62)] sm:p-5">
           {!recovering ? (
-            <div className="grid grid-cols-2 rounded-[1.1rem] border border-[#D4AF37]/30 bg-[#111] p-1.5">
+            <div className="grid grid-cols-2 rounded-[1.15rem] border border-[#D4AF37]/45 bg-[#0C0C0C]/95 p-1.5 shadow-inner">
               {(["login", "register"] as const).map((item) => (
                 <button
                   key={item}
                   type="button"
-                  onClick={() => { setMode(item); setMessage(""); }}
-                  className={`min-h-12 rounded-[0.85rem] px-3 text-sm font-bold transition-all duration-200 ${mode === item ? "bg-gradient-to-r from-[#D4AF37] to-[#F2D27A] text-black shadow-[0_4px_18px_rgba(212,175,55,.18)]" : "text-[#C9C3B3] hover:bg-white/5"}`}
+                  onClick={() => {
+                    setMode(item);
+                    setMessage("");
+                  }}
+                  className={`min-h-14 rounded-[.9rem] px-3 text-[1rem] font-bold transition-all duration-200 ${mode === item
+                    ? "bg-gradient-to-r from-[#D4AF37] via-[#E7BE4C] to-[#F4D26D] text-black shadow-[0_5px_22px_rgba(212,175,55,.20)]"
+                    : "text-[#C9C3B3] hover:bg-white/5 hover:text-[#F8F5EA]"}`}
                 >
                   {item === "login" ? "Iniciar sesión" : "Registrarme"}
                 </button>
@@ -128,14 +301,19 @@ export default function Auth() {
             </div>
           ) : (
             <div className="rounded-[1.1rem] border border-[#D4AF37]/30 bg-[#D4AF37]/10 p-4 text-center">
-              <h2 className="font-display text-lg font-bold text-[#F8F5EA]">Establece tu contraseña</h2>
+              <h2 className="font-display text-lg font-bold">Establece tu contraseña</h2>
               <p className="mt-1 text-xs leading-relaxed text-[#C9C3B3]">Escribe una nueva contraseña segura para terminar de recuperar tu cuenta.</p>
             </div>
           )}
 
           <form onSubmit={submit} className="mt-5 space-y-4">
-            {!recovering && mode === "register" ? <Field icon={UserRound} label="Nombre (opcional)" type="text" value={name} onChange={setName} autoComplete="name" placeholder="Tu nombre" /> : null}
-            {!recovering ? <Field icon={Mail} label="Correo electrónico" type="email" value={email} onChange={setEmail} autoComplete="email" placeholder="tu@correo.com" required /> : null}
+            {!recovering && mode === "register" ? (
+              <Field icon={UserRound} label="Nombre (opcional)" type="text" value={name} onChange={setName} autoComplete="name" placeholder="Tu nombre" />
+            ) : null}
+
+            {!recovering ? (
+              <Field icon={Mail} label="Correo electrónico" type="email" value={email} onChange={setEmail} autoComplete="email" placeholder="tu@correo.com" required />
+            ) : null}
 
             <PasswordField
               label="Contraseña"
@@ -148,12 +326,21 @@ export default function Auth() {
             />
 
             {mode === "register" || recovering ? (
-              <Field icon={LockKeyhole} label="Confirmar contraseña" type={showPassword ? "text" : "password"} value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" placeholder="Repite tu contraseña" required />
+              <PasswordField
+                label="Confirmar contraseña"
+                value={confirmPassword}
+                onChange={setConfirmPassword}
+                showPassword={showPassword}
+                setShowPassword={setShowPassword}
+                autoComplete="new-password"
+                placeholder="Repite tu contraseña"
+                minLength={8}
+              />
             ) : null}
 
             {!recovering && mode === "register" ? (
-              <section className="rounded-[1.35rem] border border-[#D4AF37]/30 bg-[#101010] p-4 shadow-inner">
-                <div className="mb-3 flex items-center gap-2">
+              <section className="rounded-[1.35rem] border border-[#D4AF37]/40 bg-[#0A0A0A]/95 p-4 shadow-inner">
+                <div className="mb-3 flex items-center gap-2.5">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#D4AF37]/15">
                     <ShieldCheck className="h-5 w-5 text-[#D4AF37]" />
                   </span>
@@ -186,7 +373,7 @@ export default function Auth() {
             ) : null}
 
             {!recovering ? (
-              <label className="flex min-h-11 items-start gap-3 rounded-xl px-1 py-1 text-sm text-[#C9C3B3]">
+              <label className="flex min-h-11 items-start gap-3 px-1 py-1 text-sm text-[#C9C3B3]">
                 <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} className="mt-1 h-4 w-4 accent-[#D4AF37]" />
                 <span>
                   <strong className="text-[#F8F5EA]">Recordar mi sesión</strong>
@@ -195,16 +382,25 @@ export default function Auth() {
               </label>
             ) : null}
 
-            <button disabled={loading} className="min-h-13 w-full rounded-[1rem] bg-gradient-to-r from-[#D4AF37] via-[#E7BE4C] to-[#F2D27A] px-4 py-3 font-bold text-black shadow-[0_8px_24px_rgba(212,175,55,.16)] transition-transform active:scale-[.99] disabled:opacity-50">
-              {loading ? "Procesando..." : recovering ? "Guardar nueva contraseña" : mode === "login" ? "Iniciar sesión" : "Crear mi cuenta"}
+            <button
+              disabled={loading}
+              className="min-h-14 w-full rounded-[1rem] bg-gradient-to-r from-[#D4AF37] via-[#E7BE4C] to-[#F2D27A] px-4 py-3 text-[1rem] font-bold text-black shadow-[0_8px_28px_rgba(212,175,55,.18)] transition-transform active:scale-[.99] disabled:opacity-50"
+            >
+              {loading ? "Procesando..." : recovering ? "Guardar nueva contraseña" : mode === "login" ? "Iniciar sesión  ›" : "Crear mi cuenta  ›"}
             </button>
           </form>
 
           {!recovering && mode === "login" ? (
-            <button type="button" disabled={loading} onClick={resetPassword} className="mt-3 min-h-11 w-full text-sm font-medium text-[#D4AF37] hover:text-[#F2D27A]">¿Olvidaste tu contraseña?</button>
+            <button type="button" disabled={loading} onClick={resetPassword} className="mt-3 min-h-11 w-full text-sm font-medium text-[#D4AF37] hover:text-[#F2D27A]">
+              ¿Olvidaste tu contraseña?
+            </button>
           ) : null}
 
-          {message ? <p role={success ? "status" : "alert"} className={`mt-3 rounded-xl border p-3 text-center text-sm ${success ? "border-emerald-400/25 bg-emerald-950/20 text-emerald-200" : "border-[#D4AF37]/25 bg-[#D4AF37]/10 text-[#F2D27A]"}`}>{message}</p> : null}
+          {message ? (
+            <p role={success ? "status" : "alert"} className={`mt-3 rounded-xl border p-3 text-center text-sm ${success ? "border-emerald-400/25 bg-emerald-950/20 text-emerald-200" : "border-[#D4AF37]/25 bg-[#D4AF37]/10 text-[#F2D27A]"}`}>
+              {message}
+            </p>
+          ) : null}
 
           {registrationSubmitted ? (
             <div className="mt-3 grid gap-2">
@@ -213,26 +409,30 @@ export default function Auth() {
             </div>
           ) : null}
 
-          {!recovering ? <Link to="/" className="mt-4 block min-h-11 pt-2 text-center text-sm text-[#C9C3B3] hover:text-[#F8F5EA]">← Volver a LVJPRAYER</Link> : null}
+          {!recovering ? (
+            <Link to="/" className="mt-4 block min-h-11 pt-2 text-center text-sm text-[#C9C3B3] hover:text-[#F8F5EA]">
+              ← Volver a LVJPRAYER
+            </Link>
+          ) : null}
         </section>
       </div>
     </main>
   );
-
+}
 
 function Benefit({ icon: Icon, label, sublabel }: { icon: typeof UserRound; label: string; sublabel: string }) {
   return (
     <div className="flex min-w-0 flex-col items-center gap-1 text-center">
-      <Icon className="h-5 w-5 text-[#D4AF37]" aria-hidden="true" />
-      <span className="text-[10px] font-semibold leading-tight text-[#F8F5EA]">{label}</span>
-      <span className="text-[9px] leading-tight text-[#8F897C]">{sublabel}</span>
+      <Icon className="h-6 w-6 text-[#FFD44F] drop-shadow-[0_2px_5px_rgba(0,0,0,.9)]" aria-hidden="true" />
+      <span className="text-[10px] font-semibold leading-tight text-[#FFFDF5] drop-shadow-[0_2px_5px_rgba(0,0,0,.9)]">{label}</span>
+      <span className="text-[9px] leading-tight text-[#E2DDD2] drop-shadow-[0_2px_5px_rgba(0,0,0,.9)]">{sublabel}</span>
     </div>
   );
 }
 
 function ConsentRow({ checked, onChange, icon: Icon, children }: { checked: boolean; onChange: (value: boolean) => void; icon: typeof FileText; children: React.ReactNode }) {
   return (
-    <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-white/5 bg-[#090909] p-2.5 text-[11px] leading-relaxed text-[#C9C3B3] transition-colors hover:border-[#D4AF37]/20">
+    <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-white/5 bg-[#080808] p-2.5 text-[11px] leading-relaxed text-[#C9C3B3] transition-colors hover:border-[#D4AF37]/25">
       <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-[#D4AF37]" />
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[#D4AF37]" />
       <span>{children}</span>
@@ -244,14 +444,66 @@ function RequiredMark() {
   return <strong className="text-[#D4AF37]"> *</strong>;
 }
 
-function PasswordField({ label, value, onChange, showPassword, setShowPassword, autoComplete, placeholder }: { label: string; value: string; onChange: (value: string) => void; showPassword: boolean; setShowPassword: (value: boolean) => void; autoComplete: string; placeholder: string }) {
+function Field({
+  icon: Icon,
+  label,
+  value,
+  onChange,
+  ...input
+}: {
+  icon: typeof Mail;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange">) {
   return (
     <div>
-      <label className="text-xs font-semibold uppercase tracking-wider text-[#D4AF37]">{label}</label>
-      <div className="mt-1 flex rounded-xl border border-[#D4AF37]/30 bg-[#111] px-3 transition-colors focus-within:border-[#D4AF37]/70 focus-within:shadow-[0_0_0_3px_rgba(212,175,55,.08)]">
-        <LockKeyhole className="my-auto h-4 w-4 shrink-0 text-[#D4AF37]" />
-        <input required minLength={8} type={showPassword ? "text" : "password"} value={value} onChange={(event) => onChange(event.target.value)} autoComplete={autoComplete} className="min-w-0 flex-1 bg-transparent px-3 py-3 outline-none" placeholder={placeholder} />
-        <button type="button" onClick={() => setShowPassword(!showPassword)} className="min-h-11 px-1 text-[#C9C3B3]" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
+      <label className="text-xs font-semibold uppercase tracking-[.08em] text-[#D4AF37]">{label}</label>
+      <div className="mt-1 flex min-h-14 rounded-xl border border-[#D4AF37]/35 bg-[#111]/95 px-3 transition-colors focus-within:border-[#D4AF37]/75 focus-within:shadow-[0_0_0_3px_rgba(212,175,55,.08)]">
+        <Icon className="my-auto h-5 w-5 shrink-0 text-[#D4AF37]" />
+        <input {...input} value={value} onChange={(event) => onChange(event.target.value)} className="min-w-0 flex-1 bg-transparent px-3 text-[1rem] text-[#F8F5EA] outline-none placeholder:text-[#85818A]" />
+      </div>
+    </div>
+  );
+}
+
+function PasswordField({
+  label,
+  value,
+  onChange,
+  showPassword,
+  setShowPassword,
+  autoComplete,
+  placeholder,
+  minLength = 8,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  showPassword: boolean;
+  setShowPassword: (value: boolean) => void;
+  autoComplete: string;
+  placeholder: string;
+  minLength?: number;
+}) {
+  return (
+    <div>
+      <label className="text-xs font-semibold uppercase tracking-[.08em] text-[#D4AF37]">{label}</label>
+      <div className="mt-1 flex min-h-14 rounded-xl border border-[#D4AF37]/35 bg-[#111]/95 px-3 transition-colors focus-within:border-[#D4AF37]/75 focus-within:shadow-[0_0_0_3px_rgba(212,175,55,.08)]">
+        <LockKeyhole className="my-auto h-5 w-5 shrink-0 text-[#D4AF37]" />
+        <input
+          required
+          minLength={minLength}
+          type={showPassword ? "text" : "password"}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          autoComplete={autoComplete}
+          className="min-w-0 flex-1 bg-transparent px-3 text-[1rem] text-[#F8F5EA] outline-none placeholder:text-[#85818A]"
+          placeholder={placeholder}
+        />
+        <button type="button" onClick={() => setShowPassword(!showPassword)} className="min-h-11 px-1 text-[#E6E1D8]" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
+          {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+        </button>
       </div>
     </div>
   );
