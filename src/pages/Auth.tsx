@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, Eye, EyeOff, LockKeyhole, Mail, UserRound } from "lucide-react";
+import { BookOpen, CheckCircle2, Eye, EyeOff, FileText, LockKeyhole, Mail, ShieldCheck, UserRound } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   bibleStudyAuth,
@@ -37,6 +37,9 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+  const [acceptDataTreatment, setAcceptDataTreatment] = useState(false);
+  const [acceptCommunications, setAcceptCommunications] = useState(false);
   const [remember, setRemember] = useState(getBibleStudyRememberSession);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -112,8 +115,8 @@ export default function Auth() {
       setMessage("Las contraseñas no coinciden.");
       return;
     }
-    if (mode === "register" && !acceptTerms) {
-      setMessage("Debes aceptar los términos y condiciones y la política de privacidad para crear tu cuenta.");
+    if (mode === "register" && (!acceptTerms || !acceptPrivacy || !acceptDataTreatment)) {
+      setMessage("Para crear tu cuenta debes aceptar los términos y condiciones, conocer la política de privacidad y autorizar el tratamiento de tus datos personales.");
       return;
     }
     setLoading(true);
@@ -141,7 +144,7 @@ export default function Auth() {
         password,
         options: {
           emailRedirectTo: callbackUrl,
-          data: { full_name: name.trim() || "Usuario LVJ" },
+          data: { full_name: name.trim() || "Usuario LVJ", consent_terms_at: new Date().toISOString(), consent_privacy_at: new Date().toISOString(), consent_data_treatment_at: new Date().toISOString(), consent_communications: acceptCommunications },
         },
       });
       if (error) {
@@ -205,6 +208,7 @@ export default function Auth() {
           <p className="mt-2 text-xs leading-relaxed text-[#8F897C]">
             Tu cuenta te permitirá acceder a las funciones personales y al contenido que requiere autenticación. La contraseña es gestionada de forma segura por Supabase.
           </p>
+          <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-[#9D978A]"><ShieldCheck className="h-4 w-4 text-[#D4AF37]" /><span>Privacidad, seguridad y tratamiento responsable de tus datos</span></div>
         </section>
 
         <section className="rounded-[1.75rem] border border-[#D4AF37]/30 bg-[#0B0B0B] p-5 shadow-2xl">
@@ -229,10 +233,17 @@ export default function Auth() {
             </div>
             {mode === "register" || recovering ? <Field icon={LockKeyhole} label="Confirmar contraseña" type={showPassword ? "text" : "password"} value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" placeholder="Repite tu contraseña" required /> : null}
 
-            {!recovering && mode === "register" ? <label className="flex items-start gap-3 text-xs leading-relaxed text-[#C9C3B3]">
-              <input type="checkbox" checked={acceptTerms} onChange={(event) => setAcceptTerms(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-[#D4AF37]" />
-              <span>Acepto los <Link to="/terminos-y-condiciones" className="text-[#D4AF37] underline">términos y condiciones</Link> y la <Link to="/politica-de-privacidad" className="text-[#D4AF37] underline">política de privacidad</Link>.</span>
-            </label> : null}
+            {!recovering && mode === "register" ? <section className="rounded-2xl border border-[#D4AF37]/20 bg-[#111]/70 p-4">
+  <div className="mb-3 flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-[#D4AF37]" /><h2 className="text-sm font-bold text-[#F8F5EA]">Consentimientos y tratamiento de datos</h2></div>
+  <p className="mb-4 text-xs leading-relaxed text-[#8F897C]">Antes de crear tu cuenta, revisa y acepta las condiciones que regulan el uso de LVJPRAYER y el tratamiento de tus datos personales.</p>
+  <div className="space-y-3">
+    <label className="flex items-start gap-3 rounded-xl border border-white/5 bg-[#0B0B0B] p-3 text-xs leading-relaxed text-[#C9C3B3]"><input type="checkbox" checked={acceptTerms} onChange={(event) => setAcceptTerms(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-[#D4AF37]" /><FileText className="mt-0.5 h-4 w-4 shrink-0 text-[#D4AF37]" /><span>Acepto los <Link to="/terminos-y-condiciones" className="font-semibold text-[#D4AF37] underline">Términos y condiciones</Link> de LVJPRAYER <strong className="text-[#D4AF37]">*</strong></span></label>
+    <label className="flex items-start gap-3 rounded-xl border border-white/5 bg-[#0B0B0B] p-3 text-xs leading-relaxed text-[#C9C3B3]"><input type="checkbox" checked={acceptPrivacy} onChange={(event) => setAcceptPrivacy(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-[#D4AF37]" /><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#D4AF37]" /><span>He leído la <Link to="/politica-de-privacidad" className="font-semibold text-[#D4AF37] underline">Política de privacidad</Link> y comprendo la información sobre el uso de mis datos <strong className="text-[#D4AF37]">*</strong></span></label>
+    <label className="flex items-start gap-3 rounded-xl border border-white/5 bg-[#0B0B0B] p-3 text-xs leading-relaxed text-[#C9C3B3]"><input type="checkbox" checked={acceptDataTreatment} onChange={(event) => setAcceptDataTreatment(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-[#D4AF37]" /><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#D4AF37]" /><span>Autorizo el <strong className="text-[#F8F5EA]">tratamiento de mis datos personales</strong> conforme a la Política de privacidad y para las finalidades informadas por LVJPRAYER <strong className="text-[#D4AF37]">*</strong></span></label>
+    <label className="flex items-start gap-3 rounded-xl border border-white/5 bg-[#0B0B0B] p-3 text-xs leading-relaxed text-[#C9C3B3]"><input type="checkbox" checked={acceptCommunications} onChange={(event) => setAcceptCommunications(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-[#D4AF37]" /><Mail className="mt-0.5 h-4 w-4 shrink-0 text-[#D4AF37]" /><span>Deseo recibir comunicaciones de LVJPRAYER sobre novedades, contenidos, actividades y servicios <span className="text-[#8F897C]">(Opcional)</span></span></label>
+  </div>
+  <p className="mt-4 text-[11px] leading-relaxed text-[#777166]">Los consentimientos marcados con * son necesarios para crear la cuenta. La opción de comunicaciones es voluntaria.</p>
+</section> : null}
 
             {!recovering ? <label className="flex min-h-11 items-start gap-3 text-sm text-[#C9C3B3]">
               <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} className="mt-1 h-4 w-4 accent-[#D4AF37]" />
