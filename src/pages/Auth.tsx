@@ -253,18 +253,18 @@ export default function Auth() {
     <main className="relative min-h-screen overflow-hidden bg-[#030303] px-4 py-5 text-[#F8F5EA] sm:py-8">
       <div
         className="pointer-events-none fixed inset-0 bg-cover bg-center bg-no-repeat opacity-100"
-        style={{ backgroundImage: "url('/images/auth-bg.webp')" }}
+        style={{ backgroundImage: "url('/images/auth-bg.svg')" }}
         aria-hidden="true"
       />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(212,175,55,.12),transparent_34%),linear-gradient(180deg,rgba(0,0,0,.16),rgba(0,0,0,.78)_58%,#030303_100%)]" aria-hidden="true" />
 
-      <div className="relative z-10 mx-auto w-full max-w-[430px]">
-        <section className="relative mb-4 overflow-hidden rounded-[1.8rem] border border-[#D4AF37]/30 bg-black/20 px-5 pb-5 pt-6 text-center shadow-[0_20px_70px_rgba(0,0,0,.42)] backdrop-blur-[1px] sm:px-7 sm:pt-7">
+      <div className="relative z-10 mx-auto w-full max-w-[395px]">
+        <section className="relative mb-4 overflow-hidden rounded-[1.8rem] border border-[#D4AF37]/30 bg-black/30 px-5 pb-5 pt-6 text-center shadow-[0_20px_70px_rgba(0,0,0,.42)] backdrop-blur-[1px] sm:px-7 sm:pt-7">
           <div className="relative mx-auto flex h-[72px] w-[72px] items-center justify-center rounded-full border border-[#FFF1A8]/50 bg-gradient-to-br from-[#FFE28A] via-[#D4AF37] to-[#B88716] shadow-[0_0_38px_rgba(212,175,55,.28)]">
             <BookOpen className="h-9 w-9 text-black" strokeWidth={2.2} aria-hidden="true" />
           </div>
 
-          <h1 className="relative mt-4 font-display text-[2rem] font-semibold leading-none tracking-tight text-[#FFFDF5] drop-shadow-[0_2px_8px_rgba(0,0,0,.75)] sm:text-[2.2rem]">
+          <h1 className="relative mt-4 font-display text-[2rem] font-semibold leading-none tracking-tight text-[#FFFDF5] drop-shadow-[0_2px_8px_rgba(0,0,0,.75)] sm:text-[2rem]">
             Acceso a LVJPRAYER
           </h1>
 
@@ -272,7 +272,7 @@ export default function Auth() {
             Inicia sesión o crea tu cuenta para disfrutar de una experiencia personalizada en La Voz de Jesús.
           </p>
 
-          <div className="relative mt-6 grid grid-cols-4 gap-1.5">
+          <div className="relative mt-5 grid grid-cols-4 gap-1.5">
             <Benefit icon={UserRound} label="Tu contenido" sublabel="personalizado" />
             <Benefit icon={Heart} label="Guarda tus" sublabel="favoritos" />
             <Benefit icon={Cloud} label="Sincroniza" sublabel="en todos tus dispositivos" />
@@ -280,7 +280,7 @@ export default function Auth() {
           </div>
         </section>
 
-        <section className="rounded-[1.85rem] border border-[#D4AF37]/55 bg-[#050505]/90 p-4 shadow-[0_24px_80px_rgba(0,0,0,.62)] sm:p-5">
+        <section className="rounded-[1.85rem] border border-[#D4AF37]/55 bg-[#050505]/92 p-3.5 shadow-[0_24px_80px_rgba(0,0,0,.62)] sm:p-5">
           {!recovering ? (
             <div className="grid grid-cols-2 rounded-[1.15rem] border border-[#D4AF37]/45 bg-[#0C0C0C]/95 p-1.5 shadow-inner">
               {(["login", "register"] as const).map((item) => (
