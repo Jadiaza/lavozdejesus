@@ -7,14 +7,15 @@ import {
   isBibleStudyAuthConfigured,
   setBibleStudyRememberSession,
 } from "@/features/biblia/auth/bibleStudyAuth";
-import { getRecentBibleStudies } from "@/services/bibleStudyService";
 
 type AccessMode = "login" | "register";
-const DEFAULT_DESTINATION = "/biblia/estudio";
+const DEFAULT_DESTINATION = "/";
 
 function safeDestination(search: string): string {
   const requested = new URLSearchParams(search).get("next");
-  return requested?.startsWith("/biblia") ? requested : DEFAULT_DESTINATION;
+  if (!requested || !requested.startsWith("/") || requested.startsWith("//")) return DEFAULT_DESTINATION;
+  if (requested.startsWith("/acceso")) return DEFAULT_DESTINATION;
+  return requested;
 }
 
 function friendlyError(message: string): string {
@@ -35,6 +36,7 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [remember, setRemember] = useState(getBibleStudyRememberSession);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -74,14 +76,7 @@ export default function Auth() {
         setLoading(false);
         return;
       }
-      try {
-        await getRecentBibleStudies();
-        if (active) navigate(next, { replace: true });
-      } catch (accessError) {
-        if (!active) return;
-        setMessage(accessError instanceof Error ? friendlyError(accessError.message) : "No fue posible validar tu cuenta con el servidor.");
-        setLoading(false);
-      }
+      if (active) navigate(next, { replace: true });
     };
     void completeAccess();
     const { data } = bibleStudyAuth.auth.onAuthStateChange((event, session) => {
@@ -115,6 +110,10 @@ export default function Auth() {
     }
     if ((mode === "register" || recovering) && password !== confirmPassword) {
       setMessage("Las contraseñas no coinciden.");
+      return;
+    }
+    if (mode === "register" && !acceptTerms) {
+      setMessage("Debes aceptar los términos y condiciones y la política de privacidad para crear tu cuenta.");
       return;
     }
     setLoading(true);
@@ -199,12 +198,12 @@ export default function Auth() {
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#F2D27A] to-[#D4AF37]">
             <BookOpen className="text-black" aria-hidden="true" />
           </span>
-          <h1 className="mt-4 font-display text-2xl">Acceso al estudio bíblico</h1>
+          <h1 className="mt-4 font-display text-2xl">Acceso a LVJPRAYER</h1>
           <p className="mt-2 text-sm leading-relaxed text-[#C9C3B3]">
-            La cuenta gratuita permite proteger el servicio, aplicar tu cupo mensual y conservar el historial de estudios en todos tus dispositivos.
+            Inicia sesión o crea tu cuenta para disfrutar de una experiencia personalizada en La Voz de Jesús.
           </p>
           <p className="mt-2 text-xs leading-relaxed text-[#8F897C]">
-            Puedes seguir leyendo y comparando la Biblia sin registrarte. Tus datos de acceso se usan únicamente para identificar tu cuenta.
+            Tu cuenta te permitirá acceder a las funciones personales y al contenido que requiere autenticación. La contraseña es gestionada de forma segura por Supabase.
           </p>
         </section>
 
@@ -230,6 +229,11 @@ export default function Auth() {
             </div>
             {mode === "register" || recovering ? <Field icon={LockKeyhole} label="Confirmar contraseña" type={showPassword ? "text" : "password"} value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" placeholder="Repite tu contraseña" required /> : null}
 
+            {!recovering && mode === "register" ? <label className="flex items-start gap-3 text-xs leading-relaxed text-[#C9C3B3]">
+              <input type="checkbox" checked={acceptTerms} onChange={(event) => setAcceptTerms(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-[#D4AF37]" />
+              <span>Acepto los <Link to="/terminos-y-condiciones" className="text-[#D4AF37] underline">términos y condiciones</Link> y la <Link to="/politica-de-privacidad" className="text-[#D4AF37] underline">política de privacidad</Link>.</span>
+            </label> : null}
+
             {!recovering ? <label className="flex min-h-11 items-start gap-3 text-sm text-[#C9C3B3]">
               <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} className="mt-1 h-4 w-4 accent-[#D4AF37]" />
               <span><strong className="text-[#F8F5EA]">Recordar mi sesión</strong><span className="block text-xs text-[#8F897C]">Desmárcalo si este dispositivo es compartido. La contraseña nunca se guarda en LVJ.</span></span>
@@ -243,7 +247,7 @@ export default function Auth() {
           {!recovering && mode === "login" ? <button type="button" disabled={loading} onClick={resetPassword} className="mt-3 min-h-11 w-full text-sm text-[#D4AF37]">Olvidé mi contraseña</button> : null}
           {message ? <p role={success ? "status" : "alert"} className={`mt-3 rounded-xl border p-3 text-center text-sm ${success ? "border-emerald-400/25 bg-emerald-950/20 text-emerald-200" : "border-[#D4AF37]/25 bg-[#D4AF37]/10 text-[#F2D27A]"}`}>{message}</p> : null}
           {registrationSubmitted ? <div className="mt-3 grid gap-2"><button type="button" disabled={loading} onClick={resendConfirmation} className="min-h-11 rounded-xl border border-[#D4AF37]/30 px-3 text-sm font-semibold text-[#D4AF37]">Reenviar confirmación</button><button type="button" disabled={loading} onClick={resetPassword} className="min-h-11 rounded-xl border border-white/10 px-3 text-sm text-[#C9C3B3]">Ya tenía acceso: establecer contraseña</button></div> : null}
-          {!recovering ? <Link to="/biblia" className="mt-4 block min-h-11 pt-3 text-center text-sm text-[#C9C3B3]">Continuar sin registrarme</Link> : null}
+          {!recovering ? <Link to="/" className="mt-4 block min-h-11 pt-3 text-center text-sm text-[#C9C3B3]">Volver a LVJPRAYER</Link> : null}
         </section>
       </div>
     </main>
