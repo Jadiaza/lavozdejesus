@@ -13,9 +13,13 @@ interface MaintenanceGateProps {
 const MaintenanceGate = ({ children }: MaintenanceGateProps) => {
   const location = useLocation();
   const moduleName = getMaintenanceModule(location.pathname);
-  const state = useMaintenanceState(moduleName);
+  const state = useMaintenanceState(moduleName ?? "inicio");
 
-  if (!moduleName || !state?.mantenimiento_activo) {
+  const maintenanceActive = moduleName
+    ? Boolean(state?.mantenimiento_activo)
+    : Boolean(state?.modo_mantenimiento_global);
+
+  if (!maintenanceActive || !state) {
     return <>{children}</>;
   }
 
