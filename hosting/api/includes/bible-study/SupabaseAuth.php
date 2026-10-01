@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 final class SupabaseAuth
 {
+  // Proveedor único de identidad para LVJPRAYER y sus módulos actuales/futuros.
+  // La autorización funcional se resuelve en la capa local de LVJ; Supabase no decide roles ni acceso premium.
   public static function requireAccount(PDO $pdo): array
   {
     $header = self::authorizationHeader();
@@ -111,7 +113,7 @@ final class SupabaseAuth
     if (in_array('nombre', $columns, true)) $values['nombre'] = (string) ($identity['user_metadata']['full_name'] ?? 'Usuario LVJ');
     if (in_array('estado', $columns, true)) $values['estado'] = 1;
     if (in_array('email_verificado', $columns, true)) $values['email_verificado'] = 1;
-    if (in_array('ia_autorizado', $columns, true)) $values['ia_autorizado'] = 1;
+    if (in_array('ia_autorizado', $columns, true)) $values['ia_autorizado'] = 0;
     if (in_array('ultimo_acceso_at', $columns, true)) $values['ultimo_acceso_at'] = gmdate('Y-m-d H:i:s');
     if (!$values) return null;
     try {
