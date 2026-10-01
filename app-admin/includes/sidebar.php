@@ -113,6 +113,7 @@ $podcastActive = $currentAdminPage === 'podcast.php' || $currentModule === 'podc
     <span class="side-nav-section-label">Administracion</span>
     <a class="<?php echo side_nav_active('', 'usuarios'); ?>" href="content.php?module=usuarios"><span class="nav-icon">U</span> Usuarios y Roles</a>
     <a class="<?php echo side_nav_active('', 'configuracion'); ?>" href="content.php?module=configuracion"><span class="nav-icon">Cf</span> Configuracion</a>
+    <a class="<?php echo $currentAdminPage === 'mantenimiento-modulos.php' ? 'active' : ''; ?>" href="mantenimiento-modulos.php"><span class="nav-icon">Mt</span> Mantenimiento de modulos</a>
     <a class="<?php echo $currentAdminPage === 'logs.php' ? 'active' : ''; ?>" href="logs.php"><span class="nav-icon">Lg</span> Auditoria / Logs</a>
   </nav>
 
