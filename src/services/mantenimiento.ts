@@ -111,7 +111,16 @@ export const getMaintenanceRouteTarget = (pathname: string): MaintenanceRouteTar
   if (path === "/eventos" || path.startsWith("/eventos/")) return { modulo: "eventos", submodulo: null };
   if (path === "/testimonios" || path.startsWith("/testimonios/")) return { modulo: "testimonios", submodulo: null };
   if (path === "/donar" || path.startsWith("/donar/") || path === "/donaciones") return { modulo: "donaciones", submodulo: null };
-  if (path === "/podcast" || path.startsWith("/podcast/")) return { modulo: "podcast", submodulo: null };
+  if (path === "/podcast") return { modulo: "podcast", submodulo: null };
+  if (path === "/podcast/series" || path.startsWith("/podcast/series/") || path === "/podcast/santos-arcangeles-33-dias") return { modulo: "podcast", submodulo: "series" };
+  if (path.startsWith("/podcast/")) return { modulo: "podcast", submodulo: null };
+
+  // Rutas oficiales previstas por el inventario de módulos. Si una de ellas se activa
+  // en la PWA, el mantenimiento ya queda cubierto sin cambios adicionales en el gate.
+  if (path === "/santoral" || path.startsWith("/santoral/")) return { modulo: "santoral", submodulo: null };
+  if (path === "/biblioteca" || path.startsWith("/biblioteca/")) return { modulo: "biblioteca", submodulo: null };
+  if (path === "/comunidad" || path.startsWith("/comunidad/")) return { modulo: "comunidad", submodulo: null };
+  if (path === "/publicidad" || path.startsWith("/publicidad/")) return { modulo: "publicidad", submodulo: null };
 
   return null;
 };
