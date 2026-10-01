@@ -456,7 +456,7 @@ export function DevocionDetalle() {
   useEffect(() => { const controller = new AbortController(); setLoading(true); prayerLibraryService.devotion(slug, controller.signal).then(setItems).finally(() => { if (!controller.signal.aborted) setLoading(false); }); return () => controller.abort(); }, [slug]);
 
   if (slug === "san-miguel-arcangel") {
-    const consagracionUrl = "https://consagraciones.vercel.app/?from=lvjprayer&return=https%3A%2F%2Flavozdejesus.vercel.app%2F";
+    const consagracionUrl = "/oraciones/devociones/san-miguel-arcangel/consagracion";
     const options = [
       { icon: BookOpen, title: "Información", subtitle: "Vida, historia y devoción" },
       { icon: HandHeart, title: "Oraciones", subtitle: "Oraciones a San Miguel" },
