@@ -453,7 +453,20 @@ export function DevocionDetalle() {
   const [loading, setLoading] = useState(true);
   useEffect(() => { const controller = new AbortController(); setLoading(true); prayerLibraryService.devotion(slug, controller.signal).then(setItems).finally(() => { if (!controller.signal.aborted) setLoading(false); }); return () => controller.abort(); }, [slug]);
   const title = slug.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
-  return <Shell title={title}>{loading ? <div className="flex min-h-48 items-center justify-center"><LoaderCircle className="h-7 w-7 animate-spin text-[#efbd52]" /></div> : items.length ? <div className="space-y-3">{items.map((prayer) => <Link key={prayer.id} to={`/oraciones/oracion/${prayer.id}`} className="flex items-center rounded-xl border border-white/10 bg-[#111b23] p-4"><HandHeart className="mr-3 h-6 w-6 text-[#efbd52]" /><span className="min-w-0 flex-1"><b className="block text-sm">{prayer.titulo}</b><small className="mt-1 block text-[10px] text-white/50">{prayer.subtitulo}</small></span><ChevronRight className="h-5 w-5 text-[#efbd52]" /></Link>)}</div> : <div className="rounded-2xl border border-[#d8a740]/25 bg-[#111b23] p-7 text-center text-sm text-white/60">Esta colección está preparada para recibir sus oraciones, rosarios, letanías y novenas.</div>}</Shell>;
+  const isSanMiguel = slug === "san-miguel-arcangel";
+  const consagracionUrl = "https://consagraciones.vercel.app/?from=lvjprayer&return=https%3A%2F%2Flavozdejesus.vercel.app%2F";
+
+  return <Shell title={title}>
+    {loading ? <div className="flex min-h-48 items-center justify-center"><LoaderCircle className="h-7 w-7 animate-spin text-[#efbd52]" /></div> : items.length ? <div className="space-y-3">{items.map((prayer) => <Link key={prayer.id} to={`/oraciones/oracion/${prayer.id}`} className="flex items-center rounded-xl border border-white/10 bg-[#111b23] p-4"><HandHeart className="mr-3 h-6 w-6 text-[#efbd52]" /><span className="min-w-0 flex-1"><b className="block text-sm">{prayer.titulo}</b><small className="mt-1 block text-[10px] text-white/50">{prayer.subtitulo}</small></span><ChevronRight className="h-5 w-5 text-[#efbd52]" /></Link>)}</div> : <div className="rounded-2xl border border-[#d8a740]/25 bg-[#111b23] p-7 text-center text-sm leading-relaxed text-white/60">Esta colección está preparada para recibir sus oraciones, rosarios, letanías y novenas.</div>}
+
+    {isSanMiguel ? <a href={consagracionUrl} className="mt-5 block overflow-hidden rounded-2xl border border-[#d8a740]/65 bg-[linear-gradient(145deg,rgba(19,39,51,.98),rgba(7,18,26,.98))] shadow-[0_10px_26px_rgba(0,0,0,.3)] transition active:scale-[.985]">
+      <div className="flex items-center gap-3 p-4">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#efbd52]/45 bg-[#efbd52]/10"><ShieldCheck className="h-6 w-6 text-[#efbd52]" /></div>
+        <div className="min-w-0 flex-1"><p className="text-[9px] font-bold uppercase tracking-[.18em] text-[#efbd52]">Itinerario espiritual</p><h2 className="mt-1 text-base font-bold text-[#f6d676]">Consagración de 33 días</h2><p className="mt-1 text-[11px] leading-relaxed text-white/60">Vive el camino de consagración a San Miguel, San Gabriel y San Rafael.</p></div>
+        <ChevronRight className="h-6 w-6 shrink-0 text-[#efbd52]" />
+      </div>
+    </a> : null}
+  </Shell>;
 }
 
 export function MisOraciones() {
