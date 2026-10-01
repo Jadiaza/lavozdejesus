@@ -11,11 +11,12 @@
 INSERT INTO lvj_cfg_modulos
     (emisora_id, modulo, modo_mantenimiento, mensaje_mantenimiento)
 SELECT
-    1,
+    e.id,
     m.modulo,
     0,
     'Este módulo se encuentra temporalmente en mantenimiento. Intenta nuevamente más tarde.'
-FROM (
+FROM lvj_cfg_emisora e
+CROSS JOIN (
     SELECT 'oraciones' AS modulo
     UNION ALL SELECT 'rosario'
     UNION ALL SELECT 'santoral'
@@ -23,21 +24,19 @@ FROM (
     UNION ALL SELECT 'eventos'
     UNION ALL SELECT 'testimonios'
 ) AS m
-WHERE EXISTS (
-    SELECT 1
-    FROM lvj_cfg_emisora e
-    WHERE e.id = 1
-)
-AND NOT EXISTS (
+WHERE e.estado = 1
+  AND NOT EXISTS (
     SELECT 1
     FROM lvj_cfg_modulos cm
-    WHERE cm.emisora_id = 1
+    WHERE cm.emisora_id = e.id
       AND cm.modulo = m.modulo
-);
+  );
 
-DELETE FROM lvj_cfg_modulos
-WHERE emisora_id = 1
-  AND modulo = 'noticias';
+DELETE cm
+FROM lvj_cfg_modulos cm
+INNER JOIN lvj_cfg_emisora e ON e.id = cm.emisora_id
+WHERE e.estado = 1
+  AND cm.modulo = 'noticias';
 
 -- =============================================================================
 -- Inventario funcional resultante:
