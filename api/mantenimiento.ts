@@ -57,9 +57,7 @@ const optionalRows = async (
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (!hasMysqlConfig()) {
-    res.status(503).json({
-      error: "MYSQL_ENV_NOT_CONFIGURED",
-    });
+    res.status(503).json({ error: "MYSQL_ENV_NOT_CONFIGURED" });
     return;
   }
 
@@ -77,25 +75,30 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     `);
 
     if (!base) {
-      res.status(404).json({
-        error: "CONFIG_NOT_FOUND",
-      });
+      res.status(404).json({ error: "CONFIG_NOT_FOUND" });
       return;
     }
 
     const emisoraId = Number(base.emisora_id);
-    const globalMaintenance = boolValue(
-      base.modo_mantenimiento_global,
-      false,
-    );
+    const globalMaintenance = boolValue(base.modo_mantenimiento_global, false);
 
-    const rawModule = req.query?.modulo;
-    const module =
-      typeof rawModule === "string"
-        ? rawModule.trim()
-        : Array.isArray(rawModule)
-          ? String(rawModule[0] ?? "").trim()
-          : "";
+    const readQuery = (key: string) => {
+      const raw = req.query?.[key];
+      if (typeof raw === "string") return raw.trim();
+      if (Array.isArray(raw)) return String(raw[0] ?? "").trim();
+      return "";
+    };
+
+    const module = readQuery("modulo");
+    const submodule = readQuery("submodulo");
+
+    if (submodule && !module) {
+      res.status(400).json({
+        error: "MODULE_REQUIRED",
+        mensaje: "El parámetro modulo es obligatorio cuando se consulta un submódulo.",
+      });
+      return;
+    }
 
     if (module) {
       const row = await optionalFirstRow(
@@ -117,10 +120,88 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         return;
       }
 
-      const moduleMaintenance = boolValue(
-        row.modo_mantenimiento,
-        false,
+      const moduleMaintenance = boolValue(row.modo_mantenimiento, false);
+
+      if (submodule) {
+        const subRow = await optionalFirstRow(
+          `
+            SELECT modulo, submodulo, modo_mantenimiento, mensaje_mantenimiento
+            FROM lvj_cfg_submodulos
+            WHERE emisora_id = :emisoraId
+              AND modulo = :modulo
+              AND submodulo = :submodule
+            LIMIT 1
+          `,
+          { emisoraId, modulo: module, submodule },
+        );
+
+        if (!subRow) {
+          res.status(404).json({
+            error: "SUBMODULE_NOT_FOUND",
+            emisora_id: String(emisoraId),
+            modulo: module,
+            submodulo: submodule,
+          });
+          return;
+        }
+
+        const submoduleMaintenance = boolValue(subRow.modo_mantenimiento, false);
+
+        res.status(200).json({
+          ok: true,
+          emisora_id: String(emisoraId),
+          modulo: text(row, "modulo"),
+          submodulo: text(subRow, "submodulo"),
+          modo_mantenimiento_global: globalMaintenance,
+          modo_mantenimiento: moduleMaintenance,
+          modo_mantenimiento_submodulo: submoduleMaintenance,
+          mantenimiento_activo:
+            globalMaintenance || moduleMaintenance || submoduleMaintenance,
+          nivel_mantenimiento_activo: globalMaintenance
+            ? "global"
+            : moduleMaintenance
+              ? "modulo"
+              : submoduleMaintenance
+                ? "submodulo"
+                : "ninguno",
+          mensaje_mantenimiento: globalMaintenance
+            ? "La aplicación se encuentra temporalmente en mantenimiento. Intenta nuevamente más tarde."
+            : moduleMaintenance
+              ? text(row, "mensaje_mantenimiento")
+              : submoduleMaintenance
+                ? text(subRow, "mensaje_mantenimiento")
+                : "",
+        });
+        return;
+      }
+
+      const subRows = await optionalRows(
+        `
+          SELECT submodulo, modo_mantenimiento, mensaje_mantenimiento
+          FROM lvj_cfg_submodulos
+          WHERE emisora_id = :emisoraId AND modulo = :modulo
+          ORDER BY submodulo ASC
+        `,
+        { emisoraId, modulo: module },
       );
+
+      const submodules: Record<string, unknown> = {};
+      for (const subRow of subRows) {
+        const submoduleName = text(subRow, "submodulo");
+        const submoduleMaintenance = boolValue(subRow.modo_mantenimiento, false);
+        submodules[submoduleName] = {
+          modo_mantenimiento: submoduleMaintenance,
+          mantenimiento_activo:
+            globalMaintenance || moduleMaintenance || submoduleMaintenance,
+          mensaje_mantenimiento: globalMaintenance
+            ? "La aplicación se encuentra temporalmente en mantenimiento. Intenta nuevamente más tarde."
+            : moduleMaintenance
+              ? text(row, "mensaje_mantenimiento")
+              : submoduleMaintenance
+                ? text(subRow, "mensaje_mantenimiento")
+                : "",
+        };
+      }
 
       res.status(200).json({
         ok: true,
@@ -134,6 +215,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           : moduleMaintenance
             ? text(row, "mensaje_mantenimiento")
             : "",
+        submodulos: submodules,
       });
       return;
     }
@@ -148,14 +230,40 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       { emisoraId },
     );
 
+    const subRows = await optionalRows(
+      `
+        SELECT modulo, submodulo, modo_mantenimiento, mensaje_mantenimiento
+        FROM lvj_cfg_submodulos
+        WHERE emisora_id = :emisoraId
+        ORDER BY modulo ASC, submodulo ASC
+      `,
+      { emisoraId },
+    );
+
+    const submodulesByModule: Record<string, Record<string, unknown>> = {};
+
+    for (const subRow of subRows) {
+      const moduleName = text(subRow, "modulo");
+      const submoduleName = text(subRow, "submodulo");
+      const submoduleMaintenance = boolValue(subRow.modo_mantenimiento, false);
+
+      submodulesByModule[moduleName] ??= {};
+      submodulesByModule[moduleName][submoduleName] = {
+        modo_mantenimiento: submoduleMaintenance,
+        mantenimiento_activo: globalMaintenance || submoduleMaintenance,
+        mensaje_mantenimiento: globalMaintenance
+          ? "La aplicación se encuentra temporalmente en mantenimiento. Intenta nuevamente más tarde."
+          : submoduleMaintenance
+            ? text(subRow, "mensaje_mantenimiento")
+            : "",
+      };
+    }
+
     const modules: Record<string, unknown> = {};
 
     for (const row of rows) {
       const moduleName = text(row, "modulo");
-      const moduleMaintenance = boolValue(
-        row.modo_mantenimiento,
-        false,
-      );
+      const moduleMaintenance = boolValue(row.modo_mantenimiento, false);
 
       modules[moduleName] = {
         modo_mantenimiento: moduleMaintenance,
@@ -165,6 +273,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           : moduleMaintenance
             ? text(row, "mensaje_mantenimiento")
             : "",
+        submodulos: submodulesByModule[moduleName] ?? {},
       };
     }
 
