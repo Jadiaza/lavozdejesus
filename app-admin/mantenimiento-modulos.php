@@ -143,7 +143,26 @@ try {
     SELECT id, modulo, modo_mantenimiento, mensaje_mantenimiento, updated_at
     FROM lvj_cfg_modulos
     WHERE emisora_id = :emisora_id
-    ORDER BY modulo ASC
+    ORDER BY CASE modulo
+      WHEN 'inicio' THEN 1
+      WHEN 'radio' THEN 2
+      WHEN 'programacion' THEN 3
+      WHEN 'capilla_virtual' THEN 4
+      WHEN 'oraciones' THEN 5
+      WHEN 'rosario' THEN 6
+      WHEN 'liturgia' THEN 7
+      WHEN 'santoral' THEN 8
+      WHEN 'biblia' THEN 9
+      WHEN 'biblioteca' THEN 10
+      WHEN 'formacion' THEN 11
+      WHEN 'comunidad' THEN 12
+      WHEN 'podcast' THEN 13
+      WHEN 'eventos' THEN 14
+      WHEN 'testimonios' THEN 15
+      WHEN 'donaciones' THEN 16
+      WHEN 'publicidad' THEN 17
+      ELSE 99
+    END, modulo ASC
   ");
   $modulesStmt->execute(['emisora_id' => $emisoraId]);
   $modules = $modulesStmt->fetchAll();
