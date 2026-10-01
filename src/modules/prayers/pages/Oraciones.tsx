@@ -476,7 +476,7 @@ export function DevocionDetalle() {
         </header>
 
         <main className="pb-28">
-          <img src={devotionImages["san-miguel-arcangel"]} alt="San Miguel Arcángel" className="block aspect-[16/9] w-full object-cover object-[50%_24%]" />
+          <img src={devotionImages["san-miguel-arcangel"]} alt="San Miguel Arcángel" className="block aspect-[4/3] w-full object-cover object-[50%_20%]" />
           <div className="space-y-2 px-3 py-2">
             {options.map(({ icon: Icon, title: optionTitle, subtitle, action }) => {
               const card = <div className={`group flex min-h-[4.35rem] items-center gap-3 rounded-2xl border px-4 py-2.5 shadow-[0_8px_18px_rgba(0,0,0,.24)] transition ${action ? "border-[#efbd52] bg-[linear-gradient(145deg,rgba(12,39,57,.98),rgba(5,19,29,.98))] shadow-[0_0_0_1px_rgba(239,189,82,.18),0_8px_20px_rgba(0,0,0,.28)]" : "border-[#294353] bg-[linear-gradient(145deg,rgba(11,34,49,.98),rgba(6,19,28,.98))]"}`}>
