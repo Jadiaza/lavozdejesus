@@ -2,7 +2,7 @@ import { Wrench } from "lucide-react";
 import type { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import {
-  getMaintenanceModule,
+  getMaintenanceRouteTarget,
   useMaintenanceState,
 } from "@/services/mantenimiento";
 
@@ -12,8 +12,10 @@ interface MaintenanceGateProps {
 
 const MaintenanceGate = ({ children }: MaintenanceGateProps) => {
   const location = useLocation();
-  const moduleName = getMaintenanceModule(location.pathname);
-  const state = useMaintenanceState(moduleName ?? "inicio");
+  const routeTarget = getMaintenanceRouteTarget(location.pathname);
+  const moduleName = routeTarget?.modulo ?? null;
+  const submoduleName = routeTarget?.submodulo ?? null;
+  const state = useMaintenanceState(moduleName ?? "inicio", submoduleName);
 
   const maintenanceActive = moduleName
     ? Boolean(state?.mantenimiento_activo)
@@ -24,6 +26,7 @@ const MaintenanceGate = ({ children }: MaintenanceGateProps) => {
   }
 
   const isGlobal = state.modo_mantenimiento_global;
+  const isSubmodule = state.nivel_mantenimiento_activo === "submodulo";
 
   return (
     <main className="min-h-screen bg-background px-6 py-12 flex items-center justify-center">
@@ -36,7 +39,7 @@ const MaintenanceGate = ({ children }: MaintenanceGateProps) => {
         </div>
 
         <h1 className="font-serif text-2xl font-semibold text-foreground">
-          {isGlobal ? "Aplicación en mantenimiento" : "Módulo en mantenimiento"}
+          {isGlobal ? "Aplicación en mantenimiento" : isSubmodule ? "Submódulo en mantenimiento" : "Módulo en mantenimiento"}
         </h1>
 
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
