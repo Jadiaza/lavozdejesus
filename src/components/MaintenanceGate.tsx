@@ -1,4 +1,5 @@
 import { Wrench } from "lucide-react";
+import type { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import {
   getMaintenanceModule,
@@ -6,7 +7,7 @@ import {
 } from "@/services/mantenimiento";
 
 interface MaintenanceGateProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 const MaintenanceGate = ({ children }: MaintenanceGateProps) => {
