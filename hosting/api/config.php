@@ -11,6 +11,7 @@ try {
     $pdo,
     "SELECT
       e.*,
+      app.modo_mantenimiento,
       app.mostrar_splash,
       app.duracion_splash,
       app.mostrar_publicidad,
@@ -92,6 +93,7 @@ try {
     'adsense_client_id' => lvj_text($adsense, 'cliente_id', 'client_id', 'adsense_client_id'),
     'adsense_programacion_slot' => lvj_text($adsense, 'slot_programacion', 'programacion_slot', 'adsense_programacion_slot'),
     'adsense_radio_slot' => lvj_text($adsense, 'slot_radio', 'radio_slot', 'adsense_radio_slot'),
+    'modo_mantenimiento' => lvj_bool($base['modo_mantenimiento'] ?? null, false),
     'mostrar_splash' => lvj_bool($base['mostrar_splash'] ?? null, true),
     'duracion_splash' => lvj_text($base, 'duracion_splash'),
     'mostrar_radio' => lvj_bool($base['mostrar_radio'] ?? null, true),
