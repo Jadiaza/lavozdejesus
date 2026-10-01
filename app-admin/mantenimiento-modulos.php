@@ -64,6 +64,77 @@ try {
         : 'El mantenimiento global fue desactivado.';
     }
 
+    if ($action === 'submodule') {
+      $module = trim((string) ($_POST['modulo'] ?? ''));
+      $submodule = trim((string) ($_POST['submodulo'] ?? ''));
+      $value = isset($_POST['modo_mantenimiento']) && (int) $_POST['modo_mantenimiento'] === 1 ? 1 : 0;
+      $message = trim((string) ($_POST['mensaje_mantenimiento'] ?? ''));
+
+      if ($module === '' || $submodule === '') {
+        throw new RuntimeException('El módulo y el submódulo son obligatorios.');
+      }
+
+      if (mb_strlen($module) > 80 || mb_strlen($submodule) > 120) {
+        throw new RuntimeException('El identificador del módulo o submódulo supera la longitud permitida.');
+      }
+
+      if (mb_strlen($message) > 500) {
+        throw new RuntimeException('El mensaje de mantenimiento supera los 500 caracteres permitidos.');
+      }
+
+      if ($message === '') {
+        $message = 'Este submódulo se encuentra temporalmente en mantenimiento. Intenta nuevamente más tarde.';
+      }
+
+      $stmt = $pdo->prepare("
+        UPDATE lvj_cfg_submodulos
+        SET modo_mantenimiento = :modo_mantenimiento,
+            mensaje_mantenimiento = :mensaje_mantenimiento,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE emisora_id = :emisora_id
+          AND modulo = :modulo
+          AND submodulo = :submodulo
+      ");
+      $stmt->execute([
+        'modo_mantenimiento' => $value,
+        'mensaje_mantenimiento' => $message,
+        'emisora_id' => $emisoraId,
+        'modulo' => $module,
+        'submodulo' => $submodule,
+      ]);
+
+      if ($stmt->rowCount() === 0) {
+        $check = $pdo->prepare("
+          SELECT id
+          FROM lvj_cfg_submodulos
+          WHERE emisora_id = :emisora_id
+            AND modulo = :modulo
+            AND submodulo = :submodule
+          LIMIT 1
+        ");
+        $check->execute([
+          'emisora_id' => $emisoraId,
+          'modulo' => $module,
+          'submodule' => $submodule,
+        ]);
+
+        if (!$check->fetch()) {
+          throw new RuntimeException('El submódulo seleccionado no existe en lvj_cfg_submodulos.');
+        }
+      }
+
+      log_activity(
+        'update',
+        'lvj_cfg_submodulos',
+        null,
+        'Mantenimiento del submódulo ' . $module . ' > ' . $submodule . ' ' . ($value === 1 ? 'activado' : 'desactivado')
+      );
+
+      $success = $value === 1
+        ? 'El mantenimiento de ' . $module . ' > ' . $submodule . ' fue activado.'
+        : 'El mantenimiento de ' . $module . ' > ' . $submodule . ' fue desactivado.';
+    }
+
     if ($action === 'module') {
       $module = trim((string) ($_POST['modulo'] ?? ''));
       $value = isset($_POST['modo_mantenimiento']) && (int) $_POST['modo_mantenimiento'] === 1 ? 1 : 0;
@@ -166,6 +237,38 @@ try {
   ");
   $modulesStmt->execute(['emisora_id' => $emisoraId]);
   $modules = $modulesStmt->fetchAll();
+
+  $submodulesStmt = $pdo->prepare("
+    SELECT id, modulo, submodulo, modo_mantenimiento, mensaje_mantenimiento, updated_at
+    FROM lvj_cfg_submodulos
+    WHERE emisora_id = :emisora_id
+    ORDER BY CASE modulo
+      WHEN 'inicio' THEN 1
+      WHEN 'radio' THEN 2
+      WHEN 'programacion' THEN 3
+      WHEN 'capilla_virtual' THEN 4
+      WHEN 'oraciones' THEN 5
+      WHEN 'rosario' THEN 6
+      WHEN 'liturgia' THEN 7
+      WHEN 'santoral' THEN 8
+      WHEN 'biblia' THEN 9
+      WHEN 'biblioteca' THEN 10
+      WHEN 'formacion' THEN 11
+      WHEN 'comunidad' THEN 12
+      WHEN 'podcast' THEN 13
+      WHEN 'eventos' THEN 14
+      WHEN 'testimonios' THEN 15
+      WHEN 'donaciones' THEN 16
+      WHEN 'publicidad' THEN 17
+      ELSE 99
+    END, modulo ASC, submodulo ASC
+  ");
+  $submodulesStmt->execute(['emisora_id' => $emisoraId]);
+  $submodules = $submodulesStmt->fetchAll();
+  $submodulesByModule = [];
+  foreach ($submodules as $submodule) {
+    $submodulesByModule[(string) $submodule['modulo']][] = $submodule;
+  }
 
 } catch (Throwable $e) {
   $error = $e->getMessage();
@@ -273,6 +376,61 @@ require __DIR__ . '/includes/header.php';
             </button>
           </div>
         </form>
+
+        <?php $moduleSubmodules = $submodulesByModule[$moduleName] ?? []; ?>
+        <?php if ($moduleSubmodules): ?>
+          <div class="maintenance-submodule-section">
+            <div class="maintenance-submodule-heading">
+              <strong>Submódulos</strong>
+              <span><?php echo count($moduleSubmodules); ?></span>
+            </div>
+
+            <div class="maintenance-submodule-list">
+              <?php foreach ($moduleSubmodules as $submodule): ?>
+                <?php
+                  $submoduleName = (string) ($submodule['submodulo'] ?? '');
+                  $subActive = (int) ($submodule['modo_mantenimiento'] ?? 0) === 1;
+                  $subMessage = (string) ($submodule['mensaje_mantenimiento'] ?? '');
+                ?>
+                <div class="maintenance-submodule-card<?php echo $subActive ? ' is-maintenance' : ''; ?>">
+                  <div class="maintenance-submodule-head">
+                    <div>
+                      <strong><?php echo e(ucwords(str_replace('_', ' ', $submoduleName))); ?></strong>
+                      <small><?php echo e($moduleName . ' > ' . $submoduleName); ?></small>
+                    </div>
+                    <span class="status-pill <?php echo $subActive ? 'status-active' : ''; ?>">
+                      <?php echo $subActive ? 'EN MANTENIMIENTO' : 'NORMAL'; ?>
+                    </span>
+                  </div>
+
+                  <form method="post" class="maintenance-submodule-form">
+                    <?php echo csrf_field(); ?>
+                    <input type="hidden" name="action" value="submodule">
+                    <input type="hidden" name="modulo" value="<?php echo e($moduleName); ?>">
+                    <input type="hidden" name="submodulo" value="<?php echo e($submoduleName); ?>">
+
+                    <label class="maintenance-toggle">
+                      <input type="checkbox" name="modo_mantenimiento" value="1" <?php echo $subActive ? 'checked' : ''; ?>>
+                      <span>Activar mantenimiento</span>
+                    </label>
+
+                    <label>
+                      <span>Mensaje</span>
+                      <textarea name="mensaje_mantenimiento" rows="2" maxlength="500"><?php echo e($subMessage); ?></textarea>
+                    </label>
+
+                    <div class="maintenance-submodule-footer">
+                      <small><?php echo e((string) ($submodule['updated_at'] ?? '')); ?></small>
+                      <button class="btn <?php echo $subActive ? 'btn-soft' : 'btn-gold'; ?>" type="submit">
+                        Guardar
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              <?php endforeach; ?>
+            </div>
+          </div>
+        <?php endif; ?>
       </article>
     <?php endforeach; ?>
 
