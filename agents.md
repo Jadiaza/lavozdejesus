@@ -483,7 +483,7 @@ El sistema está dividido en módulos independientes.
 
 Cada módulo deberá poder evolucionar sin afectar los demás.
 
-Actualmente los módulos oficiales son:
+Actualmente los módulos funcionales oficiales de la plataforma son:
 
 ```
 LVJ
@@ -492,18 +492,41 @@ LVJ
 ├── Radio
 ├── Programación
 ├── Capilla Virtual
+├── Oraciones
+├── Rosario
 ├── Liturgia
+├── Santoral
 ├── Biblia
 ├── Biblioteca
+├── Formación
 ├── Comunidad
 ├── Podcast
-├── Noticias
+├── Eventos
+├── Testimonios
 ├── Donaciones
-├── Publicidad
-├── Configuración
-├── Usuarios
-└── Panel Administrativo
+└── Publicidad
 ```
+
+Los módulos administrativos e internos se mantienen fuera de este inventario funcional de la PWA. Incluyen:
+
+- Configuración.
+- Usuarios y roles.
+- Panel Administrativo.
+- FileServer.
+- Legacy.
+
+Estas áreas no deben convertirse automáticamente en registros de lvj_cfg_modulos.
+
+Las rutas secundarias y subfunciones tampoco constituyen módulos independientes de mantenimiento. Por ejemplo:
+
+```
+Oraciones
+└── Devociones
+```
+
+devociones pertenece funcionalmente a **Oraciones**.
+
+El **Rosario** sí constituye un módulo independiente porque dispone de una estructura funcional y páginas propias dentro de la aplicación.
 
 Cada módulo tendrá:
 
@@ -2492,26 +2515,42 @@ No se utilizará el nombre visible de la interfaz como clave técnica.
 
 Los identificadores deberán ser estables y corresponder a módulos funcionales, no a rutas individuales ni a pantallas de detalle.
 
-Inventario inicial previsto:
+Inventario oficial de módulos funcionales:
 
 ```
 inicio
 radio
 programacion
 capilla_virtual
+oraciones
+rosario
 liturgia
+santoral
 biblia
 biblioteca
+formacion
 comunidad
 podcast
-noticias
+eventos
+testimonios
 donaciones
 publicidad
 ```
 
-La incorporación de un nuevo identificador deberá verificarse contra la arquitectura oficial de AGENTS.md antes de registrarlo.
+Este inventario corresponde exclusivamente a módulos funcionales de la PWA y del sitio público que pueden requerir mantenimiento operativo individual.
 
-Las funcionalidades internas o rutas secundarias no deberán convertirse automáticamente en módulos independientes.
+No se incluyen en lvj_cfg_modulos las áreas administrativas o de infraestructura:
+
+```
+administracion
+configuracion
+usuarios
+panel_administrativo
+fileserver
+legacy
+```
+
+Tampoco se registran rutas, pantallas de detalle ni subfunciones como módulos independientes.
 
 Ejemplo:
 
@@ -2520,7 +2559,11 @@ oraciones
 └── devociones
 ```
 
-`devociones` pertenece funcionalmente a **Oraciones** y no constituye por sí mismo un módulo independiente de `lvj_cfg_modulos`.
+devociones pertenece funcionalmente a **Oraciones**.
+
+El **Rosario** sí mantiene un identificador independiente porque constituye un módulo funcional propio con estructura y páginas específicas.
+
+La incorporación de un nuevo identificador deberá verificarse contra la arquitectura oficial de AGENTS.md antes de registrarlo.
 
 ## Consumida por
 
@@ -2568,10 +2611,12 @@ Utilizada actualmente por:
 
 ✓ Base de Datos MySQL  
 ✓ Migración de estructura  
-✗ API de mantenimiento individual  
-✗ Panel Administrativo de mantenimiento individual  
+✓ API de consulta de mantenimiento individual  
+✓ Panel Administrativo de mantenimiento individual  
 ✗ Aplicación PWA  
 ✗ Validación global de APIs de cada módulo
+
+La tabla ya se encuentra creada en producción. Las migraciones posteriores que ajusten el inventario de módulos deberán ser idempotentes y no deberán recrear la tabla.
 
 La implementación deberá continuar en el orden definido por AGENTS.md:
 
