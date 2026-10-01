@@ -60,6 +60,7 @@ CROSS JOIN (
     UNION ALL SELECT 'oraciones', 'peticion'
     UNION ALL SELECT 'oraciones', 'recordatorios'
     UNION ALL SELECT 'capilla_virtual', 'intenciones'
+    UNION ALL SELECT 'podcast', 'series'
 ) AS m
 WHERE e.estado = 1
   AND EXISTS (
