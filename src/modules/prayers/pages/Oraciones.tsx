@@ -24,6 +24,18 @@ import { prayerLibraryService, type LibraryPrayer } from "../services/prayerLibr
 
 const GOLD = "text-[#efbd52]";
 
+const DEVOTION_IMAGE_BASE = "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/oraciones/devociones/images";
+const devotionImages: Record<string, string> = {
+  "san-jose": DEVOTION_IMAGE_BASE + "/devocion-san-jose.png",
+  "sangre-de-cristo": DEVOTION_IMAGE_BASE + "/devocion-sangre-de-cristo.png",
+  "san-miguel-arcangel": DEVOTION_IMAGE_BASE + "/devocion-san-miguel-arcangel.png",
+  "maria-santisima": DEVOTION_IMAGE_BASE + "/devocion-maria-santisima.png",
+  "espiritu-santo": DEVOTION_IMAGE_BASE + "/devocion-espiritu-santo.png",
+  "sagrado-corazon-de-jesus": DEVOTION_IMAGE_BASE + "/devocion-sagrado-corazon-de-jesus.png",
+  "santisimo-sacramento": DEVOTION_IMAGE_BASE + "/devocion-santisimo-sacramento.png",
+  "divina-misericordia": DEVOTION_IMAGE_BASE + "/devocion-divina-misericordia.png",
+};
+
 const tactileFeedback = () => {
   if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate(10);
 };
