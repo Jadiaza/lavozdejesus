@@ -2424,6 +2424,173 @@ Todas las configuraciones futuras deberán centralizarse en este módulo, garant
 
 Las tablas que conforman este módulo se documentarán individualmente en los apartados siguientes, siguiendo el estándar oficial definido en el presente capítulo.
 
+# 3.4.12 Diccionario Oficial de Datos – Tabla `lvj_cfg_modulos`
+
+## Nombre de la tabla
+
+`lvj_cfg_modulos`
+
+## Propósito
+
+Almacena la configuración operativa de mantenimiento individual de los módulos de la plataforma para cada emisora.
+
+La tabla permite retirar temporalmente un módulo específico de operación sin activar el mantenimiento global de toda la aplicación.
+
+## Estado
+
+🟢 Producción
+
+La tabla ha sido creada mediante la migración:
+
+`app-admin/migrations/2026-10-01-create-module-maintenance.sql`
+
+## Responsabilidad
+
+La tabla pertenece exclusivamente al módulo **Configuración** y administra el estado de mantenimiento por módulo.
+
+No almacena contenido funcional del módulo ni sustituye las tablas propias de cada módulo.
+
+## Campos principales
+
+| Campo | Tipo | Propósito |
+|---|---|---|
+| `id` | INT(11) | Identificador único de la configuración. |
+| `emisora_id` | INT(11) | Identificador de la emisora a la que pertenece la configuración. |
+| `modulo` | VARCHAR(80) | Identificador estable del módulo funcional. |
+| `modo_mantenimiento` | TINYINT(4) | Indica si el módulo se encuentra temporalmente en mantenimiento. |
+| `mensaje_mantenimiento` | VARCHAR(500) | Mensaje que se mostrará cuando el módulo esté en mantenimiento. |
+| `created_at` | TIMESTAMP | Fecha de creación del registro. |
+| `updated_at` | TIMESTAMP | Fecha de última actualización. |
+
+## Índices y restricciones
+
+- Llave primaria: `id`.
+- Unicidad: `emisora_id + modulo`.
+- Índice por `emisora_id`.
+- Índice por `emisora_id + modo_mantenimiento`.
+- Motor: InnoDB.
+- Juego de caracteres: UTF8MB4.
+- Collation: `utf8mb4_unicode_ci`.
+
+La combinación `emisora_id + modulo` garantiza una única configuración de mantenimiento para cada módulo dentro de una emisora.
+
+## Relaciones
+
+La tabla se relaciona conceptualmente con:
+
+```
+lvj_cfg_emisora.id
+        ↓
+lvj_cfg_modulos.emisora_id
+```
+
+El campo `modulo` identifica el módulo funcional mediante un identificador estable documentado por la aplicación.
+
+No se utilizará el nombre visible de la interfaz como clave técnica.
+
+## Identificadores de módulo
+
+Los identificadores deberán ser estables y corresponder a módulos funcionales, no a rutas individuales ni a pantallas de detalle.
+
+Inventario inicial previsto:
+
+```
+inicio
+radio
+programacion
+capilla_virtual
+liturgia
+biblia
+biblioteca
+comunidad
+podcast
+noticias
+donaciones
+publicidad
+```
+
+La incorporación de un nuevo identificador deberá verificarse contra la arquitectura oficial de AGENTS.md antes de registrarlo.
+
+Las funcionalidades internas o rutas secundarias no deberán convertirse automáticamente en módulos independientes.
+
+Ejemplo:
+
+```
+oraciones
+└── devociones
+```
+
+`devociones` pertenece funcionalmente a **Oraciones** y no constituye por sí mismo un módulo independiente de `lvj_cfg_modulos`.
+
+## Consumida por
+
+- Panel Administrativo.
+- Backend PHP.
+- APIs REST.
+- PWA.
+- Sitio Web.
+
+El Backend será la fuente oficial del estado de mantenimiento.
+
+## Reglas de negocio
+
+1. `modo_mantenimiento = 0`: el módulo puede funcionar normalmente, sujeto a las demás configuraciones de disponibilidad.
+2. `modo_mantenimiento = 1`: el módulo se considera temporalmente en mantenimiento.
+3. El mensaje mostrado deberá proceder de `mensaje_mantenimiento`.
+4. El mantenimiento individual no elimina contenido ni datos del módulo.
+5. El mantenimiento individual no equivale a desactivar la visibilidad mediante los parámetros `mostrar_*`.
+6. El mantenimiento de un módulo no deberá afectar a otros módulos.
+7. Si `lvj_cfg_app.modo_mantenimiento = 1`, el mantenimiento global tendrá prioridad sobre el mantenimiento individual.
+8. Las APIs protegidas del módulo deberán validar el estado de mantenimiento cuando corresponda.
+9. El Frontend no podrá ser la única capa responsable de hacer cumplir el mantenimiento.
+10. No deberán existir estados de mantenimiento paralelos en archivos JSON, PHP, TypeScript, constantes o variables hardcodeadas.
+
+## Restricciones
+
+- No crear un registro por cada ruta de la aplicación.
+- No crear registros independientes para pantallas de detalle.
+- No utilizar `mostrar_*` como sustituto de `modo_mantenimiento`.
+- No duplicar esta configuración en otras tablas.
+- No modificar directamente la Base de Datos desde la PWA.
+- No crear módulos nuevos sin actualizar previamente la documentación arquitectónica cuando corresponda.
+
+## Observaciones
+
+La tabla implementa el mantenimiento modular previsto en la sección 3.4.6.1 de este documento.
+
+La existencia del registro no implica que el módulo esté actualmente en mantenimiento; el estado depende de `modo_mantenimiento`.
+
+La disponibilidad funcional y el mantenimiento son controles independientes.
+
+## Estado de Implementación
+
+Utilizada actualmente por:
+
+✓ Base de Datos MySQL  
+✓ Migración de estructura  
+✗ API de mantenimiento individual  
+✗ Panel Administrativo de mantenimiento individual  
+✗ Aplicación PWA  
+✗ Validación global de APIs de cada módulo
+
+La implementación deberá continuar en el orden definido por AGENTS.md:
+
+```
+Diccionario de Datos
+   ↓
+Migración MySQL
+   ↓
+API Backend
+   ↓
+Panel Administrativo
+   ↓
+PWA / Frontend
+   ↓
+Pruebas
+```
+
+---
+
 # 3.5 Diccionario Oficial de Datos – Módulo Capilla Virtual
 
 ## 3.5.1 Objetivo
