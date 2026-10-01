@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  bibleStudyAuth,
+  lvjAuth,
   getBibleStudyRememberSession,
   isBibleStudyAuthConfigured,
   setBibleStudyRememberSession,
@@ -79,7 +79,7 @@ export default function Auth() {
     let active = true;
 
     const completeAccess = async () => {
-      const { data, error } = await bibleStudyAuth.auth.getSession();
+      const { data, error } = await lvjAuth.auth.getSession();
       if (!active) return;
 
       if (error) {
@@ -98,12 +98,24 @@ export default function Auth() {
         return;
       }
 
+      // Vincula automáticamente la identidad Supabase con lvj_com_usuarios.
+      // No bloquea el acceso de la PWA si el API administrativo no responde.
+      if (data.session.access_token) {
+        void fetch("https://lavozdejesus.co/api/acceso.php", {
+          cache: "no-store",
+          headers: {
+            Authorization: "Bearer " + data.session.access_token,
+            Accept: "application/json",
+          },
+        }).catch(() => undefined);
+      }
+
       navigate(next, { replace: true });
     };
 
     void completeAccess();
 
-    const { data } = bibleStudyAuth.auth.onAuthStateChange((event, session) => {
+    const { data } = lvjAuth.auth.onAuthStateChange((event, session) => {
       if (!active) return;
 
       if (event === "PASSWORD_RECOVERY") {
@@ -155,12 +167,12 @@ export default function Auth() {
     setBibleStudyRememberSession(remember);
 
     if (recovering) {
-      const { error } = await bibleStudyAuth.auth.updateUser({ password });
+      const { error } = await lvjAuth.auth.updateUser({ password });
 
       if (error) {
         setMessage(friendlyError(error.message));
       } else {
-        await bibleStudyAuth.auth.signOut({ scope: "local" });
+        await lvjAuth.auth.signOut({ scope: "local" });
         setRecovering(false);
         setMode("login");
         setPassword("");
@@ -175,7 +187,7 @@ export default function Auth() {
     }
 
     if (mode === "register") {
-      const { data, error } = await bibleStudyAuth.auth.signUp({
+      const { data, error } = await lvjAuth.auth.signUp({
         email: normalizedEmail,
         password,
         options: {
@@ -198,7 +210,7 @@ export default function Auth() {
         setMessage("Solicitud recibida. Si el correo es nuevo, recibirás un enlace de confirmación. Si ya lo habías usado antes, inicia sesión o establece una contraseña.");
       }
     } else {
-      const { error } = await bibleStudyAuth.auth.signInWithPassword({
+      const { error } = await lvjAuth.auth.signInWithPassword({
         email: normalizedEmail,
         password,
       });
@@ -223,7 +235,7 @@ export default function Auth() {
     setLoading(true);
     setMessage("");
 
-    const { error } = await bibleStudyAuth.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    const { error } = await lvjAuth.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
       redirectTo: recoveryCallbackUrl,
     });
 
@@ -238,7 +250,7 @@ export default function Auth() {
     setLoading(true);
     setMessage("");
 
-    const { error } = await bibleStudyAuth.auth.resend({
+    const { error } = await lvjAuth.auth.resend({
       type: "signup",
       email: email.trim().toLowerCase(),
       options: { emailRedirectTo: callbackUrl },
