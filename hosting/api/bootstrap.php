@@ -93,6 +93,9 @@ function lvj_json_response(array $payload, int $status = 200): void
     'https://lavozdejesus.vercel.app',
     'http://localhost:8080',
     'http://localhost:3000',
+    // Aplicación separada de Consagraciones: comparte Supabase Auth con LVJPRAYER.
+    'https://consagraciones.vercel.app',
+    'https://id-preview--f5d501d9-17b3-443f-a947-3a8d84951da2.lovable.app',
   ];
 
   if (in_array($origin, $allowedOrigins, true)) {
