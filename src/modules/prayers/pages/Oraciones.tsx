@@ -25,10 +25,11 @@ import { prayerLibraryService, type LibraryPrayer } from "../services/prayerLibr
 const GOLD = "text-[#efbd52]";
 
 const DEVOTION_IMAGE_BASE = "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/oraciones/devociones/images";
+const SAN_MIGUEL_PORTADA = "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/consagraciones/san-miguel/imagenes/portada/portada_san_miguel.png";
 const devotionImages: Record<string, string> = {
   "san-jose": DEVOTION_IMAGE_BASE + "/devocion-san-jose.png",
   "sangre-de-cristo": DEVOTION_IMAGE_BASE + "/devocion-sangre-de-cristo.png",
-  "san-miguel-arcangel": "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/consagraciones/san-miguel/imagenes/portada/portada_san_miguel.png",
+  "san-miguel-arcangel": "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/oraciones/devociones/images/devocion-san-miguel-arcangel.png",
   "maria-santisima": DEVOTION_IMAGE_BASE + "/devocion-maria-santisima.png",
   "espiritu-santo": DEVOTION_IMAGE_BASE + "/devocion-espiritu-santo.png",
   "sagrado-corazon-de-jesus": DEVOTION_IMAGE_BASE + "/devocion-sagrado-corazon-de-jesus.png",
@@ -476,7 +477,7 @@ export function DevocionDetalle() {
         </header>
 
         <main className="pb-28">
-          <img src={devotionImages["san-miguel-arcangel"]} alt="San Miguel Arcángel" className="block aspect-[4/3] w-full object-cover object-top" />
+          <img src={SAN_MIGUEL_PORTADA} alt="San Miguel Arcángel" className="block aspect-[4/3] w-full object-cover object-top" />
           <div className="space-y-2 px-3 py-2">
             {options.map(({ icon: Icon, title: optionTitle, subtitle, action }) => {
               const card = <div className={`group flex min-h-[4.35rem] items-center gap-3 rounded-2xl border px-4 py-2.5 shadow-[0_8px_18px_rgba(0,0,0,.24)] transition ${action ? "border-[#efbd52] bg-[linear-gradient(145deg,rgba(12,39,57,.98),rgba(5,19,29,.98))] shadow-[0_0_0_1px_rgba(239,189,82,.18),0_8px_20px_rgba(0,0,0,.28)]" : "border-[#294353] bg-[linear-gradient(145deg,rgba(11,34,49,.98),rgba(6,19,28,.98))]"}`}>
