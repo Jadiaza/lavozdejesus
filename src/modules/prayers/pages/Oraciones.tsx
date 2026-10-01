@@ -28,7 +28,7 @@ const DEVOTION_IMAGE_BASE = "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev
 const devotionImages: Record<string, string> = {
   "san-jose": DEVOTION_IMAGE_BASE + "/devocion-san-jose.png",
   "sangre-de-cristo": DEVOTION_IMAGE_BASE + "/devocion-sangre-de-cristo.png",
-  "san-miguel-arcangel": DEVOTION_IMAGE_BASE + "/devocion-san-miguel-arcangel.png",
+  "san-miguel-arcangel": "/images/devocion-san-miguel-arcangel.svg",
   "maria-santisima": DEVOTION_IMAGE_BASE + "/devocion-maria-santisima.png",
   "espiritu-santo": DEVOTION_IMAGE_BASE + "/devocion-espiritu-santo.png",
   "sagrado-corazon-de-jesus": DEVOTION_IMAGE_BASE + "/devocion-sagrado-corazon-de-jesus.png",
