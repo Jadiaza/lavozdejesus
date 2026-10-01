@@ -135,23 +135,15 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           { emisoraId, modulo: module, submodule },
         );
 
-        if (!subRow) {
-          res.status(404).json({
-            error: "SUBMODULE_NOT_FOUND",
-            emisora_id: String(emisoraId),
-            modulo: module,
-            submodulo: submodule,
-          });
-          return;
-        }
-
-        const submoduleMaintenance = boolValue(subRow.modo_mantenimiento, false);
+        const submoduleMaintenance = subRow
+          ? boolValue(subRow.modo_mantenimiento, false)
+          : false;
 
         res.status(200).json({
           ok: true,
           emisora_id: String(emisoraId),
           modulo: text(row, "modulo"),
-          submodulo: text(subRow, "submodulo"),
+          submodulo: subRow ? text(subRow, "submodulo") : submodule,
           modo_mantenimiento_global: globalMaintenance,
           modo_mantenimiento: moduleMaintenance,
           modo_mantenimiento_submodulo: submoduleMaintenance,
