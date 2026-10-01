@@ -421,17 +421,6 @@ export function DevocionesPage() {
   const [items, setItems] = useState<Awaited<ReturnType<typeof prayerLibraryService.devotions>>>([]);
   const [query, setQuery] = useState("");
   useEffect(() => { const controller = new AbortController(); prayerLibraryService.devotions(controller.signal).then(setItems).catch(() => setItems([])); return () => controller.abort(); }, []);
-  const devotionImageBase = "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/oraciones/devociones/images";
-  const devotionImages: Record<string, string> = {
-    "san-jose": `${devotionImageBase}/devocion-san-jose.png`,
-    "sangre-de-cristo": `${devotionImageBase}/devocion-sangre-de-cristo.png`,
-    "san-miguel-arcangel": `${devotionImageBase}/devocion-san-miguel-arcangel.png`,
-    "maria-santisima": `${devotionImageBase}/devocion-maria-santisima.png`,
-    "espiritu-santo": `${devotionImageBase}/devocion-espiritu-santo.png`,
-    "sagrado-corazon-de-jesus": `${devotionImageBase}/devocion-sagrado-corazon-de-jesus.png`,
-    "santisimo-sacramento": `${devotionImageBase}/devocion-santisimo-sacramento.png`,
-    "divina-misericordia": `${devotionImageBase}/devocion-divina-misericordia.png`,
-  };
   const fallback = [
     ["san-jose", "San José", "Custodio de Jesús y protector de las familias", "SJ"],
     ["sangre-de-cristo", "Sangre de Cristo", "Redención, entrega y protección en Cristo", "SC"],
