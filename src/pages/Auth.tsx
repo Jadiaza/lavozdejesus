@@ -13,6 +13,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { getAccessContext } from "@/services/acceso";
 import {
   lvjAuth,
   getBibleStudyRememberSession,
@@ -101,13 +102,7 @@ export default function Auth() {
       // Vincula automáticamente la identidad Supabase con lvj_com_usuarios.
       // No bloquea el acceso de la PWA si el API administrativo no responde.
       if (data.session.access_token) {
-        void fetch("https://lavozdejesus.co/api/acceso.php", {
-          cache: "no-store",
-          headers: {
-            Authorization: "Bearer " + data.session.access_token,
-            Accept: "application/json",
-          },
-        }).catch(() => undefined);
+        void getAccessContext(data.session.access_token).catch(() => undefined);
       }
 
       navigate(next, { replace: true });
