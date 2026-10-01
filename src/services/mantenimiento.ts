@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 export type MaintenanceModule =
   | "inicio"
@@ -50,15 +50,15 @@ export const getMaintenanceModule = (pathname: string): MaintenanceModule | null
   if (path === "/capilla" || path === "/capilla-virtual" || path.startsWith("/capilla/")) {
     return "capilla_virtual";
   }
+  if (path === "/liturgia" || path.startsWith("/liturgia/") ||
+      path === "/lecturas-del-dia" || path === "/lectura-del-dia" ||
+      path === "/oraciones/liturgia" || path.startsWith("/oraciones/liturgia/")) {
+    return "liturgia";
+  }
   if (path === "/oraciones" || path.startsWith("/oraciones/") || path === "/devociones") {
     return "oraciones";
   }
   if (path === "/rosario" || path.startsWith("/rosario/")) return "rosario";
-  if (path === "/liturgia" || path.startsWith("/liturgia/") ||
-      path === "/lecturas-del-dia" || path === "/lectura-del-dia" ||
-      path.startsWith("/oraciones/liturgia")) {
-    return "liturgia";
-  }
   if (path === "/biblia" || path === "/biblia" || path.startsWith("/biblia/")) {
     return "biblia";
   }
