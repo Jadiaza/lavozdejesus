@@ -6289,3 +6289,11 @@ Reglas obligatorias:
   aún no se haya aplicado.
 - Los componentes compartidos deben consumir variables CSS del tema y evitar colores
   hardcodeados cuando el elemento pertenezca a la apariencia institucional.
+
+## Identidad compartida con módulos LVJPRAYER y aplicaciones especializadas
+
+Los módulos presentes o futuros de LVJPRAYER que formen parte del mismo ecosistema deben reutilizar el proveedor de identidad oficial de Supabase Auth. La identidad canónica se vincula con `lvj_com_usuarios` mediante `auth_provider` y `auth_subject`.
+
+Al completar el acceso, LVJPRAYER puede sincronizar de forma idempotente la identidad autenticada con `lvj_com_usuarios`: primero por `auth_subject`, después por correo para vincular una cuenta local existente y solo crea un registro local cuando no existe correspondencia. Este proceso no debe crear una segunda cuenta Supabase ni duplicar usuarios.
+
+Una aplicación especializada como Consagraciones puede conservar su propio backend y sus datos funcionales, incluido el seguimiento de los 33 días, mientras comparte la identidad Supabase. La unificación de acceso no implica migrar ni duplicar el progreso: los registros existentes deben conservarse y relacionarse con la identidad Supabase correspondiente.
