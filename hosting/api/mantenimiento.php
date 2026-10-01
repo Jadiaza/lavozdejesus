@@ -77,23 +77,16 @@ try {
         ],
       );
 
-      if (!$subRow) {
-        lvj_json_response([
-          'error' => 'SUBMODULE_NOT_FOUND',
-          'emisora_id' => (string) $emisoraId,
-          'modulo' => $module,
-          'submodulo' => $submodule,
-        ], 404);
-      }
-
-      $submoduleMaintenance = lvj_bool($subRow['modo_mantenimiento'] ?? null, false);
+      $submoduleMaintenance = $subRow
+        ? lvj_bool($subRow['modo_mantenimiento'] ?? null, false)
+        : false;
       $active = $globalMaintenance || $moduleMaintenance || $submoduleMaintenance;
 
       lvj_json_response([
         'ok' => true,
         'emisora_id' => (string) $emisoraId,
         'modulo' => lvj_text($row, 'modulo'),
-        'submodulo' => lvj_text($subRow, 'submodulo'),
+        'submodulo' => $subRow ? lvj_text($subRow, 'submodulo') : $submodule,
         'modo_mantenimiento_global' => $globalMaintenance,
         'modo_mantenimiento' => $moduleMaintenance,
         'modo_mantenimiento_submodulo' => $submoduleMaintenance,
