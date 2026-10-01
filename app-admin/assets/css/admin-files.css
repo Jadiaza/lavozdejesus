@@ -2437,3 +2437,99 @@ textarea::placeholder {
     flex-direction: column;
   }
 }
+
+
+/* Mantenimiento por submódulo */
+.maintenance-submodule-section {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(15, 23, 42, 0.09);
+}
+.maintenance-submodule-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  color: #344054;
+  font-size: 13px;
+}
+.maintenance-submodule-heading span {
+  min-width: 26px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f2f4f7;
+  color: #667085;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+}
+.maintenance-submodule-list {
+  display: grid;
+  gap: 10px;
+}
+.maintenance-submodule-card {
+  padding: 13px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 13px;
+  background: #f8fafc;
+}
+.maintenance-submodule-card.is-maintenance {
+  border-color: rgba(212, 175, 55, 0.62);
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.42), #fff);
+}
+.maintenance-submodule-head,
+.maintenance-submodule-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.maintenance-submodule-head strong {
+  font-size: 13px;
+}
+.maintenance-submodule-head small,
+.maintenance-submodule-footer small {
+  display: block;
+  margin-top: 3px;
+  color: #667085;
+  font-size: 11px;
+}
+.maintenance-submodule-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+.maintenance-submodule-form label > span {
+  display: block;
+  margin-bottom: 6px;
+  color: #344054;
+  font-size: 12px;
+  font-weight: 700;
+}
+.maintenance-submodule-form textarea {
+  width: 100%;
+  min-height: 58px;
+  resize: vertical;
+  box-sizing: border-box;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 9px;
+  background: #fff;
+  color: #101828;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.maintenance-submodule-form textarea:focus {
+  outline: none;
+  border-color: rgba(212, 175, 55, 0.8);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.10);
+}
+@media (max-width: 760px) {
+  .maintenance-submodule-head,
+  .maintenance-submodule-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
