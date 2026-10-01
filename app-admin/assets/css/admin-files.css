@@ -2332,13 +2332,19 @@ textarea::placeholder {
   gap: 24px;
   padding: 22px;
   margin-top: 18px;
-  border: 1px solid var(--border, #3d3422);
+  border: 1px solid rgba(15, 23, 42, 0.10);
   border-radius: 16px;
-  background: var(--card, #111722);
+  background: #ffffff;
+  color: #101828;
 }
 .maintenance-global-card h3,
 .maintenance-module-card strong {
   margin: 0;
+  color: #101828;
+}
+.maintenance-global-card p,
+.maintenance-module-card p {
+  color: #667085;
 }
 .maintenance-global-form {
   display: flex;
@@ -2352,12 +2358,14 @@ textarea::placeholder {
 }
 .maintenance-module-card {
   padding: 18px;
-  border: 1px solid var(--border, #3d3422);
+  border: 1px solid rgba(15, 23, 42, 0.10);
   border-radius: 16px;
-  background: var(--card, #111722);
+  background: #ffffff;
+  color: #101828;
 }
 .maintenance-module-card.is-maintenance {
-  border-color: var(--primary, #d4af37);
+  border-color: rgba(212, 175, 55, 0.75);
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.10);
 }
 .maintenance-module-head,
 .maintenance-module-footer {
@@ -2369,27 +2377,47 @@ textarea::placeholder {
 .maintenance-module-head small {
   display: block;
   margin-top: 4px;
-  opacity: .65;
+  color: #667085;
+  opacity: 1;
 }
 .maintenance-module-form {
   display: grid;
   gap: 14px;
   margin-top: 16px;
 }
+.maintenance-module-form label {
+  color: #344054;
+}
 .maintenance-module-form label > span {
   display: block;
   margin-bottom: 7px;
+  color: #344054;
+  font-weight: 700;
 }
 .maintenance-module-form textarea {
   width: 100%;
   min-height: 70px;
   resize: vertical;
   box-sizing: border-box;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 10px;
+  background: #ffffff;
+  color: #101828;
+  padding: 11px 12px;
+  font: inherit;
+  line-height: 1.45;
+}
+.maintenance-module-form textarea:focus {
+  outline: none;
+  border-color: rgba(212, 175, 55, 0.85);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
 }
 .maintenance-toggle {
   display: flex !important;
   align-items: center;
   gap: 9px;
+  color: #344054 !important;
+  font-weight: 700;
 }
 .maintenance-toggle input {
   width: 18px;
@@ -2397,6 +2425,9 @@ textarea::placeholder {
 }
 .maintenance-module-footer {
   padding-top: 4px;
+}
+.maintenance-module-footer small {
+  color: #667085;
 }
 @media (max-width: 760px) {
   .maintenance-global-card,
