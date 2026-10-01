@@ -2234,6 +2234,105 @@ No deberán existir configuraciones ocultas dentro del código.
 
 ---
 
+# 3.4.6.1 Mantenimiento Global y Mantenimiento por Módulo
+
+El sistema deberá distinguir claramente entre **mantenimiento global** y **mantenimiento individual de módulos**.
+
+## Mantenimiento global
+
+La configuración general de la aplicación utilizará el parámetro existente:
+
+`lvj_cfg_app.modo_mantenimiento`
+
+Cuando este parámetro esté activo, la plataforma podrá presentar una pantalla o estado general de mantenimiento y restringir el acceso operativo a la aplicación según la implementación definida por el Backend.
+
+El estado global no deberá confundirse con la visibilidad individual de los módulos.
+
+## Mantenimiento individual de módulos
+
+La plataforma deberá permitir retirar temporalmente un módulo específico para realizar ajustes, actualizaciones, correcciones o tareas de mantenimiento sin poner toda la aplicación en mantenimiento.
+
+Esta función pertenece al módulo **Configuración** y deberá administrarse desde el Panel Administrativo.
+
+La arquitectura prevista utilizará una configuración modular equivalente a:
+
+`lvj_cfg_modulos`
+
+La tabla deberá permitir, como mínimo:
+
+- `id`;
+- `emisora_id`;
+- `modulo`;
+- `modo_mantenimiento`;
+- `mensaje_mantenimiento`;
+- `created_at`;
+- `updated_at`.
+
+Deberá existir una configuración única por módulo y emisora mediante una restricción de unicidad sobre `emisora_id` + `modulo`.
+
+### Diferencia entre disponibilidad y mantenimiento
+
+Los parámetros `mostrar_*` de `lvj_cfg_app` representan **disponibilidad o visibilidad funcional** y no deberán reutilizarse como indicadores de mantenimiento.
+
+La lógica será:
+
+| Visibilidad / disponibilidad | Mantenimiento | Comportamiento |
+|---|---|---|
+| Desactivada | No importa | El módulo no se ofrece como funcionalidad disponible. |
+| Activada | Desactivado | El módulo funciona normalmente. |
+| Activada | Activado | El módulo permanece identificado dentro de la plataforma, pero sus funciones operativas podrán quedar temporalmente bloqueadas y deberá mostrarse el mensaje de mantenimiento correspondiente. |
+
+El mantenimiento de un módulo no deberá interpretarse como eliminación del módulo ni como pérdida de sus datos.
+
+### Reglas de implementación
+
+1. El Backend será la fuente oficial del estado de mantenimiento.
+2. La PWA y el sitio Web deberán consumir este estado mediante las APIs correspondientes.
+3. La protección no podrá depender únicamente de ocultar botones o enlaces en el Frontend.
+4. Las APIs de un módulo en mantenimiento deberán validar el estado antes de ejecutar operaciones que no deban estar disponibles.
+5. El Frontend podrá mostrar una pantalla o estado de mantenimiento específico del módulo.
+6. El mensaje de mantenimiento deberá ser configurable desde el Panel Administrativo.
+7. No deberán existir estados de mantenimiento escritos directamente en el código.
+8. No deberá duplicarse la configuración de mantenimiento en archivos JSON, PHP o constantes del Frontend.
+9. El mantenimiento individual deberá afectar únicamente al módulo seleccionado, salvo que exista además mantenimiento global activo.
+10. Los nombres de los módulos deberán utilizar identificadores estables y documentados, evitando depender del texto visible de la interfaz.
+
+### Orden de evaluación
+
+Cuando una solicitud llegue al sistema, el control deberá considerar:
+
+```text
+Configuración global
+      ↓
+¿Mantenimiento global?
+      ├── Sí → estado general de mantenimiento
+      └── No
+            ↓
+      Configuración del módulo
+            ↓
+      ¿Mantenimiento del módulo?
+            ├── Sí → estado de mantenimiento del módulo
+            └── No → funcionamiento normal
+```
+
+La incorporación de esta capacidad no autoriza todavía la creación de la tabla en producción. Antes de ejecutar la migración deberá verificarse el esquema real, documentar la tabla en el Diccionario de Datos correspondiente y crear la migración idempotente. La implementación deberá realizarse posteriormente en el orden:
+
+```text
+AGENTS.md
+   ↓
+Diccionario de Datos / diseño
+   ↓
+Migración MySQL
+   ↓
+API Backend
+   ↓
+Panel Administrativo
+   ↓
+PWA / Frontend
+   ↓
+Pruebas
+```
+
 # 3.4.7 Relaciones
 
 El módulo Configuración mantiene relación con prácticamente todos los módulos del sistema.
