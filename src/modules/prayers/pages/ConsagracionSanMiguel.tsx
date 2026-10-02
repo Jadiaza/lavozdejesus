@@ -26,7 +26,7 @@ export default function ConsagracionSanMiguel() {
       <iframe
         title="Consagración de 33 días a San Miguel Arcángel"
         src={CONSAGRACION_URL}
-        className="absolute inset-x-0 bottom-16 top-12 h-auto w-full border-0"
+        className="absolute inset-x-0 top-12 h-[calc(100%-7rem)] w-full border-0"
         allow="autoplay; fullscreen"
       />
 
