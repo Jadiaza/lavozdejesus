@@ -27,14 +27,14 @@ const boolValue = (value: unknown, fallback = false) => {
   );
 };
 
-const firstRow = async (sql: string, params: Record<string, unknown> = {}) => {
+const firstRow = async (sql: string, params: Record<string, any> = {}) => {
   const [rows] = await getMysqlPool().execute(sql, params);
   return (rows as DbRow[])[0] ?? null;
 };
 
 const optionalFirstRow = async (
   sql: string,
-  params: Record<string, unknown> = {},
+  params: Record<string, any> = {},
 ) => {
   try {
     return await firstRow(sql, params);
