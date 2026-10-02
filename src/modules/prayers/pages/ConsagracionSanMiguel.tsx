@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const CONSAGRACION_URL =
@@ -39,9 +39,9 @@ export default function ConsagracionSanMiguel() {
           type="button"
           onClick={() => navigate("/oraciones")}
           aria-label="Volver a LVJPRAYER"
-          className="flex h-full w-full flex-col items-center justify-center gap-1 text-[11px] text-[#f4c64e] transition-colors hover:bg-[#d8a740]/10"
+          className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 text-[9px] font-medium text-[#f4c64e] transition active:scale-95"
         >
-          <ArrowLeft className="h-5 w-5" aria-hidden />
+          <Home className="h-[20px] w-[20px]" strokeWidth={1.65} aria-hidden />
           <span>LVJPRAYER</span>
         </button>
       </nav>
