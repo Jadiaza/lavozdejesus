@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { lvjAuth } from "@/features/biblia/auth/bibleStudyAuth";
 import { canAccessLevel, getAccessContext, type AccessContext } from "@/services/acceso";
@@ -13,43 +13,31 @@ export default function AccessGate({ children }: Props) {
   const location = useLocation();
   const navigate = useNavigate();
   const [context, setContext] = useState<AccessContext | null>(null);
-  const [checking, setChecking] = useState(false);
-  const initialCheck = useRef(true);
-
   const required = getRouteAccessPolicy(location.pathname);
 
   useEffect(() => {
     let active = true;
 
-    const validate = async (_showLoading = false) => {
-      // La comprobación es silenciosa: el módulo no se desmonta ni muestra
-      // una pantalla intermedia mientras se consulta el permiso.
+    const validate = async () => {
       try {
         const { data } = await lvjAuth.auth.getSession();
         if (!active) return;
-
         if (!data.session?.access_token) {
           setContext(null);
           return;
         }
-
         const access = await getAccessContext(data.session.access_token);
         if (active) setContext(access);
       } catch {
         if (active) setContext(null);
-      } finally {
-        if (active) setChecking(false);
       }
     };
 
-    void validate(false);
-    initialCheck.current = false;
+    if (required !== "guest") void validate();
 
     const { data: listener } = lvjAuth.auth.onAuthStateChange((event) => {
-      // Evita desmontar visualmente el módulo en cada cambio de sesión.
-      // El contexto actual se conserva mientras se valida nuevamente.
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
-        void validate(false);
+        void validate();
       }
     });
 
@@ -57,18 +45,15 @@ export default function AccessGate({ children }: Props) {
       active = false;
       listener.subscription.unsubscribe();
     };
-  }, [location.pathname]);
+  }, [required]);
 
   useEffect(() => {
-    if (checking || required === "guest") return;
-
+    if (required === "guest") return;
     if (!canAccessLevel(context, requiredToAccess(required))) {
-      const destination = `${location.pathname}${location.search}${location.hash}`;
-      navigate(`/acceso?next=${encodeURIComponent(destination)}`, { replace: true });
+      const destination = location.pathname + location.search + location.hash;
+      navigate("/acceso?next=" + encodeURIComponent(destination), { replace: true });
     }
-  }, [checking, context, required, location.pathname, location.search, location.hash, navigate]);
+  }, [context, required, location.pathname, location.search, location.hash, navigate]);
 
-  // La validación de acceso se realiza en segundo plano para evitar
-  // desmontar visualmente el módulo y provocar parpadeos al entrar.
   return <>{children}</>;
 }
