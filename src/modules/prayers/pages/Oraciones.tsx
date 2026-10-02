@@ -432,8 +432,8 @@ export function OracionDetalle() {
 
 export function DevocionesPage() {
   const [items, setItems] = useState<Awaited<ReturnType<typeof prayerLibraryService.devotions>>>([]);
-  const [query, setQuery] = useState("");
   useEffect(() => { const controller = new AbortController(); prayerLibraryService.devotions(controller.signal).then(setItems).catch(() => setItems([])); return () => controller.abort(); }, []);
+
   const fallback = [
     ["san-jose", "San José", "Custodio de Jesús y protector de las familias", "SJ"],
     ["sangre-de-cristo", "Sangre de Cristo", "Redención, entrega y protección en Cristo", "SC"],
@@ -444,9 +444,59 @@ export function DevocionesPage() {
     ["santisimo-sacramento", "Santísimo Sacramento", "Adoración y encuentro con Jesús Eucaristía", "IHS"],
     ["divina-misericordia", "Divina Misericordia", "Confianza en el amor misericordioso de Jesús", "DM"],
   ].map(([slug, titulo, subtitulo, monogram]) => ({ id: "", slug, titulo, subtitulo, imagen: devotionImages[slug] || "", total_oraciones: 0, monogram }));
-  const cards = (items.length ? items.map((item) => ({ ...item, imagen: item.imagen || devotionImages[item.slug] || "", monogram: item.titulo.split(" ").map((word) => word[0]).join("").slice(0, 3) })) : fallback)
-    .filter((item) => item.titulo.toLowerCase().includes(query.toLowerCase()));
-  return <Shell title="Devociones"><p className="-mt-1 mb-4 text-center text-xs text-white/60">Camina junto a Dios de la mano de los santos</p><div className="mb-5 flex items-center gap-3 rounded-full border border-white/15 bg-[#101b24] px-4"><Search className="h-5 w-5 text-white/55" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar una devoción" className="h-12 min-w-0 flex-1 bg-transparent text-sm outline-none" /></div><div className="grid grid-cols-2 gap-3">{cards.map((item) => <Link key={item.slug} to={`/oraciones/devociones/${item.slug}`} className="group overflow-hidden rounded-2xl border border-[#d8a740]/65 bg-[#0d1922] shadow-[0_8px_20px_rgba(0,0,0,.28)] active:scale-[.98]">{item.imagen ? <img src={item.imagen} alt={item.titulo} loading="lazy" className="aspect-[4/5] w-full object-cover object-top" /> : <div className="flex aspect-[4/5] items-center justify-center bg-[radial-gradient(circle_at_50%_38%,rgba(239,189,82,.36),rgba(8,19,27,.3)_42%,#08131b_78%)]"><span className="flex h-16 w-16 items-center justify-center rounded-full border border-[#efbd52]/55 font-display text-xl text-[#f4cf70] shadow-[0_0_30px_rgba(239,189,82,.18)]">{item.monogram}</span></div>}<div className="min-h-[6.2rem] p-3"><div className="flex items-start gap-1"><h2 className="flex-1 text-sm font-bold leading-tight">{item.titulo}</h2><ChevronRight className="h-5 w-5 shrink-0 text-[#efbd52]" /></div><p className="mt-1.5 line-clamp-2 text-[10px] leading-relaxed text-white/55">{item.subtitulo}</p><p className="mt-2 text-[9px] font-semibold text-[#efbd52]/85">{item.total_oraciones ? `${item.total_oraciones} oraciones` : "Rosario · Oraciones · Novena"}</p></div></Link>)}</div></Shell>;
+
+  const cards = (items.length
+    ? items.map((item) => ({ ...item, imagen: item.imagen || devotionImages[item.slug] || "", monogram: item.titulo.split(" ").map((word) => word[0]).join("").slice(0, 3) }))
+    : fallback);
+
+  return (
+    <div className="min-h-dvh bg-[#050505] text-[#F8F5EA] pb-[calc(6rem+env(safe-area-inset-bottom))]">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_-8%,rgba(212,175,55,0.18),transparent_30%),radial-gradient(circle_at_50%_100%,rgba(212,175,55,0.08),transparent_36%),linear-gradient(180deg,#050505_0%,#090909_52%,#050505_100%)]" />
+      <div className="pointer-events-none fixed inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D4AF37]/70 to-transparent" />
+
+      <div className="relative z-10 mx-auto min-h-dvh w-full max-w-[430px] border-x border-white/5">
+        <header className="sticky top-0 z-40 border-b border-[#D4AF37]/15 bg-[#050505]/92 shadow-[0_14px_38px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+          <div className="mx-auto flex w-full items-center gap-3 px-4 py-3">
+            <div className="flex items-center gap-2">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#F2D27A] via-[#D4AF37] to-[#9B7417] shadow-[0_0_22px_rgba(212,175,55,0.28)]">
+                <HandHeart className="h-4 w-4 text-[#050505]" strokeWidth={1.8} />
+              </span>
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.28em] text-[#D4AF37]/85">La Voz de Jesús</div>
+                <div className="font-display text-lg leading-none text-[#F8F5EA]">Devociones</div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="relative z-10 px-3 pb-8 pt-3">
+          <div className="grid grid-cols-2 gap-3">
+            {cards.map((item) => (
+              <Link key={item.slug} to={`/oraciones/devociones/${item.slug}`} className="group overflow-hidden rounded-2xl border border-[#d8a740]/65 bg-[#0d1922] shadow-[0_8px_20px_rgba(0,0,0,.28)] active:scale-[.98]">
+                {item.imagen ? (
+                  <img src={item.imagen} alt={item.titulo} loading="lazy" className="aspect-[4/5] w-full object-cover object-top" />
+                ) : (
+                  <div className="flex aspect-[4/5] items-center justify-center bg-[radial-gradient(circle_at_50%_38%,rgba(239,189,82,.36),rgba(8,19,27,.3)_42%,#08131b_78%)]">
+                    <span className="flex h-16 w-16 items-center justify-center rounded-full border border-[#efbd52]/55 font-display text-xl text-[#f4cf70] shadow-[0_0_30px_rgba(239,189,82,.18)]">{item.monogram}</span>
+                  </div>
+                )}
+                <div className="min-h-[6.2rem] p-3">
+                  <div className="flex items-start gap-1">
+                    <h2 className="flex-1 text-sm font-bold leading-tight">{item.titulo}</h2>
+                    <ChevronRight className="h-5 w-5 shrink-0 text-[#efbd52]" />
+                  </div>
+                  <p className="mt-1.5 line-clamp-2 text-[10px] leading-relaxed text-white/55">{item.subtitulo}</p>
+                  <p className="mt-2 text-[9px] font-semibold text-[#efbd52]/85">{item.total_oraciones ? `${item.total_oraciones} oraciones` : "Rosario · Oraciones · Novena"}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </main>
+
+        <PrayerNav active="Oraciones" />
+      </div>
+    </div>
+  );
 }
 
 export function DevocionDetalle() {
