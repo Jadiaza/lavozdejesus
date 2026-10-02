@@ -45,7 +45,7 @@ const optionalFirstRow = async (
 
 const optionalRows = async (
   sql: string,
-  params: Record<string, unknown> = {},
+  params: Record<string, any> = {},
 ) => {
   try {
     const [rows] = await getMysqlPool().execute(sql, params);
