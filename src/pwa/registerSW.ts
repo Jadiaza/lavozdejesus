@@ -1,8 +1,9 @@
 // Registro protegido del service worker para contextos reales de producción.
+// La versión cambia deliberadamente para forzar una comprobación del worker tras cada despliegue.
 // Conserva ?sw=off como interruptor de emergencia.
 
 const SW_URL = "/sw.js";
-const APP_CACHE_BUSTER = "lvjprayer-access-2026-10-02";
+const APP_CACHE_BUSTER = "lvjprayer-access-2026-10-02-v2";
 
 function isRefusedContext(): boolean {
   if (!import.meta.env.PROD) return true;
