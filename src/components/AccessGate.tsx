@@ -57,7 +57,7 @@ export default function AccessGate({ children }: Props) {
 
     if (!canAccessLevel(context, requiredToAccess(required))) {
       const destination = `${location.pathname}${location.search}${location.hash}`;
-      navigate(`/acceso?destino=${encodeURIComponent(destination)}`, { replace: true });
+      navigate(`/acceso?next=${encodeURIComponent(destination)}`, { replace: true });
     }
   }, [checking, context, required, location.pathname, location.search, location.hash, navigate]);
 
