@@ -12,15 +12,13 @@ export default function ConsagracionSanMiguel() {
       <div className="absolute left-0 right-0 top-0 z-20 flex h-12 items-center border-b border-[#d8a740]/20 bg-[#050b12]/95 px-3 backdrop-blur">
         <button
           type="button"
-          onClick={() => navigate("/oraciones/devociones/san-miguel-arcangel")}
-          aria-label="Volver a San Miguel Arcángel"
-          className="rounded-full p-2 text-white/85"
+          onClick={() => navigate("/oraciones")}
+          aria-label="Volver a LVJPRAYER"
+          className="flex items-center gap-2 rounded-full px-2 py-1 text-[#f4c64e] transition active:scale-95"
         >
-          <ArrowLeft className="h-5 w-5" />
+          <Home className="h-6 w-6" strokeWidth={1.8} aria-hidden />
+          <span className="text-sm font-semibold">LVJPRAYER</span>
         </button>
-        <span className="ml-2 text-sm font-semibold text-[#f4c64e]">
-          Consagración de 33 días
-        </span>
       </div>
 
       <iframe
@@ -30,21 +28,11 @@ export default function ConsagracionSanMiguel() {
         allow="autoplay; fullscreen"
       />
 
-      <nav
-        aria-label="Navegación de Consagración"
+      <div
+        aria-hidden="true"
         className="absolute inset-x-0 bottom-0 z-20 h-16 border-t border-[#d8a740]/25 bg-[#050b12]/98 backdrop-blur-xl"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-      >
-        <button
-          type="button"
-          onClick={() => navigate("/oraciones")}
-          aria-label="Volver a LVJPRAYER"
-          className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 text-[9px] font-medium text-[#f4c64e] transition active:scale-95"
-        >
-          <Home className="h-[20px] w-[20px]" strokeWidth={1.65} aria-hidden />
-          <span>LVJPRAYER</span>
-        </button>
-      </nav>
+      />
     </div>
   );
 }
