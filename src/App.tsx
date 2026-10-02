@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -12,7 +12,7 @@ import AppThemeSync from "@/features/theme/AppThemeSync";
 import MaintenanceGate from "@/components/MaintenanceGate";
 import AccessGate from "@/components/AccessGate";
 
-const RosarioHome = lazy(() => import("@/modules/rosary/pages/RosarioHome"));
+import RosarioHome from "@/modules/rosary/pages/RosarioHome";
 const RosarioModalidad = lazy(() => import("@/modules/rosary/pages/RosarioModalidad"));
 const RosarioIntencion = lazy(() => import("@/modules/rosary/pages/RosarioIntencion"));
 const RosarioSeleccionMisterios = lazy(() => import("@/modules/rosary/pages/RosarioSeleccionMisterios"));
@@ -24,10 +24,10 @@ const RosarioConfiguracion = lazy(() => import("@/modules/rosary/pages/RosarioCo
 const RosarioDescargas = lazy(() => import("@/modules/rosary/pages/RosarioDescargas"));
 const RosarioDiario = lazy(() => import("@/modules/rosary/pages/RosarioDiario"));
 const RosarioInfo = lazy(() => import("@/modules/rosary/pages/RosarioInfo"));
-const Podcast = lazy(() => import("@/modules/podcast/pages/PodcastHome"));
+import Podcast from "@/modules/podcast/pages/PodcastHome";
 const PodcastSeries = lazy(() => import("@/modules/podcast/pages/PodcastSeries"));
 const PodcastExternalSeries = lazy(() => import("@/modules/podcast/pages/PodcastExternalSeries"));
-const Oraciones = lazy(() => import("@/modules/prayers/pages/Oraciones"));
+import Oraciones from "@/modules/prayers/pages/Oraciones";
 const LiturgiaHoras = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.LiturgiaHoras })));
 const LiturgiaReader = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.LiturgiaReader })));
 const OracionCategorias = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.OracionCategorias })));
@@ -46,7 +46,7 @@ const Radio = lazy(() => import("./pages/Radio.tsx"));
 const Capilla = lazy(() => import("./pages/Capilla.tsx"));
 const Intenciones = lazy(() => import("./pages/Intenciones.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
-const BibliaHome = lazy(() => import("./pages/biblia/BibliaHome.tsx"));
+import BibliaHome from "./pages/biblia/BibliaHome.tsx";
 const BibliaPlanes = lazy(() => import("./pages/biblia/BibliaPlanes.tsx"));
 const BibliaPlanDetalle = lazy(() => import("./pages/biblia/BibliaPlanDetalle.tsx"));
 const BibliaPlanJornada = lazy(() => import("./pages/biblia/BibliaPlanJornada.tsx"));
@@ -79,14 +79,10 @@ const queryClient = new QueryClient();
 
 const preloadRouteChunks = () => {
   void Promise.allSettled([
-    import("@/modules/rosary/pages/RosarioHome"),
-    import("@/modules/podcast/pages/PodcastHome"),
-    import("@/modules/prayers/pages/Oraciones"),
     import("@/modules/prayers/pages/ConsagracionSanMiguel"),
     import("./pages/Radio.tsx"),
     import("./pages/Capilla.tsx"),
     import("./pages/Intenciones.tsx"),
-    import("./pages/biblia/BibliaHome.tsx"),
     import("./pages/biblia/BibliaLeer.tsx"),
     import("./pages/biblia/BibliaEstudio.tsx"),
     import("./pages/biblia/BibliaPlanes.tsx"),
@@ -95,13 +91,10 @@ const preloadRouteChunks = () => {
   ]);
 };
 
-const App = () => {
-  useEffect(() => {
-    // Precarga inmediatamente los chunks principales para evitar que Suspense
-    // reemplace la pantalla al entrar a un módulo por primera vez.
-    preloadRouteChunks();
-  }, []);
+// Inicia la precarga de rutas secundarias sin bloquear el primer render.
+void preloadRouteChunks();
 
+const App = () => {
   return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
