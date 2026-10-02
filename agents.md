@@ -6161,32 +6161,50 @@ relacionarán mediante el identificador oficial del usuario.
 
 ## 10.16.1.8 Matriz funcional oficial
 
-| Funcionalidad | Invitado | Registrado | Premium |
+La política distingue entre contenido público, funciones personales y acceso premium futuro. Premium queda
+preparado en arquitectura, pero no se considera concedido mientras no exista una suscripción o entitlement
+válido.
+
+| Módulo / función | Invitado | Registrado | Premium futuro |
 |---|---:|---:|---:|
 | Inicio | Sí | Sí | Sí |
 | Radio | Sí | Sí | Sí |
 | Programación | Sí | Sí | Sí |
 | Capilla Virtual | Sí | Sí | Sí |
+| Capilla Virtual → Intenciones personales | No | Sí | Sí |
 | Oraciones | Sí | Sí | Sí |
+| Oraciones → Categorías | Sí | Sí | Sí |
+| Oraciones → Devociones | Sí | Sí | Sí |
+| Oraciones → Liturgia de las Horas | Sí | Sí | Sí |
+| Oraciones → Mis oraciones | No | Sí | Sí |
+| Oraciones → Peticiones | No | Sí | Sí |
+| Oraciones → Recordatorios | No | Sí | Sí |
 | Santo Rosario | Sí | Sí | Sí |
+| Santo Rosario → Diario | No | Sí | Sí |
 | Liturgia | Sí | Sí | Sí |
-| Santos | Sí | Sí | Sí |
-| Podcast público | Sí | Sí | Sí |
-| Noticias | Sí | Sí | Sí |
-| Biblioteca pública | Sí | Sí | Sí |
+| Santoral | Sí | Sí | Sí |
 | Biblia | No | Sí | Sí |
+| Biblioteca | Sí | Sí | Sí |
+| Formación | Sí | Sí | Sí |
 | Comunidad | No | Sí | Sí |
-| Favoritos | No | Sí | Sí |
-| Notas personales | No | Sí | Sí |
-| Historial personal | No | Sí | Sí |
-| Planes personales | No | Sí | Sí |
-| Recordatorios | No | Sí | Sí |
-| Intenciones personales | No | Sí | Sí |
-| Sincronización personal | No | Sí | Sí |
-| IA autorizada | No | Según autorización | Según autorización |
+| Podcast | No | Sí | Sí |
+| Eventos | Sí | Sí | Sí |
+| Testimonios | Sí | Sí | Sí |
+| Donaciones | Sí | Sí | Sí |
+| Publicidad | Sí | Sí | Sí |
 
-Esta matriz es la referencia funcional inicial. Cualquier modificación posterior deberá actualizar AGENTS.md
-antes de modificar la implementación.
+### Funciones personales
+
+Favoritos, notas, historial, progreso, sincronización y otras funciones que almacenen información personal
+deben requerir cuenta registrada cuando se incorporen a cada módulo.
+
+### Regla premium
+
+Ninguna funcionalidad se marcará como premium operativo solo por aparecer en esta matriz. La activación
+real de premium requerirá una política de suscripción/entitlement y validación Backend.
+
+Esta matriz es la referencia funcional oficial. Cualquier modificación posterior deberá actualizar
+AGENTS.md antes de modificar la implementación.
 
 ## 10.16.1.9 Regla comercial y evangelizadora
 
