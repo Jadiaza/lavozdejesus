@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -76,6 +76,24 @@ const TerminosCondiciones = lazy(() => import("./pages/InfoPage.tsx").then((modu
 const Testimonios = lazy(() => import("./pages/InfoPage.tsx").then((module) => ({ default: module.Testimonios })));
 
 const queryClient = new QueryClient();
+
+const preloadRouteChunks = () => {
+  void Promise.allSettled([
+    import("@/modules/rosary/pages/RosarioHome"),
+    import("@/modules/podcast/pages/PodcastHome"),
+    import("@/modules/prayers/pages/Oraciones"),
+    import("@/modules/prayers/pages/ConsagracionSanMiguel"),
+    import("./pages/Radio.tsx"),
+    import("./pages/Capilla.tsx"),
+    import("./pages/Intenciones.tsx"),
+    import("./pages/biblia/BibliaHome.tsx"),
+    import("./pages/biblia/BibliaLeer.tsx"),
+    import("./pages/biblia/BibliaEstudio.tsx"),
+    import("./pages/biblia/BibliaPlanes.tsx"),
+    import("./pages/biblia/BibliaLibros.tsx"),
+    import("./pages/biblia/BibliaPersonajes.tsx"),
+  ]);
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -173,6 +191,7 @@ const App = () => (
       </RadioPlayerProvider>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
