@@ -21,21 +21,13 @@ if (isPasswordRecoveryLink && window.location.pathname !== "/acceso/recuperar") 
 }
 
 const rootElement = document.getElementById("root")!;
-const isConsagracionRoute = window.location.pathname === "/oraciones/devociones/san-miguel-arcangel/consagracion";
-const isMobileViewport = window.matchMedia("(max-width: 767px)").matches;
-const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const mobileSplashDelay = prefersReducedMotion ? 1_000 : 3_000;
-
 const renderApp = () => {
   createRoot(rootElement).render(<App />);
 };
 
-if (isConsagracionRoute) {
-  renderApp();
-} else if (isMobileViewport) {
-  window.setTimeout(renderApp, mobileSplashDelay);
-} else {
-  renderApp();
-}
+// La PWA monta la aplicación inmediatamente. El splash inicial, si existe,
+// es solo visual y no debe retrasar el montaje de React ni la validación
+// de acceso de los módulos.
+renderApp();
 
 registerSW();
