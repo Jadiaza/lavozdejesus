@@ -53,7 +53,7 @@ export default function Auth() {
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [acceptDataTreatment, setAcceptDataTreatment] = useState(false);
   const [acceptCommunications, setAcceptCommunications] = useState(false);
-  const [remember, setRemember] = useState(getBibleStudyRememberSession);
+  const [remember, setRemember] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -159,7 +159,7 @@ export default function Auth() {
     }
 
     setLoading(true);
-    setBibleStudyRememberSession(remember);
+    // La sesión queda persistente por defecto; solo se guarda en sessionStorage si el usuario lo desmarca.\n    setBibleStudyRememberSession(remember);
 
     if (recovering) {
       const { error } = await lvjAuth.auth.updateUser({ password });
