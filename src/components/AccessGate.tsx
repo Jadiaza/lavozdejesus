@@ -13,7 +13,7 @@ export default function AccessGate({ children }: Props) {
   const location = useLocation();
   const navigate = useNavigate();
   const [context, setContext] = useState<AccessContext | null>(null);
-  const [checking, setChecking] = useState(true);
+  const [checking, setChecking] = useState(false);
   const initialCheck = useRef(true);
 
   const required = getRouteAccessPolicy(location.pathname);
@@ -21,8 +21,9 @@ export default function AccessGate({ children }: Props) {
   useEffect(() => {
     let active = true;
 
-    const validate = async (showLoading = initialCheck.current) => {
-      if (showLoading) setChecking(true);
+    const validate = async (_showLoading = false) => {
+      // La comprobación es silenciosa: el módulo no se desmonta ni muestra
+      // una pantalla intermedia mientras se consulta el permiso.
       try {
         const { data } = await lvjAuth.auth.getSession();
         if (!active) return;
@@ -41,7 +42,7 @@ export default function AccessGate({ children }: Props) {
       }
     };
 
-    void validate(initialCheck.current);
+    void validate(false);
     initialCheck.current = false;
 
     const { data: listener } = lvjAuth.auth.onAuthStateChange((event) => {
