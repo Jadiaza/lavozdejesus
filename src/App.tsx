@@ -95,7 +95,14 @@ const preloadRouteChunks = () => {
   ]);
 };
 
-const App = () => (
+const App = () => {
+  useEffect(() => {
+    // Precarga inmediatamente los chunks principales para evitar que Suspense
+    // reemplace la pantalla al entrar a un módulo por primera vez.
+    preloadRouteChunks();
+  }, []);
+
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
