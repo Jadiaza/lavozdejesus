@@ -67,13 +67,7 @@ export default function AccessGate({ children }: Props) {
     }
   }, [checking, context, required, location.pathname, location.search, location.hash, navigate]);
 
-  if (checking && required !== "guest") {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#050b12] text-[#efbd52]" aria-label="Verificando acceso">
-        <div className="text-center text-sm">Verificando acceso…</div>
-      </div>
-    );
-  }
-
+  // La validación de acceso se realiza en segundo plano para evitar
+  // desmontar visualmente el módulo y provocar parpadeos al entrar.
   return <>{children}</>;
 }
