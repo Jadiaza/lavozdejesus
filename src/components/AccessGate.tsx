@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { lvjAuth } from "@/features/biblia/auth/bibleStudyAuth";
 import { canAccessLevel, getAccessContext, type AccessContext } from "@/services/acceso";
@@ -14,13 +14,14 @@ export default function AccessGate({ children }: Props) {
   const navigate = useNavigate();
   const [context, setContext] = useState<AccessContext | null>(null);
   const [checking, setChecking] = useState(true);
+  const initialCheck = useRef(true);
 
   const required = getRouteAccessPolicy(location.pathname);
 
   useEffect(() => {
     let active = true;
 
-    const validate = async (showLoading = !context) => {
+    const validate = async (showLoading = initialCheck.current) => {
       if (showLoading) setChecking(true);
       try {
         const { data } = await lvjAuth.auth.getSession();
@@ -40,7 +41,8 @@ export default function AccessGate({ children }: Props) {
       }
     };
 
-    void validate(!context);
+    void validate(initialCheck.current);
+    initialCheck.current = false;
 
     const { data: listener } = lvjAuth.auth.onAuthStateChange((event) => {
       // Evita desmontar visualmente el módulo en cada cambio de sesión.
