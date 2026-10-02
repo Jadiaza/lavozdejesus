@@ -20,8 +20,8 @@ export default function AccessGate({ children }: Props) {
   useEffect(() => {
     let active = true;
 
-    const validate = async () => {
-      setChecking(true);
+    const validate = async (showLoading = !context) => {
+      if (showLoading) setChecking(true);
       try {
         const { data } = await lvjAuth.auth.getSession();
         if (!active) return;
@@ -40,10 +40,14 @@ export default function AccessGate({ children }: Props) {
       }
     };
 
-    void validate();
+    void validate(!context);
 
-    const { data: listener } = lvjAuth.auth.onAuthStateChange(() => {
-      void validate();
+    const { data: listener } = lvjAuth.auth.onAuthStateChange((event) => {
+      // Evita desmontar visualmente el módulo en cada cambio de sesión.
+      // El contexto actual se conserva mientras se valida nuevamente.
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+        void validate(false);
+      }
     });
 
     return () => {
