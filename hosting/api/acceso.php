@@ -6,7 +6,7 @@ require_once __DIR__ . '/includes/bible-study/SupabaseAuth.php';
 
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 
-$pdo = lvj_files_db();
+$pdo = lvj_db();
 $user = SupabaseAuth::requireAccount($pdo);
 
 $roleId = array_key_exists('rol_id', $user) ? (int) $user['rol_id'] : null;
