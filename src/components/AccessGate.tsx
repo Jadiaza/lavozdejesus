@@ -13,7 +13,7 @@ export default function AccessGate({ children }: Props) {
   const location = useLocation();
   const navigate = useNavigate();
   const [context, setContext] = useState<AccessContext | null>(null);
-  const [resolved, setResolved] = useState(true);
+  // Una ruta protegida no puede considerarse resuelta antes de conocer la política real.\n  // Evita que el contenido aparezca un instante y luego sea reemplazado por /acceso.\n  const [resolved, setResolved] = useState(false);
   const [policy, setPolicy] = useState<any>(null);
   const [policyReady, setPolicyReady] = useState(false);
   const required = getRouteAccessPolicy(location.pathname, policy);
