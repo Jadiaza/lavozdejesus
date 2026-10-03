@@ -105,8 +105,8 @@ const App = () => {
         <PrayerReminderScheduler />
         <BrowserRouter>
           <Suspense fallback={<div className="min-h-screen bg-background" aria-label="Cargando contenido" />}>
-            <MaintenanceGate>
-              <AccessGate>
+            <AccessGate>
+              <MaintenanceGate>
                 <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/radio" element={<Radio />} />
@@ -184,8 +184,8 @@ const App = () => {
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
                 </Routes>
-              </AccessGate>
-            </MaintenanceGate>
+              </MaintenanceGate>
+            </AccessGate>
           </Suspense>
         </BrowserRouter>
       </RadioPlayerProvider>
