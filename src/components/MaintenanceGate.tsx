@@ -10,6 +10,10 @@ interface MaintenanceGateProps {
   children: ReactNode;
 }
 
+const MaintenanceLoading = () => (
+  <div className="min-h-screen bg-background" aria-label="Cargando estado" />
+);
+
 const MaintenanceGate = ({ children }: MaintenanceGateProps) => {
   const location = useLocation();
   const routeTarget = getMaintenanceRouteTarget(location.pathname);
@@ -17,11 +21,18 @@ const MaintenanceGate = ({ children }: MaintenanceGateProps) => {
   const submoduleName = routeTarget?.submodulo ?? null;
   const state = useMaintenanceState(moduleName ?? "inicio", submoduleName);
 
-  const maintenanceActive = moduleName
-    ? Boolean(state?.mantenimiento_activo)
-    : Boolean(state?.modo_mantenimiento_global);
+  // Importante: mientras se consulta mantenimiento no se renderiza la ruta.
+  // Así evitamos mostrar primero el contenido y luego sustituirlo por la
+  // pantalla de mantenimiento.
+  if (!state) {
+    return <MaintenanceLoading />;
+  }
 
-  if (!maintenanceActive || !state) {
+  const maintenanceActive = moduleName
+    ? Boolean(state.mantenimiento_activo)
+    : Boolean(state.modo_mantenimiento_global);
+
+  if (!maintenanceActive) {
     return <>{children}</>;
   }
 
