@@ -136,6 +136,39 @@ const inactiveState = (): ModuleMaintenanceState => ({
   nivel_mantenimiento_activo: "ninguno",
 });
 
+const maintenanceCache = new Map<string, ModuleMaintenanceState>();
+const maintenanceRequests = new Map<string, Promise<ModuleMaintenanceState>>();
+
+const maintenanceCacheKey = (
+  moduleName: MaintenanceModule,
+  submodule: string | null,
+) => moduleName + "::" + (submodule ?? "");
+
+const fetchMaintenanceState = (
+  moduleName: MaintenanceModule,
+  submodule: string | null,
+): Promise<ModuleMaintenanceState> => {
+  const key = maintenanceCacheKey(moduleName, submodule);
+  const pending = maintenanceRequests.get(key);
+  if (pending) return pending;
+
+  const request = getMaintenanceState(moduleName, submodule)
+    .then((state) => {
+      maintenanceCache.set(key, state);
+      maintenanceRequests.delete(key);
+      return state;
+    })
+    .catch(() => {
+      const state = inactiveState();
+      maintenanceCache.set(key, state);
+      maintenanceRequests.delete(key);
+      return state;
+    });
+
+  maintenanceRequests.set(key, request);
+  return request;
+};
+
 export async function getMaintenanceState(
   moduleName: MaintenanceModule,
   submodule: string | null = null,
@@ -184,28 +217,34 @@ export function useMaintenanceState(
   moduleName: MaintenanceModule | null,
   submodule: string | null = null,
 ) {
-  const [state, setState] = useState<ModuleMaintenanceState | null>(null);
+  const key = moduleName ? maintenanceCacheKey(moduleName, submodule) : null;
+  const [state, setState] = useState<ModuleMaintenanceState | null>(() =>
+    key ? maintenanceCache.get(key) ?? null : null,
+  );
 
   useEffect(() => {
     let active = true;
 
-    if (!moduleName) {
+    if (!moduleName || !key) {
       setState(null);
       return () => {
         active = false;
       };
     }
 
-    setState(null);
+    const cached = maintenanceCache.get(key);
+    if (cached) setState(cached);
 
-    getMaintenanceState(moduleName, submodule).then((nextState) => {
+    // Solo mostramos la pantalla de carga en la primera consulta.
+    // En navegaciones posteriores mantenemos el estado conocido y revalidamos.
+    void fetchMaintenanceState(moduleName, submodule).then((nextState) => {
       if (active) setState(nextState);
     });
 
     return () => {
       active = false;
     };
-  }, [moduleName, submodule]);
+  }, [key, moduleName, submodule]);
 
   return state;
 }
