@@ -225,12 +225,18 @@ export default function Auth() {
         setMessage("Solicitud recibida. Si el correo es nuevo, recibirás un enlace de confirmación. Si ya lo habías usado antes, inicia sesión o establece una contraseña.");
       }
     } else {
-      const { error } = await lvjAuth.auth.signInWithPassword({
+      const { data: signInData, error } = await lvjAuth.auth.signInWithPassword({
         email: normalizedEmail,
         password,
       });
 
-      if (error) setMessage(friendlyError(error.message));
+      if (error) {
+        setMessage(friendlyError(error.message));
+      } else if (signInData.session) {
+        // Supabase ya confirmó las credenciales. El AccessGate global valida
+        // inmediatamente después la cuenta local y sus permisos.
+        navigate(next, { replace: true });
+      }
     }
 
     setLoading(false);
