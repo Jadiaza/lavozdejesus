@@ -1,66 +1,38 @@
 import { Wrench } from "lucide-react";
 import type { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
-import {
-  getMaintenanceRouteTarget,
-  useMaintenanceState,
-} from "@/services/mantenimiento";
+import { getMaintenanceRouteTarget, useMaintenanceState } from "@/services/mantenimiento";
 
-interface MaintenanceGateProps {
-  children: ReactNode;
-}
+interface MaintenanceGateProps { children: ReactNode; }
 
-const MaintenanceLoading = () => (
-  <div className="min-h-screen bg-background" aria-label="Cargando estado" />
-);
+const MaintenanceLoading = () => <div className="min-h-screen bg-background" aria-label="Cargando estado" />;
 
 const MaintenanceGate = ({ children }: MaintenanceGateProps) => {
   const location = useLocation();
   const routeTarget = getMaintenanceRouteTarget(location.pathname);
-  const moduleName = routeTarget?.modulo ?? null;
-  const submoduleName = routeTarget?.submodulo ?? null;
-  const state = useMaintenanceState(moduleName ?? "inicio", submoduleName);
+  const state = useMaintenanceState(routeTarget?.modulo ?? "inicio", routeTarget?.submodulo ?? null);
 
-  // Importante: mientras se consulta mantenimiento no se renderiza la ruta.
-  // Así evitamos mostrar primero el contenido y luego sustituirlo por la
-  // pantalla de mantenimiento.
-  if (!state) {
-    return <MaintenanceLoading />;
-  }
+  if (!state) return <MaintenanceLoading />;
 
-  const maintenanceActive = moduleName
-    ? Boolean(state.mantenimiento_activo)
-    : Boolean(state.modo_mantenimiento_global);
-
-  if (!maintenanceActive) {
-    return <>{children}</>;
-  }
+  const active = Boolean(state.mantenimiento_activo);
+  if (!active) return <>{children}</>;
 
   const isGlobal = state.modo_mantenimiento_global;
   const isSubmodule = state.nivel_mantenimiento_activo === "submodulo";
 
   return (
     <main className="min-h-screen bg-background px-6 py-12 flex items-center justify-center">
-      <section
-        className="w-full max-w-md rounded-2xl border border-border bg-card p-8 text-center shadow-sm"
-        aria-live="polite"
-      >
+      <section className="w-full max-w-md rounded-2xl border border-border bg-card p-8 text-center shadow-sm" aria-live="polite">
         <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-primary">
           <Wrench className="h-7 w-7" aria-hidden="true" />
         </div>
-
         <h1 className="font-serif text-2xl font-semibold text-foreground">
           {isGlobal ? "Aplicación en mantenimiento" : isSubmodule ? "Submódulo en mantenimiento" : "Módulo en mantenimiento"}
         </h1>
-
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          {state.mensaje_mantenimiento ||
-            (isGlobal ? "La aplicación se encuentra temporalmente en mantenimiento. Intenta nuevamente más tarde." : "Este módulo se encuentra temporalmente en mantenimiento. Intenta nuevamente más tarde.")}
+          {state.mensaje_mantenimiento || "Este módulo se encuentra temporalmente en mantenimiento. Intenta nuevamente más tarde."}
         </p>
-
-        <p className="mt-6 text-xs text-muted-foreground">
-          La Voz de Jesús · Conecta tu espíritu
-        </p>
+        <p className="mt-6 text-xs text-muted-foreground">La Voz de Jesús · Conecta tu espíritu</p>
       </section>
     </main>
   );
