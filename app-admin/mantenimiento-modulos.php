@@ -6,8 +6,8 @@ require_once __DIR__ . '/includes/auth.php';
 require_technical_admin();
 
 $pdo = lvj_files_db();
-$pageTitle = 'Mantenimiento de módulos';
-$pageSubtitle = 'Control operativo global y mantenimiento temporal por módulo';
+$pageTitle = 'Acceso y mantenimiento de módulos';
+$pageSubtitle = 'Configura acceso y mantenimiento sin mezclar ambas responsabilidades';
 
 $success = '';
 $error = '';
@@ -62,6 +62,27 @@ try {
       $success = $value === 1
         ? 'El mantenimiento global fue activado.'
         : 'El mantenimiento global fue desactivado.';
+    }
+
+    if ($action === 'access_submodule') {
+      $module = trim((string) ($_POST['modulo'] ?? ''));
+      $submodule = trim((string) ($_POST['submodulo'] ?? ''));
+      $level = trim((string) ($_POST['nivel_acceso'] ?? 'publico'));
+      if (!in_array($level, ['publico', 'registrado', 'premium'], true)) throw new RuntimeException('Nivel de acceso inválido.');
+      $stmt = $pdo->prepare("UPDATE lvj_cfg_submodulos SET nivel_acceso = :nivel_acceso, updated_at = CURRENT_TIMESTAMP WHERE emisora_id = :emisora_id AND modulo = :modulo AND submodulo = :submodulo");
+      $stmt->execute(['nivel_acceso'=>$level,'emisora_id'=>$emisoraId,'modulo'=>$module,'submodulo'=>$submodule]);
+      log_activity('update','lvj_cfg_submodulos',null,'Acceso '.$module.' > '.$submodule.' = '.$level);
+      $success = 'Acceso de '.$module.' > '.$submodule.' actualizado.';
+    }
+
+    if ($action === 'access_module') {
+      $module = trim((string) ($_POST['modulo'] ?? ''));
+      $level = trim((string) ($_POST['nivel_acceso'] ?? 'publico'));
+      if (!in_array($level, ['publico', 'registrado', 'premium'], true)) throw new RuntimeException('Nivel de acceso inválido.');
+      $stmt = $pdo->prepare("UPDATE lvj_cfg_modulos SET nivel_acceso = :nivel_acceso, updated_at = CURRENT_TIMESTAMP WHERE emisora_id = :emisora_id AND modulo = :modulo");
+      $stmt->execute(['nivel_acceso'=>$level,'emisora_id'=>$emisoraId,'modulo'=>$module]);
+      log_activity('update','lvj_cfg_modulos',null,'Acceso '.$module.' = '.$level);
+      $success = 'Acceso de '.$module.' actualizado.';
     }
 
     if ($action === 'submodule') {
@@ -211,7 +232,7 @@ try {
   $appConfig = $app->fetch() ?: ['modo_mantenimiento' => 0];
 
   $modulesStmt = $pdo->prepare("
-    SELECT id, modulo, modo_mantenimiento, mensaje_mantenimiento, updated_at
+    SELECT id, modulo, modo_mantenimiento, nivel_acceso, mensaje_mantenimiento, updated_at
     FROM lvj_cfg_modulos
     WHERE emisora_id = :emisora_id
     ORDER BY CASE modulo
@@ -239,7 +260,7 @@ try {
   $modules = $modulesStmt->fetchAll();
 
   $submodulesStmt = $pdo->prepare("
-    SELECT id, modulo, submodulo, modo_mantenimiento, mensaje_mantenimiento, updated_at
+    SELECT id, modulo, submodulo, modo_mantenimiento, nivel_acceso, mensaje_mantenimiento, updated_at
     FROM lvj_cfg_submodulos
     WHERE emisora_id = :emisora_id
     ORDER BY CASE modulo
@@ -325,9 +346,9 @@ require __DIR__ . '/includes/header.php';
 <section class="panel content-records-panel">
   <div class="panel-header content-list-header">
     <div>
-      <h2>Mantenimiento por módulo</h2>
+      <h2>Acceso y mantenimiento por módulo</h2>
       <p class="muted">
-        El mantenimiento no elimina ni oculta los contenidos. Solo informa que el módulo está temporalmente en mantenimiento.
+        Define si el módulo es público, requiere registro o queda reservado para usuarios premium. El mantenimiento es independiente.
       </p>
     </div>
     <span class="badge records-badge"><?php echo count($modules); ?> módulos</span>
@@ -350,6 +371,17 @@ require __DIR__ . '/includes/header.php';
             <?php echo $active ? 'EN MANTENIMIENTO' : 'NORMAL'; ?>
           </span>
         </div>
+
+        <form method="post" class="maintenance-module-form" style="margin-bottom:1rem;">
+          <?php echo csrf_field(); ?><input type="hidden" name="action" value="access_module">
+          <input type="hidden" name="modulo" value="<?php echo e($moduleName); ?>">
+          <?php $moduleLevel = (string) ($module['nivel_acceso'] ?? 'publico'); ?>
+          <label><span>Nivel de acceso</span><select name="nivel_acceso">
+            <option value="publico" <?php echo $moduleLevel === 'publico' ? 'selected' : ''; ?>>Público</option>
+            <option value="registrado" <?php echo $moduleLevel === 'registrado' ? 'selected' : ''; ?>>Registrado</option>
+            <option value="premium" <?php echo $moduleLevel === 'premium' ? 'selected' : ''; ?>>Premium</option>
+          </select></label><button class="btn btn-gold" type="submit">Guardar acceso</button>
+        </form>
 
         <form method="post" class="maintenance-module-form">
           <?php echo csrf_field(); ?>
@@ -402,6 +434,18 @@ require __DIR__ . '/includes/header.php';
                       <?php echo $subActive ? 'EN MANTENIMIENTO' : 'NORMAL'; ?>
                     </span>
                   </div>
+
+                  <form method="post" class="maintenance-submodule-form" style="margin-bottom:1rem;">
+                    <?php echo csrf_field(); ?><input type="hidden" name="action" value="access_submodule">
+                    <input type="hidden" name="modulo" value="<?php echo e($moduleName); ?>">
+                    <input type="hidden" name="submodulo" value="<?php echo e($submoduleName); ?>">
+                    <?php $subLevel = (string) ($submodule['nivel_acceso'] ?? ($module['nivel_acceso'] ?? 'publico')); ?>
+                    <label><span>Nivel de acceso</span><select name="nivel_acceso">
+                      <option value="publico" <?php echo $subLevel === 'publico' ? 'selected' : ''; ?>>Público</option>
+                      <option value="registrado" <?php echo $subLevel === 'registrado' ? 'selected' : ''; ?>>Registrado</option>
+                      <option value="premium" <?php echo $subLevel === 'premium' ? 'selected' : ''; ?>>Premium</option>
+                    </select></label><button class="btn btn-gold" type="submit">Guardar acceso</button>
+                  </form>
 
                   <form method="post" class="maintenance-submodule-form">
                     <?php echo csrf_field(); ?>
