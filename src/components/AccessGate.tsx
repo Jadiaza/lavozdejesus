@@ -9,19 +9,33 @@ type Props = { children: ReactNode };
 const requiredToAccess = (required: ModuleAccessLevel) =>
   required === "premium" ? "premium" : required === "free" ? "free" : "guest";
 
+/**
+ * Control global de acceso.
+ *
+ * Fuente de verdad:
+ * 1. Supabase determina si existe una sesión.
+ * 2. acceso.php valida el usuario contra lvj_com_usuarios y su rol.
+ * 3. acceso-politica.php entrega los niveles configurados en MySQL.
+ * 4. La ruta actual se compara contra esa política.
+ *
+ * Las rutas públicas no se bloquean mientras se valida una sesión existente,
+ * pero la sesión sí se comprueba al entrar a la aplicación y ante cambios de auth.
+ */
 export default function AccessGate({ children }: Props) {
   const location = useLocation();
   const navigate = useNavigate();
   const [context, setContext] = useState<AccessContext | null>(null);
-  // Una ruta protegida no puede considerarse resuelta antes de conocer la política real.\n  // Evita que el contenido aparezca un instante y luego sea reemplazado por /acceso.\n  const [resolved, setResolved] = useState(false);
+  const [sessionResolved, setSessionResolved] = useState(false);
   const [policy, setPolicy] = useState<any>(null);
   const [policyReady, setPolicyReady] = useState(false);
+
   const required = getRouteAccessPolicy(location.pathname, policy);
+  const protectedRoute = required !== "guest";
 
   useEffect(() => {
     let active = true;
 
-    const validate = async () => {
+    const validateSession = async () => {
       try {
         const { data } = await lvjAuth.auth.getSession();
 
@@ -29,7 +43,7 @@ export default function AccessGate({ children }: Props) {
 
         if (!data.session?.access_token) {
           setContext(null);
-          setResolved(true);
+          setSessionResolved(true);
           return;
         }
 
@@ -37,30 +51,34 @@ export default function AccessGate({ children }: Props) {
 
         if (active) {
           setContext(access);
-          setResolved(true);
+          setSessionResolved(true);
         }
       } catch {
         if (active) {
           setContext(null);
-          setResolved(true);
+          setSessionResolved(true);
         }
       }
     };
 
     if (!policyReady) {
-      setResolved(false);
-      void loadAccessPolicy().then((loaded) => { if (active) { setPolicy(loaded); setPolicyReady(true); } });
-      return () => { active = false; };
+      setSessionResolved(false);
+
+      void loadAccessPolicy().then((loaded) => {
+        if (!active) return;
+        setPolicy(loaded);
+        setPolicyReady(true);
+      });
+
+      return () => {
+        active = false;
+      };
     }
 
-    // Las rutas públicas no deben bloquearse ni validar acceso.
-    if (required === "guest") {
-      setResolved(true);
-    } else {
-      // En una ruta protegida no se decide nada hasta terminar la validación.
-      setResolved(false);
-      void validate();
-    }
+    // Se valida la sesión también en rutas públicas.
+    // La validación no bloquea una ruta pública, pero mantiene actualizado
+    // el contexto del usuario para las siguientes rutas protegidas.
+    void validateSession();
 
     const { data: listener } = lvjAuth.auth.onAuthStateChange((event) => {
       if (
@@ -69,10 +87,8 @@ export default function AccessGate({ children }: Props) {
         event === "TOKEN_REFRESHED" ||
         event === "USER_UPDATED"
       ) {
-        if (required !== "guest") {
-          setResolved(false);
-          void validate();
-        }
+        setSessionResolved(false);
+        void validateSession();
       }
     });
 
@@ -80,10 +96,10 @@ export default function AccessGate({ children }: Props) {
       active = false;
       listener.subscription.unsubscribe();
     };
-  }, [required, policyReady]);
+  }, [policyReady]);
 
   useEffect(() => {
-    if (required === "guest" || !resolved) return;
+    if (!protectedRoute || !sessionResolved) return;
 
     if (!canAccessLevel(context, requiredToAccess(required))) {
       const destination = location.pathname + location.search + location.hash;
@@ -92,16 +108,17 @@ export default function AccessGate({ children }: Props) {
   }, [
     context,
     required,
-    resolved,
+    protectedRoute,
+    sessionResolved,
     location.pathname,
     location.search,
     location.hash,
     navigate,
   ]);
 
-  // Las rutas protegidas no se renderizan mientras se valida la sesión y el registro
-  // local. Así evitamos que Biblia/Podcast aparezcan brevemente antes del redirect.
-  if (required !== "guest" && !resolved) return null;
+  // Solamente las rutas protegidas esperan a terminar la validación.
+  // Las rutas públicas permanecen visibles y no parpadean.
+  if (protectedRoute && (!policyReady || !sessionResolved)) return null;
 
   return <>{children}</>;
 }
