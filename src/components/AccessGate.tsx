@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { lvjAuth } from "@/features/biblia/auth/bibleStudyAuth";
 import { canAccessLevel, getAccessContext, type AccessContext } from "@/services/acceso";
-import { getRouteAccessPolicy, loadAccessPolicy, type ModuleAccessLevel, type ModuleAccessPolicy } from "@/services/accessPolicy";
+import { getRouteAccessPolicy, getRouteTarget, loadAccessPolicy, type ModuleAccessLevel, type ModuleAccessPolicy } from "@/services/accessPolicy";
 
 type Props = { children: ReactNode };
 const requiredToAccess = (required: ModuleAccessLevel) =>
@@ -19,9 +19,9 @@ export default function AccessGate({ children }: Props) {
     let alive = true;
     let requestId = 0;
 
-    const resolveSession = async (session: { access_token: string } | null, initial = false) => {
+    const resolveSession = async (session: { access_token: string } | null, blockWhileResolving = false) => {
       const current = ++requestId;
-      if (!initial) setResolved(false);
+      if (blockWhileResolving) setResolved(false);
 
       if (!session?.access_token) {
         if (!alive || current !== requestId) return;
@@ -68,7 +68,20 @@ export default function AccessGate({ children }: Props) {
     const { data: listener } = lvjAuth.auth.onAuthStateChange((event, session) => {
       if (!["SIGNED_IN", "SIGNED_OUT", "TOKEN_REFRESHED", "USER_UPDATED"].includes(event)) return;
       if (!alive) return;
-      void resolveSession(session ? { access_token: session.access_token } : null);
+
+      if (event === "SIGNED_OUT") {
+        requestId += 1;
+        setContext(null);
+        setResolved(true);
+        return;
+      }
+
+      // El refresh del token no debe desmontar visualmente la aplicación.
+      // Revalidamos en segundo plano y conservamos el contexto anterior mientras tanto.
+      void resolveSession(
+        session ? { access_token: session.access_token } : null,
+        event === "SIGNED_IN" || event === "USER_UPDATED",
+      );
     });
 
     return () => {
@@ -80,12 +93,14 @@ export default function AccessGate({ children }: Props) {
 
   if (!resolved || !policy) return <Loading />;
 
+  const target = getRouteTarget(location.pathname);
   const required = getRouteAccessPolicy(location.pathname, policy);
-  if (required === null) {
-    // Las rutas no registradas en la matriz no se consideran protegidas.
-    // Las nuevas rutas deben registrarse explícitamente en accessPolicy.php.
-    return <>{children}</>;
-  }
+
+  // Las rutas informativas que no pertenecen a un módulo funcional son públicas.
+  if (!target) return <>{children}</>;
+
+  // Una ruta funcional sin política válida NO puede quedar pública por omisión.
+  if (required === null) return <Loading />;
 
   if (required !== "guest") {
     if (!context) return <Loading />;
