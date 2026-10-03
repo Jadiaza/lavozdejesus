@@ -58,7 +58,8 @@ export default function Auth() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
-  const [registrationSubmitted, setRegistrationSubmitted] = useState(false);\n  const [syncingAccount, setSyncingAccount] = useState(false);
+  const [registrationSubmitted, setRegistrationSubmitted] = useState(false);
+  const [syncingAccount, setSyncingAccount] = useState(false);
   const [recovering, setRecovering] = useState(() => window.location.pathname === "/acceso/recuperar");
   const navigate = useNavigate();
   const location = useLocation();
@@ -159,7 +160,8 @@ export default function Auth() {
     }
 
     setLoading(true);
-    // La sesión queda persistente por defecto; solo se guarda en sessionStorage si el usuario lo desmarca.\n    setBibleStudyRememberSession(remember);
+    // La sesión queda persistente por defecto; solo se guarda en sessionStorage si el usuario lo desmarca.
+    setBibleStudyRememberSession(remember);
 
     if (recovering) {
       const { error } = await lvjAuth.auth.updateUser({ password });
