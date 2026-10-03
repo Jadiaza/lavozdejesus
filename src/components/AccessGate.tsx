@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { lvjAuth } from "@/features/biblia/auth/bibleStudyAuth";
 import { canAccessLevel, getAccessContext, type AccessContext } from "@/services/acceso";
-import { getRouteAccessPolicy, loadAccessPolicy, type ModuleAccessLevel } from "@/services/accessPolicy";
+import { getRouteAccessPolicy, loadAccessPolicy, type ModuleAccessLevel, type ModuleAccessPolicy } from "@/services/accessPolicy";
 
 type Props = { children: ReactNode };
 
@@ -16,103 +16,106 @@ const AccessLoading = () => (
 export default function AccessGate({ children }: Props) {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const [policy, setPolicy] = useState<ModuleAccessPolicy[] | null>(null);
   const [context, setContext] = useState<AccessContext | null>(null);
-  const [sessionResolved, setSessionResolved] = useState(false);
-  const [policy, setPolicy] = useState<any>(null);
-  const [policyReady, setPolicyReady] = useState(false);
+  const [resolved, setResolved] = useState(false);
 
   useEffect(() => {
     let active = true;
 
-    const validateSession = async () => {
+    const initialize = async () => {
       try {
-        const { data } = await lvjAuth.auth.getSession();
+        // La política de MySQL y la sesión se resuelven antes del primer
+        // render de las rutas. Así no se muestra una decisión provisional.
+        const [{ data }, loadedPolicy] = await Promise.all([
+          lvjAuth.auth.getSession(),
+          loadAccessPolicy(),
+        ]);
 
         if (!active) return;
 
-        if (!data.session?.access_token) {
+        setPolicy(loadedPolicy);
+
+        if (data.session?.access_token) {
+          try {
+            const access = await getAccessContext(data.session.access_token);
+            if (active) setContext(access);
+          } catch {
+            if (active) setContext(null);
+          }
+        } else {
           setContext(null);
-          setSessionResolved(true);
-          return;
         }
 
-        const access = await getAccessContext(data.session.access_token);
-
-        if (active) {
-          setContext(access);
-          setSessionResolved(true);
-        }
+        if (active) setResolved(true);
       } catch {
-        if (active) {
-          setContext(null);
-          setSessionResolved(true);
-        }
+        if (!active) return;
+        setPolicy([]);
+        setContext(null);
+        setResolved(true);
       }
     };
 
-    if (!policyReady) {
-      setSessionResolved(false);
+    void initialize();
 
-      void loadAccessPolicy().then((loaded) => {
-        if (!active) return;
-        setPolicy(loaded);
-        setPolicyReady(true);
-        void validateSession();
-      });
-
-      return () => {
-        active = false;
-      };
-    }
-
-    void validateSession();
-
-    const { data: listener } = lvjAuth.auth.onAuthStateChange((event) => {
+    const { data: listener } = lvjAuth.auth.onAuthStateChange((event, session) => {
       if (
-        event === "SIGNED_IN" ||
-        event === "SIGNED_OUT" ||
-        event === "TOKEN_REFRESHED" ||
-        event === "USER_UPDATED"
+        event !== "SIGNED_IN" &&
+        event !== "SIGNED_OUT" &&
+        event !== "TOKEN_REFRESHED" &&
+        event !== "USER_UPDATED"
       ) {
-        setSessionResolved(false);
-        void validateSession();
+        return;
       }
+
+      if (!active) return;
+
+      if (!session?.access_token) {
+        setContext(null);
+        setResolved(true);
+        return;
+      }
+
+      void getAccessContext(session.access_token)
+        .then((access) => {
+          if (active) {
+            setContext(access);
+            setResolved(true);
+          }
+        })
+        .catch(() => {
+          if (active) {
+            setContext(null);
+            setResolved(true);
+          }
+        });
     });
 
     return () => {
       active = false;
       listener.subscription.unsubscribe();
     };
-  }, [policyReady]);
+  }, []);
 
-  // Mientras la política real de MySQL no ha llegado, NO usamos el fallback
-  // para decidir que una ruta es protegida. Esto evita que una ruta pública
-  // aparezca y desaparezca durante la primera carga.
-  if (!policyReady) {
+  if (!resolved || !policy) {
     return <AccessLoading />;
   }
 
   const required = getRouteAccessPolicy(location.pathname, policy);
   const protectedRoute = required !== "guest";
 
-  useEffect(() => {
-    // El efecto de redirección se mantiene abajo mediante un componente
-    // interno para respetar las reglas de hooks.
-  }, []);
-
-  if (protectedRoute && !sessionResolved) {
-    return <AccessLoading />;
-  }
-
-  return <AccessDecision
-    required={required}
-    context={context}
-    protectedRoute={protectedRoute}
-    location={location}
-    navigate={navigate}
-  >
-    {children}
-  </AccessDecision>;
+  return (
+    <AccessDecision
+      required={required}
+      context={context}
+      protectedRoute={protectedRoute}
+      location={location}
+      navigate={navigate}
+    >
+      {children}
+    </AccessDecision>
+  );
 }
 
 function AccessDecision({
@@ -146,6 +149,16 @@ function AccessDecision({
     location.hash,
     navigate,
   ]);
+
+  // Nunca renderizamos una ruta protegida mientras la decisión de acceso
+  // esté pendiente de ejecutarse.
+  if (protectedRoute && !context) {
+    return <AccessLoading />;
+  }
+
+  if (protectedRoute && !canAccessLevel(context, requiredToAccess(required))) {
+    return <AccessLoading />;
+  }
 
   return <>{children}</>;
 }
