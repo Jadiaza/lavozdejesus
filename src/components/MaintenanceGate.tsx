@@ -5,14 +5,16 @@ import { getMaintenanceRouteTarget, useMaintenanceState } from "@/services/mante
 
 interface MaintenanceGateProps { children: ReactNode; }
 
-const MaintenanceLoading = () => <div className="min-h-screen bg-background" aria-label="Cargando estado" />;
+const MaintenanceLoading = () => null;
 
 const MaintenanceGate = ({ children }: MaintenanceGateProps) => {
   const location = useLocation();
   const routeTarget = getMaintenanceRouteTarget(location.pathname);
   const state = useMaintenanceState(routeTarget?.modulo ?? "inicio", routeTarget?.submodulo ?? null);
 
-  if (!state) return <MaintenanceLoading />;
+  // El mantenimiento se consulta en segundo plano. Nunca bloqueamos la navegación
+  // esperando la API; esto evita que el cambio de ruta produzca una pantalla en blanco.
+  if (!state) return <>{children}</>;
 
   const active = Boolean(state.mantenimiento_activo);
   if (!active) return <>{children}</>;
