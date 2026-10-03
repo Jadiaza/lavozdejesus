@@ -42,7 +42,7 @@ lvj_json_response([
     'email' => (string)($user['correo'] ?? $user['email'] ?? ''),
     'name' => (string)($user['nombre'] ?? ''),
     'email_verified' => (int)($user['email_verificado'] ?? 0) === 1,
-    'active' => (int)($user['estado'] ?? 1) === 1,
+    'active' => in_array(mb_strtolower(trim((string)($user['estado'] ?? 'activo'))), ['1','activo','active','habilitado'], true),
     'role_id' => $roleId,
     'role_code' => $roleCode,
   ],
