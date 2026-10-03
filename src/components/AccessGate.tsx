@@ -9,18 +9,10 @@ type Props = { children: ReactNode };
 const requiredToAccess = (required: ModuleAccessLevel) =>
   required === "premium" ? "premium" : required === "free" ? "free" : "guest";
 
-/**
- * Control global de acceso.
- *
- * Fuente de verdad:
- * 1. Supabase determina si existe una sesión.
- * 2. acceso.php valida el usuario contra lvj_com_usuarios y su rol.
- * 3. acceso-politica.php entrega los niveles configurados en MySQL.
- * 4. La ruta actual se compara contra esa política.
- *
- * Las rutas públicas no se bloquean mientras se valida una sesión existente,
- * pero la sesión sí se comprueba al entrar a la aplicación y ante cambios de auth.
- */
+const AccessLoading = () => (
+  <div className="min-h-screen bg-background" aria-label="Cargando acceso" />
+);
+
 export default function AccessGate({ children }: Props) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -28,9 +20,6 @@ export default function AccessGate({ children }: Props) {
   const [sessionResolved, setSessionResolved] = useState(false);
   const [policy, setPolicy] = useState<any>(null);
   const [policyReady, setPolicyReady] = useState(false);
-
-  const required = getRouteAccessPolicy(location.pathname, policy);
-  const protectedRoute = required !== "guest";
 
   useEffect(() => {
     let active = true;
@@ -68,6 +57,7 @@ export default function AccessGate({ children }: Props) {
         if (!active) return;
         setPolicy(loaded);
         setPolicyReady(true);
+        void validateSession();
       });
 
       return () => {
@@ -75,9 +65,6 @@ export default function AccessGate({ children }: Props) {
       };
     }
 
-    // Se valida la sesión también en rutas públicas.
-    // La validación no bloquea una ruta pública, pero mantiene actualizado
-    // el contexto del usuario para las siguientes rutas protegidas.
     void validateSession();
 
     const { data: listener } = lvjAuth.auth.onAuthStateChange((event) => {
@@ -98,8 +85,53 @@ export default function AccessGate({ children }: Props) {
     };
   }, [policyReady]);
 
+  // Mientras la política real de MySQL no ha llegado, NO usamos el fallback
+  // para decidir que una ruta es protegida. Esto evita que una ruta pública
+  // aparezca y desaparezca durante la primera carga.
+  if (!policyReady) {
+    return <AccessLoading />;
+  }
+
+  const required = getRouteAccessPolicy(location.pathname, policy);
+  const protectedRoute = required !== "guest";
+
   useEffect(() => {
-    if (!protectedRoute || !sessionResolved) return;
+    // El efecto de redirección se mantiene abajo mediante un componente
+    // interno para respetar las reglas de hooks.
+  }, []);
+
+  if (protectedRoute && !sessionResolved) {
+    return <AccessLoading />;
+  }
+
+  return <AccessDecision
+    required={required}
+    context={context}
+    protectedRoute={protectedRoute}
+    location={location}
+    navigate={navigate}
+  >
+    {children}
+  </AccessDecision>;
+}
+
+function AccessDecision({
+  required,
+  context,
+  protectedRoute,
+  location,
+  navigate,
+  children,
+}: {
+  required: ModuleAccessLevel;
+  context: AccessContext | null;
+  protectedRoute: boolean;
+  location: ReturnType<typeof useLocation>;
+  navigate: ReturnType<typeof useNavigate>;
+  children: ReactNode;
+}) {
+  useEffect(() => {
+    if (!protectedRoute) return;
 
     if (!canAccessLevel(context, requiredToAccess(required))) {
       const destination = location.pathname + location.search + location.hash;
@@ -109,16 +141,11 @@ export default function AccessGate({ children }: Props) {
     context,
     required,
     protectedRoute,
-    sessionResolved,
     location.pathname,
     location.search,
     location.hash,
     navigate,
   ]);
-
-  // Solamente las rutas protegidas esperan a terminar la validación.
-  // Las rutas públicas permanecen visibles y no parpadean.
-  if (protectedRoute && (!policyReady || !sessionResolved)) return null;
 
   return <>{children}</>;
 }
