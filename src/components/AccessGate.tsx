@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { lvjAuth } from "@/features/biblia/auth/bibleStudyAuth";
 import { canAccessLevel, getAccessContext, type AccessContext } from "@/services/acceso";
 import { getRouteAccessPolicy, loadAccessPolicy, type ModuleAccessLevel, type ModuleAccessPolicy } from "@/services/accessPolicy";
@@ -15,8 +15,6 @@ const AccessLoading = () => (
 
 export default function AccessGate({ children }: Props) {
   const location = useLocation();
-  const navigate = useNavigate();
-
   const [policy, setPolicy] = useState<ModuleAccessPolicy[] | null>(null);
   const [context, setContext] = useState<AccessContext | null>(null);
   const [resolved, setResolved] = useState(false);
@@ -26,8 +24,6 @@ export default function AccessGate({ children }: Props) {
 
     const initialize = async () => {
       try {
-        // La política de MySQL y la sesión se resuelven antes del primer
-        // render de las rutas. Así no se muestra una decisión provisional.
         const [{ data }, loadedPolicy] = await Promise.all([
           lvjAuth.auth.getSession(),
           loadAccessPolicy(),
@@ -103,61 +99,19 @@ export default function AccessGate({ children }: Props) {
   }
 
   const required = getRouteAccessPolicy(location.pathname, policy);
-  const protectedRoute = required !== "guest";
 
-  return (
-    <AccessDecision
-      required={required}
-      context={context}
-      protectedRoute={protectedRoute}
-      location={location}
-      navigate={navigate}
-    >
-      {children}
-    </AccessDecision>
-  );
-}
-
-function AccessDecision({
-  required,
-  context,
-  protectedRoute,
-  location,
-  navigate,
-  children,
-}: {
-  required: ModuleAccessLevel;
-  context: AccessContext | null;
-  protectedRoute: boolean;
-  location: ReturnType<typeof useLocation>;
-  navigate: ReturnType<typeof useNavigate>;
-  children: ReactNode;
-}) {
-  useEffect(() => {
-    if (!protectedRoute) return;
+  if (required !== "guest") {
+    if (!context) return <AccessLoading />;
 
     if (!canAccessLevel(context, requiredToAccess(required))) {
       const destination = location.pathname + location.search + location.hash;
-      navigate("/acceso?next=" + encodeURIComponent(destination), { replace: true });
+      return (
+        <Navigate
+          replace
+          to={"/acceso?next=" + encodeURIComponent(destination)}
+        />
+      );
     }
-  }, [
-    context,
-    required,
-    protectedRoute,
-    location.pathname,
-    location.search,
-    location.hash,
-    navigate,
-  ]);
-
-  // Nunca renderizamos una ruta protegida mientras la decisión de acceso
-  // esté pendiente de ejecutarse.
-  if (protectedRoute && !context) {
-    return <AccessLoading />;
-  }
-
-  if (protectedRoute && !canAccessLevel(context, requiredToAccess(required))) {
-    return <AccessLoading />;
   }
 
   return <>{children}</>;
