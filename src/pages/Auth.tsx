@@ -58,7 +58,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
-  const [registrationSubmitted, setRegistrationSubmitted] = useState(false);
+  const [registrationSubmitted, setRegistrationSubmitted] = useState(false);\n  const [syncingAccount, setSyncingAccount] = useState(false);
   const [recovering, setRecovering] = useState(() => window.location.pathname === "/acceso/recuperar");
   const navigate = useNavigate();
   const location = useLocation();
@@ -390,10 +390,10 @@ export default function Auth() {
             ) : null}
 
             <button
-              disabled={loading}
+              disabled={loading || syncingAccount}
               className="min-h-12 w-full rounded-[.85rem] bg-gradient-to-r from-[#D4AF37] via-[#E7BE4C] to-[#F2D27A] px-4 py-3 text-[.92rem] font-bold text-black shadow-[0_8px_28px_rgba(212,175,55,.18)] transition-transform active:scale-[.99] disabled:opacity-50"
             >
-              {loading ? "Procesando..." : recovering ? "Guardar nueva contraseña" : mode === "login" ? "Iniciar sesión  ›" : "Crear mi cuenta  ›"}
+              {loading || syncingAccount ? "Habilitando cuenta..." : recovering ? "Guardar nueva contraseña" : mode === "login" ? "Iniciar sesión  ›" : "Crear mi cuenta  ›"}
             </button>
           </form>
 
