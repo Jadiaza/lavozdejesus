@@ -103,7 +103,10 @@ export default function AccessGate({ children }: Props) {
   if (required === null) return <Loading />;
 
   if (required !== "guest") {
-    if (!context) return <Loading />;
+    if (!context) {
+      const destination = location.pathname + location.search + location.hash;
+      return <Navigate replace to={"/acceso?next=" + encodeURIComponent(destination)} />;
+    }
 
     if (!canAccessLevel(context, requiredToAccess(required))) {
       const destination = location.pathname + location.search + location.hash;
