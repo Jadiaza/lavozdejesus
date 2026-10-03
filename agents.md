@@ -6315,3 +6315,41 @@ Los módulos presentes o futuros de LVJPRAYER que formen parte del mismo ecosist
 Al completar el acceso, LVJPRAYER puede sincronizar de forma idempotente la identidad autenticada con `lvj_com_usuarios`: primero por `auth_subject`, después por correo para vincular una cuenta local existente y solo crea un registro local cuando no existe correspondencia. Este proceso no debe crear una segunda cuenta Supabase ni duplicar usuarios.
 
 Una aplicación especializada como Consagraciones puede conservar su propio backend y sus datos funcionales, incluido el seguimiento de los 33 días, mientras comparte la identidad Supabase. La unificación de acceso no implica migrar ni duplicar el progreso: los registros existentes deben conservarse y relacionarse con la identidad Supabase correspondiente.
+
+
+## 10.16.1.11 Política dinámica de acceso por configuración
+
+La política funcional de acceso deja de estar fijada exclusivamente en el frontend. La fuente operativa de
+los niveles de acceso de módulos y submódulos es MySQL, mediante las tablas existentes:
+
+- `lvj_cfg_modulos.nivel_acceso`
+- `lvj_cfg_submodulos.nivel_acceso`
+
+Los valores permitidos son:
+
+- `publico`
+- `registrado`
+- `premium`
+
+La configuración de submódulo tiene prioridad sobre la configuración de su módulo. Si no existe una
+configuración específica de submódulo, se hereda el nivel del módulo.
+
+El mantenimiento continúa siendo independiente y utiliza sus propios campos `modo_mantenimiento` y
+`mensaje_mantenimiento`.
+
+El panel administrativo permite modificar estos niveles sin cambiar código de la PWA. La PWA obtiene la
+política mediante `/api/acceso-politica.php` y `AccessGate` aplica la política de forma centralizada.
+
+La autenticación continúa siendo responsabilidad de Supabase Auth y la autorización/identidad funcional
+continúa vinculada a `lvj_com_usuarios`. Los roles administrativos no se convierten en niveles de contenido:
+`admin` y `super_admin` siguen siendo roles de usuario.
+
+La migración oficial es:
+`app-admin/migrations/2026-10-03-add-module-access-level.sql`.
+
+La política inicial de la migración conserva el comportamiento vigente: Biblia, Comunidad y Podcast
+requieren registro; las funciones personales protegidas mantienen registro; premium queda preparado pero no
+operativo hasta contar con entitlement válido.
+
+Las APIs que entreguen contenido protegido deberán seguir validando autorización en Backend. Ocultar o
+redirigir una ruta en el frontend no sustituye la protección del Backend.
