@@ -48,7 +48,7 @@ export const loadAccessPolicy = async (): Promise<ModuleAccessPolicy[]> => {
 };
 
 export const getRouteTarget = (pathname: string): { module: string; submodule?: string } | null => {
-  const p = pathname.toLowerCase().replace(//+$/, "") || "/";
+  const p = pathname.toLowerCase().replace(/\/+$/, "") || "/";
   if (p === "/") return { module: "inicio" };
   if (p.startsWith("/radio")) return { module: "radio" };
   if (p.startsWith("/programacion")) return { module: "programacion" };
