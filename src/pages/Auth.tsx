@@ -80,6 +80,27 @@ export default function Auth() {
   useEffect(() => {
     let active = true;
 
+    const validateAndEnter = async (accessToken: string) => {
+      try {
+        // No damos por habilitada la cuenta solo porque Supabase tenga sesión.
+        // El backend debe confirmar que la identidad quedó vinculada y activa en LVJ.
+        await getAccessContext(accessToken);
+        if (!active) return;
+        setSyncingAccount(false);
+        setLoading(false);
+        navigate(next, { replace: true });
+      } catch (error) {
+        if (!active) return;
+        setSyncingAccount(false);
+        setLoading(false);
+        setMessage(
+          error instanceof Error
+            ? friendlyError(error.message)
+            : "No fue posible habilitar tu cuenta en La Voz de Jesús.",
+        );
+      }
+    };
+
     const completeAccess = async () => {
       const { data, error } = await lvjAuth.auth.getSession();
       if (!active) return;
@@ -100,13 +121,8 @@ export default function Auth() {
         return;
       }
 
-      // Vincula automáticamente la identidad Supabase con lvj_com_usuarios.
-      // No bloquea el acceso de la PWA si el API administrativo no responde.
-      if (data.session.access_token) {
-        void getAccessContext(data.session.access_token).catch(() => undefined);
-      }
-
-      navigate(next, { replace: true });
+      setSyncingAccount(true);
+      await validateAndEnter(data.session.access_token);
     };
 
     void completeAccess();
@@ -117,11 +133,13 @@ export default function Auth() {
       if (event === "PASSWORD_RECOVERY") {
         setRecovering(true);
         setLoading(false);
+        setSyncingAccount(false);
         return;
       }
 
       if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
-        void completeAccess();
+        setSyncingAccount(true);
+        void validateAndEnter(session.access_token);
       }
     });
 
