@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { lvjAuth } from "@/features/biblia/auth/bibleStudyAuth";
 import { canAccessLevel, getAccessContext, type AccessContext } from "@/services/acceso";
-import { getRouteAccessPolicy, type ModuleAccessLevel } from "@/services/accessPolicy";
+import { getRouteAccessPolicy, loadAccessPolicy, type ModuleAccessLevel } from "@/services/accessPolicy";
 
 type Props = { children: ReactNode };
 
@@ -14,7 +14,9 @@ export default function AccessGate({ children }: Props) {
   const navigate = useNavigate();
   const [context, setContext] = useState<AccessContext | null>(null);
   const [resolved, setResolved] = useState(true);
-  const required = getRouteAccessPolicy(location.pathname);
+  const [policy, setPolicy] = useState<any>(null);
+  const [policyReady, setPolicyReady] = useState(false);
+  const required = getRouteAccessPolicy(location.pathname, policy);
 
   useEffect(() => {
     let active = true;
@@ -45,6 +47,12 @@ export default function AccessGate({ children }: Props) {
       }
     };
 
+    if (!policyReady) {
+      setResolved(false);
+      void loadAccessPolicy().then((loaded) => { if (active) { setPolicy(loaded); setPolicyReady(true); } });
+      return () => { active = false; };
+    }
+
     // Las rutas públicas no deben bloquearse ni validar acceso.
     if (required === "guest") {
       setResolved(true);
@@ -72,7 +80,7 @@ export default function AccessGate({ children }: Props) {
       active = false;
       listener.subscription.unsubscribe();
     };
-  }, [required]);
+  }, [required, policyReady]);
 
   useEffect(() => {
     if (required === "guest" || !resolved) return;
