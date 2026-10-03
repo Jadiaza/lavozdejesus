@@ -10,6 +10,7 @@ import Programacion from "./pages/Programacion.tsx";
 import PrayerReminderScheduler from "@/modules/prayers/components/PrayerReminderScheduler";
 import AppThemeSync from "@/features/theme/AppThemeSync";
 import MaintenanceGate from "@/components/MaintenanceGate";
+import AccessGate from "@/components/AccessGate";
 
 import RosarioHome from "@/modules/rosary/pages/RosarioHome";
 const RosarioModalidad = lazy(() => import("@/modules/rosary/pages/RosarioModalidad"));
@@ -104,8 +105,9 @@ const App = () => {
         <PrayerReminderScheduler />
         <BrowserRouter>
           <Suspense fallback={<div className="min-h-screen bg-background" aria-label="Cargando contenido" />}>
-            <MaintenanceGate>
-              <Routes>
+            <AccessGate>
+              <MaintenanceGate>
+                <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/radio" element={<Radio />} />
               <Route path="/capilla" element={<Capilla />} />
@@ -181,8 +183,9 @@ const App = () => {
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
-                </Routes>
-            </MaintenanceGate>
+                  </Routes>
+              </MaintenanceGate>
+            </AccessGate>
           </Suspense>
         </BrowserRouter>
       </RadioPlayerProvider>
