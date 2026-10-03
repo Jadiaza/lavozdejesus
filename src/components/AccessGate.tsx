@@ -91,5 +91,9 @@ export default function AccessGate({ children }: Props) {
     navigate,
   ]);
 
+  // Las rutas protegidas no se renderizan mientras se valida la sesión y el registro
+  // local. Así evitamos que Biblia/Podcast aparezcan brevemente antes del redirect.
+  if (required !== "guest" && !resolved) return null;
+
   return <>{children}</>;
 }
