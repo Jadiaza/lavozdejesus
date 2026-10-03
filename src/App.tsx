@@ -61,7 +61,7 @@ const BibliaPersonajeDetalle = lazy(() => import("./pages/biblia/BibliaPersonaje
 const BibliaLibros = lazy(() => import("./pages/biblia/BibliaLibros.tsx"));
 const BibliaFavoritos = lazy(() => import("./pages/biblia/BibliaFavoritos.tsx"));
 const BibliaMiBiblia = lazy(() => import("./pages/biblia/BibliaMiBiblia.tsx"));
-const Auth = lazy(() => import("./pages/Auth.tsx"));
+import Auth from "./pages/Auth.tsx";
 const More = lazy(() => import("./pages/More.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
 const ReadingSettings = lazy(() => import("./pages/ReadingSettings.tsx"));
