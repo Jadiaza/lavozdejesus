@@ -32,8 +32,12 @@ final class SupabaseAuth
     }
     $user = self::resolveLocalUser($pdo, $identity);
     if (!$user) lvj_json_response(['success' => false, 'message' => 'No fue posible vincular tu cuenta con La Voz de Jesús.'], 403);
-    if (array_key_exists('estado', $user) && !in_array(mb_strtolower(trim((string) $user['estado'])), ['1', 'activo', 'activa', 'active', 'habilitado', 'habilitada', 'enabled'], true)) {
-      lvj_json_response(['success' => false, 'message' => 'Tu cuenta no está activa.'], 403);
+    if (array_key_exists('estado', $user)) {
+      $estado = mb_strtolower(trim((string) $user['estado']));
+      $estadosInactivos = ['0', 'inactivo', 'inactiva', 'inactive', 'disabled', 'bloqueado', 'bloqueada', 'suspendido', 'suspendida'];
+      if (in_array($estado, $estadosInactivos, true)) {
+        lvj_json_response(['success' => false, 'message' => 'Tu cuenta no está activa.'], 403);
+      }
     }
     return $user;
   }
