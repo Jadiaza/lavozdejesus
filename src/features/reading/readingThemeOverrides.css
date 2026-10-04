@@ -1,0 +1,74 @@
+/* Ajustes visuales compartidos del lector.
+   `sepia` es el identificador histórico del tema Tinta/e-ink. */
+
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] {
+  color: #000 !important;
+}
+
+/*
+ * Selectores superiores de referencias.
+ * El componente ya calcula el estado activo con activeIndex y lo aplica inline.
+ * No usamos !important aquí para no bloquear ese estado dinámico.
+ */
+html[data-reading-theme="sepia"] .no-scrollbar > button {
+  font-weight: 700 !important;
+}
+
+/* Tarjeta bíblica activa. */
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] > button[aria-expanded="true"] {
+  background: #000 !important;
+  color: #fff !important;
+  border: 1px solid #000 !important;
+  border-radius: 1.05rem !important;
+  padding-left: .875rem !important;
+  padding-right: .875rem !important;
+}
+
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] > button[aria-expanded="true"] * {
+  color: #fff !important;
+  stroke: currentColor !important;
+}
+
+/* Tarjetas no activas. */
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] > button[aria-expanded="false"] {
+  background: #fff !important;
+  color: #000 !important;
+}
+
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] > button[aria-expanded="false"] * {
+  color: #000 !important;
+  stroke: currentColor !important;
+}
+
+/* Títulos y referencias con jerarquía tipográfica de lector. */
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] > button span.block.font-display,
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] h1,
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] h2,
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] h3,
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] h4 {
+  font-weight: 700 !important;
+}
+
+/* Encabezados de sección del plan (Palabra de Dios, etc.) en Tinta. */
+html[data-reading-theme="sepia"] [style*="--plan-reading-text"] section > div[class*="border-b"] {
+  color: #000 !important;
+}
+
+html[data-reading-theme="sepia"] [style*="--plan-reading-text"] section > div[class*="border-b"] h2 {
+  color: #000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-reading-theme="sepia"] [style*="--plan-reading-text"] section > div[class*="border-b"] svg {
+  color: #000 !important;
+  stroke: #000 !important;
+}
+
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] sup {
+  color: #000 !important;
+  font-weight: 700 !important;
+}
+
+html[data-reading-theme="sepia"] section[id^="plan-reading-"] svg {
+  stroke: currentColor;
+}

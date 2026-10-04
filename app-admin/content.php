@@ -32,6 +32,12 @@ $modules = [
       'lvj_rad_programacion' => 'Programacion',
       'lvj_rad_locutores' => 'Locutores',
     ],
+    'tabs' => [
+      ['label' => 'Streams', 'table' => 'lvj_rad_streams'],
+      ['label' => 'Programas', 'table' => 'lvj_rad_programas'],
+      ['label' => 'Programación', 'href' => 'programacion.php'],
+      ['label' => 'Locutores', 'table' => 'lvj_rad_locutores'],
+    ],
   ],
   'liturgia' => [
     'title' => 'Configuración litúrgica',
@@ -984,7 +990,7 @@ function content_status_label($value): array
   return [$raw !== '' ? ucfirst($raw) : 'Sin estado', 'neutral'];
 }
 
-function content_cell_html(string $table, string $field, $value): string
+function content_cell_html(string $table, string $field, $value, ?PDO $pdo = null): string
 {
   if ($table === 'lvj_ora_oraciones' && $field === 'estado_revision') {
     [$label, $state] = content_status_label($value);
@@ -2209,6 +2215,7 @@ try {
     $whereParts[] = $where;
   }
 
+
   if ($search !== '' && $listColumns) {
     $searchParts = [];
     foreach (content_search_columns($columns, $table) as $index => $column) {
@@ -2241,7 +2248,9 @@ try {
       ? " ORDER BY prioridad ASC, {$primaryColumn} DESC"
       : ($table === 'lvj_cfg_apariencia'
         ? " ORDER BY activo DESC, {$primaryColumn} DESC"
-        : " ORDER BY {$primaryColumn} DESC");
+        : ($table === 'lvj_rad_programacion' && content_has_column($columns, 'hora_inicio')
+          ? " ORDER BY FIELD(LOWER(dia_semana),'lunes','martes','miercoles','jueves','viernes','sabado','domingo'), hora_inicio ASC, {$primaryColumn} ASC"
+          : " ORDER BY {$primaryColumn} DESC"));
     $stmt = $pdo->prepare("SELECT * FROM {$table}{$whereSql}{$orderSql} LIMIT {$perPage} OFFSET {$offset}");
     $stmt->execute($params);
     $rows = $stmt->fetchAll();
@@ -2547,6 +2556,7 @@ require __DIR__ . '/includes/header.php';
     </div>
   </div>
 
+
   <div class="table-wrap">
     <table class="admin-grid-table">
       <thead>
@@ -2562,7 +2572,7 @@ require __DIR__ . '/includes/header.php';
           <tr>
             <?php foreach ($visibleListColumns as $column): ?>
               <?php $field = (string) $column['Field']; ?>
-              <td><?php echo content_cell_html($table, $field, $row[$field] ?? ''); ?></td>
+              <td><?php echo content_cell_html($table, $field, $row[$field] ?? '', $pdo); ?></td>
             <?php endforeach; ?>
             <?php if (!$readOnly): ?><td class="actions grid-actions">
               <a class="action-button action-edit" title="Editar registro" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&edit=<?php echo (int) $row['id']; ?>">Editar</a>

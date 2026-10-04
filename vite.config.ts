@@ -28,15 +28,15 @@ export default defineConfig(() => ({
       devOptions: { enabled: false },
       includeAssets: ["favicon.ico", "favicon2.png", "apple-touch-icon.png"],
       manifest: {
-        name: "La Voz de Jesús",
-        short_name: "Voz de Jesús",
-        description: "Radio Católica 24/7 — Adora al Santísimo en cualquier lugar.",
+        name: "LVJPRAYER",
+        short_name: "LVJPRAYER",
+        description: "LVJPRAYER · Oración, Biblia y vida espiritual de La Voz de Jesús.",
         start_url: "/",
         scope: "/",
         display: "standalone",
         orientation: "portrait",
-        background_color: "#0a0f1f",
-        theme_color: "#0a0f1f",
+        background_color: "#050505",
+        theme_color: "#050505",
         lang: "es",
         categories: ["music", "lifestyle", "education"],
         icons: [
@@ -50,13 +50,16 @@ export default defineConfig(() => ({
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/~oauth/],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2}"],
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
             urlPattern: ({ request, url }) =>
               request.mode === "navigate" && !url.pathname.startsWith("/~oauth"),
             handler: "NetworkFirst",
             options: {
-              cacheName: "lvdj-pages",
+              cacheName: "lvdj-pages-v2",
               networkTimeoutSeconds: 4,
               expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 },
             },
@@ -64,9 +67,9 @@ export default defineConfig(() => ({
           {
             urlPattern: ({ request, sameOrigin }) =>
               sameOrigin && ["style", "script", "worker", "font"].includes(request.destination),
-            handler: "CacheFirst",
+            handler: "StaleWhileRevalidate",
             options: {
-              cacheName: "lvdj-assets",
+              cacheName: "lvdj-assets-v2",
               expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 30 },
             },
           },
@@ -74,7 +77,7 @@ export default defineConfig(() => ({
             urlPattern: ({ request, sameOrigin }) => sameOrigin && request.destination === "image",
             handler: "CacheFirst",
             options: {
-              cacheName: "lvdj-images",
+              cacheName: "lvdj-images-v2",
               expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 },
             },
           },

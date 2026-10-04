@@ -1,0 +1,212 @@
+/* Tema Tinta LVJPRAYER
+   Apariencia monocromática inspirada en lectores e-ink: blanco, negro y grises.
+   Se carga después de index.css para que Tinta no herede dorados ni colores de UI. */
+
+.biblia-eink-paper {
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #000000 !important;
+  border-color: #b8b8b8 !important;
+  box-shadow: none !important;
+}
+
+.biblia-eink-paper,
+.biblia-eink-paper * {
+  color: #000000 !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+.biblia-eink-paper svg,
+.biblia-eink-paper svg * {
+  color: #000000 !important;
+  stroke: currentColor !important;
+}
+
+.biblia-eink-paper svg [fill]:not([fill="none"]) {
+  fill: currentColor !important;
+}
+
+.biblia-eink-paper section,
+.biblia-eink-paper article,
+.biblia-eink-paper div {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+.biblia-eink-paper button,
+.biblia-eink-paper a,
+.biblia-eink-paper input,
+.biblia-eink-paper select,
+.biblia-eink-paper textarea {
+  color: #000000 !important;
+  border-color: #8a8a8a !important;
+  box-shadow: none !important;
+}
+
+.biblia-eink-paper mark,
+.biblia-eink-paper button[aria-pressed="true"],
+.biblia-eink-paper [aria-selected="true"] {
+  background: #dedede !important;
+  color: #000000 !important;
+}
+
+.biblia-eink-paper ::selection {
+  background: #d7d7d7 !important;
+  color: #000000 !important;
+}
+
+/* Estudio bíblico: Tinta ocupa toda la pantalla como una página de e-book. */
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper),
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) main,
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header,
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) main > aside,
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) nav {
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #000000 !important;
+  box-shadow: none !important;
+}
+
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) > header {
+  border-color: #b8b8b8 !important;
+}
+
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) *,
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) a,
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) button {
+  color: #000000 !important;
+}
+
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) svg,
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) svg * {
+  color: #000000 !important;
+  stroke: currentColor !important;
+}
+
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) :is(header, nav, aside) svg [fill]:not([fill="none"]) {
+  fill: currentColor !important;
+}
+
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) button[aria-label="Formato de lectura"],
+.biblia-layout-shell:has(.study-reader-host article.biblia-eink-paper) a[aria-label="Volver"] {
+  color: #000000 !important;
+  border-color: #8a8a8a !important;
+  background: transparent !important;
+}
+
+.study-reader-host article.study-theme-ink {
+  --study-surface: #ffffff !important;
+  --study-card: #ffffff !important;
+  --study-text: #000000 !important;
+  --study-muted: #3f3f3f !important;
+  --study-border: #a8a8a8 !important;
+}
+
+.study-reader-host article.study-theme-ink .study-themed-card,
+.study-reader-host article.study-theme-ink .study-mobile-shell,
+.study-reader-host article.study-theme-ink .study-themed-header {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border-color: #a8a8a8 !important;
+}
+
+.study-reader-host article.study-theme-ink .proposition-label-pp,
+.study-reader-host article.study-theme-ink .proposition-label-ps,
+.study-reader-host article.study-theme-ink .study-themed-muted {
+  color: #000000 !important;
+}
+
+.study-reader-host article.study-theme-ink .study-desktop-tabs button[aria-pressed="true"] {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* PLANES — Tinta debe reproducir el lector e-ink de Biblia. */
+.biblia-layout-shell:has([style*="--plan-reading-accent: #000000"]) main {
+  background: #ffffff !important;
+  background-image: none !important;
+}
+
+[style*="--plan-reading-accent: #000000"] {
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #000000 !important;
+  border-color: #b8b8b8 !important;
+  box-shadow: none !important;
+}
+
+[style*="--plan-reading-accent: #000000"] *,
+[style*="--plan-reading-accent: #000000"] h1,
+[style*="--plan-reading-accent: #000000"] h2,
+[style*="--plan-reading-accent: #000000"] h3,
+[style*="--plan-reading-accent: #000000"] p,
+[style*="--plan-reading-accent: #000000"] a,
+[style*="--plan-reading-accent: #000000"] span {
+  color: #000000 !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+[style*="--plan-reading-accent: #000000"] section,
+[style*="--plan-reading-accent: #000000"] article,
+[style*="--plan-reading-accent: #000000"] div {
+  background-color: transparent !important;
+  background-image: none !important;
+  border-color: #b8b8b8 !important;
+  box-shadow: none !important;
+}
+
+[style*="--plan-reading-accent: #000000"] svg,
+[style*="--plan-reading-accent: #000000"] svg * {
+  color: #000000 !important;
+  stroke: currentColor !important;
+}
+
+[style*="--plan-reading-accent: #000000"] svg [fill]:not([fill="none"]) {
+  fill: currentColor !important;
+}
+
+[style*="--plan-reading-accent: #000000"] button,
+[style*="--plan-reading-accent: #000000"] a {
+  border-color: #8a8a8a !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+[style*="--plan-reading-accent: #000000"] button:not([disabled]) {
+  color: #000000 !important;
+}
+
+[style*="--plan-reading-accent: #000000"] button[class*="linear-gradient"] {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+[style*="--plan-reading-accent: #000000"] button[class*="linear-gradient"] * {
+  color: #ffffff !important;
+  stroke: currentColor !important;
+}
+
+[style*="--plan-reading-accent: #000000"] [class*="linear-gradient(90deg"] {
+  background: #000000 !important;
+}
+
+/* Chips de referencias bíblicas en Tinta: fondo blanco y texto negro. */
+[style*="--plan-reading-accent: #000000"] .no-scrollbar > button {
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #000000 !important;
+  border-color: #8a8a8a !important;
+}
+
+[style*="--plan-reading-accent: #000000"] .no-scrollbar > button * {
+  color: #000000 !important;
+}
+
+/* PLANES — Claro: el color de página debe cubrir todo el área de lectura.
+   El ancho de lectura limita el texto, no debe producir una tarjeta crema sobre fondo negro. */
+.biblia-layout-shell:has([style*="--plan-reading-surface: #FFFDF8"]) main {
+  background: #F8F5EA !important;
+  background-image: none !important;
+}

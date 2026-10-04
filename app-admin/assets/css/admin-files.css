@@ -2322,3 +2322,214 @@ textarea::placeholder {
     padding: 16px;
   }
 }
+
+
+/* Mantenimiento de módulos */
+.maintenance-global-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px;
+  margin-top: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  border-radius: 16px;
+  background: #ffffff;
+  color: #101828;
+}
+.maintenance-global-card h3,
+.maintenance-module-card strong {
+  margin: 0;
+  color: #101828;
+}
+.maintenance-global-card p,
+.maintenance-module-card p {
+  color: #667085;
+}
+.maintenance-global-form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.maintenance-module-list {
+  display: grid;
+  gap: 14px;
+}
+.maintenance-module-card {
+  padding: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  border-radius: 16px;
+  background: #ffffff;
+  color: #101828;
+}
+.maintenance-module-card.is-maintenance {
+  border-color: rgba(212, 175, 55, 0.75);
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.10);
+}
+.maintenance-module-head,
+.maintenance-module-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.maintenance-module-head small {
+  display: block;
+  margin-top: 4px;
+  color: #667085;
+  opacity: 1;
+}
+.maintenance-module-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+.maintenance-module-form label {
+  color: #344054;
+}
+.maintenance-module-form label > span {
+  display: block;
+  margin-bottom: 7px;
+  color: #344054;
+  font-weight: 700;
+}
+.maintenance-module-form textarea {
+  width: 100%;
+  min-height: 70px;
+  resize: vertical;
+  box-sizing: border-box;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 10px;
+  background: #ffffff;
+  color: #101828;
+  padding: 11px 12px;
+  font: inherit;
+  line-height: 1.45;
+}
+.maintenance-module-form textarea:focus {
+  outline: none;
+  border-color: rgba(212, 175, 55, 0.85);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
+}
+.maintenance-toggle {
+  display: flex !important;
+  align-items: center;
+  gap: 9px;
+  color: #344054 !important;
+  font-weight: 700;
+}
+.maintenance-toggle input {
+  width: 18px;
+  height: 18px;
+}
+.maintenance-module-footer {
+  padding-top: 4px;
+}
+.maintenance-module-footer small {
+  color: #667085;
+}
+@media (max-width: 760px) {
+  .maintenance-global-card,
+  .maintenance-module-head,
+  .maintenance-module-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+
+/* Mantenimiento por submódulo */
+.maintenance-submodule-section {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(15, 23, 42, 0.09);
+}
+.maintenance-submodule-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  color: #344054;
+  font-size: 13px;
+}
+.maintenance-submodule-heading span {
+  min-width: 26px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f2f4f7;
+  color: #667085;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+}
+.maintenance-submodule-list {
+  display: grid;
+  gap: 10px;
+}
+.maintenance-submodule-card {
+  padding: 13px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 13px;
+  background: #f8fafc;
+}
+.maintenance-submodule-card.is-maintenance {
+  border-color: rgba(212, 175, 55, 0.62);
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.42), #fff);
+}
+.maintenance-submodule-head,
+.maintenance-submodule-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.maintenance-submodule-head strong {
+  font-size: 13px;
+}
+.maintenance-submodule-head small,
+.maintenance-submodule-footer small {
+  display: block;
+  margin-top: 3px;
+  color: #667085;
+  font-size: 11px;
+}
+.maintenance-submodule-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+.maintenance-submodule-form label > span {
+  display: block;
+  margin-bottom: 6px;
+  color: #344054;
+  font-size: 12px;
+  font-weight: 700;
+}
+.maintenance-submodule-form textarea {
+  width: 100%;
+  min-height: 58px;
+  resize: vertical;
+  box-sizing: border-box;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 9px;
+  background: #fff;
+  color: #101828;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.maintenance-submodule-form textarea:focus {
+  outline: none;
+  border-color: rgba(212, 175, 55, 0.8);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.10);
+}
+@media (max-width: 760px) {
+  .maintenance-submodule-head,
+  .maintenance-submodule-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

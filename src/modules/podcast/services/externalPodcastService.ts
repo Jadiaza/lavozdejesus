@@ -1,4 +1,5 @@
 export type ExternalPodcastPlaybackMode = "daily" | "series";
+export type ExternalPodcastSource = "rss" | "db";
 
 export type ExternalPodcastCatalogItem = {
   slug: string;
@@ -6,6 +7,7 @@ export type ExternalPodcastCatalogItem = {
   subtitle: string;
   category: string;
   playback_mode: ExternalPodcastPlaybackMode;
+  source: ExternalPodcastSource;
 };
 
 export type ExternalPodcastEpisode = {
@@ -17,6 +19,8 @@ export type ExternalPodcastEpisode = {
   image_url: string;
   duration_seconds: number;
   pub_date: string;
+  season_number?: number;
+  episode_number?: number;
 };
 
 export type ExternalPodcast = {
@@ -26,7 +30,7 @@ export type ExternalPodcast = {
   author: string;
   image_url: string;
   category: string;
-  source: "rss";
+  source: "rss" | "lvj_db";
 };
 
 export type ExternalPodcastResponse = {
@@ -35,133 +39,60 @@ export type ExternalPodcastResponse = {
 };
 
 export const EXTERNAL_PODCASTS: ExternalPodcastCatalogItem[] = [
-  {
-    slug: "biblia-en-un-ano",
-    title: "La Biblia en un Año",
-    subtitle: "Fray Sergio Serrano, OP · Juan Diego Network",
-    category: "Biblia",
-    playback_mode: "daily",
-  },
-  {
-    slug: "que-haria-jesus",
-    title: "¿Qué Haría Jesús?",
-    subtitle: "New Fire · Reflexión diaria del Evangelio",
-    category: "Evangelio",
-    playback_mode: "daily",
-  },
-  {
-    slug: "evangelio-del-dia",
-    title: "Evangelio del día",
-    subtitle: "Fr. Jonathan Vásquez, O. de M.",
-    category: "Evangelio",
-    playback_mode: "daily",
-  },
-  {
-    slug: "10-minutos-con-jesus",
-    title: "10 Minutos con Jesús",
-    subtitle: "Oración y meditación diaria",
-    category: "Oración",
-    playback_mode: "series",
-  },
-  {
-    slug: "conocete-en-el-espejo",
-    title: "Conócete en el Espejo con Sheila Morataya",
-    subtitle: "Sheila Morataya · Juan Diego Network",
-    category: "Sanación interior",
-    playback_mode: "series",
-  },
-  {
-    slug: "platicando-en-catolico",
-    title: "Platicando en Católico",
-    subtitle: "Juan Diego Network",
-    category: "Actualidad católica",
-    playback_mode: "series",
-  },
-  {
-    slug: "conoce-ama-vive-tu-fe",
-    title: "CONOCE AMA Y VIVE TU FE",
-    subtitle: "Luis Román",
-    category: "Formación",
-    playback_mode: "series",
-  },
-  {
-    slug: "salve-maria",
-    title: "Salve María - Podcast Católico",
-    subtitle: "Heraldos del Evangelio",
-    category: "Espiritualidad",
-    playback_mode: "series",
-  },
-  {
-    slug: "escuela-de-cristo",
-    title: "Escuela de Cristo",
-    subtitle: "La Antigua Guatemala",
-    category: "Tradición y espiritualidad",
-    playback_mode: "series",
-  },
-  {
-    slug: "eco-catolico",
-    title: "Eco Católico",
-    subtitle: "Leonor Asilis",
-    category: "Fe y vida",
-    playback_mode: "series",
-  },
-  {
-    slug: "club-de-los-buhos",
-    title: "El Club de los Búhos",
-    subtitle: "Mauricio I. Pérez",
-    category: "Formación",
-    playback_mode: "series",
-  },
-  {
-    slug: "podcast-mauricio-perez",
-    title: "El Podcast de Mauricio Pérez",
-    subtitle: "Actualidad, espiritualidad y formación",
-    category: "Formación",
-    playback_mode: "series",
-  },
-  {
-    slug: "pasion-por-el-evangelio",
-    title: "Pasión por el Evangelio",
-    subtitle: "Exégesis del Evangelio dominical",
-    category: "Evangelio",
-    playback_mode: "series",
-  },
+  { slug: "biblia-en-un-ano", title: "La Biblia en un Año", subtitle: "Fray Sergio Serrano, OP · Juan Diego Network", category: "Biblia", playback_mode: "daily", source: "rss" },
+  { slug: "que-haria-jesus", title: "¿Qué Haría Jesús?", subtitle: "New Fire · Reflexión diaria del Evangelio", category: "Evangelio", playback_mode: "daily", source: "rss" },
+  { slug: "evangelio-del-dia", title: "Evangelio del día", subtitle: "Fr. Jonathan Vásquez, O. de M.", category: "Evangelio", playback_mode: "daily", source: "rss" },
+  { slug: "10-minutos-con-jesus", title: "10 Minutos con Jesús", subtitle: "Oración y meditación diaria", category: "Oración", playback_mode: "series", source: "rss" },
+  { slug: "conocete-en-el-espejo", title: "Conócete en el Espejo con Sheila Morataya", subtitle: "Sheila Morataya · Juan Diego Network", category: "Sanación interior", playback_mode: "series", source: "rss" },
+  { slug: "hablemos-de-exorcismos", title: "Hablemos de Exorcismos", subtitle: "P. Daniel Medina Guzmán, O.P.", category: "Discernimiento espiritual", playback_mode: "series", source: "db" },
+  { slug: "platicando-en-catolico", title: "Platicando en Católico", subtitle: "Juan Diego Network", category: "Actualidad católica", playback_mode: "series", source: "rss" },
+  { slug: "conoce-ama-vive-tu-fe", title: "CONOCE AMA Y VIVE TU FE", subtitle: "Luis Román", category: "Formación", playback_mode: "series", source: "rss" },
+  { slug: "salve-maria", title: "Salve María - Podcast Católico", subtitle: "Heraldos del Evangelio", category: "Espiritualidad", playback_mode: "series", source: "rss" },
+  { slug: "escuela-de-cristo", title: "Escuela de Cristo", subtitle: "La Antigua Guatemala", category: "Tradición y espiritualidad", playback_mode: "series", source: "rss" },
+  { slug: "eco-catolico", title: "Eco Católico", subtitle: "Leonor Asilis", category: "Fe y vida", playback_mode: "series", source: "rss" },
+  { slug: "club-de-los-buhos", title: "El Club de los Búhos", subtitle: "Mauricio I. Pérez", category: "Formación", playback_mode: "series", source: "rss" },
+  { slug: "podcast-mauricio-perez", title: "El Podcast de Mauricio Pérez", subtitle: "Actualidad, espiritualidad y formación", category: "Formación", playback_mode: "series", source: "rss" },
+  { slug: "pasion-por-el-evangelio", title: "Pasión por el Evangelio", subtitle: "Exégesis del Evangelio dominical", category: "Evangelio", playback_mode: "series", source: "rss" },
 ];
 
-export async function getExternalPodcast(slug: string): Promise<ExternalPodcastResponse> {
-  const response = await fetch(`/api/podcast-rss?slug=${encodeURIComponent(slug)}`, {
+const hostingApiBase = ((import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "https://lavozdejesus.co")
+  .trim()
+  .replace(/\/$/, "");
+
+const catalogItemForSlug = (slug: string) => EXTERNAL_PODCASTS.find((podcast) => podcast.slug === slug);
+
+const endpointForSlug = (slug: string, meta = false) => {
+  const item = catalogItemForSlug(slug);
+  const baseQuery = `slug=${encodeURIComponent(slug)}${meta ? "&meta=1" : ""}`;
+
+  if (item?.source === "db") {
+    return `${hostingApiBase}/api/podcast.php?${baseQuery}&_=${Date.now()}`;
+  }
+
+  return `/api/podcast-rss?${baseQuery}`;
+};
+
+const fetchPodcastJson = (slug: string, meta = false) => {
+  const item = catalogItemForSlug(slug);
+  return fetch(endpointForSlug(slug, meta), {
     headers: { Accept: "application/json" },
+    cache: item?.source === "db" ? "no-store" : "default",
   });
+};
 
-  if (!response.ok) {
-    throw new Error(`Podcast RSS ${response.status}`);
-  }
-
+export async function getExternalPodcast(slug: string): Promise<ExternalPodcastResponse> {
+  const response = await fetchPodcastJson(slug);
+  if (!response.ok) throw new Error(`Podcast ${response.status}`);
   const data = (await response.json()) as Partial<ExternalPodcastResponse>;
-  if (!data.podcast || !Array.isArray(data.episodes)) {
-    throw new Error("La fuente RSS no devolvió un podcast válido.");
-  }
-
-  return {
-    podcast: data.podcast,
-    episodes: data.episodes,
-  };
+  if (!data.podcast || !Array.isArray(data.episodes)) throw new Error("La fuente no devolvió un podcast válido.");
+  return { podcast: data.podcast, episodes: data.episodes };
 }
 
 export async function getExternalPodcastMetadata(slug: string): Promise<ExternalPodcast> {
-  const response = await fetch(`/api/podcast-rss?slug=${encodeURIComponent(slug)}&meta=1`, {
-    headers: { Accept: "application/json" },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Podcast metadata ${response.status}`);
-  }
-
+  const response = await fetchPodcastJson(slug, true);
+  if (!response.ok) throw new Error(`Podcast metadata ${response.status}`);
   const data = (await response.json()) as { podcast?: ExternalPodcast };
-  if (!data.podcast) {
-    throw new Error("La fuente RSS no devolvió metadatos válidos.");
-  }
-
+  if (!data.podcast) throw new Error("La fuente no devolvió metadatos válidos.");
   return data.podcast;
 }
 
@@ -175,7 +106,6 @@ export function formatExternalDuration(seconds: number): string {
   return `${minutes}:${String(secs).padStart(2, "0")}`;
 }
 
-
 export function getExternalPodcastCatalogItem(slug: string): ExternalPodcastCatalogItem | undefined {
-  return EXTERNAL_PODCASTS.find((podcast) => podcast.slug === slug);
+  return catalogItemForSlug(slug);
 }

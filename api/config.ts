@@ -77,6 +77,7 @@ export default async function handler(_req: unknown, res: ApiResponse) {
     const base = await firstRow(`
       SELECT
         e.*,
+        app.modo_mantenimiento,
         app.mostrar_splash,
         app.duracion_splash,
         app.mostrar_publicidad,
@@ -207,6 +208,7 @@ export default async function handler(_req: unknown, res: ApiResponse) {
         "radio_slot",
         "adsense_radio_slot",
       ),
+      modo_mantenimiento: boolValue(base.modo_mantenimiento, false),
       mostrar_splash: boolValue(base.mostrar_splash, true),
       duracion_splash: text(base, "duracion_splash"),
       mostrar_radio: boolValue(base.mostrar_radio, true),

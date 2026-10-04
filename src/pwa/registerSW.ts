@@ -1,7 +1,9 @@
 // Registro protegido del service worker para contextos reales de producción.
+// La versión cambia deliberadamente para forzar una comprobación del worker tras cada despliegue.
 // Conserva ?sw=off como interruptor de emergencia.
 
 const SW_URL = "/sw.js";
+const APP_CACHE_BUSTER = "lvjprayer-access-2026-10-02-v2";
 
 function isRefusedContext(): boolean {
   if (!import.meta.env.PROD) return true;
@@ -57,6 +59,13 @@ export async function registerSW() {
     const registration = await navigator.serviceWorker.getRegistration('/');
     // Comprueba el sw.js contra la red en cada entrada a la aplicación.
     await registration?.update();
+
+    // Activa inmediatamente el worker nuevo cuando exista una actualización.
+    // Evita que el dispositivo conserve indefinidamente una versión anterior.
+    const waiting = registration?.waiting;
+    if (waiting) {
+      waiting.postMessage({ type: "SKIP_WAITING", cacheBuster: APP_CACHE_BUSTER });
+    }
   } catch {
     /* registration failed — silent */
   }

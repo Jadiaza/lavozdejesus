@@ -63,3 +63,7 @@ export const bibleStudyAuth = createClient<Database>(SUPABASE_URL, SUPABASE_KEY,
     detectSessionInUrl: true,
   },
 });
+
+// Alias oficial para los módulos de LVJPRAYER. Se conserva el nombre histórico
+// para no romper imports existentes del módulo Biblia.
+export const lvjAuth = bibleStudyAuth;

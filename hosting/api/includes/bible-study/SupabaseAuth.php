@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 final class SupabaseAuth
 {
+  // Proveedor único de identidad para LVJPRAYER y sus módulos actuales/futuros.
+  // La autorización funcional se resuelve en la capa local de LVJ; Supabase no decide roles ni acceso premium.
   public static function requireAccount(PDO $pdo): array
   {
     $header = self::authorizationHeader();
@@ -30,7 +32,7 @@ final class SupabaseAuth
     }
     $user = self::resolveLocalUser($pdo, $identity);
     if (!$user) lvj_json_response(['success' => false, 'message' => 'No fue posible vincular tu cuenta con La Voz de Jesús.'], 403);
-    if (array_key_exists('estado', $user) && (int) $user['estado'] !== 1) {
+    if (array_key_exists('estado', $user) && !in_array(mb_strtolower(trim((string) $user['estado'])), ['1', 'activo', 'active', 'habilitado'], true)) {
       lvj_json_response(['success' => false, 'message' => 'Tu cuenta no está activa.'], 403);
     }
     return $user;
@@ -109,9 +111,9 @@ final class SupabaseAuth
     if (in_array('auth_subject', $columns, true)) $values['auth_subject'] = $subject;
     if (in_array('auth_provider', $columns, true)) $values['auth_provider'] = 'supabase';
     if (in_array('nombre', $columns, true)) $values['nombre'] = (string) ($identity['user_metadata']['full_name'] ?? 'Usuario LVJ');
-    if (in_array('estado', $columns, true)) $values['estado'] = 1;
+    if (in_array('estado', $columns, true)) $values['estado'] = 'activo';
     if (in_array('email_verificado', $columns, true)) $values['email_verificado'] = 1;
-    if (in_array('ia_autorizado', $columns, true)) $values['ia_autorizado'] = 1;
+    if (in_array('ia_autorizado', $columns, true)) $values['ia_autorizado'] = 0;
     if (in_array('ultimo_acceso_at', $columns, true)) $values['ultimo_acceso_at'] = gmdate('Y-m-d H:i:s');
     if (!$values) return null;
     try {

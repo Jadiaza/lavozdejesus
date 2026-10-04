@@ -2,7 +2,7 @@ import { FormEvent, ReactNode, useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   AlertCircle, ArrowLeft, Bell, BellRing, Bird, BookOpen, Check, ChevronRight, Clock3, Cross, Download,
-  HandHeart, Heart, Home, LoaderCircle, Menu, Moon, Play, RefreshCw, Search, Send, Settings,
+  CalendarDays, Crown, FileText, Folder, HandHeart, Heart, Home, LoaderCircle, Menu, Moon, Play, RefreshCw, Search, Send, Settings,
   Shield, ShieldCheck, Sparkles, Sun, Volume2,
 } from "lucide-react";
 import liturgyHoursHero from "@/assets/liturgy-hours-hero.webp";
@@ -23,6 +23,19 @@ import { prayerPushActive, sendPrayerPushTest, syncPrayerPush } from "../service
 import { prayerLibraryService, type LibraryPrayer } from "../services/prayerLibraryService";
 
 const GOLD = "text-[#efbd52]";
+
+const DEVOTION_IMAGE_BASE = "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/oraciones/devociones/images";
+const SAN_MIGUEL_PORTADA = "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/consagraciones/san-miguel/imagenes/portada/portada_san_miguel.png";
+const devotionImages: Record<string, string> = {
+  "san-jose": DEVOTION_IMAGE_BASE + "/devocion-san-jose.png",
+  "sangre-de-cristo": DEVOTION_IMAGE_BASE + "/devocion-sangre-de-cristo.png",
+  "san-miguel-arcangel": "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/oraciones/devociones/images/devocion-san-miguel-arcangel.png",
+  "maria-santisima": DEVOTION_IMAGE_BASE + "/devocion-maria-santisima.png",
+  "espiritu-santo": DEVOTION_IMAGE_BASE + "/devocion-espiritu-santo.png",
+  "sagrado-corazon-de-jesus": DEVOTION_IMAGE_BASE + "/devocion-sagrado-corazon-de-jesus.png",
+  "santisimo-sacramento": DEVOTION_IMAGE_BASE + "/devocion-santisimo-sacramento.png",
+  "divina-misericordia": DEVOTION_IMAGE_BASE + "/devocion-divina-misericordia.png",
+};
 
 const tactileFeedback = () => {
   if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate(10);
@@ -168,30 +181,69 @@ export function LiturgiaReader() {
     return () => controller.abort();
   }, [hora, reload]);
 
-  const paragraphClass = (paragraph: LiturgyParagraph) => {
-    if (paragraph.tipo === "antifona") return "font-semibold text-[var(--prayer-accent)]";
-    if (paragraph.tipo === "respuesta") return "pl-3 font-semibold text-[var(--prayer-accent)]";
-    if (paragraph.tipo === "rubrica") return "text-sm italic text-[var(--prayer-accent)] opacity-80";
-    if (paragraph.tipo === "subtitulo") return "font-semibold uppercase tracking-wide text-[var(--prayer-accent)]";
-    return "";
+  const isRomanHeading = (text: string) => /^[IVXLCDM]+\.?$/i.test(text.trim());
+  const isPsalmHeading = (text: string) => /^Salmo\b/i.test(text.trim());
+  const isBiblicalEpigraph = (text: string) => /\([^()]*\d+[^()]*\)\.?$/.test(text.trim());
+
+  const formatPsalmHeading = (text: string) => {
+    const normalized = text.toLocaleLowerCase("es").replace(/^salmo\b/i, "Salmo");
+    return normalized.replace(/^(Salmo\s+\S+\s+)([a-záéíóúüñ])/i, (_, prefix, firstLetter) =>
+      prefix + firstLetter.toLocaleUpperCase("es"));
   };
+
+  const paragraphClass = (paragraph: LiturgyParagraph) => {
+    if (isRomanHeading(paragraph.texto)) return "text-left font-bold uppercase text-[var(--prayer-accent)]";
+    if (paragraph.tipo === "antifona" || paragraph.tipo === "respuesta") return "text-left";
+    if (paragraph.tipo === "rubrica") return "text-sm italic text-[var(--prayer-accent)] opacity-85";
+    if (paragraph.tipo === "subtitulo" && isPsalmHeading(paragraph.texto)) return "font-bold tracking-wide text-[var(--prayer-accent)]";
+    if (paragraph.tipo === "subtitulo") return "font-bold uppercase tracking-wide text-[var(--prayer-accent)]";
+    return "text-left";
+  };
+
+  const renderParagraph = (paragraph: LiturgyParagraph) => {
+    if (isRomanHeading(paragraph.texto)) return paragraph.texto.toLocaleUpperCase("es");
+    if (isPsalmHeading(paragraph.texto)) return formatPsalmHeading(paragraph.texto);
+    const marked = paragraph.texto.match(/^(Ant(?:\s*\d+)?\.|[VR]\.)\s*(.*)$/i);
+    if (!marked) return paragraph.texto;
+    return <><strong className="mr-1.5 font-bold text-[var(--prayer-accent)]">{marked[1]}</strong><span>{marked[2]}</span></>;
+  };
+
+  const majorSectionTypes = new Set(["himno", "salmodia", "lectura", "primera_lectura", "segunda_lectura", "cantico_evangelico", "preces", "oracion", "conclusion"]);
+  const visibleSections = content?.secciones.map((section) => ({
+    ...section,
+    contenido: section.contenido.filter((paragraph) =>
+      !/^\(Oración de (?:la mañana|la tarde|la noche)\)$/i.test(paragraph.texto)
+      && !/^(?:OFICIO DE LECTURA|LAUDES|(?:HORA\s+)?(?:TERCIA|SEXTA|NONA)|(?:I{1,2}\s+)?V[ÍI]SPERAS|COMPLETAS)$/i.test(paragraph.texto)
+    ),
+  })).filter((section) => section.contenido.length > 0) ?? [];
 
   return <div style={{ backgroundColor: readingTheme.background, color: readingTheme.color }} className="min-h-dvh transition-colors duration-300">
     <div style={{ backgroundColor: readingTheme.background }} className="mx-auto min-h-dvh max-w-[430px] border-x border-current/[0.04] transition-colors duration-300">
-      <header style={{ backgroundColor: readingTheme.header, borderColor: `${readingTheme.accent}33` }} className="sticky top-0 z-30 grid h-[4.8rem] grid-cols-[3.5rem_1fr_3.5rem] items-center border-b px-3 backdrop-blur-xl transition-colors duration-300">
+      <header style={{ backgroundColor: readingTheme.header, borderColor: `${readingTheme.accent}33` }} className="sticky top-0 z-30 grid h-[4.25rem] grid-cols-[3.5rem_1fr_3.5rem] items-center border-b px-3 backdrop-blur-xl transition-colors duration-300">
         <button type="button" onClick={() => navigate(-1)} aria-label="Volver" style={{ color: readingTheme.accent }} className="flex h-11 w-11 items-center justify-center"><ArrowLeft className="h-7 w-7" /></button>
         <div className="min-w-0 text-center"><Sparkles style={{ color: readingTheme.accent }} className="mx-auto h-4 w-4" /><h1 style={{ color: readingTheme.accent }} className="truncate text-sm font-bold uppercase tracking-wide">{data[1]}</h1></div>
         <button type="button" onClick={() => setFormatOpen(true)} aria-label="Formato de lectura" style={{ color: readingTheme.accent }} className="flex h-11 w-11 items-center justify-center font-serif text-2xl font-semibold">Aa</button>
       </header>
 
       <main className="px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4">
-        <div className="mb-7 text-left"><p className="text-sm capitalize opacity-65">{content?.fecha_texto || todayLabel()}</p>{content ? <p style={{ color: readingTheme.accent }} className="mt-1 text-[11px] font-semibold uppercase tracking-wider">{content.celebracion}</p> : null}</div>
+        <div className="mb-5 text-left"><p className="text-sm capitalize opacity-65">{content?.fecha_texto || todayLabel()}</p></div>
 
         {loading ? <div className="flex min-h-[62dvh] flex-col items-center justify-center"><LoaderCircle style={{ color: readingTheme.accent }} className="h-8 w-8 animate-spin" /><p className="mt-3 text-sm opacity-65">Preparando la oración de la Iglesia…</p></div> : null}
         {!loading && error ? <div className="flex min-h-[55dvh] flex-col items-center justify-center p-6 text-center"><AlertCircle style={{ color: readingTheme.accent }} className="h-9 w-9" /><p className="mt-3 text-sm opacity-75">{error}</p><button type="button" onClick={() => setReload((value) => value + 1)} style={{ borderColor: readingTheme.accent, color: readingTheme.accent }} className="mt-5 flex items-center gap-2 rounded-full border px-5 py-3 text-xs font-bold"><RefreshCw className="h-4 w-4" />REINTENTAR</button></div> : null}
         {!loading && content ? <PrayerReader preferences={preferences} integrated>
-          <div className="mb-7 border-b border-current/20 pb-5 text-left"><p className="text-xs font-semibold uppercase tracking-[.18em] text-[var(--prayer-accent)]">{content.tiempo_liturgico}</p><h2 className="mt-2 text-[clamp(1.55rem,7vw,2rem)] font-bold leading-tight">{content.celebracion}</h2>{content.detalle ? <p className="mt-2 text-sm opacity-65">{content.detalle}</p> : null}</div>
-          <div className="space-y-9">{content.secciones.map((section, index) => <section key={`${section.tipo}-${index}`}><h3 className="mb-4 border-b border-current/20 pb-2 text-left text-lg font-bold text-[var(--prayer-accent)]">{section.titulo}</h3><div className="space-y-4">{section.contenido.map((paragraph, paragraphIndex) => <p key={paragraphIndex} className={paragraphClass(paragraph)}>{paragraph.texto}</p>)}</div></section>)}</div>
+          <div className="mb-6 border-b border-current/20 pb-4 text-left"><p className="text-xs font-bold uppercase tracking-[.18em] text-[var(--prayer-accent)]">{content.tiempo_liturgico}</p><h2 className="mt-2 text-[clamp(1.45rem,6.4vw,1.9rem)] font-bold uppercase leading-tight text-[var(--prayer-accent)]">{content.celebracion}</h2>{content.detalle ? <p className="mt-2 text-sm opacity-65">{content.detalle}</p> : null}</div>
+          <div className="space-y-6">{visibleSections.map((section, index) => {
+            const isIntro = section.tipo === "inicio";
+            const isMajor = majorSectionTypes.has(section.tipo);
+            return <section key={`${section.tipo}-${index}`} className={isMajor ? "border-t border-current/15 pt-5" : ""}>
+              {!isIntro ? <h3 className="mb-2 text-left text-lg font-bold uppercase text-[var(--prayer-accent)]">{section.titulo}</h3> : null}
+              <div className="space-y-2 leading-[1.42]">{section.contenido.map((paragraph, paragraphIndex) => {
+                const previous = section.contenido[paragraphIndex - 1];
+                const biblicalEpigraph = paragraph.tipo === "texto" && previous?.tipo === "subtitulo" && isBiblicalEpigraph(paragraph.texto);
+                return <p key={paragraphIndex} className={`${paragraphClass(paragraph)}${biblicalEpigraph ? " italic" : ""}`}>{renderParagraph(paragraph)}</p>;
+              })}</div>
+            </section>;
+          })}</div>
           <footer className="mt-10 border-t border-current/20 pt-4 text-center text-xs opacity-55">Fuente: {content.fuente.nombre} · Presentado por LVJPRAYER</footer>
         </PrayerReader> : null}
       </main>
@@ -380,19 +432,8 @@ export function OracionDetalle() {
 
 export function DevocionesPage() {
   const [items, setItems] = useState<Awaited<ReturnType<typeof prayerLibraryService.devotions>>>([]);
-  const [query, setQuery] = useState("");
   useEffect(() => { const controller = new AbortController(); prayerLibraryService.devotions(controller.signal).then(setItems).catch(() => setItems([])); return () => controller.abort(); }, []);
-  const devotionImageBase = "https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/oraciones/devociones/images";
-  const devotionImages: Record<string, string> = {
-    "san-jose": `${devotionImageBase}/devocion-san-jose.png`,
-    "sangre-de-cristo": `${devotionImageBase}/devocion-sangre-de-cristo.png`,
-    "san-miguel-arcangel": `${devotionImageBase}/devocion-san-miguel-arcangel.png`,
-    "maria-santisima": `${devotionImageBase}/devocion-maria-santisima.png`,
-    "espiritu-santo": `${devotionImageBase}/devocion-espiritu-santo.png`,
-    "sagrado-corazon-de-jesus": `${devotionImageBase}/devocion-sagrado-corazon-de-jesus.png`,
-    "santisimo-sacramento": `${devotionImageBase}/devocion-santisimo-sacramento.png`,
-    "divina-misericordia": `${devotionImageBase}/devocion-divina-misericordia.png`,
-  };
+
   const fallback = [
     ["san-jose", "San José", "Custodio de Jesús y protector de las familias", "SJ"],
     ["sangre-de-cristo", "Sangre de Cristo", "Redención, entrega y protección en Cristo", "SC"],
@@ -403,9 +444,59 @@ export function DevocionesPage() {
     ["santisimo-sacramento", "Santísimo Sacramento", "Adoración y encuentro con Jesús Eucaristía", "IHS"],
     ["divina-misericordia", "Divina Misericordia", "Confianza en el amor misericordioso de Jesús", "DM"],
   ].map(([slug, titulo, subtitulo, monogram]) => ({ id: "", slug, titulo, subtitulo, imagen: devotionImages[slug] || "", total_oraciones: 0, monogram }));
-  const cards = (items.length ? items.map((item) => ({ ...item, imagen: item.imagen || devotionImages[item.slug] || "", monogram: item.titulo.split(" ").map((word) => word[0]).join("").slice(0, 3) })) : fallback)
-    .filter((item) => item.titulo.toLowerCase().includes(query.toLowerCase()));
-  return <Shell title="Devociones"><p className="-mt-1 mb-4 text-center text-xs text-white/60">Camina junto a Dios de la mano de los santos</p><div className="mb-5 flex items-center gap-3 rounded-full border border-white/15 bg-[#101b24] px-4"><Search className="h-5 w-5 text-white/55" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar una devoción" className="h-12 min-w-0 flex-1 bg-transparent text-sm outline-none" /></div><div className="grid grid-cols-2 gap-3">{cards.map((item) => <Link key={item.slug} to={`/oraciones/devociones/${item.slug}`} className="group overflow-hidden rounded-2xl border border-[#d8a740]/65 bg-[#0d1922] shadow-[0_8px_20px_rgba(0,0,0,.28)] active:scale-[.98]">{item.imagen ? <img src={item.imagen} alt={item.titulo} loading="lazy" className="aspect-[4/5] w-full object-cover object-top" /> : <div className="flex aspect-[4/5] items-center justify-center bg-[radial-gradient(circle_at_50%_38%,rgba(239,189,82,.36),rgba(8,19,27,.3)_42%,#08131b_78%)]"><span className="flex h-16 w-16 items-center justify-center rounded-full border border-[#efbd52]/55 font-display text-xl text-[#f4cf70] shadow-[0_0_30px_rgba(239,189,82,.18)]">{item.monogram}</span></div>}<div className="min-h-[6.2rem] p-3"><div className="flex items-start gap-1"><h2 className="flex-1 text-sm font-bold leading-tight">{item.titulo}</h2><ChevronRight className="h-5 w-5 shrink-0 text-[#efbd52]" /></div><p className="mt-1.5 line-clamp-2 text-[10px] leading-relaxed text-white/55">{item.subtitulo}</p><p className="mt-2 text-[9px] font-semibold text-[#efbd52]/85">{item.total_oraciones ? `${item.total_oraciones} oraciones` : "Rosario · Oraciones · Novena"}</p></div></Link>)}</div></Shell>;
+
+  const cards = (items.length
+    ? items.map((item) => ({ ...item, imagen: item.imagen || devotionImages[item.slug] || "", monogram: item.titulo.split(" ").map((word) => word[0]).join("").slice(0, 3) }))
+    : fallback);
+
+  return (
+    <div className="min-h-dvh bg-[#050505] text-[#F8F5EA] pb-[calc(6rem+env(safe-area-inset-bottom))]">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_-8%,rgba(212,175,55,0.18),transparent_30%),radial-gradient(circle_at_50%_100%,rgba(212,175,55,0.08),transparent_36%),linear-gradient(180deg,#050505_0%,#090909_52%,#050505_100%)]" />
+      <div className="pointer-events-none fixed inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D4AF37]/70 to-transparent" />
+
+      <div className="relative z-10 mx-auto min-h-dvh w-full max-w-[430px] border-x border-white/5">
+        <header className="sticky top-0 z-40 border-b border-[#D4AF37]/15 bg-[#050505]/92 shadow-[0_14px_38px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+          <div className="mx-auto flex w-full items-center gap-3 px-4 py-3">
+            <div className="flex items-center gap-2">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#F2D27A] via-[#D4AF37] to-[#9B7417] shadow-[0_0_22px_rgba(212,175,55,0.28)]">
+                <HandHeart className="h-4 w-4 text-[#050505]" strokeWidth={1.8} />
+              </span>
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.28em] text-[#D4AF37]/85">La Voz de Jesús</div>
+                <div className="font-display text-lg leading-none text-[#F8F5EA]">Devociones</div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="relative z-10 px-3 pb-8 pt-3">
+          <div className="grid grid-cols-2 gap-3">
+            {cards.map((item) => (
+              <Link key={item.slug} to={`/oraciones/devociones/${item.slug}`} className="group overflow-hidden rounded-2xl border border-[#d8a740]/65 bg-[#0d1922] shadow-[0_8px_20px_rgba(0,0,0,.28)] active:scale-[.98]">
+                {item.imagen ? (
+                  <img src={item.imagen} alt={item.titulo} loading="lazy" className="aspect-[4/5] w-full object-cover object-top" />
+                ) : (
+                  <div className="flex aspect-[4/5] items-center justify-center bg-[radial-gradient(circle_at_50%_38%,rgba(239,189,82,.36),rgba(8,19,27,.3)_42%,#08131b_78%)]">
+                    <span className="flex h-16 w-16 items-center justify-center rounded-full border border-[#efbd52]/55 font-display text-xl text-[#f4cf70] shadow-[0_0_30px_rgba(239,189,82,.18)]">{item.monogram}</span>
+                  </div>
+                )}
+                <div className="min-h-[6.2rem] p-3">
+                  <div className="flex items-start gap-1">
+                    <h2 className="flex-1 text-sm font-bold leading-tight">{item.titulo}</h2>
+                    <ChevronRight className="h-5 w-5 shrink-0 text-[#efbd52]" />
+                  </div>
+                  <p className="mt-1.5 line-clamp-2 text-[10px] leading-relaxed text-white/55">{item.subtitulo}</p>
+                  <p className="mt-2 text-[9px] font-semibold text-[#efbd52]/85">{item.total_oraciones ? `${item.total_oraciones} oraciones` : "Rosario · Oraciones · Novena"}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </main>
+
+        <PrayerNav active="Oraciones" />
+      </div>
+    </div>
+  );
 }
 
 export function DevocionDetalle() {
@@ -413,8 +504,51 @@ export function DevocionDetalle() {
   const [items, setItems] = useState<LibraryPrayer[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => { const controller = new AbortController(); setLoading(true); prayerLibraryService.devotion(slug, controller.signal).then(setItems).finally(() => { if (!controller.signal.aborted) setLoading(false); }); return () => controller.abort(); }, [slug]);
+
+  if (slug === "san-miguel-arcangel") {
+    const consagracionUrl = "/oraciones/devociones/san-miguel-arcangel/consagracion";
+    const options = [
+      { icon: BookOpen, title: "Información", subtitle: "Vida, historia y devoción" },
+      { icon: HandHeart, title: "Oraciones", subtitle: "Oraciones a San Miguel" },
+      { icon: FileText, title: "Novenas", subtitle: "Para cada necesidad" },
+      { icon: CalendarDays, title: "Consagración de 33 días", subtitle: "Un camino de preparación espiritual", action: consagracionUrl },
+      { icon: Crown, title: "Letanías", subtitle: "Alabanzas y súplicas" },
+      { icon: Folder, title: "Otros recursos", subtitle: "Materiales y contenidos" },
+    ];
+
+    return <div className="min-h-dvh bg-[#02080d] text-[#f5f0e6]">
+      <div className="relative mx-auto min-h-dvh w-full max-w-[430px] overflow-hidden border-x border-white/[0.04] bg-[#02080d]">
+        <header className="sticky top-0 z-30 flex h-16 items-center border-b border-[#d8a740]/20 bg-[#050b12]/95 px-4 backdrop-blur">
+          <Link to="/oraciones/devociones" aria-label="Volver a devociones" className="rounded-full p-2 text-white/80"><ArrowLeft className="h-6 w-6" /></Link>
+          <div className="min-w-0 flex-1 pl-2">
+            <h1 className="truncate font-serif text-[1.15rem] font-bold text-[#f4c64e]">San Miguel Arcángel</h1>
+            <p className="text-[11px] text-white/65">Príncipe de la Milicia Celestial</p>
+          </div>
+        </header>
+
+        <main className="pb-28">
+          <img src={SAN_MIGUEL_PORTADA} alt="San Miguel Arcángel" className="block aspect-[4/3] w-full object-cover object-top" />
+          <div className="space-y-2 px-3 py-2">
+            {options.map(({ icon: Icon, title: optionTitle, subtitle, action }) => {
+              const card = <div className={`group flex min-h-[4.35rem] items-center gap-3 rounded-2xl border px-4 py-2.5 shadow-[0_8px_18px_rgba(0,0,0,.24)] transition ${action ? "border-[#efbd52] bg-[linear-gradient(145deg,rgba(12,39,57,.98),rgba(5,19,29,.98))] shadow-[0_0_0_1px_rgba(239,189,82,.18),0_8px_20px_rgba(0,0,0,.28)]" : "border-[#294353] bg-[linear-gradient(145deg,rgba(11,34,49,.98),rgba(6,19,28,.98))]"}`}>
+                <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${action ? "text-[#f5c64f]" : "text-[#f0bd45]"}`}><Icon className="h-7 w-7" strokeWidth={1.65} /></span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[15px] font-bold leading-tight text-white">{optionTitle}</span>
+                  <span className="mt-1 block text-[10px] leading-tight text-white/60">{subtitle}</span>
+                </span>
+                <ChevronRight className="h-6 w-6 shrink-0 text-white/85 transition group-hover:translate-x-0.5" />
+              </div>;
+              return action ? <a key={optionTitle} href={action} className="block">{card}</a> : <div key={optionTitle}>{card}</div>;
+            })}
+          </div>
+        </main>
+        <PrayerNav active="Oraciones" />
+      </div>
+    </div>;
+  }
+
   const title = slug.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
-  return <Shell title={title}>{loading ? <div className="flex min-h-48 items-center justify-center"><LoaderCircle className="h-7 w-7 animate-spin text-[#efbd52]" /></div> : items.length ? <div className="space-y-3">{items.map((prayer) => <Link key={prayer.id} to={`/oraciones/oracion/${prayer.id}`} className="flex items-center rounded-xl border border-white/10 bg-[#111b23] p-4"><HandHeart className="mr-3 h-6 w-6 text-[#efbd52]" /><span className="min-w-0 flex-1"><b className="block text-sm">{prayer.titulo}</b><small className="mt-1 block text-[10px] text-white/50">{prayer.subtitulo}</small></span><ChevronRight className="h-5 w-5 text-[#efbd52]" /></Link>)}</div> : <div className="rounded-2xl border border-[#d8a740]/25 bg-[#111b23] p-7 text-center text-sm text-white/60">Esta colección está preparada para recibir sus oraciones, rosarios, letanías y novenas.</div>}</Shell>;
+  return <Shell title={title}>{loading ? <div className="flex min-h-48 items-center justify-center"><LoaderCircle className="h-7 w-7 animate-spin text-[#efbd52]" /></div> : items.length ? <div className="space-y-3">{items.map((prayer) => <Link key={prayer.id} to={`/oraciones/oracion/${prayer.id}`} className="flex items-center rounded-xl border border-white/10 bg-[#111b23] p-4"><HandHeart className="mr-3 h-6 w-6 text-[#efbd52]" /><span className="min-w-0 flex-1"><b className="block text-sm">{prayer.titulo}</b><small className="mt-1 block text-[10px] text-white/50">{prayer.subtitulo}</small></span><ChevronRight className="h-5 w-5 text-[#efbd52]" /></Link>)}</div> : <div className="rounded-2xl border border-[#d8a740]/25 bg-[#111b23] p-7 text-center text-sm leading-relaxed text-white/60">Esta colección está preparada para recibir sus oraciones, rosarios, letanías y novenas.</div>}</Shell>;
 }
 
 export function MisOraciones() {

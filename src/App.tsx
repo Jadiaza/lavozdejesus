@@ -6,10 +6,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { RadioPlayerProvider } from "@/context/RadioPlayerContext";
 import Index from "./pages/Index.tsx";
+import Programacion from "./pages/Programacion.tsx";
 import PrayerReminderScheduler from "@/modules/prayers/components/PrayerReminderScheduler";
 import AppThemeSync from "@/features/theme/AppThemeSync";
+import MaintenanceGate from "@/components/MaintenanceGate";
+import AccessGate from "@/components/AccessGate";
 
-const RosarioHome = lazy(() => import("@/modules/rosary/pages/RosarioHome"));
+import RosarioHome from "@/modules/rosary/pages/RosarioHome";
 const RosarioModalidad = lazy(() => import("@/modules/rosary/pages/RosarioModalidad"));
 const RosarioIntencion = lazy(() => import("@/modules/rosary/pages/RosarioIntencion"));
 const RosarioSeleccionMisterios = lazy(() => import("@/modules/rosary/pages/RosarioSeleccionMisterios"));
@@ -21,10 +24,10 @@ const RosarioConfiguracion = lazy(() => import("@/modules/rosary/pages/RosarioCo
 const RosarioDescargas = lazy(() => import("@/modules/rosary/pages/RosarioDescargas"));
 const RosarioDiario = lazy(() => import("@/modules/rosary/pages/RosarioDiario"));
 const RosarioInfo = lazy(() => import("@/modules/rosary/pages/RosarioInfo"));
-const Podcast = lazy(() => import("@/modules/podcast/pages/PodcastHome"));
+import Podcast from "@/modules/podcast/pages/PodcastHome";
 const PodcastSeries = lazy(() => import("@/modules/podcast/pages/PodcastSeries"));
 const PodcastExternalSeries = lazy(() => import("@/modules/podcast/pages/PodcastExternalSeries"));
-const Oraciones = lazy(() => import("@/modules/prayers/pages/Oraciones"));
+import Oraciones from "@/modules/prayers/pages/Oraciones";
 const LiturgiaHoras = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.LiturgiaHoras })));
 const LiturgiaReader = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.LiturgiaReader })));
 const OracionCategorias = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.OracionCategorias })));
@@ -32,18 +35,18 @@ const OracionLista = lazy(() => import("@/modules/prayers/pages/Oraciones").then
 const OracionDetalle = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.OracionDetalle })));
 const DevocionesOraciones = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.DevocionesPage })));
 const DevocionDetalle = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.DevocionDetalle })));
+const ConsagracionSanMiguel = lazy(() => import("@/modules/prayers/pages/ConsagracionSanMiguel"));
 const MisOraciones = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.MisOraciones })));
 const PeticionOracion = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.PeticionOracion })));
 const PrayerReminders = lazy(() => import("@/modules/prayers/pages/Oraciones").then((module) => ({ default: module.PrayerReminders })));
 
 const Contacto = lazy(() => import("./pages/Contacto.tsx"));
 const LecturasDelDia = lazy(() => import("./pages/LecturasDelDia.tsx"));
-const Programacion = lazy(() => import("./pages/Programacion.tsx"));
 const Radio = lazy(() => import("./pages/Radio.tsx"));
 const Capilla = lazy(() => import("./pages/Capilla.tsx"));
 const Intenciones = lazy(() => import("./pages/Intenciones.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
-const BibliaHome = lazy(() => import("./pages/biblia/BibliaHome.tsx"));
+import BibliaHome from "./pages/biblia/BibliaHome.tsx";
 const BibliaPlanes = lazy(() => import("./pages/biblia/BibliaPlanes.tsx"));
 const BibliaPlanDetalle = lazy(() => import("./pages/biblia/BibliaPlanDetalle.tsx"));
 const BibliaPlanJornada = lazy(() => import("./pages/biblia/BibliaPlanJornada.tsx"));
@@ -58,7 +61,7 @@ const BibliaPersonajeDetalle = lazy(() => import("./pages/biblia/BibliaPersonaje
 const BibliaLibros = lazy(() => import("./pages/biblia/BibliaLibros.tsx"));
 const BibliaFavoritos = lazy(() => import("./pages/biblia/BibliaFavoritos.tsx"));
 const BibliaMiBiblia = lazy(() => import("./pages/biblia/BibliaMiBiblia.tsx"));
-const Auth = lazy(() => import("./pages/Auth.tsx"));
+import Auth from "./pages/Auth.tsx";
 const More = lazy(() => import("./pages/More.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
 const ReadingSettings = lazy(() => import("./pages/ReadingSettings.tsx"));
@@ -74,7 +77,25 @@ const Testimonios = lazy(() => import("./pages/InfoPage.tsx").then((module) => (
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const preloadRouteChunks = () => {
+  void Promise.allSettled([
+    import("@/modules/prayers/pages/ConsagracionSanMiguel"),
+    import("./pages/Radio.tsx"),
+    import("./pages/Capilla.tsx"),
+    import("./pages/Intenciones.tsx"),
+    import("./pages/biblia/BibliaLeer.tsx"),
+    import("./pages/biblia/BibliaEstudio.tsx"),
+    import("./pages/biblia/BibliaPlanes.tsx"),
+    import("./pages/biblia/BibliaLibros.tsx"),
+    import("./pages/biblia/BibliaPersonajes.tsx"),
+  ]);
+};
+
+// Inicia la precarga de rutas secundarias sin bloquear el primer render.
+void preloadRouteChunks();
+
+const App = () => {
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -84,7 +105,9 @@ const App = () => (
         <PrayerReminderScheduler />
         <BrowserRouter>
           <Suspense fallback={<div className="min-h-screen bg-background" aria-label="Cargando contenido" />}>
-            <Routes>
+            <AccessGate>
+              <MaintenanceGate>
+                <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/radio" element={<Radio />} />
               <Route path="/capilla" element={<Capilla />} />
@@ -132,6 +155,7 @@ const App = () => (
               <Route path="/oraciones/oracion/:id" element={<OracionDetalle />} />
               <Route path="/oraciones/devociones" element={<DevocionesOraciones />} />
               <Route path="/oraciones/devociones/:slug" element={<DevocionDetalle />} />
+              <Route path="/oraciones/devociones/san-miguel-arcangel/consagracion" element={<ConsagracionSanMiguel />} />
               <Route path="/oraciones/mis-oraciones" element={<MisOraciones />} />
               <Route path="/oraciones/peticion" element={<PeticionOracion />} />
               <Route path="/oraciones/recordatorios" element={<PrayerReminders />} />
@@ -159,12 +183,15 @@ const App = () => (
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
-            </Routes>
+                  </Routes>
+              </MaintenanceGate>
+            </AccessGate>
           </Suspense>
         </BrowserRouter>
       </RadioPlayerProvider>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;

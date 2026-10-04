@@ -4,9 +4,9 @@ Total output lines: 13122
 # AGENTS.md
 # Proyecto La Voz de Jesús (LVJ)
 ## Manual Oficial de Arquitectura y Desarrollo
-### Versión 2.1
+### Versión 2.2
 **Estado:** Documento Maestro de Desarrollo  
-**Última actualización:** Agosto de 2026  
+**Última actualización:** Septiembre de 2026  
 **Proyecto:** La Voz de Jesús – Plataforma Católica Digital  
 **Tipo de documento:** Arquitectura Oficial del Proyecto
 
@@ -483,7 +483,7 @@ El sistema está dividido en módulos independientes.
 
 Cada módulo deberá poder evolucionar sin afectar los demás.
 
-Actualmente los módulos oficiales son:
+Actualmente los módulos funcionales oficiales de la plataforma son:
 
 ```
 LVJ
@@ -492,18 +492,41 @@ LVJ
 ├── Radio
 ├── Programación
 ├── Capilla Virtual
+├── Oraciones
+├── Rosario
 ├── Liturgia
+├── Santoral
 ├── Biblia
 ├── Biblioteca
+├── Formación
 ├── Comunidad
 ├── Podcast
-├── Noticias
+├── Eventos
+├── Testimonios
 ├── Donaciones
-├── Publicidad
-├── Configuración
-├── Usuarios
-└── Panel Administrativo
+└── Publicidad
 ```
+
+Los módulos administrativos e internos se mantienen fuera de este inventario funcional de la PWA. Incluyen:
+
+- Configuración.
+- Usuarios y roles.
+- Panel Administrativo.
+- FileServer.
+- Legacy.
+
+Estas áreas no deben convertirse automáticamente en registros de lvj_cfg_modulos.
+
+Las rutas secundarias y subfunciones tampoco constituyen módulos independientes de mantenimiento. Por ejemplo:
+
+```
+Oraciones
+└── Devociones
+```
+
+devociones pertenece funcionalmente a **Oraciones**.
+
+El **Rosario** sí constituye un módulo independiente porque dispone de una estructura funcional y páginas propias dentro de la aplicación.
 
 Cada módulo tendrá:
 
@@ -2234,6 +2257,105 @@ No deberán existir configuraciones ocultas dentro del código.
 
 ---
 
+# 3.4.6.1 Mantenimiento Global y Mantenimiento por Módulo
+
+El sistema deberá distinguir claramente entre **mantenimiento global** y **mantenimiento individual de módulos**.
+
+## Mantenimiento global
+
+La configuración general de la aplicación utilizará el parámetro existente:
+
+`lvj_cfg_app.modo_mantenimiento`
+
+Cuando este parámetro esté activo, la plataforma podrá presentar una pantalla o estado general de mantenimiento y restringir el acceso operativo a la aplicación según la implementación definida por el Backend.
+
+El estado global no deberá confundirse con la visibilidad individual de los módulos.
+
+## Mantenimiento individual de módulos
+
+La plataforma deberá permitir retirar temporalmente un módulo específico para realizar ajustes, actualizaciones, correcciones o tareas de mantenimiento sin poner toda la aplicación en mantenimiento.
+
+Esta función pertenece al módulo **Configuración** y deberá administrarse desde el Panel Administrativo.
+
+La arquitectura prevista utilizará una configuración modular equivalente a:
+
+`lvj_cfg_modulos`
+
+La tabla deberá permitir, como mínimo:
+
+- `id`;
+- `emisora_id`;
+- `modulo`;
+- `modo_mantenimiento`;
+- `mensaje_mantenimiento`;
+- `created_at`;
+- `updated_at`.
+
+Deberá existir una configuración única por módulo y emisora mediante una restricción de unicidad sobre `emisora_id` + `modulo`.
+
+### Diferencia entre disponibilidad y mantenimiento
+
+Los parámetros `mostrar_*` de `lvj_cfg_app` representan **disponibilidad o visibilidad funcional** y no deberán reutilizarse como indicadores de mantenimiento.
+
+La lógica será:
+
+| Visibilidad / disponibilidad | Mantenimiento | Comportamiento |
+|---|---|---|
+| Desactivada | No importa | El módulo no se ofrece como funcionalidad disponible. |
+| Activada | Desactivado | El módulo funciona normalmente. |
+| Activada | Activado | El módulo permanece identificado dentro de la plataforma, pero sus funciones operativas podrán quedar temporalmente bloqueadas y deberá mostrarse el mensaje de mantenimiento correspondiente. |
+
+El mantenimiento de un módulo no deberá interpretarse como eliminación del módulo ni como pérdida de sus datos.
+
+### Reglas de implementación
+
+1. El Backend será la fuente oficial del estado de mantenimiento.
+2. La PWA y el sitio Web deberán consumir este estado mediante las APIs correspondientes.
+3. La protección no podrá depender únicamente de ocultar botones o enlaces en el Frontend.
+4. Las APIs de un módulo en mantenimiento deberán validar el estado antes de ejecutar operaciones que no deban estar disponibles.
+5. El Frontend podrá mostrar una pantalla o estado de mantenimiento específico del módulo.
+6. El mensaje de mantenimiento deberá ser configurable desde el Panel Administrativo.
+7. No deberán existir estados de mantenimiento escritos directamente en el código.
+8. No deberá duplicarse la configuración de mantenimiento en archivos JSON, PHP o constantes del Frontend.
+9. El mantenimiento individual deberá afectar únicamente al módulo seleccionado, salvo que exista además mantenimiento global activo.
+10. Los nombres de los módulos deberán utilizar identificadores estables y documentados, evitando depender del texto visible de la interfaz.
+
+### Orden de evaluación
+
+Cuando una solicitud llegue al sistema, el control deberá considerar:
+
+```text
+Configuración global
+      ↓
+¿Mantenimiento global?
+      ├── Sí → estado general de mantenimiento
+      └── No
+            ↓
+      Configuración del módulo
+            ↓
+      ¿Mantenimiento del módulo?
+            ├── Sí → estado de mantenimiento del módulo
+            └── No → funcionamiento normal
+```
+
+La incorporación de esta capacidad no autoriza todavía la creación de la tabla en producción. Antes de ejecutar la migración deberá verificarse el esquema real, documentar la tabla en el Diccionario de Datos correspondiente y crear la migración idempotente. La implementación deberá realizarse posteriormente en el orden:
+
+```text
+AGENTS.md
+   ↓
+Diccionario de Datos / diseño
+   ↓
+Migración MySQL
+   ↓
+API Backend
+   ↓
+Panel Administrativo
+   ↓
+PWA / Frontend
+   ↓
+Pruebas
+```
+
 # 3.4.7 Relaciones
 
 El módulo Configuración mantiene relación con prácticamente todos los módulos del sistema.
@@ -2324,6 +2446,195 @@ El módulo **Configuración** constituye uno de los componentes estratégicos de
 Todas las configuraciones futuras deberán centralizarse en este módulo, garantizando una administración unificada, consistente y completamente desacoplada del código fuente.
 
 Las tablas que conforman este módulo se documentarán individualmente en los apartados siguientes, siguiendo el estándar oficial definido en el presente capítulo.
+
+# 3.4.12 Diccionario Oficial de Datos – Tabla `lvj_cfg_modulos`
+
+## Nombre de la tabla
+
+`lvj_cfg_modulos`
+
+## Propósito
+
+Almacena la configuración operativa de mantenimiento individual de los módulos de la plataforma para cada emisora.
+
+La tabla permite retirar temporalmente un módulo específico de operación sin activar el mantenimiento global de toda la aplicación.
+
+## Estado
+
+🟢 Producción
+
+La tabla ha sido creada mediante la migración:
+
+`app-admin/migrations/2026-10-01-create-module-maintenance.sql`
+
+## Responsabilidad
+
+La tabla pertenece exclusivamente al módulo **Configuración** y administra el estado de mantenimiento por módulo.
+
+No almacena contenido funcional del módulo ni sustituye las tablas propias de cada módulo.
+
+## Campos principales
+
+| Campo | Tipo | Propósito |
+|---|---|---|
+| `id` | INT(11) | Identificador único de la configuración. |
+| `emisora_id` | INT(11) | Identificador de la emisora a la que pertenece la configuración. |
+| `modulo` | VARCHAR(80) | Identificador estable del módulo funcional. |
+| `modo_mantenimiento` | TINYINT(4) | Indica si el módulo se encuentra temporalmente en mantenimiento. |
+| `mensaje_mantenimiento` | VARCHAR(500) | Mensaje que se mostrará cuando el módulo esté en mantenimiento. |
+| `created_at` | TIMESTAMP | Fecha de creación del registro. |
+| `updated_at` | TIMESTAMP | Fecha de última actualización. |
+
+## Índices y restricciones
+
+- Llave primaria: `id`.
+- Unicidad: `emisora_id + modulo`.
+- Índice por `emisora_id`.
+- Índice por `emisora_id + modo_mantenimiento`.
+- Motor: InnoDB.
+- Juego de caracteres: UTF8MB4.
+- Collation: `utf8mb4_unicode_ci`.
+
+La combinación `emisora_id + modulo` garantiza una única configuración de mantenimiento para cada módulo dentro de una emisora.
+
+## Relaciones
+
+La tabla se relaciona conceptualmente con:
+
+```
+lvj_cfg_emisora.id
+        ↓
+lvj_cfg_modulos.emisora_id
+```
+
+El campo `modulo` identifica el módulo funcional mediante un identificador estable documentado por la aplicación.
+
+No se utilizará el nombre visible de la interfaz como clave técnica.
+
+## Identificadores de módulo
+
+Los identificadores deberán ser estables y corresponder a módulos funcionales, no a rutas individuales ni a pantallas de detalle.
+
+Inventario oficial de módulos funcionales:
+
+```
+inicio
+radio
+programacion
+capilla_virtual
+oraciones
+rosario
+liturgia
+santoral
+biblia
+biblioteca
+formacion
+comunidad
+podcast
+eventos
+testimonios
+donaciones
+publicidad
+```
+
+Este inventario corresponde exclusivamente a módulos funcionales de la PWA y del sitio público que pueden requerir mantenimiento operativo individual.
+
+No se incluyen en lvj_cfg_modulos las áreas administrativas o de infraestructura:
+
+```
+administracion
+configuracion
+usuarios
+panel_administrativo
+fileserver
+legacy
+```
+
+Tampoco se registran rutas, pantallas de detalle ni subfunciones como módulos independientes.
+
+Ejemplo:
+
+```
+oraciones
+└── devociones
+```
+
+devociones pertenece funcionalmente a **Oraciones**.
+
+El **Rosario** sí mantiene un identificador independiente porque constituye un módulo funcional propio con estructura y páginas específicas.
+
+La incorporación de un nuevo identificador deberá verificarse contra la arquitectura oficial de AGENTS.md antes de registrarlo.
+
+## Consumida por
+
+- Panel Administrativo.
+- Backend PHP.
+- APIs REST.
+- PWA.
+- Sitio Web.
+
+El Backend será la fuente oficial del estado de mantenimiento.
+
+## Reglas de negocio
+
+1. `modo_mantenimiento = 0`: el módulo puede funcionar normalmente, sujeto a las demás configuraciones de disponibilidad.
+2. `modo_mantenimiento = 1`: el módulo se considera temporalmente en mantenimiento.
+3. El mensaje mostrado deberá proceder de `mensaje_mantenimiento`.
+4. El mantenimiento individual no elimina contenido ni datos del módulo.
+5. El mantenimiento individual no equivale a desactivar la visibilidad mediante los parámetros `mostrar_*`.
+6. El mantenimiento de un módulo no deberá afectar a otros módulos.
+7. Si `lvj_cfg_app.modo_mantenimiento = 1`, el mantenimiento global tendrá prioridad sobre el mantenimiento individual.
+8. Las APIs protegidas del módulo deberán validar el estado de mantenimiento cuando corresponda.
+9. El Frontend no podrá ser la única capa responsable de hacer cumplir el mantenimiento.
+10. No deberán existir estados de mantenimiento paralelos en archivos JSON, PHP, TypeScript, constantes o variables hardcodeadas.
+
+## Restricciones
+
+- No crear un registro por cada ruta de la aplicación.
+- No crear registros independientes para pantallas de detalle.
+- No utilizar `mostrar_*` como sustituto de `modo_mantenimiento`.
+- No duplicar esta configuración en otras tablas.
+- No modificar directamente la Base de Datos desde la PWA.
+- No crear módulos nuevos sin actualizar previamente la documentación arquitectónica cuando corresponda.
+
+## Observaciones
+
+La tabla implementa el mantenimiento modular previsto en la sección 3.4.6.1 de este documento.
+
+La existencia del registro no implica que el módulo esté actualmente en mantenimiento; el estado depende de `modo_mantenimiento`.
+
+La disponibilidad funcional y el mantenimiento son controles independientes.
+
+## Estado de Implementación
+
+Utilizada actualmente por:
+
+✓ Base de Datos MySQL  
+✓ Migración de estructura  
+✓ API de consulta de mantenimiento individual  
+✓ Panel Administrativo de mantenimiento individual  
+✗ Aplicación PWA  
+✗ Validación global de APIs de cada módulo
+
+La tabla ya se encuentra creada en producción. Las migraciones posteriores que ajusten el inventario de módulos deberán ser idempotentes y no deberán recrear la tabla.
+
+La implementación deberá continuar en el orden definido por AGENTS.md:
+
+```
+Diccionario de Datos
+   ↓
+Migración MySQL
+   ↓
+API Backend
+   ↓
+Panel Administrativo
+   ↓
+PWA / Frontend
+   ↓
+Pruebas
+```
+
+---
 
 # 3.5 Diccionario Oficial de Datos – Módulo Capilla Virtual
 
@@ -5534,7 +5845,7 @@ El código fuente nunca deberá contener textos bíblicos fijos; toda la informa
 
 Este documento constituye la **especificación técnica oficial** del proyecto **La Voz de Jesús (LVJ)**.
 
-La versión 2.1 conserva la arquitectura base del sistema e incorpora como decisión oficial la automatización de la Liturgia diaria desde la Conferencia Episcopal de Colombia, la consolidación de `lvj_lit_lectura_dia` como tabla canónica y la generación supervisada de Reflexión y Lectio Divina mediante IA.
+La versión 2.2 conserva la arquitectura base del sistema e incorpora como decisión oficial la automatización de la Liturgia diaria desde la Conferencia Episcopal de Colombia, la consolidación de `lvj_lit_lectura_dia` como tabla canónica y la generación supervisada de Reflexión y Lectio Divina mediante IA.
 
 ## Cambios principales de la versión 2.1
 
@@ -5548,6 +5859,11 @@ La versión 2.1 conserva la arquitectura base del sistema e incorpora como decis
 - Se redefine el Panel de Liturgia como consola de supervisión y excepción, no como carga manual diaria.
 - Se mantiene el Santoral como servicio independiente fuera del alcance inicial.
 - Se actualizan las reglas del Backend, Panel Administrativo, Modelo Relacional y Sistema de Contenidos.
+- Se incorpora la política oficial de acceso Invitado, Registrado y Premium.
+- Se establece que todo el módulo Biblia requiere autenticación.
+- Se centraliza el control de acceso y se prohíben tablas de usuarios paralelas.
+- Se establece el registro mínimo y el patrón reutilizable de RegistrationGate.
+
 
 ---
 
@@ -5603,20 +5919,23 @@ Toda modificación relevante en la arquitectura del sistema deberá reflejarse e
 
 ## 10.16 Estudio Bíblico con IA
 
-El módulo Biblia incorpora estudios asistidos por IA sin sustituir el lector ni el comparador. La Biblia
-Platense / Straubinger es el texto principal; Torres Amat y Scío se utilizan como apoyo comparativo.
+El módulo Biblia incorpora estudios asistidos por IA sin sustituir la interpretación de la Iglesia ni el
+lector bíblico. La Biblia Platense / Straubinger es el texto principal; Torres Amat y Scío se utilizan como
+apoyo comparativo.
 
 El backend PHP es el único autorizado para reunir textos, notas y metadatos, llamar al proveedor y guardar
 resultados. La IA nunca consultará traducciones externas ni recibirá datos personales. Los estudios se
 almacenan como JSON puro en `lvj_bib_estudios_ia`; cada petición se audita en
 `lvj_bib_estudios_ia_solicitudes`. La clave de reutilización es SHA-256 del contexto normalizado y la versión
-del método. Un resultado en caché no consume el límite mensual del usuario. Los estudios aprobados,
-revisados y públicos podrán consultarse por invitados sin autenticación y sin consumo de cupo; solamente
-la generación de un contexto nuevo mediante el proveedor de IA requerirá una cuenta autenticada.
+del método. Un resultado en caché no consume el límite mensual del usuario.
 
-La generación requiere una cuenta autenticada mediante Supabase Auth. La identidad externa se relacionará
-con el usuario interno de `lvj_com_usuarios`; los roles y permisos seguirán administrándose en MySQL. La
-lectura bíblica, las notas y la comparación básica permanecerán disponibles para invitados.
+**Regla de acceso:** todo el módulo Biblia requiere una cuenta autenticada y activa. Esta regla comprende
+lectura, comparación de versiones, estudio, planes, notas, historial y cualquier otra función perteneciente
+al módulo Biblia. No se permitirá acceso bíblico anónimo mediante rutas, componentes ni APIs protegidas.
+
+La generación de estudios IA requiere además una cuenta autenticada mediante Supabase Auth y la autorización
+correspondiente para IA. La identidad externa se relacionará con el usuario interno de `lvj_com_usuarios`;
+los roles y permisos seguirán administrándose en MySQL.
 
 El módulo administrativo existente `Usuarios y Comunidad > Usuarios app` es la interfaz oficial para
 consultar y mantener estas cuentas. Solo un `super_admin` puede sincronizar identidades desde Supabase,
@@ -5624,16 +5943,17 @@ activar o suspender el acceso y autorizar el uso de IA. La sincronización utili
 `SUPABASE_SERVICE_ROLE_KEY` exclusivamente desde PHP; esta clave nunca se expondrá al frontend.
 
 `lvj_com_usuarios` almacenará el correo confirmado, `auth_provider`, `auth_subject`, `email_verificado`,
-`ia_autorizado` y `ultimo_acceso_at`. Cada operación de IA deberá validar nuevamente el token de Supabase,
-el estado del usuario y su autorización para IA antes de aplicar la cuota por `usuario_id`. El acceso por
-correo se limitará a los proveedores configurados oficialmente. Un invitado podrá consultar la comparación
-de versiones, pero deberá registrar y confirmar su correo antes de solicitar un estudio nuevo.
+`ia_autorizado` y `ultimo_acceso_at`. Cada operación protegida deberá validar nuevamente el token de
+Supabase y el estado de la cuenta antes de entregar contenido o ejecutar una operación sensible. Cada
+operación de IA deberá validar además `ia_autorizado` antes de aplicar la cuota por `usuario_id`.
 
-`lvj_com_usuarios` almacenará el correo confirmado, `auth_provider`, `auth_subject`, `email_verificado`,
-`ia_autorizado` y `ultimo_acceso_at`. Cada operación de IA deberá validar nuevamente el token de Supabase,
-el estado del usuario y su autorización para IA antes de aplicar la cuota por `usuario_id`. El acceso por
-correo se limitará a los proveedores configurados oficialmente. Un invitado podrá consultar la comparación
-de versiones, pero deberá registrar y confirmar su correo antes de solicitar un estudio nuevo.
+Los estudios aprobados, revisados y públicos podrán seguir almacenándose y administrándose como contenido
+editorial del módulo, pero su consulta dentro de LVJPRAYER permanecerá sujeta a la autenticación requerida
+por el módulo Biblia. La publicación de un estudio no constituye una excepción a la política de acceso.
+
+La autenticación deberá presentar una pantalla de acceso/registro clara y reutilizable. El usuario que intente
+entrar al módulo Biblia sin sesión será dirigido a la experiencia de registro o inicio de sesión y, después de
+autenticarse correctamente, regresará al destino bíblico solicitado.
 
 Todo estudio nuevo inicia en estado `revision`. El solicitante puede verlo con advertencia editorial; solo
 los estudios aprobados podrán marcarse `publicado`, `revisado = 1` y `es_publico = 1`. La interfaz pública
@@ -5677,7 +5997,7 @@ Ante cualquier diferencia entre la implementación del sistema y este documento,
 
 ---
 
-**Fin del documento — AGENTS.md v2.1**
+**Fin del documento — AGENTS.md v2.2**
 
 ## 10.16.1 Formato maestro y niveles del Estudio Bíblico IA
 
@@ -5725,6 +6045,235 @@ persistencia → presentación. Scío se habilitará progresivamente por libro: 
 mientras `lvj_bib_libros.estado` determine cuáles libros superaron la revisión editorial. Los libros, capítulos
 o versículos todavía no habilitados no se completarán con fuentes externas; la API y el Estudio Bíblico
 mostrarán un mensaje explícito de texto en revisión.
+
+# 10.16.1 Política de Acceso de Usuarios LVJPRAYER
+
+La plataforma establece tres estados de acceso funcional. No se crearán tablas separadas de usuarios para cada
+nivel. La identidad de usuario continuará centralizada en Supabase Auth y `lvj_com_usuarios`.
+
+## 10.16.1.1 Invitado
+
+El invitado es una persona que utiliza LVJPRAYER sin sesión autenticada. Puede consumir contenido público de
+evangelización y descubrir la plataforma, pero no dispone de funciones personales ni de acceso al módulo Biblia.
+
+Contenido público mínimo para invitados:
+
+- Inicio.
+- Radio.
+- Programación.
+- Capilla Virtual.
+- Oraciones.
+- Santo Rosario.
+- Liturgia.
+- Santos.
+- Podcast público.
+- Noticias.
+- Biblioteca pública.
+
+El contenido público no deberá exigir registro únicamente para ser consultado, escuchado o compartido, salvo que
+una regla legal, editorial o comercial específica establezca otra condición.
+
+Un invitado no podrá utilizar:
+
+- Biblia.
+- Comunidad.
+- Favoritos.
+- Notas personales.
+- Historial personal.
+- Planes personales.
+- Recordatorios.
+- Intenciones personales.
+- Sincronización de datos personales.
+- Funciones personales que dependan de una cuenta.
+
+## 10.16.1.2 Usuario registrado
+
+El usuario registrado dispone de una cuenta activa, vinculada a Supabase Auth y a `lvj_com_usuarios`.
+
+Además del contenido público, podrá utilizar:
+
+- Todo el módulo Biblia.
+- Lectura bíblica.
+- Comparación de versiones.
+- Estudio bíblico.
+- Planes bíblicos.
+- Notas bíblicas.
+- Historial y continuidad de lectura.
+- Favoritos.
+- Guardado de contenidos.
+- Recordatorios.
+- Funciones personales de oración.
+- Funciones de comunidad autorizadas.
+- Sincronización entre dispositivos.
+- Funciones IA para las que tenga autorización.
+
+El registro no deberá interpretarse como autorización automática para funciones administrativas ni para todas las
+operaciones de IA. Las autorizaciones específicas continuarán verificándose en el Backend.
+
+## 10.16.1.3 Usuario premium
+
+El nivel premium queda reservado para futuras funciones y contenidos comerciales. No deberán inventarse
+beneficios premium ni implementarse cobros hasta que exista una especificación comercial aprobada.
+
+Cuando se implemente, el nivel premium deberá utilizar la identidad existente de `lvj_com_usuarios` y una
+política centralizada de autorización. No se crearán tablas de usuarios paralelas para premium.
+
+## 10.16.1.4 Registro mínimo
+
+El registro inicial deberá solicitar únicamente los datos necesarios para crear y proteger la cuenta:
+
+- Correo electrónico.
+- Contraseña.
+- Confirmación de contraseña.
+- Aceptación de términos y política de privacidad.
+
+El nombre podrá solicitarse como dato opcional o completarse posteriormente en el perfil. No se exigirán
+teléfono, dirección u otros datos personales si no existe una necesidad funcional documentada.
+
+El correo deberá confirmarse según la configuración oficial de Supabase Auth antes de conceder acceso a las
+funciones que requieran cuenta verificada.
+
+## 10.16.1.5 Patrón de acceso y experiencia
+
+Las restricciones de acceso deberán expresarse como una política centralizada y reutilizable. No se deberán
+duplicar comprobaciones independientes por cada pantalla.
+
+El Frontend deberá utilizar un patrón equivalente a:
+
+```text
+Ruta / acción
+    ↓
+Access Control
+    ↓
+¿Invitado?
+    ├── contenido público → permitir
+    └── función protegida → RegistrationGate
+                              ↓
+                         Registro / Login
+                              ↓
+                       retorno al destino
+```
+
+El acceso al módulo Biblia deberá utilizar siempre este patrón. La experiencia de registro deberá explicar
+claramente el valor de crear una cuenta y no presentarse como un error técnico.
+
+Las funciones personales de módulos públicos deberán solicitar registro únicamente cuando el usuario intente
+utilizar la función personal, por ejemplo guardar, marcar como favorito, crear una nota o activar un
+recordatorio. El contenido público seguirá disponible para consumo.
+
+## 10.16.1.6 Protección Backend
+
+La protección de acceso no podrá depender exclusivamente del Frontend.
+
+Toda API que entregue contenido o ejecute acciones exclusivas de usuarios registrados deberá validar:
+
+1. Token de Supabase.
+2. Identidad del usuario.
+3. Correspondencia con `lvj_com_usuarios`.
+4. Estado activo de la cuenta.
+5. Permiso o autorización específica cuando corresponda.
+
+Las respuestas deberán utilizar códigos HTTP coherentes:
+
+- `401`: no autenticado.
+- `403`: autenticado pero sin autorización.
+- `404`: recurso inexistente cuando corresponda.
+
+Ocultar una opción en la PWA nunca sustituye la protección del Backend.
+
+## 10.16.1.7 Identidad y datos
+
+La identidad oficial continúa siendo:
+
+```text
+Supabase Auth
+      ↓
+auth_subject
+      ↓
+lvj_com_usuarios
+      ↓
+estado / rol / autorizaciones
+```
+
+No se crearán tablas como `lvj_usuarios_registrados`, `lvj_usuarios_biblia`,
+`lvj_usuarios_premium` ni equivalentes.
+
+Los datos personales deberán mantenerse separados del contenido editorial. Las funciones personales se
+relacionarán mediante el identificador oficial del usuario.
+
+## 10.16.1.8 Matriz funcional oficial
+
+La política distingue entre contenido público, funciones personales y acceso premium futuro. Premium queda
+preparado en arquitectura, pero no se considera concedido mientras no exista una suscripción o entitlement
+válido.
+
+| Módulo / función | Invitado | Registrado | Premium futuro |
+|---|---:|---:|---:|
+| Inicio | Sí | Sí | Sí |
+| Radio | Sí | Sí | Sí |
+| Programación | Sí | Sí | Sí |
+| Capilla Virtual | Sí | Sí | Sí |
+| Capilla Virtual → Intenciones personales | No | Sí | Sí |
+| Oraciones | Sí | Sí | Sí |
+| Oraciones → Categorías | Sí | Sí | Sí |
+| Oraciones → Devociones | Sí | Sí | Sí |
+| Oraciones → Liturgia de las Horas | Sí | Sí | Sí |
+| Oraciones → Mis oraciones | No | Sí | Sí |
+| Oraciones → Peticiones | No | Sí | Sí |
+| Oraciones → Recordatorios | No | Sí | Sí |
+| Santo Rosario | Sí | Sí | Sí |
+| Santo Rosario → Diario | No | Sí | Sí |
+| Liturgia | Sí | Sí | Sí |
+| Santoral | Sí | Sí | Sí |
+| Biblia | No | Sí | Sí |
+| Biblioteca | Sí | Sí | Sí |
+| Formación | Sí | Sí | Sí |
+| Comunidad | No | Sí | Sí |
+| Podcast | No | Sí | Sí |
+| Eventos | Sí | Sí | Sí |
+| Testimonios | Sí | Sí | Sí |
+| Donaciones | Sí | Sí | Sí |
+| Publicidad | Sí | Sí | Sí |
+
+### Funciones personales
+
+Favoritos, notas, historial, progreso, sincronización y otras funciones que almacenen información personal
+deben requerir cuenta registrada cuando se incorporen a cada módulo.
+
+### Regla premium
+
+Ninguna funcionalidad se marcará como premium operativo solo por aparecer en esta matriz. La activación
+real de premium requerirá una política de suscripción/entitlement y validación Backend.
+
+Esta matriz es la referencia funcional oficial. Cualquier modificación posterior deberá actualizar
+AGENTS.md antes de modificar la implementación.
+
+## 10.16.1.9 Regla comercial y evangelizadora
+
+El modelo de acceso debe permitir que LVJPRAYER sea evangelizador y, al mismo tiempo, construya una relación
+legítima con sus usuarios.
+
+No se deberá bloquear artificialmente contenido público para obligar a registrarse. El registro deberá tener
+valor funcional real: acceso a Biblia, personalización, conservación del progreso y funciones personales.
+
+La monetización futura deberá mantenerse separada del acceso básico a contenido evangelizador. Las funciones
+premium deberán definirse mediante una política comercial específica y no mediante restricciones improvisadas.
+
+## 10.16.1.10 Regla para desarrollo
+
+Antes de crear una nueva restricción de acceso, Codex deberá comprobar:
+
+1. Si la funcionalidad es contenido público.
+2. Si la funcionalidad es personal.
+3. Si pertenece al módulo Biblia.
+4. Si requiere cuenta registrada.
+5. Si requiere autorización adicional.
+6. Si existe ya un componente de autenticación o control de acceso reutilizable.
+7. Si la modificación requiere actualizar esta matriz.
+
+No se deberán implementar controles de acceso aislados que contradigan esta política.
+
+---
 
 ## 10.17 Centro de Formación y Supervisión IA
 
@@ -5800,3 +6349,49 @@ Reglas obligatorias:
   aún no se haya aplicado.
 - Los componentes compartidos deben consumir variables CSS del tema y evitar colores
   hardcodeados cuando el elemento pertenezca a la apariencia institucional.
+
+## Identidad compartida con módulos LVJPRAYER y aplicaciones especializadas
+
+Los módulos presentes o futuros de LVJPRAYER que formen parte del mismo ecosistema deben reutilizar el proveedor de identidad oficial de Supabase Auth. La identidad canónica se vincula con `lvj_com_usuarios` mediante `auth_provider` y `auth_subject`.
+
+Al completar el acceso, LVJPRAYER puede sincronizar de forma idempotente la identidad autenticada con `lvj_com_usuarios`: primero por `auth_subject`, después por correo para vincular una cuenta local existente y solo crea un registro local cuando no existe correspondencia. Este proceso no debe crear una segunda cuenta Supabase ni duplicar usuarios.
+
+Una aplicación especializada como Consagraciones puede conservar su propio backend y sus datos funcionales, incluido el seguimiento de los 33 días, mientras comparte la identidad Supabase. La unificación de acceso no implica migrar ni duplicar el progreso: los registros existentes deben conservarse y relacionarse con la identidad Supabase correspondiente.
+
+
+## 10.16.1.11 Política dinámica de acceso por configuración
+
+La política funcional de acceso deja de estar fijada exclusivamente en el frontend. La fuente operativa de
+los niveles de acceso de módulos y submódulos es MySQL, mediante las tablas existentes:
+
+- `lvj_cfg_modulos.nivel_acceso`
+- `lvj_cfg_submodulos.nivel_acceso`
+
+Los valores permitidos son:
+
+- `publico`
+- `registrado`
+- `premium`
+
+La configuración de submódulo tiene prioridad sobre la configuración de su módulo. Si no existe una
+configuración específica de submódulo, se hereda el nivel del módulo.
+
+El mantenimiento continúa siendo independiente y utiliza sus propios campos `modo_mantenimiento` y
+`mensaje_mantenimiento`.
+
+El panel administrativo permite modificar estos niveles sin cambiar código de la PWA. La PWA obtiene la
+política mediante `/api/acceso-politica.php` y `AccessGate` aplica la política de forma centralizada.
+
+La autenticación continúa siendo responsabilidad de Supabase Auth y la autorización/identidad funcional
+continúa vinculada a `lvj_com_usuarios`. Los roles administrativos no se convierten en niveles de contenido:
+`admin` y `super_admin` siguen siendo roles de usuario.
+
+La migración oficial es:
+`app-admin/migrations/2026-10-03-add-module-access-level.sql`.
+
+La política inicial de la migración conserva el comportamiento vigente: Biblia, Comunidad y Podcast
+requieren registro; las funciones personales protegidas mantienen registro; premium queda preparado pero no
+operativo hasta contar con entitlement válido.
+
+Las APIs que entreguen contenido protegido deberán seguir validando autorización en Backend. Ocultar o
+redirigir una ruta en el frontend no sustituye la protección del Backend.
