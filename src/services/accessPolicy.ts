@@ -17,34 +17,75 @@ const mapLevel = (value: unknown): ModuleAccessLevel | null => {
   return null;
 };
 
+const FALLBACK_POLICY: ModuleAccessPolicy[] = [
+  { module: "inicio", level: "guest" },
+  { module: "radio", level: "guest" },
+  { module: "programacion", level: "guest" },
+  { module: "capilla_virtual", level: "guest" },
+  { module: "oraciones", level: "guest" },
+  { module: "rosario", level: "guest" },
+  { module: "liturgia", level: "guest" },
+  { module: "santoral", level: "guest" },
+  { module: "biblioteca", level: "guest" },
+  { module: "formacion", level: "guest" },
+  { module: "comunidad", level: "free" },
+  { module: "podcast", level: "free" },
+  { module: "eventos", level: "guest" },
+  { module: "testimonios", level: "guest" },
+  { module: "donaciones", level: "guest" },
+  { module: "publicidad", level: "guest" },
+  {
+    module: "biblia",
+    level: "guest",
+    submodules: {
+      comparar: "free",
+      estudio: "free",
+      favoritos: "free",
+      leer: "guest",
+      libros: "guest",
+      mapas: "guest",
+      mi_biblia: "free",
+      personajes: "guest",
+      planes: "free",
+    },
+  },
+];
+
 export const loadAccessPolicy = async (): Promise<ModuleAccessPolicy[]> => {
-  const response = await fetch(API_URL, {
-    cache: "no-store",
-    headers: { Accept: "application/json" },
-  });
+  try {
+    const response = await fetch(API_URL, {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    });
 
-  if (!response.ok) throw new Error("No fue posible cargar la política de acceso.");
+    if (!response.ok) throw new Error("No fue posible cargar la política de acceso.");
 
-  const data = await response.json();
-  if (!data?.ok || !data?.modulos || typeof data.modulos !== "object") {
-    throw new Error("Política de acceso inválida.");
-  }
-
-  const policy: ModuleAccessPolicy[] = [];
-  for (const [module, raw] of Object.entries(data.modulos as Record<string, any>)) {
-    const level = mapLevel(raw?.nivel_acceso);
-    if (!level) throw new Error("Nivel de acceso inválido para " + module);
-
-    const submodules: Record<string, ModuleAccessLevel> = {};
-    for (const [name, value] of Object.entries(raw?.submodulos ?? {})) {
-      const subLevel = mapLevel(value);
-      if (!subLevel) throw new Error("Nivel de acceso inválido para " + module + "/" + name);
-      submodules[name] = subLevel;
+    const data = await response.json();
+    if (!data?.ok || !data?.modulos || typeof data.modulos !== "object") {
+      throw new Error("Política de acceso inválida.");
     }
-    policy.push({ module: module.toLowerCase(), level, submodules });
-  }
 
-  return policy;
+    const policy: ModuleAccessPolicy[] = [];
+    for (const [module, raw] of Object.entries(data.modulos as Record<string, any>)) {
+      const level = mapLevel(raw?.nivel_acceso);
+      if (!level) throw new Error("Nivel de acceso inválido para " + module);
+
+      const submodules: Record<string, ModuleAccessLevel> = {};
+      for (const [name, value] of Object.entries(raw?.submodulos ?? {})) {
+        const subLevel = mapLevel(value);
+        if (!subLevel) throw new Error("Nivel de acceso inválido para " + module + "/" + name);
+        submodules[name] = subLevel;
+      }
+      policy.push({ module: module.toLowerCase(), level, submodules });
+    }
+
+    return policy;
+  } catch {
+    // Respaldo temporal para el lanzamiento: la política dinámica sigue siendo
+    // la fuente principal; si su API falla, la PWA conserva una matriz segura
+    // conocida y no deja toda la aplicación en pantalla negra.
+    return FALLBACK_POLICY;
+  }
 };
 
 export const getRouteTarget = (pathname: string): { module: string; submodule?: string } | null => {
