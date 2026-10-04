@@ -5,7 +5,12 @@ import { getMaintenanceRouteTarget, useMaintenanceState } from "@/services/mante
 
 interface MaintenanceGateProps { children: ReactNode; }
 
-const MaintenanceLoading = () => null;
+const MaintenanceLoading = () => (
+  <div className="flex min-h-screen items-center justify-center bg-background" role="status" aria-live="polite">
+    <span className="sr-only">Verificando disponibilidad del módulo</span>
+    <span className="h-9 w-9 animate-spin rounded-full border-2 border-primary/20 border-t-primary" aria-hidden="true" />
+  </div>
+);
 
 const MaintenanceGate = ({ children }: MaintenanceGateProps) => {
   const location = useLocation();
@@ -14,6 +19,7 @@ const MaintenanceGate = ({ children }: MaintenanceGateProps) => {
 
   // El mantenimiento se consulta en segundo plano. Nunca bloqueamos la navegación
   // esperando la API; esto evita que el cambio de ruta produzca una pantalla en blanco.
+  if (routeTarget && !state) return <MaintenanceLoading />;
   if (!state) return <>{children}</>;
 
   const active = Boolean(state.mantenimiento_activo);
