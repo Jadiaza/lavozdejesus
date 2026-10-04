@@ -49,7 +49,9 @@ export const loadAccessPolicy = async (): Promise<ModuleAccessPolicy[]> => {
 
 export const getRouteTarget = (pathname: string): { module: string; submodule?: string } | null => {
   const p = pathname.toLowerCase().replace(/\/+$/, "") || "/";
-  if (p === "/") return { module: "inicio" };
+  // Inicio es una superficie pública de la aplicación y no depende de
+  // una fila de política en lvj_cfg_modulos.
+  if (p === "/") return null;
   if (p.startsWith("/radio")) return { module: "radio" };
   if (p.startsWith("/programacion")) return { module: "programacion" };
   if (p.startsWith("/capilla/intenciones")) return { module: "capilla_virtual", submodule: "intenciones" };
