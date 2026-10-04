@@ -21,9 +21,17 @@ const FALLBACK_POLICY: ModuleAccessPolicy[] = [
   { module: "inicio", level: "guest" },
   { module: "radio", level: "guest" },
   { module: "programacion", level: "guest" },
-  { module: "capilla_virtual", level: "guest" },
-  { module: "oraciones", level: "guest" },
-  { module: "rosario", level: "guest" },
+  { module: "capilla_virtual", level: "guest", submodules: { intenciones: "free" } },
+  {
+    module: "oraciones",
+    level: "guest",
+    submodules: {
+      mis_oraciones: "free",
+      peticion: "free",
+      recordatorios: "free",
+    },
+  },
+  { module: "rosario", level: "guest", submodules: { diario: "free" } },
   { module: "liturgia", level: "guest" },
   { module: "santoral", level: "guest" },
   { module: "biblioteca", level: "guest" },
@@ -74,12 +82,16 @@ export const loadAccessPolicy = async (): Promise<ModuleAccessPolicy[]> => {
       for (const [name, value] of Object.entries(raw?.submodulos ?? {})) {
         const subLevel = mapLevel(value);
         if (!subLevel) throw new Error("Nivel de acceso inválido para " + module + "/" + name);
-        submodules[name] = subLevel;
+        submodules[name.trim().toLowerCase()] = subLevel;
       }
-      policy.push({ module: module.toLowerCase(), level, submodules });
+      policy.push({ module: module.trim().toLowerCase(), level, submodules });
     }
 
-    return policy;
+    const policyByModule = new Map(
+      FALLBACK_POLICY.map((entry) => [entry.module, entry]),
+    );
+    for (const entry of policy) policyByModule.set(entry.module, entry);
+    return Array.from(policyByModule.values());
   } catch {
     // Respaldo temporal para el lanzamiento: la política dinámica sigue siendo
     // la fuente principal; si su API falla, la PWA conserva una matriz segura
@@ -93,6 +105,7 @@ export const getRouteTarget = (pathname: string): { module: string; submodule?: 
   // Inicio es una superficie pública de la aplicación y no depende de
   // una fila de política en lvj_cfg_modulos.
   if (p === "/") return null;
+  if (p === "/devociones") return { module: "oraciones", submodule: "devociones" };
   if (p.startsWith("/radio")) return { module: "radio" };
   if (p.startsWith("/programacion")) return { module: "programacion" };
   if (p.startsWith("/capilla/intenciones")) return { module: "capilla_virtual", submodule: "intenciones" };
@@ -111,8 +124,15 @@ export const getRouteTarget = (pathname: string): { module: string; submodule?: 
     return { module: "biblia", submodule: section === "buscar" ? "leer" : section };
   }
   if (p === "/biblia") return { module: "biblia" };
-  if (p.startsWith("/podcast")) return { module: "podcast", submodule: p.split("/")[2] };
-  if (p.startsWith("/liturgia")) return { module: "liturgia" };
+  if (p === "/podcast") return { module: "podcast" };
+  if (p === "/podcast/santos-arcangeles-33-dias" || p.startsWith("/podcast/series/")) {
+    return { module: "podcast", submodule: "series" };
+  }
+  if (p === "/podcast/rss" || p.startsWith("/podcast/rss/")) return { module: "podcast", submodule: "series" };
+  if (p.startsWith("/podcast/")) return { module: "podcast", submodule: p.split("/")[2] };
+  if (p === "/lecturas-del-dia" || p === "/lectura-del-dia" || p.startsWith("/liturgia")) {
+    return { module: "liturgia" };
+  }
   if (p.startsWith("/formacion")) return { module: "formacion" };
   if (p.startsWith("/testimonios")) return { module: "testimonios" };
   if (p.startsWith("/eventos")) return { module: "eventos" };

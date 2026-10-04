@@ -4490,6 +4490,8 @@ Antes de crear claves foráneas físicas deberá verificarse:
 
 `lvj_lit_palabra_dia` no deberá recibir una segunda importación. Su contenido deberá derivarse del registro canónico publicado.
 
+En lvj_lit_lectio_divina, rase_destacada conservará el fragmento bíblico textual y cita_destacada almacenará su referencia específica. La cita general cita y la clave protegida cita_clave no deberán reemplazarse. Si no puede comprobarse el versículo exacto, cita_destacada usará la referencia completa del Evangelio y quedará sujeta a revisión humana.
+
 ---
 
 ## 9.9 Sincronización automática
@@ -4548,6 +4550,42 @@ La frecuencia deberá ser configurable desde la arquitectura existente, sin alma
 ---
 
 ## 9.10 Idempotencia y protección de datos
+
+### 9.10.1 Reutilización de lecturas por ciclo
+
+Para evitar repetir los mismos textos cada tres años, la persistencia litúrgica se divide en dos responsabilidades:
+
+```text
+lvj_lit_lecturas_base
+    → biblioteca reutilizable de lecturas y salmos normalizados
+
+lvj_lit_lectura_dia
+    → asignación por fecha, publicación y ajustes editoriales excepcionales
+```
+
+La biblioteca se identificará mediante una clave litúrgica estable y un hash del contenido. Debe conservar, cuando corresponda, el ciclo dominical `A`, `B` o `C`, el ciclo ferial `I` o `II`, el país, el rito y la fuente. Una fecha nueva que use lecturas ya conocidas deberá apuntar al registro existente mediante `lectura_base_id` y no volver a copiar los textos.
+
+Los campos de lecturas existentes en `lvj_lit_lectura_dia` se conservan como compatibilidad y como sobrescritura editorial opcional. La API resolverá primero una sobrescritura diaria no vacía y luego la biblioteca base. Los registros históricos no se eliminan ni se migran automáticamente.
+
+Una corrección real del proveedor crea o selecciona una nueva versión por hash; nunca modifica silenciosamente contenido previamente aprobado. El estado de publicación continúa perteneciendo a la asignación diaria y toda fecha sincronizada entra a revisión humana.
+
+### 9.10.1 Reutilización de lecturas por ciclo
+
+Para evitar repetir los mismos textos cada tres años, la persistencia litúrgica se divide en dos responsabilidades:
+
+```text
+lvj_lit_lecturas_base
+    → biblioteca reutilizable de lecturas y salmos normalizados
+
+lvj_lit_lectura_dia
+    → asignación por fecha, publicación y ajustes editoriales excepcionales
+```
+
+La biblioteca se identificará mediante una clave litúrgica estable y un hash del contenido. Debe conservar, cuando corresponda, el ciclo dominical `A`, `B` o `C`, el ciclo ferial `I` o `II`, el país, el rito y la fuente. Una fecha nueva que use lecturas ya conocidas deberá apuntar al registro existente mediante `lectura_base_id` y no volver a copiar los textos.
+
+Los campos de lecturas existentes en `lvj_lit_lectura_dia` se conservan como compatibilidad y como sobrescritura editorial opcional. La API resolverá primero una sobrescritura diaria no vacía y luego la biblioteca base. Los registros históricos no se eliminan ni se migran automáticamente.
+
+Una corrección real del proveedor crea o selecciona una nueva versión por hash; nunca modifica silenciosamente contenido previamente aprobado. El estado de publicación continúa perteneciendo a la asignación diaria y toda fecha sincronizada entra a revisión humana.
 
 Toda sincronización deberá ser idempotente.
 
@@ -4940,6 +4978,8 @@ Acciones permitidas:
 
 El Panel no mostrará ni administrará las credenciales externas.
 
+La consola liturgia-ordo.php será el punto administrativo oficial para sincronizar una fecha. Requerirá rol super_admin, sesión, CSRF y ejecución PHP del lado del servidor. Mostrará únicamente estado de configuración y resultados sanitizados de Liturgia, Lectio y Santoral; la clave de sincronización nunca llegará al navegador.
+
 ---
 
 ## 9.22 API interna de LVJPRAYER
@@ -5027,6 +5067,8 @@ Liturgia del Día
 - pausas contemplativas en futuras versiones.
 
 La primera implementación no deberá bloquearse por la ausencia de audio.
+
+La ruta pública `/liturgia` reutilizará la pantalla canónica de Lecturas del Día. En móvil, el módulo conservará la barra inferior principal de LVJPRAYER. `Liturgia`, `Santo` y `Reflexión` permanecerán como pestañas internas visibles; el botón flotante de regreso no se utilizará. La cabecera utilizará selector semanal, fecha destacada, celebración y tiempo litúrgico, preservando la identidad visual azul, dorada y crema de LVJPRAYER.
 
 ---
 

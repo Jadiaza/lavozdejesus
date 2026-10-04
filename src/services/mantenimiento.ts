@@ -218,27 +218,29 @@ export function useMaintenanceState(
   submodule: string | null = null,
 ) {
   const key = moduleName ? maintenanceCacheKey(moduleName, submodule) : null;
-  const [state, setState] = useState<ModuleMaintenanceState | null>(() =>
-    key ? maintenanceCache.get(key) ?? null : null,
-  );
+  const [loadedState, setLoadedState] = useState(() => ({
+    key,
+    state: key ? maintenanceCache.get(key) ?? null : null,
+  }));
+  const state = loadedState.key === key ? loadedState.state : null;
 
   useEffect(() => {
     let active = true;
 
     if (!moduleName || !key) {
-      setState(null);
+      setLoadedState({ key: null, state: null });
       return () => {
         active = false;
       };
     }
 
     const cached = maintenanceCache.get(key);
-    if (cached) setState(cached);
+    setLoadedState({ key, state: cached ?? null });
 
     // Solo mostramos la pantalla de carga en la primera consulta.
     // En navegaciones posteriores mantenemos el estado conocido y revalidamos.
     void fetchMaintenanceState(moduleName, submodule).then((nextState) => {
-      if (active) setState(nextState);
+      if (active) setLoadedState({ key, state: nextState });
     });
 
     return () => {

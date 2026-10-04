@@ -59,6 +59,8 @@ export interface LiturgiaDia {
 
 export interface LectioDivina {
   fecha: string;
+  frase_destacada: string;
+  cita_destacada: string;
   reflexion: string;
   pregunta_meditar: string;
   oracion: string;
@@ -381,12 +383,20 @@ export const normalizeDateISO = (value: unknown) => {
   return Number.isNaN(parsed.getTime()) ? raw : parsed.toISOString().slice(0, 10);
 };
 
-async function getApiRows<T>(url: string, params: Record<string, string> = {}): Promise<T[]> {
+async function getApiRows<T>(
+  url: string,
+  params: Record<string, string> = {},
+  forceRefresh = false,
+): Promise<T[]> {
   const requestUrl = new URL(url, window.location.origin);
 
   Object.entries(params).forEach(([key, value]) => {
     if (value) requestUrl.searchParams.set(key, value);
   });
+
+  if (forceRefresh) {
+    requestUrl.searchParams.set("_lvj_refresh", String(Date.now()));
+  }
 
   const response = await fetch(requestUrl.toString(), {
     cache: "no-store",
@@ -453,6 +463,8 @@ const normalizeLiturgia = (row: Partial<LiturgiaDia>): LiturgiaDia => {
 
 const normalizeLectio = (row: Partial<LectioDivina>): LectioDivina => ({
   fecha: normalizeDateISO(row.fecha),
+  frase_destacada: preserveText(row.frase_destacada),
+  cita_destacada: clean(row.cita_destacada),
   reflexion: preserveText(row.reflexion),
   pregunta_meditar: preserveText(row.pregunta_meditar),
   oracion: preserveText(row.oracion),
@@ -576,15 +588,24 @@ export async function getSheetData<T>(sheetName: string): Promise<T[]> {
 
 export async function getTodayLiturgia(
   fecha = getTodayISO(),
+  forceRefresh = false,
 ): Promise<LiturgiaDia | null> {
-  const rows = await getApiRows<Partial<LiturgiaDia>>(LITURGIA_API_URL, { fecha });
+  const rows = await getApiRows<Partial<LiturgiaDia>>(
+    LITURGIA_API_URL,
+    { fecha },
+    forceRefresh,
+  );
   const todayRow = rows
     .map(normalizeLiturgia)
     .find((row) => row.fecha === fecha && isVisibleContent(row.estado));
 
   if (todayRow) return todayRow;
 
-  const fallbackRows = await getApiRows<Partial<LiturgiaDia>>(LITURGIA_API_URL);
+  const fallbackRows = await getApiRows<Partial<LiturgiaDia>>(
+    LITURGIA_API_URL,
+    {},
+    forceRefresh,
+  );
 
   return (
     fallbackRows
@@ -594,8 +615,12 @@ export async function getTodayLiturgia(
   );
 }
 
-export async function getPublishedLiturgias(): Promise<LiturgiaDia[]> {
-  const rows = await getApiRows<Partial<LiturgiaDia>>(LITURGIA_API_URL);
+export async function getPublishedLiturgias(forceRefresh = false): Promise<LiturgiaDia[]> {
+  const rows = await getApiRows<Partial<LiturgiaDia>>(
+    LITURGIA_API_URL,
+    {},
+    forceRefresh,
+  );
 
   return rows
     .map(normalizeLiturgia)
@@ -605,8 +630,13 @@ export async function getPublishedLiturgias(): Promise<LiturgiaDia[]> {
 
 export async function getTodayLectio(
   fecha = getTodayISO(),
+  forceRefresh = false,
 ): Promise<LectioDivina | null> {
-  const rows = await getApiRows<Partial<LectioDivina>>(LECTIO_API_URL, { fecha });
+  const rows = await getApiRows<Partial<LectioDivina>>(
+    LECTIO_API_URL,
+    { fecha },
+    forceRefresh,
+  );
 
   return (
     rows
@@ -615,8 +645,12 @@ export async function getTodayLectio(
   );
 }
 
-export async function getPublishedLectios(): Promise<LectioDivina[]> {
-  const rows = await getApiRows<Partial<LectioDivina>>(LECTIO_API_URL);
+export async function getPublishedLectios(forceRefresh = false): Promise<LectioDivina[]> {
+  const rows = await getApiRows<Partial<LectioDivina>>(
+    LECTIO_API_URL,
+    {},
+    forceRefresh,
+  );
 
   return rows
     .map(normalizeLectio)
@@ -626,8 +660,13 @@ export async function getPublishedLectios(): Promise<LectioDivina[]> {
 
 export async function getTodaySantoDelDia(
   fecha = getTodayISO(),
+  forceRefresh = false,
 ): Promise<SantoDelDia | null> {
-  const rows = await getApiRows<Partial<SantoDelDia>>(SANTORAL_API_URL, { fecha });
+  const rows = await getApiRows<Partial<SantoDelDia>>(
+    SANTORAL_API_URL,
+    { fecha },
+    forceRefresh,
+  );
 
   return (
     rows
@@ -640,8 +679,12 @@ export async function getTodaySantoDelDia(
   );
 }
 
-export async function getPublishedSantosDelDia(): Promise<SantoDelDia[]> {
-  const rows = await getApiRows<Partial<SantoDelDia>>(SANTORAL_API_URL);
+export async function getPublishedSantosDelDia(forceRefresh = false): Promise<SantoDelDia[]> {
+  const rows = await getApiRows<Partial<SantoDelDia>>(
+    SANTORAL_API_URL,
+    {},
+    forceRefresh,
+  );
 
   return rows
     .map(normalizeSanto)

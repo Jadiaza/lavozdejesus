@@ -151,7 +151,7 @@ const renderReadingText = (
                 /^[VR](?:\/)?\.$/i.test(part) ? (
                   <span
                     key={`${part}-${partIndex}`}
-                    className="font-bold text-[#c69222]"
+                    className="text-[#c69222]"
                   >
                     {part}
                   </span>
@@ -624,7 +624,8 @@ const LecturasDelDia = () => {
     [liturgias],
   );
   const palabraHoy =
-    liturgia?.palabra_hoy || "La Palabra para hoy estará disponible pronto.";
+    lectio?.frase_destacada?.trim() ||
+    "La Palabra para hoy estará disponible pronto.";
   const dateCard = formatDateCard(selectedDate);
   const sharedTheme = READING_THEME_PALETTES[readingPreferences.tema];
   const activeTheme = {
@@ -674,7 +675,7 @@ const LecturasDelDia = () => {
                           type="button"
                           disabled={!available}
                           onClick={() => setSelectedDate(fecha)}
-                          className={`mx-auto flex h-10 w-9 items-center justify-center rounded-[11px] text-[17px] font-extrabold transition sm:h-12 sm:w-11 sm:text-[18px] ${
+                          className={`mx-auto flex h-10 w-10 items-center justify-center rounded-none text-[17px] font-extrabold transition sm:h-12 sm:w-12 sm:text-[18px] md:w-11 md:rounded-[11px] ${
                             active
                               ? "border border-[#a97812] bg-[#d4af37] text-[#071a33] shadow-[0_6px_16px_-8px_rgba(8,35,71,0.65)]"
                               : available

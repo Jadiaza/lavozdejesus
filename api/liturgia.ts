@@ -96,9 +96,10 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     const url = new URL(req.url ?? "/api/liturgia", "http://localhost");
     const fecha = String(req.query?.fecha ?? url.searchParams.get("fecha") ?? "").slice(0, 10);
 
-    const [lecturas, dias, palabras, tiempos, temas, santos, celebraciones, tipos] =
+    const [lecturas, lecturasBase, dias, palabras, tiempos, temas, santos, celebraciones, tipos] =
       await Promise.all([
         optionalRows("SELECT * FROM lvj_lit_lectura_dia ORDER BY fecha ASC, id ASC LIMIT 600"),
+        optionalRows("SELECT * FROM lvj_lit_lecturas_base ORDER BY id ASC LIMIT 1200"),
         optionalRows("SELECT * FROM lvj_lit_dia ORDER BY fecha ASC, id ASC LIMIT 600"),
         optionalRows("SELECT * FROM lvj_lit_palabra_dia ORDER BY fecha ASC, id ASC LIMIT 600"),
         optionalRows("SELECT * FROM lvj_lit_tiempos ORDER BY prioridad ASC, id ASC LIMIT 100"),
@@ -108,6 +109,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         optionalRows("SELECT * FROM lvj_lit_tipos_celebracion ORDER BY prioridad ASC, id ASC LIMIT 100"),
       ]);
 
+    const baseReadingsById = rowsById(lecturasBase);
     const daysById = rowsById(dias);
     const daysByDate = rowsByKey(dias, (row) => normalizeDate(row.fecha));
     const wordsByLiturgiaId = rowsByKey(palabras, (row) => text(row, "liturgia_id"));
@@ -122,7 +124,12 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
 
     const data = baseRows
       .filter(visible)
-      .map((row) => {
+      .map((dailyRow) => {
+        const baseReading = baseReadingsById[text(dailyRow, "lectura_base_id")] || {};
+        const row = Object.entries(baseReading).reduce<DbRow>(
+          (merged, [field, value]) => (text(merged, field) ? merged : { ...merged, [field]: value }),
+          { ...dailyRow },
+        );
         const rowDate = normalizeDate(row.fecha);
         const day = daysById[text(row, "liturgia_id")] || daysByDate[rowDate] || row;
         const liturgiaId = text(row, "liturgia_id") || text(day, "id") || text(row, "id");
@@ -172,9 +179,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           evangelio_cita: text(row, "evangelio_cita"),
           evangelio_versiculo: text(row, "evangelio_versiculo", "versiculo"),
           evangelio_texto: text(row, "evangelio_texto"),
-          palabra_hoy:
-            text(row, "palabra_hoy", "frase_destacada") ||
-            text(word, "frase_destacada", "palabra_hoy", "texto"),
+          // Fuente editorial única: lvj_lit_lectura_dia (fila canónica).
+          palabra_hoy: text(row, "palabra_hoy", "frase_destacada"),
           reflexion: text(row, "reflexion"),
           pregunta_meditar: text(row, "pregunta_meditar"),
           oracion: text(row, "oracion"),

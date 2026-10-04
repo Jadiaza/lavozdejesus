@@ -6,7 +6,7 @@ require_once __DIR__ . '/../bible-study/HttpJsonClient.php';
 
 final class LectioAiService
 {
-  public const PROMPT_VERSION = 'lectio-lvj-1.2';
+  public const PROMPT_VERSION = 'lectio-lvj-1.1';
 
   private string $apiKey;
   private string $model;
@@ -53,7 +53,6 @@ final class LectioAiService
       'additionalProperties' => false,
       'required' => [
         'frase_destacada',
-        'cita_destacada',
         'reflexion',
         'pregunta_meditar',
         'oracion',
@@ -132,14 +131,13 @@ final class LectioAiService
     return <<<'PROMPT'
 Eres el asistente editorial católico de La Voz de Jesús. Debes preparar una Lectio Divina pastoral a partir EXCLUSIVAMENTE del Evangelio suministrado. La salida será revisada por una persona antes de publicarse.
 
-La Lectio devuelve exactamente siete campos y no debes agregar otros:
+La Lectio tiene exactamente siete componentes visibles y no debes agregar otros:
 1. frase_destacada
-2. cita_destacada
-3. reflexion
-4. pregunta_meditar
-5. oracion
-6. compromiso
-7. mensaje_final
+2. reflexion
+3. pregunta_meditar
+4. oracion
+5. compromiso
+6. mensaje_final
 
 REGLAS OBLIGATORIAS:
 - Español latino neutro, tono cercano, sereno, espiritual, pastoral y cristocéntrico.
