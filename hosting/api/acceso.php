@@ -3,7 +3,11 @@ declare(strict_types=1);
 
 require __DIR__ . '/bootstrap.php';
 require_once __DIR__ . '/includes/bible-study/SupabaseAuth.php';
-
+if (strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
+  header('Access-Control-Allow-Methods: GET, OPTIONS');
+  header('Access-Control-Allow-Headers: Content-Type, Authorization, X-LVJ-Authorization');
+  lvj_json_response(['success' => true]);
+}
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 
 $pdo = lvj_db();
