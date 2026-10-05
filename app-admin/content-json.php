@@ -127,9 +127,113 @@ require __DIR__ . '/includes/header.php';
   <form method="post" class="content-form">
     <?php echo csrf_field(); ?>
     <input type="hidden" name="table" value="<?php echo e($table); ?>"><input type="hidden" name="id" value="<?php echo (int) $id; ?>">
-    <label class="content-field full">JSON<textarea name="json_content" rows="28" spellcheck="false" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; line-height: 1.5; white-space: pre; tab-size: 2;"><?php echo e((string) $jsonContent); ?></textarea></label>
+    <div class="json-editor-guide">
+      <strong>Editor estructurado</strong>
+      <span>El JSON es editable. Puedes aplicar formato al texto almacenado usando Markdown, igual que en Consagraciones.</span>
+      <small>Usa <b>**negrita**</b>, <i>*cursiva*</i>, <b>## Título</b>, <b>&gt; Cita</b> y <b>- Lista</b>. El formato se guarda dentro del texto y se valida antes de actualizar.</small>
+    </div>
+    <div class="json-editor-actions">
+      <button type="button" class="btn btn-soft" data-json-format>✣ Formatear</button>
+      <button type="button" class="btn btn-soft" data-json-copy>▣ Copiar</button>
+      <button type="button" class="btn btn-soft" data-json-restore>↶ Restaurar</button>
+      <button type="button" class="btn btn-soft" data-json-bold><b>Negrita</b></button>
+      <button type="button" class="btn btn-soft" data-json-italic><i>Cursiva</i></button>
+      <button type="button" class="btn btn-soft" data-json-heading>## Título</button>
+      <button type="button" class="btn btn-soft" data-json-quote>&gt; Cita</button>
+      <button type="button" class="btn btn-soft" data-json-list>- Lista</button>
+      <span data-json-status>JSON válido pendiente de validar.</span>
+    </div>
+    <label class="content-field full">JSON<textarea id="json-content-editor" name="json_content" rows="28" spellcheck="false" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; line-height: 1.5; white-space: pre; tab-size: 2;"><?php echo e((string) $jsonContent); ?></textarea></label>
     <div class="form-actions"><button class="btn btn-gold" type="submit">Validar y guardar JSON</button><a class="btn btn-soft" href="content.php?module=<?php echo e($config['module']); ?>&table=<?php echo e($table); ?>&edit=<?php echo (int) $id; ?>">Cancelar</a></div>
   </form>
 </section>
 <section class="panel"><h3>Campos protegidos</h3><p class="muted">No se permite modificar id, created_at, updated_at, deleted_at ni la fecha derivada del Santoral. Cualquier propiedad desconocida es rechazada por el backend.</p></section>
+<style>
+.json-editor-guide{display:flex;flex-direction:column;gap:6px;padding:14px 16px;margin-bottom:12px;border:1px solid rgba(212,175,55,.25);border-radius:12px;background:rgba(212,175,55,.06)}
+.json-editor-guide strong{color:#d4af37}.json-editor-guide small{opacity:.8}
+.json-editor-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.json-editor-actions [data-json-status]{font-size:12px;opacity:.75;margin-left:auto}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var editor = document.getElementById('json-content-editor');
+  if (!editor) return;
+  var original = editor.value;
+  var status = document.querySelector('[data-json-status]');
+
+  function setStatus(message, ok) {
+    if (!status) return;
+    status.textContent = message;
+    status.style.color = ok === false ? '#dc2626' : '#6b7280';
+  }
+
+  function formatJson() {
+    try {
+      var parsed = JSON.parse(editor.value);
+      editor.value = JSON.stringify(parsed, null, 2);
+      setStatus('JSON válido y formateado.', true);
+    } catch (error) {
+      setStatus('JSON inválido: ' + error.message, false);
+    }
+  }
+
+  async function copyJson() {
+    try {
+      await navigator.clipboard.writeText(editor.value);
+      setStatus('JSON copiado.', true);
+    } catch (error) {
+      editor.select();
+      document.execCommand('copy');
+      setStatus('JSON copiado.', true);
+    }
+  }
+
+  function restoreJson() {
+    if (!window.confirm('¿Restaurar el JSON original? Se perderán los cambios no guardados.')) return;
+    editor.value = original;
+    setStatus('JSON original restaurado.', true);
+  }
+
+  function wrapSelection(prefix, suffix) {
+    var start = editor.selectionStart;
+    var end = editor.selectionEnd;
+    var selected = editor.value.slice(start, end);
+    if (!selected) {
+      selected = 'texto';
+    }
+    var replacement = prefix + selected + suffix;
+    editor.setRangeText(replacement, start, end, 'select');
+    editor.focus();
+  }
+
+  function prefixLines(prefix) {
+    var start = editor.selectionStart;
+    var end = editor.selectionEnd;
+    var selected = editor.value.slice(start, end) || 'texto';
+    var replacement = selected.split('\n').map(function (line) {
+      return line ? prefix + line : line;
+    }).join('\n');
+    editor.setRangeText(replacement, start, end, 'select');
+    editor.focus();
+  }
+
+  document.querySelector('[data-json-format]')?.addEventListener('click', formatJson);
+  document.querySelector('[data-json-copy]')?.addEventListener('click', copyJson);
+  document.querySelector('[data-json-restore]')?.addEventListener('click', restoreJson);
+  document.querySelector('[data-json-bold]')?.addEventListener('click', function(){ wrapSelection('**','**'); });
+  document.querySelector('[data-json-italic]')?.addEventListener('click', function(){ wrapSelection('*','*'); });
+  document.querySelector('[data-json-heading]')?.addEventListener('click', function(){ prefixLines('## '); });
+  document.querySelector('[data-json-quote]')?.addEventListener('click', function(){ prefixLines('> '); });
+  document.querySelector('[data-json-list]')?.addEventListener('click', function(){ prefixLines('- '); });
+
+  editor.addEventListener('input', function () {
+    try {
+      JSON.parse(editor.value);
+      setStatus('JSON válido.', true);
+    } catch (error) {
+      setStatus('JSON pendiente de corrección.', false);
+    }
+  });
+});
+</script>
 <?php require __DIR__ . '/includes/footer.php'; ?>
