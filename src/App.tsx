@@ -11,6 +11,7 @@ import PrayerReminderScheduler from "@/modules/prayers/components/PrayerReminder
 import AppThemeSync from "@/features/theme/AppThemeSync";
 import MaintenanceGate from "@/components/MaintenanceGate";
 import AccessGate from "@/components/AccessGate";
+import WelcomeAccessPrompt from "@/components/WelcomeAccessPrompt";
 
 import RosarioHome from "@/modules/rosary/pages/RosarioHome";
 const RosarioModalidad = lazy(() => import("@/modules/rosary/pages/RosarioModalidad"));
@@ -184,6 +185,7 @@ const App = () => {
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
                   </Routes>
+                <WelcomeAccessPrompt />
               </AccessGate>
             </MaintenanceGate>
           </Suspense>
