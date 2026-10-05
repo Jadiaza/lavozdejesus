@@ -577,20 +577,15 @@ export async function getSheetData<T>(sheetName: string): Promise<T[]> {
 export async function getTodayLiturgia(
   fecha = getTodayISO(),
 ): Promise<LiturgiaDia | null> {
+  // La Home debe mostrar exclusivamente el contenido editorial de la fecha
+  // solicitada. Nunca usar otra fecha como fallback, porque eso puede hacer
+  // aparecer la "Palabra para Hoy" de un día anterior.
   const rows = await getApiRows<Partial<LiturgiaDia>>(LITURGIA_API_URL, { fecha });
-  const todayRow = rows
-    .map(normalizeLiturgia)
-    .find((row) => row.fecha === fecha && isVisibleContent(row.estado));
-
-  if (todayRow) return todayRow;
-
-  const fallbackRows = await getApiRows<Partial<LiturgiaDia>>(LITURGIA_API_URL);
 
   return (
-    fallbackRows
+    rows
       .map(normalizeLiturgia)
-      .filter((row) => row.fecha && isVisibleContent(row.estado))
-      .sort((a, b) => b.fecha.localeCompare(a.fecha))[0] ?? null
+      .find((row) => row.fecha === fecha && isVisibleContent(row.estado)) ?? null
   );
 }
 
