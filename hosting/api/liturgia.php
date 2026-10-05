@@ -86,21 +86,17 @@ try {
   $pdo = lvj_db();
   $fecha = substr(trim((string) ($_GET['fecha'] ?? '')), 0, 10);
 
-  $lecturas = (array) lvj_optional_rows(
+  $lecturas = lvj_optional_rows(
     $pdo,
     'SELECT * FROM lvj_lit_lectura_dia ORDER BY fecha ASC, id ASC LIMIT 800',
   );
-  $dias = (array) lvj_optional_rows(
+  $dias = lvj_optional_rows(
     $pdo,
     'SELECT * FROM lvj_lit_dia ORDER BY fecha ASC, id ASC LIMIT 800',
   );
-  $palabras = (array) lvj_optional_rows(
+  $palabras = lvj_optional_rows(
     $pdo,
     'SELECT * FROM lvj_lit_palabra_dia ORDER BY fecha ASC, id ASC LIMIT 800',
-  );
-  $lectios = (array) lvj_optional_rows(
-    $pdo,
-    'SELECT * FROM lvj_lit_lectio_divina ORDER BY fecha ASC, id ASC LIMIT 800',
   );
   $tiempos = lvj_optional_rows(
     $pdo,
@@ -126,14 +122,11 @@ try {
   // Solo contenido editorial vigente. Una palabra archivada o de otra fecha
   // nunca debe ganar prioridad sobre la Palabra para Hoy.
   $palabras = array_values(array_filter($palabras, 'lvj_visible_row'));
-  $lectios = array_values(array_filter($lectios, 'lvj_visible_row'));
 
   $diasById = lvj_rows_by_id($dias);
   $diasByDate = lvj_rows_by_key($dias, fn ($row) => lvj_normalize_date($row['fecha'] ?? ''));
   $palabrasByLiturgiaId = lvj_rows_by_key($palabras, fn ($row) => lvj_text($row, 'liturgia_id'));
   $palabrasByDate = lvj_rows_by_key($palabras, fn ($row) => lvj_normalize_date($row['fecha'] ?? ''));
-  $lectiosByLiturgiaId = lvj_rows_by_key($lectios, fn ($row) => lvj_text($row, 'liturgia_id'));
-  $lectiosByDate = lvj_rows_by_key($lectios, fn ($row) => lvj_normalize_date($row['fecha'] ?? ''));
   $tiemposById = lvj_rows_by_id($tiempos);
   $temasById = lvj_rows_by_id($temas);
   $santosById = lvj_rows_by_id($santos);
@@ -163,14 +156,6 @@ try {
       ? $wordByLiturgiaId
       : $wordByDate;
     $word = $dedicatedWord ?? $row;
-    $lectioByLiturgiaId = $lectiosByLiturgiaId[$liturgiaId] ?? null;
-    $lectioByDate = $lectiosByDate[$rowDate] ?? null;
-    $lectio = $lectioByLiturgiaId ?? $lectioByDate;
-    $lectioDate = $lectio ? lvj_normalize_date($lectio['fecha'] ?? '') : '';
-    $lectioPhrase = (
-      $lectio !== null &&
-      ($rowDate === '' || $lectioDate === '' || $lectioDate === $rowDate)
-    ) ? lvj_text($lectio, 'frase_destacada') : '';
     $normalizedDate = $rowDate ?: lvj_normalize_date($day['fecha'] ?? '') ?: lvj_normalize_date($word['fecha'] ?? '');
 
     if ($fecha !== '' && $normalizedDate !== $fecha) {
@@ -186,11 +171,9 @@ try {
     $tipo = $tiposById[lvj_text($celebracion, 'tipo_celebracion_id', 'tipo_id')] ?? null;
     $tiempoNombre = lvj_text($row, 'tiempo_liturgico') ?: lvj_text($day, 'tiempo_liturgico') ?: preg_replace('/^tiempo\s+/i', '', lvj_text($tiempo, 'nombre'));
     $celebracionNombre = lvj_text($row, 'celebracion') ?: lvj_text($day, 'celebracion') ?: lvj_text($celebracion, 'nombre') ?: lvj_text($santo, 'nombre');
-    // "Palabra para Hoy" usa la tabla editorial dedicada cuando existe.
-    // Si no existe registro en lvj_lit_palabra_dia, toma la frase destacada
-    // de la Lectio Divina de la misma fecha.
+    // "Palabra para Hoy" proviene primero de su tabla editorial dedicada.
+    // Nunca usar frase_destacada de la lectura como sustituto silencioso.
     $palabraHoy = lvj_text($dedicatedWord, 'palabra_hoy', 'frase_destacada', 'texto') ?:
-      $lectioPhrase ?:
       lvj_text($row, 'palabra_hoy');
 
     $data[] = [
