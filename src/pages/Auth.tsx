@@ -53,7 +53,7 @@ export default function Auth() {
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [acceptDataTreatment, setAcceptDataTreatment] = useState(false);
   const [acceptCommunications, setAcceptCommunications] = useState(false);
-  const [remember, setRemember] = useState(true);
+  const [remember, setRemember] = useState(() => getBibleStudyRememberSession());
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
