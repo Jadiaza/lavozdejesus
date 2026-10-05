@@ -2,7 +2,7 @@ import { BookOpen, ChevronRight } from "lucide-react";
 import bible from "@/assets/bible.jpg";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { LiturgiaDia, getTodayLectio } from "@/services/sheetsService";
+import { getTodayLectio } from "@/services/sheetsService";
 
 interface GospelCardProps {
   palabraHoy?: string;
@@ -36,7 +36,8 @@ export const GospelCard = ({
   className = "",
   compact: _compact,
 }: GospelCardProps) => {
-  const [liturgia, setLiturgia] = useState<LiturgiaDia | null>(null);
+  const [lectioPhrase, setLectioPhrase] = useState("");
+  const [lectioReference, setLectioReference] = useState("");
   const [loading, setLoading] = useState(!palabraHoy);
   const [error, setError] = useState(false);
 
@@ -53,14 +54,13 @@ export const GospelCard = ({
         const data = await getTodayLectio();
         if (!mounted) return;
 
-        if (data) {
-          setLiturgia({
-            ...({} as LiturgiaDia),
-            palabra_hoy: data.frase_destacada,
-          });
+        if (data?.frase_destacada) {
+          setLectioPhrase(data.frase_destacada);
+          setLectioReference(data.cita_destacada);
           setError(false);
         } else {
-          setLiturgia(null);
+          setLectioPhrase("");
+          setLectioReference("");
           setError(true);
         }
       } catch {
@@ -79,13 +79,14 @@ export const GospelCard = ({
 
   const palabraHoyActual =
     palabraHoy ??
-    liturgia?.palabra_hoy ??
+    lectioPhrase ??
     (loading
       ? "Cargando palabra..."
       : error
         ? "La Palabra para hoy estara disponible pronto."
         : "La Palabra para hoy estara disponible pronto.");
   const palabraDisplay = splitPalabraForDisplay(palabraHoyActual);
+  const referencia = palabraDisplay.referencia || lectioReference;
   const actionClassName =
     "shrink-0 inline-flex items-center gap-1 gold-border rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-gold hover:bg-gold/10 transition";
 
@@ -118,9 +119,9 @@ export const GospelCard = ({
             {palabraDisplay.frase}
           </p>
 
-          {palabraDisplay.referencia && (
+          {referencia && (
             <p className="mt-3 text-left text-sm font-semibold leading-tight text-gold [text-shadow:0_2px_10px_rgba(0,0,0,0.9)]">
-              {palabraDisplay.referencia}
+              {referencia}
             </p>
           )}
         </div>
