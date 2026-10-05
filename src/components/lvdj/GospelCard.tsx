@@ -78,8 +78,8 @@ export const GospelCard = ({
   }, [palabraHoy]);
 
   const palabraHoyActual =
-    palabraHoy ??
-    lectioPhrase ??
+    palabraHoy ||
+    lectioPhrase ||
     (loading
       ? "Cargando palabra..."
       : error
