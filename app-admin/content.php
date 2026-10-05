@@ -2445,6 +2445,9 @@ require __DIR__ . '/includes/header.php';
 
       <div class="form-actions">
         <button class="btn btn-gold" type="submit"><?php echo $editRow ? 'Actualizar registro' : 'Crear registro'; ?></button>
+        <?php if ($editRow && in_array($table, ['lvj_lit_lectura_dia', 'lvj_lit_lectio_divina', 'lvj_san_santo_dia'], true)): ?>
+          <a class="btn btn-soft" href="content-json.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&id=<?php echo (int) $editRow['id']; ?>">Editar JSON</a>
+        <?php endif; ?>
         <a class="btn btn-soft" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>">Cancelar</a>
       </div>
     </form>
@@ -2586,6 +2589,9 @@ require __DIR__ . '/includes/header.php';
             <?php endforeach; ?>
             <?php if (!$readOnly): ?><td class="actions grid-actions">
               <a class="action-button action-edit" title="Editar registro" href="content.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&edit=<?php echo (int) $row['id']; ?>">Editar</a>
+              <?php if (in_array($table, ['lvj_lit_lectura_dia', 'lvj_lit_lectio_divina', 'lvj_san_santo_dia'], true)): ?>
+                <a class="action-button" title="Editar JSON" href="content-json.php?module=<?php echo e($moduleKey); ?>&table=<?php echo e($table); ?>&id=<?php echo (int) $row['id']; ?>">JSON</a>
+              <?php endif; ?>
               <?php if ($table === 'lvj_com_usuarios'): ?>
                 <?php if (isset($row['estado'])): ?>
                   <?php $userActive = (int) $row['estado'] === 1; ?>
