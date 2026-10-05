@@ -59,6 +59,8 @@ export interface LiturgiaDia {
 
 export interface LectioDivina {
   fecha: string;
+  frase_destacada: string;
+  cita_destacada: string;
   reflexion: string;
   pregunta_meditar: string;
   oracion: string;
@@ -453,6 +455,8 @@ const normalizeLiturgia = (row: Partial<LiturgiaDia>): LiturgiaDia => {
 
 const normalizeLectio = (row: Partial<LectioDivina>): LectioDivina => ({
   fecha: normalizeDateISO(row.fecha),
+  frase_destacada: preserveText(row.frase_destacada),
+  cita_destacada: preserveText(row.cita_destacada),
   reflexion: preserveText(row.reflexion),
   pregunta_meditar: preserveText(row.pregunta_meditar),
   oracion: preserveText(row.oracion),
