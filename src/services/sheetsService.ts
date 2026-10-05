@@ -605,7 +605,10 @@ export async function getPublishedLiturgias(): Promise<LiturgiaDia[]> {
 export async function getTodayLectio(
   fecha = getTodayISO(),
 ): Promise<LectioDivina | null> {
-  const rows = await getApiRows<Partial<LectioDivina>>(LECTIO_API_URL, { fecha });
+  const rows = await getApiRows<Partial<LectioDivina>>(LECTIO_API_URL, {
+    fecha,
+    uso: "palabra_hoy",
+  });
 
   return (
     rows
