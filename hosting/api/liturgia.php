@@ -86,19 +86,19 @@ try {
   $pdo = lvj_db();
   $fecha = substr(trim((string) ($_GET['fecha'] ?? '')), 0, 10);
 
-  $lecturas = lvj_optional_rows(
+  $lecturas = (array) lvj_optional_rows(
     $pdo,
     'SELECT * FROM lvj_lit_lectura_dia ORDER BY fecha ASC, id ASC LIMIT 800',
   );
-  $dias = lvj_optional_rows(
+  $dias = (array) lvj_optional_rows(
     $pdo,
     'SELECT * FROM lvj_lit_dia ORDER BY fecha ASC, id ASC LIMIT 800',
   );
-  $palabras = lvj_optional_rows(
+  $palabras = (array) lvj_optional_rows(
     $pdo,
     'SELECT * FROM lvj_lit_palabra_dia ORDER BY fecha ASC, id ASC LIMIT 800',
   );
-  $lectios = lvj_optional_rows(
+  $lectios = (array) lvj_optional_rows(
     $pdo,
     'SELECT * FROM lvj_lit_lectio_divina ORDER BY fecha ASC, id ASC LIMIT 800',
   );
@@ -126,7 +126,7 @@ try {
   // Solo contenido editorial vigente. Una palabra archivada o de otra fecha
   // nunca debe ganar prioridad sobre la Palabra para Hoy.
   $palabras = array_values(array_filter($palabras, 'lvj_visible_row'));
-  $lectios = array_values(array_filter((array) $lectios, 'lvj_visible_row'));
+  $lectios = array_values(array_filter($lectios, 'lvj_visible_row'));
 
   $diasById = lvj_rows_by_id($dias);
   $diasByDate = lvj_rows_by_key($dias, fn ($row) => lvj_normalize_date($row['fecha'] ?? ''));
