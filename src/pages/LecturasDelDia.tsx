@@ -155,9 +155,9 @@ const renderReadingText = (
           const isClosingFormula =
             /^(Palabra de Dios|Palabra del Señor)\.?$/i.test(line.trim());
 
-          const headingMatch = line.match(/^##\\s+(.+)$/);
-          const quoteMatch = line.match(/^>\\s*(.*)$/);
-          const listMatch = line.match(/^-\\s+(.*)$/);
+          const headingMatch = line.match(/^##\s+(.+)$/);
+          const quoteMatch = line.match(/^>\s*(.*)$/);
+          const listMatch = line.match(/^-\s+(.*)$/);
 
           const node = headingMatch ? (
             <strong className="block mb-2 text-[1.02em] font-extrabold text-[var(--lit-text)]">
@@ -178,7 +178,7 @@ const renderReadingText = (
           ) : psalmParts ? (
             <span>
               {psalmParts.map((part, partIndex) =>
-                /^[VR](?:\\/)?\\.$/i.test(part) ? (
+                /^[VR](?:\/)?\.$/i.test(part) ? (
                   <span
                     key={`${part}-${partIndex}`}
                     className="font-bold text-[#c69222]"
