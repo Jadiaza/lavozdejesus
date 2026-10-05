@@ -126,7 +126,16 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         const rowDate = normalizeDate(row.fecha);
         const day = daysById[text(row, "liturgia_id")] || daysByDate[rowDate] || row;
         const liturgiaId = text(row, "liturgia_id") || text(day, "id") || text(row, "id");
-        const word = wordsByLiturgiaId[liturgiaId] || wordsByDate[rowDate] || row;
+        const wordByLiturgiaId = wordsByLiturgiaId[liturgiaId];
+        const wordByDate = wordsByDate[rowDate];
+        const dedicatedWord =
+          (wordByLiturgiaId &&
+            (!rowDate || !normalizeDate(wordByLiturgiaId.fecha) ||
+              normalizeDate(wordByLiturgiaId.fecha) === rowDate) &&
+            wordByLiturgiaId) ||
+          wordByDate ||
+          null;
+        const word = dedicatedWord || row;
         const normalizedDate = rowDate || normalizeDate(day.fecha) || normalizeDate(word.fecha);
         const tiempo = timesById[text(row, "tiempo_id") || text(day, "tiempo_id")];
         const tema = themesById[text(row, "tema_id") || text(day, "tema_id")];
@@ -172,9 +181,12 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           evangelio_cita: text(row, "evangelio_cita"),
           evangelio_versiculo: text(row, "evangelio_versiculo", "versiculo"),
           evangelio_texto: text(row, "evangelio_texto"),
+          // "Palabra para Hoy" proviene primero de su tabla editorial dedicada.
+          // Nunca usar frase_destacada de la lectura como sustituto silencioso:
+          // ese campo pertenece a otros usos editoriales y puede quedar obsoleto.
           palabra_hoy:
-            text(row, "palabra_hoy", "frase_destacada") ||
-            text(word, "frase_destacada", "palabra_hoy", "texto"),
+            text(dedicatedWord, "palabra_hoy", "frase_destacada", "texto") ||
+            text(row, "palabra_hoy"),
           reflexion: text(row, "reflexion"),
           pregunta_meditar: text(row, "pregunta_meditar"),
           oracion: text(row, "oracion"),
