@@ -252,7 +252,7 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
       audio.src = "";
       audioRef.current = null;
     };
-  }, [streamUrl, volume]);
+  }, [streamUrl]);
 
   useEffect(() => {
     const audio = audioRef.current;
