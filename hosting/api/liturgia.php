@@ -119,6 +119,10 @@ try {
     'SELECT * FROM lvj_lit_tipos_celebracion ORDER BY prioridad ASC, id ASC LIMIT 100',
   );
 
+  // Solo contenido editorial vigente. Una palabra archivada o de otra fecha
+  // nunca debe ganar prioridad sobre la Palabra para Hoy.
+  $palabras = array_values(array_filter($palabras, 'lvj_visible_row'));
+
   $diasById = lvj_rows_by_id($dias);
   $diasByDate = lvj_rows_by_key($dias, fn ($row) => lvj_normalize_date($row['fecha'] ?? ''));
   $palabrasByLiturgiaId = lvj_rows_by_key($palabras, fn ($row) => lvj_text($row, 'liturgia_id'));
