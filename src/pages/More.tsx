@@ -14,8 +14,11 @@ import {
   Settings,
   ShieldCheck,
   UserRound,
+  LogOut,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { lvjAuth } from "@/features/biblia/auth/bibleStudyAuth";
 import { BottomNav } from "@/components/lvdj/BottomNav";
 import { Logo } from "@/components/lvdj/Logo";
 
@@ -58,8 +61,44 @@ const Section = ({ title, items }: { title: string; items: MenuItem[] }) => (
 );
 
 export default function More() {
+  const [signedIn, setSignedIn] = useState(false);
+  const [accountEmail, setAccountEmail] = useState("");
+  const [signingOut, setSigningOut] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadSession = async () => {
+      const { data } = await lvjAuth.auth.getSession();
+      if (!active) return;
+      setSignedIn(Boolean(data.session));
+      setAccountEmail(data.session?.user.email ?? "");
+    };
+
+    void loadSession();
+
+    const { data } = lvjAuth.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      setSignedIn(Boolean(session));
+      setAccountEmail(session?.user.email ?? "");
+    });
+
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    await lvjAuth.auth.signOut({ scope: "local" });
+    setSignedIn(false);
+    setAccountEmail("");
+    setSigningOut(false);
+  };
+
   const mySpace: MenuItem[] = [
-    { label: "Mi cuenta", description: "Acceso y sesión de usuario", to: "/acceso", icon: UserRound },
+    { label: signedIn ? "Mi cuenta" : "Iniciar sesión", description: signedIn ? accountEmail || "Sesión activa" : "Acceso y sesión de usuario", to: "/acceso", icon: UserRound },
     { label: "Mi Biblia", description: "Favoritos, notas, marcadores e historial", to: "/biblia/mi-biblia", icon: Library },
     { label: "Mis oraciones", description: "Oraciones guardadas y favoritas", to: "/oraciones/mis-oraciones", icon: Heart },
     { label: "Planes de lectura", description: "Continúa tus planes y progreso", to: "/biblia/planes", icon: CalendarCheck2 },
@@ -90,6 +129,26 @@ export default function More() {
 
         <Section title="Mi espacio" items={mySpace} />
         <Section title="Contenido" items={content} />
+
+        {signedIn ? (
+          <section className="mt-4">
+            <button
+              type="button"
+              onClick={handleSignOut}
+              disabled={signingOut}
+              className="flex min-h-[56px] w-full items-center gap-3 rounded-xl border border-red-400/20 bg-red-950/10 px-3 py-2 text-left transition hover:bg-red-950/20 disabled:opacity-50"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-red-300">
+                <LogOut className="h-5 w-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <strong className="block text-sm text-[#F8F5EA]">{signingOut ? "Cerrando sesión..." : "Cerrar sesión"}</strong>
+                <span className="mt-0.5 block text-[11px] text-[#8F897C]">Salir de tu cuenta en este dispositivo</span>
+              </span>
+              <ChevronRight className="h-4 w-4 text-red-300/60" />
+            </button>
+          </section>
+        ) : null}
 
         <section className="mt-7">
           <h2 className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.24em] text-[#D4AF37]">Configuración</h2>
