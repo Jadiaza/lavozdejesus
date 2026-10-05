@@ -94,15 +94,19 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
 
     void applyConfig();
 
-    // Keep the player synchronized with the DB without requiring
-    // the user to close/reopen the app after changing the stream.
-    const interval = window.setInterval(() => {
-      void applyConfig();
-    }, 60_000);
+    // The DB is the source of truth. We refresh on app load/resume
+    // and only re-check after a playback failure, avoiding periodic polling.
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void applyConfig();
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
       mounted = false;
-      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, []);
 
