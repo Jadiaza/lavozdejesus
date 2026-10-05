@@ -66,12 +66,19 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
-    getAppConfig()
-      .then((config) => {
+    const applyConfig = async () => {
+      try {
+        const config = await getAppConfig();
         if (!mounted) return;
 
-        setStreamUrl(config.radio_stream_url);
-        setMetadataUrl(config.radio_metadata_url);
+        setStreamUrl((current) =>
+          current === config.radio_stream_url ? current : config.radio_stream_url,
+        );
+        setMetadataUrl((current) =>
+          current === config.radio_metadata_url
+            ? current
+            : config.radio_metadata_url,
+        );
         setDefaultTitle(config.radio_default_title);
         setDefaultSubtitle(config.radio_default_subtitle);
         setPlayerImageUrl(config.radio_player_image_url);
@@ -80,24 +87,34 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
             ? config.radio_default_title
             : currentTitle,
         );
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Config error:", error);
-      });
+      }
+    };
+
+    void applyConfig();
+
+    // Keep the player synchronized with the DB without requiring
+    // the user to close/reopen the app after changing the stream.
+    const interval = window.setInterval(() => {
+      void applyConfig();
+    }, 60_000);
 
     return () => {
       mounted = false;
+      window.clearInterval(interval);
     };
   }, []);
 
   useEffect(() => {
+    const preservePlayback = shouldPlayRef.current;
     const audio = new Audio(streamUrl);
 
     audio.preload = "metadata";
     audio.crossOrigin = "anonymous";
     audio.volume = volume;
     audioRef.current = audio;
-    shouldPlayRef.current = false;
+    shouldPlayRef.current = preservePlayback;
     reconnectAttemptRef.current = 0;
     reconnectingRef.current = false;
 
@@ -223,6 +240,15 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
     audio.addEventListener("stalled", onStalled);
     audio.addEventListener("ended", onEnded);
     audio.addEventListener("pause", onPause);
+
+    // If the DB stream changed while the user was listening,
+    // automatically continue on the new stream.
+    if (preservePlayback) {
+      setStatus("connecting");
+      void audio.play().catch((error) => {
+        console.warn("Playback resume after stream change failed:", error);
+      });
+    }
 
     return () => {
       clearReconnectTimer();
