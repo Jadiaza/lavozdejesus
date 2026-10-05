@@ -102,6 +102,20 @@ const formatPsalmResponse = (value?: string) => {
   return response ? `R/. ${response}` : "";
 };
 
+const renderFormattedInline = (value: string, keyPrefix: string): ReactNode[] => {
+  const parts = value.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  return parts.map((part, index) => {
+    if (/^\*\*[^*]+\*\*$/.test(part)) {
+      return <strong key={`${keyPrefix}-b-${index}`}>{part.slice(2, -2)}</strong>;
+    }
+    if (/^\*[^*]+\*$/.test(part)) {
+      return <em key={`${keyPrefix}-i-${index}`}>{part.slice(1, -1)}</em>;
+    }
+    return <Fragment key={`${keyPrefix}-t-${index}`}>{part}</Fragment>;
+  });
+};
+
+
 const isLiturgicalFormula = (line: string) =>
   /^(lectura\s+(de|del)|palabra\s+de\s+dios|en\s+aquel\s+tiempo|en\s+aquellos\s+días)/i.test(
     line.trim(),
@@ -141,14 +155,30 @@ const renderReadingText = (
           const isClosingFormula =
             /^(Palabra de Dios|Palabra del Señor)\.?$/i.test(line.trim());
 
-          const node = isClosingFormula ? (
+          const headingMatch = line.match(/^##\\s+(.+)$/);
+          const quoteMatch = line.match(/^>\\s*(.*)$/);
+          const listMatch = line.match(/^-\\s+(.*)$/);
+
+          const node = headingMatch ? (
+            <strong className="block mb-2 text-[1.02em] font-extrabold text-[var(--lit-text)]">
+              {renderFormattedInline(headingMatch[1], `${paragraphIndex}-heading-${lineIndex}`)}
+            </strong>
+          ) : quoteMatch ? (
+            <blockquote className="border-l-2 border-[#c69222] pl-4 italic text-[var(--lit-muted)]">
+              {renderFormattedInline(quoteMatch[1], `${paragraphIndex}-quote-${lineIndex}`)}
+            </blockquote>
+          ) : listMatch ? (
+            <span className="block pl-5 before:content-['•'] before:-ml-4 before:mr-2 before:text-[#c69222]">
+              {renderFormattedInline(listMatch[1], `${paragraphIndex}-list-${lineIndex}`)}
+            </span>
+          ) : isClosingFormula ? (
             <strong className="font-extrabold text-[var(--lit-text)]">
-              {line}
+              {renderFormattedInline(line, `${paragraphIndex}-formula-${lineIndex}`)}
             </strong>
           ) : psalmParts ? (
             <span>
               {psalmParts.map((part, partIndex) =>
-                /^[VR](?:\/)?\.$/i.test(part) ? (
+                /^[VR](?:\\/)?\\.$/i.test(part) ? (
                   <span
                     key={`${part}-${partIndex}`}
                     className="font-bold text-[#c69222]"
@@ -157,15 +187,17 @@ const renderReadingText = (
                   </span>
                 ) : (
                   <Fragment key={`${partIndex}-${part.slice(0, 8)}`}>
-                    {part}
+                    {renderFormattedInline(part, `${paragraphIndex}-psalm-${lineIndex}-${partIndex}`)}
                   </Fragment>
                 ),
               )}
             </span>
           ) : highlightOrdo ? (
-            <span className="font-semibold italic text-[#c69222]">{line}</span>
+            <span className="font-semibold italic text-[#c69222]">
+              {renderFormattedInline(line, `${paragraphIndex}-ordo-${lineIndex}`)}
+            </span>
           ) : (
-            <span>{line}</span>
+            <span>{renderFormattedInline(line, `${paragraphIndex}-line-${lineIndex}`)}</span>
           );
 
           return (
@@ -624,7 +656,9 @@ const LecturasDelDia = () => {
     [liturgias],
   );
   const palabraHoy =
-    liturgia?.palabra_hoy || "La Palabra para hoy estará disponible pronto.";
+    lectio?.frase_destacada ||
+    liturgia?.palabra_hoy ||
+    "La Palabra para hoy estará disponible pronto.";
   const dateCard = formatDateCard(selectedDate);
   const sharedTheme = READING_THEME_PALETTES[readingPreferences.tema];
   const activeTheme = {
