@@ -140,7 +140,18 @@ try {
     $rowDate = lvj_normalize_date($row['fecha'] ?? '');
     $day = $diasById[lvj_text($row, 'liturgia_id')] ?? $diasByDate[$rowDate] ?? $row;
     $liturgiaId = lvj_text($row, 'liturgia_id') ?: lvj_text($day, 'id') ?: lvj_text($row, 'id');
-    $word = $palabrasByLiturgiaId[$liturgiaId] ?? $palabrasByDate[$rowDate] ?? $row;
+    $wordByLiturgiaId = $palabrasByLiturgiaId[$liturgiaId] ?? null;
+    $wordByDate = $palabrasByDate[$rowDate] ?? null;
+    $wordByLiturgiaIdDate = $wordByLiturgiaId
+      ? lvj_normalize_date($wordByLiturgiaId['fecha'] ?? '')
+      : '';
+    $dedicatedWord = (
+      $wordByLiturgiaId !== null &&
+      ($rowDate === '' || $wordByLiturgiaIdDate === '' || $wordByLiturgiaIdDate === $rowDate)
+    )
+      ? $wordByLiturgiaId
+      : $wordByDate;
+    $word = $dedicatedWord ?? $row;
     $normalizedDate = $rowDate ?: lvj_normalize_date($day['fecha'] ?? '') ?: lvj_normalize_date($word['fecha'] ?? '');
 
     if ($fecha !== '' && $normalizedDate !== $fecha) {
@@ -156,8 +167,10 @@ try {
     $tipo = $tiposById[lvj_text($celebracion, 'tipo_celebracion_id', 'tipo_id')] ?? null;
     $tiempoNombre = lvj_text($row, 'tiempo_liturgico') ?: lvj_text($day, 'tiempo_liturgico') ?: preg_replace('/^tiempo\s+/i', '', lvj_text($tiempo, 'nombre'));
     $celebracionNombre = lvj_text($row, 'celebracion') ?: lvj_text($day, 'celebracion') ?: lvj_text($celebracion, 'nombre') ?: lvj_text($santo, 'nombre');
-    $palabraHoy = lvj_text($row, 'palabra_hoy', 'frase_destacada') ?:
-      lvj_text($word, 'frase_destacada', 'palabra_hoy', 'texto');
+    // "Palabra para Hoy" proviene primero de su tabla editorial dedicada.
+    // Nunca usar frase_destacada de la lectura como sustituto silencioso.
+    $palabraHoy = lvj_text($dedicatedWord, 'palabra_hoy', 'frase_destacada', 'texto') ?:
+      lvj_text($row, 'palabra_hoy');
 
     $data[] = [
       'fecha' => $normalizedDate,
