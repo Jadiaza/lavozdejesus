@@ -126,7 +126,7 @@ try {
   // Solo contenido editorial vigente. Una palabra archivada o de otra fecha
   // nunca debe ganar prioridad sobre la Palabra para Hoy.
   $palabras = array_values(array_filter($palabras, 'lvj_visible_row'));
-  $lectios = array_values(array_filter($lectios, 'lvj_visible_row'));
+  $lectios = array_values(array_filter((array) $lectios, 'lvj_visible_row'));
 
   $diasById = lvj_rows_by_id($dias);
   $diasByDate = lvj_rows_by_key($dias, fn ($row) => lvj_normalize_date($row['fecha'] ?? ''));
