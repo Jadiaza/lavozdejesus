@@ -2,7 +2,7 @@ import { BookOpen, ChevronRight } from "lucide-react";
 import bible from "@/assets/bible.jpg";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { LiturgiaDia, getTodayLiturgia } from "@/services/sheetsService";
+import { LiturgiaDia, getTodayLectio } from "@/services/sheetsService";
 
 interface GospelCardProps {
   palabraHoy?: string;
@@ -50,11 +50,14 @@ export const GospelCard = ({
 
     const loadLiturgia = async () => {
       try {
-        const data = await getTodayLiturgia();
+        const data = await getTodayLectio();
         if (!mounted) return;
 
         if (data) {
-          setLiturgia(data);
+          setLiturgia({
+            ...({} as LiturgiaDia),
+            palabra_hoy: data.frase_destacada,
+          });
           setError(false);
         } else {
           setLiturgia(null);
