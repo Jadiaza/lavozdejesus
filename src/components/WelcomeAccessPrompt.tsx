@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { lvjAuth } from "@/features/biblia/auth/bibleStudyAuth";
 
-const DISMISSED_KEY = "lvj_access_prompt_dismissed";
+const DISMISSED_KEY = "lvj_access_prompt_dismissed_v2";
 const SPLASH_WAIT_MS = 3100;
 
 export default function WelcomeAccessPrompt() {
