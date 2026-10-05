@@ -18,8 +18,17 @@ const toTitleCase = (value: string) =>
     .toLowerCase()
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 
+const RECONNECT_BASE_DELAY = 1500;
+const RECONNECT_MAX_DELAY = 30000;
+const STALL_TIMEOUT = 8000;
+
 export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const shouldPlayRef = useRef(false);
+  const reconnectTimerRef = useRef<number | null>(null);
+  const stallTimerRef = useRef<number | null>(null);
+  const reconnectAttemptRef = useRef(0);
+  const reconnectingRef = useRef(false);
   const analysisRef = useRef<{
     analyser: AnalyserNode;
     context: AudioContext;
@@ -86,25 +95,141 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
 
     audio.preload = "metadata";
     audio.crossOrigin = "anonymous";
-    audio.volume = 0.5;
+    audio.volume = volume;
     audioRef.current = audio;
+    shouldPlayRef.current = false;
+    reconnectAttemptRef.current = 0;
+    reconnectingRef.current = false;
 
-    const onPlaying = () => setStatus("playing");
-    const onWaiting = () => setStatus("connecting");
-    const onError = () => setStatus("error");
-    const onPause = () =>
-      setStatus((currentStatus) =>
-        currentStatus === "playing" || currentStatus === "connecting"
-          ? "idle"
-          : currentStatus,
+    const clearReconnectTimer = () => {
+      if (reconnectTimerRef.current !== null) {
+        window.clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+    };
+
+    const clearStallTimer = () => {
+      if (stallTimerRef.current !== null) {
+        window.clearTimeout(stallTimerRef.current);
+        stallTimerRef.current = null;
+      }
+    };
+
+    const scheduleReconnect = (reason: string) => {
+      if (!shouldPlayRef.current || reconnectTimerRef.current !== null) return;
+
+      const attempt = reconnectAttemptRef.current;
+      const delay = Math.min(
+        RECONNECT_MAX_DELAY,
+        RECONNECT_BASE_DELAY * 2 ** Math.min(attempt, 5),
       );
+
+      reconnectAttemptRef.current += 1;
+      setStatus("connecting");
+
+      reconnectTimerRef.current = window.setTimeout(async () => {
+        reconnectTimerRef.current = null;
+
+        if (!shouldPlayRef.current || audioRef.current !== audio) return;
+
+        reconnectingRef.current = true;
+
+        try {
+          audio.pause();
+          audio.src = streamUrl;
+          audio.load();
+          await audio.play();
+
+          reconnectAttemptRef.current = 0;
+        } catch (error) {
+          console.warn(
+            `Radio reconnect failed (attempt ${reconnectAttemptRef.current}, reason: ${reason}):`,
+            error,
+          );
+          reconnectingRef.current = false;
+          scheduleReconnect("retry");
+        }
+      }, delay);
+    };
+
+    const onPlaying = () => {
+      clearReconnectTimer();
+      clearStallTimer();
+      reconnectingRef.current = false;
+      reconnectAttemptRef.current = 0;
+      setStatus("playing");
+    };
+
+    const onWaiting = () => {
+      if (!shouldPlayRef.current) return;
+
+      setStatus("connecting");
+      clearStallTimer();
+
+      stallTimerRef.current = window.setTimeout(() => {
+        if (
+          shouldPlayRef.current &&
+          audioRef.current === audio &&
+          audio.readyState < HTMLMediaElement.HAVE_FUTURE_DATA
+        ) {
+          scheduleReconnect("stall");
+        }
+      }, STALL_TIMEOUT);
+    };
+
+    const onError = () => {
+      clearStallTimer();
+      if (shouldPlayRef.current) {
+        scheduleReconnect("error");
+      } else {
+        setStatus("error");
+      }
+    };
+
+    const onStalled = () => {
+      if (!shouldPlayRef.current) return;
+      setStatus("connecting");
+      scheduleReconnect("stalled");
+    };
+
+    const onEnded = () => {
+      if (!shouldPlayRef.current) {
+        setStatus("idle");
+        return;
+      }
+
+      setStatus("connecting");
+      scheduleReconnect("ended");
+    };
+
+    const onPause = () => {
+      clearStallTimer();
+
+      if (!shouldPlayRef.current) {
+        clearReconnectTimer();
+        setStatus((currentStatus) =>
+          currentStatus === "playing" ||
+          currentStatus === "connecting" ||
+          currentStatus === "error"
+            ? "idle"
+            : currentStatus,
+        );
+      }
+    };
 
     audio.addEventListener("playing", onPlaying);
     audio.addEventListener("waiting", onWaiting);
     audio.addEventListener("error", onError);
+    audio.addEventListener("stalled", onStalled);
+    audio.addEventListener("ended", onEnded);
     audio.addEventListener("pause", onPause);
 
     return () => {
+      clearReconnectTimer();
+      clearStallTimer();
+      shouldPlayRef.current = false;
+      reconnectingRef.current = false;
+
       if (analysisAudioRef.current === audio) {
         analysisRef.current?.source.disconnect();
         analysisRef.current?.analyser.disconnect();
@@ -121,11 +246,13 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
       audio.removeEventListener("playing", onPlaying);
       audio.removeEventListener("waiting", onWaiting);
       audio.removeEventListener("error", onError);
+      audio.removeEventListener("stalled", onStalled);
+      audio.removeEventListener("ended", onEnded);
       audio.removeEventListener("pause", onPause);
       audio.src = "";
       audioRef.current = null;
     };
-  }, [streamUrl]);
+  }, [streamUrl, volume]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -344,6 +471,9 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
 
     if (status === "playing") return;
 
+    shouldPlayRef.current = true;
+    reconnectAttemptRef.current = 0;
+    reconnectingRef.current = false;
     setStatus("connecting");
 
     try {
@@ -354,11 +484,45 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
       await audio.play();
     } catch (error) {
       console.error("Error al reproducir:", error);
-      setStatus("error");
+      if (shouldPlayRef.current) {
+        setStatus("connecting");
+        // The event handlers will continue the retry cycle if the stream
+        // becomes available again.
+        if (reconnectTimerRef.current === null) {
+          const retryDelay = RECONNECT_BASE_DELAY;
+          reconnectTimerRef.current = window.setTimeout(async () => {
+            reconnectTimerRef.current = null;
+            if (!shouldPlayRef.current || audioRef.current !== audio) return;
+
+            try {
+              audio.pause();
+              audio.load();
+              await audio.play();
+            } catch (retryError) {
+              console.warn("Initial radio retry failed:", retryError);
+              setStatus("connecting");
+            }
+          }, retryDelay);
+        }
+      } else {
+        setStatus("error");
+      }
     }
   }, [status]);
 
   const pause = useCallback(() => {
+    shouldPlayRef.current = false;
+
+    if (reconnectTimerRef.current !== null) {
+      window.clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+
+    if (stallTimerRef.current !== null) {
+      window.clearTimeout(stallTimerRef.current);
+      stallTimerRef.current = null;
+    }
+
     audioRef.current?.pause();
     setStatus("idle");
   }, []);
