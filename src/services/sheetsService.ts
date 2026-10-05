@@ -610,7 +610,7 @@ export async function getTodayLectio(
   return (
     rows
       .map(normalizeLectio)
-      .find((row) => row.fecha === fecha && isPublished(row.estado)) ?? null
+      .find((row) => row.fecha === fecha && isVisibleContent(row.estado)) ?? null
   );
 }
 
