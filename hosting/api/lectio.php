@@ -31,6 +31,7 @@ function lvj_lectio_visible(array $row): bool
 try {
   $pdo = lvj_db();
   $fecha = substr(trim((string) ($_GET['fecha'] ?? '')), 0, 10);
+  $uso = strtolower(trim((string) ($_GET['uso'] ?? '')));
 
   $rows = lvj_optional_rows(
     $pdo,
@@ -40,7 +41,9 @@ try {
   $data = [];
 
   foreach ($rows as $row) {
-    if (!lvj_lectio_visible($row)) {
+    // La Home puede usar la frase destacada de la Lectio del día aunque
+    // todavía esté en borrador. El resto de usos conserva el filtro publicado.
+    if ($uso !== 'palabra_hoy' && !lvj_lectio_visible($row)) {
       continue;
     }
 
