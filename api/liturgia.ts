@@ -108,10 +108,14 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
         optionalRows("SELECT * FROM lvj_lit_tipos_celebracion ORDER BY prioridad ASC, id ASC LIMIT 100"),
       ]);
 
+    // Solo palabras editoriales vigentes. No permitir que un registro
+    // archivado o despublicado termine en la Home.
+    const palabrasPublicadas = palabras.filter(visible);
+
     const daysById = rowsById(dias);
     const daysByDate = rowsByKey(dias, (row) => normalizeDate(row.fecha));
-    const wordsByLiturgiaId = rowsByKey(palabras, (row) => text(row, "liturgia_id"));
-    const wordsByDate = rowsByKey(palabras, (row) => normalizeDate(row.fecha));
+    const wordsByLiturgiaId = rowsByKey(palabrasPublicadas, (row) => text(row, "liturgia_id"));
+    const wordsByDate = rowsByKey(palabrasPublicadas, (row) => normalizeDate(row.fecha));
     const timesById = rowsById(tiempos);
     const themesById = rowsById(temas);
     const saintsById = rowsById(santos);
