@@ -9,9 +9,10 @@ const remembersSession = () => localStorage.getItem(REMEMBER_KEY) !== "false";
 
 const storage: SupportedStorage = {
   getItem(key) {
-    const primary = remembersSession() ? localStorage : sessionStorage;
-    const secondary = remembersSession() ? sessionStorage : localStorage;
-    return primary.getItem(key) ?? secondary.getItem(key);
+    // Una sola fuente de persistencia según la preferencia actual.
+    // No hacemos fallback al otro storage porque eso podría mantener una
+    // sesión persistente después de que el usuario eligió no recordarla.
+    return (remembersSession() ? localStorage : sessionStorage).getItem(key);
   },
   setItem(key, value) {
     const primary = remembersSession() ? localStorage : sessionStorage;
@@ -39,7 +40,22 @@ const configuredFetch: typeof fetch = (input, init) => {
 };
 
 export function setBibleStudyRememberSession(remember: boolean): void {
+  const storageKey = "lvj-bible-study-auth";
+  const currentLocal = localStorage.getItem(storageKey);
+  const currentSession = sessionStorage.getItem(storageKey);
+  const current = remember ? (currentLocal ?? currentSession) : (currentSession ?? currentLocal);
+
   localStorage.setItem(REMEMBER_KEY, String(remember));
+
+  if (current) {
+    if (remember) {
+      localStorage.setItem(storageKey, current);
+      sessionStorage.removeItem(storageKey);
+    } else {
+      sessionStorage.setItem(storageKey, current);
+      localStorage.removeItem(storageKey);
+    }
+  }
 }
 
 export function getBibleStudyRememberSession(): boolean {
