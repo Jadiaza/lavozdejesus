@@ -1,4 +1,4 @@
-import { bibleStudyAuth } from "@/services/lvjAuth";
+import { lvjAuth } from "@/services/lvjAuth";
 
 export interface BibleStudy {
   id: number; referencia: string; titulo: string; estado: string; revisado: boolean; es_publico: boolean;
@@ -44,11 +44,11 @@ const baseUrl = ((import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "h
 const apiUrl = (import.meta.env.VITE_BIBLE_STUDY_API_URL as string | undefined)?.trim() || `${baseUrl}/api/biblia-estudios.php`;
 async function token(forceRefresh = false): Promise<string | null> {
   if (forceRefresh) {
-    const { data, error } = await bibleStudyAuth.auth.refreshSession();
+    const { data, error } = await lvjAuth.auth.refreshSession();
     if (error) return null;
     return data.session?.access_token ?? null;
   }
-  const { data } = await bibleStudyAuth.auth.getSession(); return data.session?.access_token ?? null;
+  const { data } = await lvjAuth.auth.getSession(); return data.session?.access_token ?? null;
 }
 function authHeaders(accessToken: string): Record<string, string> {
   const bearer = `Bearer ${accessToken}`;
