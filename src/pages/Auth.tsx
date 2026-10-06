@@ -77,29 +77,25 @@ export default function Auth() {
     return url.toString();
   }, [next]);
 
+  const validateAndEnter = async (accessToken: string) => {
+    try {
+      await getAccessContext(accessToken);
+      setSyncingAccount(false);
+      setLoading(false);
+      navigate(next, { replace: true });
+    } catch (error) {
+      setSyncingAccount(false);
+      setLoading(false);
+      setMessage(
+        error instanceof Error
+          ? friendlyError(error.message)
+          : "No fue posible habilitar tu cuenta en La Voz de Jesús.",
+      );
+    }
+  };
+
   useEffect(() => {
     let active = true;
-
-    const validateAndEnter = async (accessToken: string) => {
-      try {
-        // No damos por habilitada la cuenta solo porque Supabase tenga sesión.
-        // El backend debe confirmar que la identidad quedó vinculada y activa en LVJ.
-        await getAccessContext(accessToken);
-        if (!active) return;
-        setSyncingAccount(false);
-        setLoading(false);
-        navigate(next, { replace: true });
-      } catch (error) {
-        if (!active) return;
-        setSyncingAccount(false);
-        setLoading(false);
-        setMessage(
-          error instanceof Error
-            ? friendlyError(error.message)
-            : "No fue posible habilitar tu cuenta en La Voz de Jesús.",
-        );
-      }
-    };
 
     const completeAccess = async () => {
       const { data, error } = await lvjAuth.auth.getSession();
