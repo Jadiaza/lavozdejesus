@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
-import { lvjAuth } from "@/features/biblia/auth/bibleStudyAuth";
+import { lvjAuth } from "@/services/lvjAuth";
 import { canAccessLevel, getAccessContext, type AccessContext } from "@/services/acceso";
 import { getRouteAccessPolicy, getRouteTarget, loadAccessPolicy, type ModuleAccessLevel, type ModuleAccessPolicy } from "@/services/accessPolicy";
 import { getConfiguracion } from "@/services/sheetsService";
