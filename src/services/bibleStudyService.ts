@@ -1,4 +1,4 @@
-import { bibleStudyAuth } from "@/features/biblia/auth/bibleStudyAuth";
+import { bibleStudyAuth } from "@/services/lvjAuth";
 
 export interface BibleStudy {
   id: number; referencia: string; titulo: string; estado: string; revisado: boolean; es_publico: boolean;
