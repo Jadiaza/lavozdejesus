@@ -7,6 +7,7 @@ export interface AccessContext {
 }
 
 const API_URL = (import.meta.env.VITE_ACCESS_API_URL as string | undefined)?.trim() || "https://lavozdejesus.co/api/acceso.php";
+const ACCESS_TIMEOUT_MS = 10000;
 
 let cachedAccessContext: AccessContext | null = null;
 let cachedAccessToken = "";
@@ -21,15 +22,32 @@ export function getCachedAccessContext(accessToken: string): AccessContext | nul
 }
 
 export async function getAccessContext(accessToken: string): Promise<AccessContext> {
-  const response = await fetch(API_URL, {
-    cache: "no-store",
-    headers: { Authorization: `Bearer ${accessToken}`, Accept: "application/json" },
-  });
-  const data = await response.json();
-  if (!response.ok || !data?.success) throw new Error(data?.message || "No fue posible validar el acceso.");
-  const context = data as AccessContext;
-  setCachedAccessContext(accessToken, context);
-  return context;
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), ACCESS_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(API_URL, {
+      cache: "no-store",
+      signal: controller.signal,
+      headers: { Authorization: `Bearer ${accessToken}`, Accept: "application/json" },
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data?.success) {
+      throw new Error(data?.message || "No fue posible validar el acceso.");
+    }
+
+    const context = data as AccessContext;
+    setCachedAccessContext(accessToken, context);
+    return context;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error("La validación de tu cuenta está tardando demasiado. Verifica tu conexión e inténtalo nuevamente.");
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
+  }
 }
 
 export const canAccessLevel = (context: AccessContext | null, required: AccessLevel): boolean => {
