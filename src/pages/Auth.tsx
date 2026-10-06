@@ -383,6 +383,9 @@ export default function Auth() {
         <div className="min-h-screen bg-[#F7F3E9] text-[#2D2A25]">
           <main className="mx-auto min-h-screen w-full max-w-[430px] px-5 pb-28 pt-6">
             <header className="border-b border-[#B68A2C]/25 pb-4">
+              <button type="button" onClick={() => { setEditingProfile(false); setProfileMessage(""); }} className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-[#8D6415]">
+                ← Mi cuenta
+              </button>
               <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#9A6B18]">La Voz de Jesús</p>
               <h1 className="mt-1 font-display text-3xl">Editar mi perfil</h1>
             </header>
@@ -421,6 +424,9 @@ export default function Auth() {
       <div className="min-h-screen bg-[#F7F3E9] text-[#2D2A25]">
         <main className="mx-auto min-h-screen w-full max-w-[430px] px-5 pb-28 pt-6">
           <header className="border-b border-[#B68A2C]/25 pb-4">
+            <button type="button" onClick={() => navigate("/mas", { replace: true })} className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-[#8D6415]">
+              ← Más
+            </button>
             <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#9A6B18]">La Voz de Jesús</p>
             <h1 className="mt-1 font-display text-3xl">Mi cuenta</h1>
           </header>
