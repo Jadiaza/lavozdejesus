@@ -102,7 +102,7 @@ export const loadAccessPolicy = async (): Promise<ModuleAccessPolicy[]> => {
 
 export const getRouteTarget = (pathname: string): { module: string; submodule?: string } | null => {
   // Normaliza la ruta eliminando barras finales antes de evaluar el módulo.
-  const p = pathname.toLowerCase().replace(/\/+$/, "") || "/";
+  // Normaliza las barras finales con una expresión regular válida para TS/Vite.\n  const p = pathname.toLowerCase().replace(/\/+$/, "") || "/";
   // Inicio es una superficie pública de la aplicación y no depende de
   // una fila de política en lvj_cfg_modulos.
   if (p === "/") return null;
