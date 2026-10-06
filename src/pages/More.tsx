@@ -136,40 +136,8 @@ export default function More() {
           <Logo size="sm" />
         </header>
 
-        {signedIn ? (
-          <div className="mt-4 flex items-center gap-3 rounded-2xl border border-emerald-400/20 bg-emerald-950/15 px-3 py-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-400/10 text-emerald-300">
-              <UserRound className="h-5 w-5" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-300">Sesión iniciada</p>
-              <p className="mt-0.5 truncate text-sm font-semibold text-[#F8F5EA]">{accountName || "Cuenta de usuario"}</p><p className="truncate text-[10px] text-[#8F897C]">{accountEmail}</p>
-            </div>
-          </div>
-        ) : null}
-
         <Section title="Mi espacio" items={mySpace} />
         <Section title="Contenido" items={content} />
-
-        {signedIn ? (
-          <section className="mt-4">
-            <button
-              type="button"
-              onClick={handleSignOut}
-              disabled={signingOut}
-              className="flex min-h-[56px] w-full items-center gap-3 rounded-xl border border-red-400/20 bg-red-950/10 px-3 py-2 text-left transition hover:bg-red-950/20 disabled:opacity-50"
-            >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-red-300">
-                <LogOut className="h-5 w-5" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <strong className="block text-sm text-[#F8F5EA]">{signingOut ? "Cerrando sesión..." : "Cerrar sesión"}</strong>
-                <span className="mt-0.5 block text-[11px] text-[#8F897C]">Salir de tu cuenta en este dispositivo</span>
-              </span>
-              <ChevronRight className="h-4 w-4 text-red-300/60" />
-            </button>
-          </section>
-        ) : null}
 
         <section className="mt-7">
           <h2 className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.24em] text-[#D4AF37]">Configuración</h2>
