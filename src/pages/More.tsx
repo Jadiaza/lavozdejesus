@@ -14,7 +14,6 @@ import {
   Settings,
   ShieldCheck,
   UserRound,
-  LogOut,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -62,7 +61,6 @@ const Section = ({ title, items }: { title: string; items: MenuItem[] }) => (
 
 export default function More() {
   const [signedIn, setSignedIn] = useState(false);
-  const [accountEmail, setAccountEmail] = useState("");
   const [accountName, setAccountName] = useState("");
   const [signingOut, setSigningOut] = useState(false);
 
@@ -72,7 +70,6 @@ export default function More() {
     const applySession = (session: { user?: { email?: string | null } } | null) => {
       if (!active) return;
       setSignedIn(Boolean(session));
-      setAccountEmail(session?.user?.email ?? "");
       setAccountName(String(session?.user?.user_metadata?.full_name ?? session?.user?.user_metadata?.nombre ?? "Usuario LVJ"));
     };
 
@@ -97,13 +94,12 @@ export default function More() {
     setSigningOut(true);
     await lvjAuth.auth.signOut({ scope: "local" });
     setSignedIn(false);
-    setAccountEmail("");
     setSigningOut(false);
   };
 
   const mySpace: MenuItem[] = [
     {
-      label: "Mi cuenta",
+      label: "Perfil",
       description: signedIn ? accountName || "Cuenta de usuario" : "Acceso y sesión de usuario",
       to: "/acceso",
       icon: UserRound,
@@ -114,7 +110,7 @@ export default function More() {
     { label: "Descargas del Rosario", description: "Contenido disponible sin conexión", to: "/rosario/descargas", icon: Download },
   ];
 
-  const content: MenuItem[] = [
+  const myContent: MenuItem[] = [
     { label: "Devociones", description: "Oraciones, novenas y caminos de piedad", to: "/oraciones/devociones", icon: BookHeart },
     { label: "Estudio Bíblico", description: "Profundiza en la Palabra de Dios", to: "/biblia/estudio", icon: BookOpen },
     { label: "Capilla virtual", description: "Adoración eucarística", to: "/capilla", icon: Church },
@@ -136,8 +132,9 @@ export default function More() {
           <Logo size="sm" />
         </header>
 
-        <Section title="Mi espacio" items={mySpace} />
-        <Section title="Contenido" items={content} />
+        <Section title="Perfil" items={mySpace.slice(0, 1)} />
+        <Section title="Mi contenido" items={mySpace.slice(1)} />
+        <Section title="Contenido" items={myContent} />
 
         <section className="mt-7">
           <h2 className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.24em] text-[#D4AF37]">Configuración</h2>
