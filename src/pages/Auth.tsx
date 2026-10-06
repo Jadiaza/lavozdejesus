@@ -16,9 +16,9 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getAccessContext } from "@/services/acceso";
 import {
   lvjAuth,
-  getBibleStudyRememberSession,
-  isBibleStudyAuthConfigured,
-  setBibleStudyRememberSession,
+  getRememberSession,
+  isLvjAuthConfigured,
+  setRememberSession,
 } from "@/services/lvjAuth";
 
 type AccessMode = "login" | "register";
@@ -155,7 +155,7 @@ export default function Auth() {
     setSuccess(false);
     setRegistrationSubmitted(false);
 
-    if (!isBibleStudyAuthConfigured()) {
+    if (!isLvjAuthConfigured()) {
       setMessage("El acceso de usuarios no está configurado en este entorno. Faltan la URL o la clave pública de Supabase.");
       return;
     }
@@ -179,7 +179,7 @@ export default function Auth() {
 
     setLoading(true);
     // La sesión queda persistente por defecto; solo se guarda en sessionStorage si el usuario lo desmarca.
-    setBibleStudyRememberSession(remember);
+    setRememberSession(remember);
 
     if (recovering) {
       const { error } = await lvjAuth.auth.updateUser({ password });
@@ -245,7 +245,7 @@ export default function Auth() {
   };
 
   const resetPassword = async () => {
-    if (!isBibleStudyAuthConfigured()) {
+    if (!isLvjAuthConfigured()) {
       setMessage("El acceso de usuarios no está configurado en este entorno. Faltan la URL o la clave pública de Supabase.");
       return;
     }
