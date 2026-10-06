@@ -858,4 +858,174 @@ require __DIR__ . '/includes/header.php';
 </section>
 <?php endif; ?>
 
+
+<style id="lvj-rich-editor-styles">
+.lvj-rich-editor{width:100%;}
+.lvj-rich-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:9px 12px;border:1px solid #e5e7eb;border-bottom:0;border-radius:12px 12px 0 0;background:#f8fafc;color:#1f2937;}
+.lvj-rich-toolbar button{appearance:none;border:0;background:transparent;color:#1f2937;cursor:pointer;min-width:28px;height:28px;padding:3px 6px;border-radius:6px;font:600 14px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+.lvj-rich-toolbar button:hover{background:#e5e7eb;}
+.lvj-rich-toolbar .lvj-tool-heading{font-size:13px;font-weight:800;}
+.lvj-rich-toolbar .lvj-tool-bold{font-weight:900;}
+.lvj-rich-toolbar .lvj-tool-italic{font-style:italic;font-family:Georgia,serif;}
+.lvj-rich-toolbar .lvj-tool-quote{font-size:18px;font-weight:900;}
+.lvj-rich-toolbar .lvj-tool-list{font-size:17px;}
+.lvj-rich-toolbar .lvj-tool-preview{margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-size:12px;white-space:nowrap;}
+.lvj-rich-editor textarea{border-radius:0 0 12px 12px !important;}
+.lvj-rich-preview{display:none;margin-top:8px;padding:14px 16px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;color:#1f2937;line-height:1.7;}
+.lvj-rich-preview.is-visible{display:block;}
+.lvj-rich-preview h2,.lvj-rich-preview h3{margin:.2rem 0 .55rem;color:#17324d;}
+.lvj-rich-preview blockquote{margin:.7rem 0;padding:.45rem .8rem;border-left:3px solid #d4af37;background:#fffbeb;}
+.lvj-rich-preview ul,.lvj-rich-preview ol{padding-left:1.4rem;}
+.lvj-rich-preview p{margin:.45rem 0;}
+</style>
+
+<script id="lvj-rich-editor-script">
+document.addEventListener('DOMContentLoaded', function () {
+  const textareas = document.querySelectorAll('textarea[name]:not([name="json_content"])');
+  if (!textareas.length) return;
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, function (char) {
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[char];
+    });
+  }
+
+  function markdownToHtml(value) {
+    const lines = String(value ?? '').split('\n');
+    let html = '';
+    let listType = null;
+
+    function closeList() {
+      if (listType === 'ul') html += '</ul>';
+      if (listType === 'ol') html += '</ol>';
+      listType = null;
+    }
+
+    lines.forEach(function (rawLine) {
+      const line = rawLine.trimEnd();
+      const safe = escapeHtml(line);
+
+      if (/^###\s+/.test(line)) {
+        closeList();
+        html += '<h3>' + escapeHtml(line.replace(/^###\s+/, '')) + '</h3>';
+        return;
+      }
+      if (/^##\s+/.test(line)) {
+        closeList();
+        html += '<h2>' + escapeHtml(line.replace(/^##\s+/, '')) + '</h2>';
+        return;
+      }
+      if (/^>\s?/.test(line)) {
+        closeList();
+        html += '<blockquote>' + inlineMarkdown(escapeHtml(line.replace(/^>\s?/, ''))) + '</blockquote>';
+        return;
+      }
+      if (/^[-*]\s+/.test(line)) {
+        if (listType !== 'ul') { closeList(); html += '<ul>'; listType = 'ul'; }
+        html += '<li>' + inlineMarkdown(escapeHtml(line.replace(/^[-*]\s+/, ''))) + '</li>';
+        return;
+      }
+      if (/^\d+[.)]\s+/.test(line)) {
+        if (listType !== 'ol') { closeList(); html += '<ol>'; listType = 'ol'; }
+        html += '<li>' + inlineMarkdown(escapeHtml(line.replace(/^\d+[.)]\s+/, ''))) + '</li>';
+        return;
+      }
+
+      closeList();
+      if (line.trim() === '') {
+        html += '<div style="height:.45rem"></div>';
+      } else {
+        html += '<p>' + inlineMarkdown(safe) + '</p>';
+      }
+    });
+
+    closeList();
+    return html;
+  }
+
+  function inlineMarkdown(value) {
+    return value
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+  }
+
+  function selectedText(editor) {
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    return {start, end, text: editor.value.slice(start, end)};
+  }
+
+  function wrapSelection(editor, prefix, suffix) {
+    const selection = selectedText(editor);
+    const text = selection.text || 'texto';
+    editor.setRangeText(prefix + text + suffix, selection.start, selection.end, 'select');
+    editor.focus();
+    editor.dispatchEvent(new Event('input', {bubbles:true}));
+  }
+
+  function prefixLines(editor, prefix) {
+    const selection = selectedText(editor);
+    const text = selection.text || 'texto';
+    const replacement = text.split('\n').map(function (line) {
+      return prefix + line;
+    }).join('\n');
+    editor.setRangeText(replacement, selection.start, selection.end, 'select');
+    editor.focus();
+    editor.dispatchEvent(new Event('input', {bubbles:true}));
+  }
+
+  function addButton(toolbar, label, className, action, title) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.innerHTML = label;
+    button.className = className || '';
+    button.title = title || '';
+    button.setAttribute('aria-label', title || label);
+    button.addEventListener('click', function () { action(); });
+    toolbar.appendChild(button);
+    return button;
+  }
+
+  textareas.forEach(function (editor) {
+    if (editor.dataset.richToolbarReady === '1') return;
+    editor.dataset.richToolbarReady = '1';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'lvj-rich-editor';
+
+    const toolbar = document.createElement('div');
+    toolbar.className = 'lvj-rich-toolbar';
+    toolbar.setAttribute('role', 'toolbar');
+    toolbar.setAttribute('aria-label', 'Herramientas de formato');
+
+    addButton(toolbar, 'H₂', 'lvj-tool-heading', function () { prefixLines(editor, '## '); }, 'Título H2');
+    addButton(toolbar, 'H₃', 'lvj-tool-heading', function () { prefixLines(editor, '### '); }, 'Subtítulo H3');
+    addButton(toolbar, 'B', 'lvj-tool-bold', function () { wrapSelection(editor, '**', '**'); }, 'Negrita');
+    addButton(toolbar, 'I', 'lvj-tool-italic', function () { wrapSelection(editor, '*', '*'); }, 'Cursiva');
+    addButton(toolbar, '❞', 'lvj-tool-quote', function () { prefixLines(editor, '> '); }, 'Cita');
+    addButton(toolbar, '•', 'lvj-tool-list', function () { prefixLines(editor, '- '); }, 'Lista');
+    addButton(toolbar, '1.', 'lvj-tool-list', function () { prefixLines(editor, '1. '); }, 'Lista numerada');
+
+    const previewButton = addButton(toolbar, '◉ Vista previa', 'lvj-tool-preview', function () {
+      preview.classList.toggle('is-visible');
+      previewButton.innerHTML = preview.classList.contains('is-visible') ? '◉ Ocultar vista previa' : '◉ Vista previa';
+      if (preview.classList.contains('is-visible')) preview.innerHTML = markdownToHtml(editor.value);
+    }, 'Vista previa');
+
+    const preview = document.createElement('div');
+    preview.className = 'lvj-rich-preview';
+    preview.setAttribute('aria-live', 'polite');
+
+    const parent = editor.parentNode;
+    parent.insertBefore(wrapper, editor);
+    wrapper.appendChild(toolbar);
+    wrapper.appendChild(editor);
+    wrapper.appendChild(preview);
+
+    editor.addEventListener('input', function () {
+      if (preview.classList.contains('is-visible')) preview.innerHTML = markdownToHtml(editor.value);
+    });
+  });
+});
+</script>
 <?php require __DIR__ . '/includes/footer.php'; ?>
