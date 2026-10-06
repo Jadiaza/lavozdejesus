@@ -96,12 +96,17 @@ final class SupabaseAuth
     $columns = array_column($pdo->query('SHOW COLUMNS FROM lvj_com_usuarios')->fetchAll(), 'Field');
     $subject = (string) $identity['id']; $email = mb_strtolower((string) ($identity['email'] ?? ''));
     $emailColumn = in_array('correo', $columns, true) ? 'correo' : (in_array('email', $columns, true) ? 'email' : '');
+    // Algunas instalaciones de LVJPRAYER todavía no tienen deleted_at en
+    // lvj_com_usuarios. La vinculación de Supabase no debe fallar por esa
+    // diferencia de esquema; solo aplicamos el filtro si la columna existe.
+    $activeFilter = in_array('deleted_at', $columns, true) ? ' AND deleted_at IS NULL' : '';
+
     if (in_array('auth_subject', $columns, true)) {
-      $row = lvj_first($pdo, 'SELECT * FROM lvj_com_usuarios WHERE auth_subject = :subject AND deleted_at IS NULL LIMIT 1', ['subject' => $subject]);
+      $row = lvj_first($pdo, 'SELECT * FROM lvj_com_usuarios WHERE auth_subject = :subject' . $activeFilter . ' LIMIT 1', ['subject' => $subject]);
       if ($row) return self::refreshLocalUser($pdo, $row, $identity, $columns, $emailColumn);
     }
     if ($emailColumn !== '' && $email !== '') {
-      $row = lvj_first($pdo, "SELECT * FROM lvj_com_usuarios WHERE {$emailColumn} = :email AND deleted_at IS NULL LIMIT 1", ['email' => $email]);
+      $row = lvj_first($pdo, "SELECT * FROM lvj_com_usuarios WHERE {$emailColumn} = :email" . $activeFilter . " LIMIT 1", ['email' => $email]);
       if ($row) {
         if (in_array('auth_subject', $columns, true)) {
           $pdo->prepare('UPDATE lvj_com_usuarios SET auth_subject = :subject, auth_provider = :provider WHERE id = :id')
