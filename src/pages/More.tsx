@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { lvjAuth } from "@/features/biblia/auth/bibleStudyAuth";
+import { lvjAuth } from "@/services/lvjAuth";
 import { BottomNav } from "@/components/lvdj/BottomNav";
 import { Logo } from "@/components/lvdj/Logo";
 
