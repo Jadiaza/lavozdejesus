@@ -2,12 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import {
   BookOpen,
   CheckCircle2,
+  ChevronRight,
   Cloud,
   Eye,
   EyeOff,
   FileText,
   Heart,
   LockKeyhole,
+  LogOut,
   Mail,
   Phone,
   ShieldCheck,
@@ -537,8 +539,10 @@ export default function Auth() {
             ) : null}
 
             {!recovering ? (
-              <Field icon={Mail} label="Correo electrónico" type="email" value={email} onChange={setEmail} autoComplete="email" placeholder="tu@correo.com" required />
-              {mode === "register" ? <Field icon={Phone} label="WhatsApp / teléfono" type="tel" value={phone} onChange={setPhone} autoComplete="tel" placeholder="+57 3001234567" required /> : null}
+              <>
+                <Field icon={Mail} label="Correo electrónico" type="email" value={email} onChange={setEmail} autoComplete="email" placeholder="tu@correo.com" required />
+                {mode === "register" ? <Field icon={Phone} label="WhatsApp / teléfono" type="tel" value={phone} onChange={setPhone} autoComplete="tel" placeholder="+57 3001234567" required /> : null}
+              </>
             ) : null}
 
             <PasswordField
