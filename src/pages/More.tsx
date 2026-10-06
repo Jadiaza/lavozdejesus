@@ -68,19 +68,21 @@ export default function More() {
   useEffect(() => {
     let active = true;
 
+    const applySession = (session: { user?: { email?: string | null } } | null) => {
+      if (!active) return;
+      setSignedIn(Boolean(session));
+      setAccountEmail(session?.user?.email ?? "");
+    };
+
     const loadSession = async () => {
       const { data } = await lvjAuth.auth.getSession();
-      if (!active) return;
-      setSignedIn(Boolean(data.session));
-      setAccountEmail(data.session?.user.email ?? "");
+      applySession(data.session);
     };
 
     void loadSession();
 
     const { data } = lvjAuth.auth.onAuthStateChange((_event, session) => {
-      if (!active) return;
-      setSignedIn(Boolean(session));
-      setAccountEmail(session?.user.email ?? "");
+      applySession(session);
     });
 
     return () => {
@@ -98,7 +100,12 @@ export default function More() {
   };
 
   const mySpace: MenuItem[] = [
-    { label: signedIn ? "Mi cuenta" : "Iniciar sesión", description: signedIn ? accountEmail || "Sesión activa" : "Acceso y sesión de usuario", to: "/acceso", icon: UserRound },
+    {
+      label: "Mi cuenta",
+      description: signedIn ? accountEmail || "Sesión iniciada" : "Acceso y sesión de usuario",
+      to: "/acceso",
+      icon: UserRound,
+    },
     { label: "Mi Biblia", description: "Favoritos, notas, marcadores e historial", to: "/biblia/mi-biblia", icon: Library },
     { label: "Mis oraciones", description: "Oraciones guardadas y favoritas", to: "/oraciones/mis-oraciones", icon: Heart },
     { label: "Planes de lectura", description: "Continúa tus planes y progreso", to: "/biblia/planes", icon: CalendarCheck2 },
@@ -126,6 +133,18 @@ export default function More() {
           <div><p className="text-[9px] font-bold uppercase tracking-[0.28em] text-[#D4AF37]">La Voz de Jesús</p><h1 className="mt-1 font-display text-3xl">Más</h1></div>
           <Logo size="sm" />
         </header>
+
+        {signedIn ? (
+          <div className="mt-4 flex items-center gap-3 rounded-2xl border border-emerald-400/20 bg-emerald-950/15 px-3 py-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-400/10 text-emerald-300">
+              <UserRound className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-300">Sesión iniciada</p>
+              <p className="mt-0.5 truncate text-sm font-semibold text-[#F8F5EA]">{accountEmail || "Cuenta de usuario"}</p>
+            </div>
+          </div>
+        ) : null}
 
         <Section title="Mi espacio" items={mySpace} />
         <Section title="Contenido" items={content} />
