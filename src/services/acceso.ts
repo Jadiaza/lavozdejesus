@@ -8,6 +8,18 @@ export interface AccessContext {
 
 const API_URL = (import.meta.env.VITE_ACCESS_API_URL as string | undefined)?.trim() || "https://lavozdejesus.co/api/acceso.php";
 
+let cachedAccessContext: AccessContext | null = null;
+let cachedAccessToken = "";
+
+export function setCachedAccessContext(accessToken: string, context: AccessContext): void {
+  cachedAccessToken = accessToken;
+  cachedAccessContext = context;
+}
+
+export function getCachedAccessContext(accessToken: string): AccessContext | null {
+  return cachedAccessToken === accessToken ? cachedAccessContext : null;
+}
+
 export async function getAccessContext(accessToken: string): Promise<AccessContext> {
   const response = await fetch(API_URL, {
     cache: "no-store",
@@ -15,7 +27,9 @@ export async function getAccessContext(accessToken: string): Promise<AccessConte
   });
   const data = await response.json();
   if (!response.ok || !data?.success) throw new Error(data?.message || "No fue posible validar el acceso.");
-  return data as AccessContext;
+  const context = data as AccessContext;
+  setCachedAccessContext(accessToken, context);
+  return context;
 }
 
 export const canAccessLevel = (context: AccessContext | null, required: AccessLevel): boolean => {
