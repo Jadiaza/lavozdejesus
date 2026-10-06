@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { lvjAuth } from "@/services/lvjAuth";
-import { canAccessLevel, getAccessContext, type AccessContext } from "@/services/acceso";
+import { canAccessLevel, getAccessContext, getCachedAccessContext, type AccessContext } from "@/services/acceso";
 import { getRouteAccessPolicy, getRouteTarget, loadAccessPolicy, type ModuleAccessLevel, type ModuleAccessPolicy } from "@/services/accessPolicy";
 import { getConfiguracion } from "@/services/sheetsService";
 
@@ -62,13 +62,22 @@ export default function AccessGate({ children }: Props) {
       }
 
       try {
+        const cached = getCachedAccessContext(session.access_token);
+        if (cached) {
+          if (!alive || current !== requestId) return;
+          setContext(cached);
+          setResolved(true);
+          return;
+        }
+
         const next = await getAccessContext(session.access_token);
         if (!alive || current !== requestId) return;
         setContext(next);
         setResolved(true);
       } catch {
         if (!alive || current !== requestId) return;
-        setContext(null);
+        // No destruimos un contexto válido mientras una revalidación puntual falla.
+        setContext((previous) => previous);
         setResolved(true);
       }
     };
