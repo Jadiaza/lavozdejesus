@@ -314,6 +314,15 @@ export default function Auth() {
     setLoading(false);
   };
 
+  const closeAccount = async () => {
+    await lvjAuth.auth.signOut({ scope: "local" });
+    setAccountEmail("");
+    setAccountName("");
+    setAccountPhone("");
+    setEditingProfile(false);
+    navigate("/", { replace: true });
+  };
+
   const saveProfile = async () => {
     const cleanPhone = profilePhone.replace(/[-().]/g, "").replace(/\s+/g, " ").trim();
     if (!profileName.trim()) {
@@ -367,6 +376,20 @@ export default function Auth() {
     setEditingProfile(false);
   };
 
+  if (loading || syncingAccount) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#030303] px-6 text-[#F8F5EA]">
+        <div className="text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#D4AF37]/40 bg-[#D4AF37]/10">
+            <ShieldCheck className="h-7 w-7 animate-pulse text-[#D4AF37]" />
+          </div>
+          <p className="mt-4 text-sm font-semibold">Verificando tu cuenta...</p>
+          <p className="mt-1 text-xs text-[#8F897C]">Un momento, estamos preparando tu espacio personal.</p>
+        </div>
+      </main>
+    );
+  }
+
   if (accountEmail && !recovering && location.pathname === "/acceso" && !location.search && !loading) {
     if (editingProfile) {
       return (
@@ -407,12 +430,6 @@ export default function Auth() {
       setProfileMessage("");
       setEditingProfile(true);
     };
-    const closeAccount = async () => {
-      await lvjAuth.auth.signOut({ scope: "local" });
-      setAccountEmail("");
-      navigate("/", { replace: true });
-    };
-
     return (
       <div className="min-h-screen bg-[#F7F3E9] text-[#2D2A25]">
         <main className="mx-auto min-h-screen w-full max-w-[430px] px-5 pb-28 pt-6">
