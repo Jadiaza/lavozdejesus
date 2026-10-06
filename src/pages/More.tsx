@@ -63,6 +63,7 @@ const Section = ({ title, items }: { title: string; items: MenuItem[] }) => (
 export default function More() {
   const [signedIn, setSignedIn] = useState(false);
   const [accountEmail, setAccountEmail] = useState("");
+  const [accountName, setAccountName] = useState("");
   const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
@@ -72,6 +73,7 @@ export default function More() {
       if (!active) return;
       setSignedIn(Boolean(session));
       setAccountEmail(session?.user?.email ?? "");
+      setAccountName(String(session?.user?.user_metadata?.full_name ?? session?.user?.user_metadata?.nombre ?? "Usuario LVJ"));
     };
 
     const loadSession = async () => {
@@ -102,7 +104,7 @@ export default function More() {
   const mySpace: MenuItem[] = [
     {
       label: "Mi cuenta",
-      description: signedIn ? accountEmail || "Sesión iniciada" : "Acceso y sesión de usuario",
+      description: signedIn ? accountName || "Cuenta de usuario" : "Acceso y sesión de usuario",
       to: "/acceso",
       icon: UserRound,
     },
@@ -141,7 +143,7 @@ export default function More() {
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-300">Sesión iniciada</p>
-              <p className="mt-0.5 truncate text-sm font-semibold text-[#F8F5EA]">{accountEmail || "Cuenta de usuario"}</p>
+              <p className="mt-0.5 truncate text-sm font-semibold text-[#F8F5EA]">{accountName || "Cuenta de usuario"}</p><p className="truncate text-[10px] text-[#8F897C]">{accountEmail}</p>
             </div>
           </div>
         ) : null}
