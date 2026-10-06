@@ -427,39 +427,69 @@ export default function Auth() {
 
     return (
       <div className="min-h-screen bg-[#03070F] text-[#F8F5EA]">
-        <main className="mx-auto min-h-screen w-full max-w-[430px] px-5 pb-28 pt-[max(1.25rem,env(safe-area-inset-top))]">
-          <header className="border-b border-[#D4AF37]/15 pb-4">
-            <button type="button" onClick={() => navigate("/mas", { replace: true })} className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-[#D4AF37]">
-              ← Más
+        <main className="mx-auto min-h-screen w-full max-w-[430px] px-4 pb-28 pt-[max(1rem,env(safe-area-inset-top))]">
+          <header className="mb-4 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate("/mas", { replace: true })}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-[#0B0B0B] text-[#D4AF37] transition hover:border-[#D4AF37]/30"
+              aria-label="Volver a Más"
+            >
+              ←
             </button>
-            <p className="text-[9px] font-bold uppercase tracking-[0.28em] text-[#D4AF37]">La Voz de Jesús</p>
-            <h1 className="mt-1 font-display text-3xl text-[#F8F5EA]">Perfil</h1>
+            <div className="min-w-0">
+              <p className="text-[9px] font-bold uppercase tracking-[0.28em] text-[#D4AF37]">Mi espacio</p>
+              <h1 className="font-display text-[1.65rem] leading-tight text-[#F8F5EA]">Perfil</h1>
+            </div>
           </header>
 
-          <section className="mt-5 rounded-[1.5rem] border border-white/[0.07] bg-[#0B0B0B] p-5 shadow-[0_14px_40px_rgba(0,0,0,.25)]">
-            <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-[#D4AF37]/[0.08] text-[#D4AF37]"><UserRound className="h-8 w-8" strokeWidth={1.7} /></div>
-              <div className="min-w-0">
-                <h2 className="text-xl font-semibold leading-tight text-[#F8F5EA]">{accountName || "Usuario LVJ"}</h2>
-                <p className="mt-1 truncate text-xs text-[#8F897C]">{accountEmail}</p>
-                <p className="mt-1 text-xs text-[#8F897C]">{accountPhone || "WhatsApp pendiente de completar"}</p>
+          <section className="overflow-hidden rounded-[1.6rem] border border-[#D4AF37]/20 bg-[linear-gradient(145deg,#11110F,#090909)] shadow-[0_18px_45px_rgba(0,0,0,.28)]">
+            <div className="relative px-5 pb-5 pt-6">
+              <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_50%_0%,rgba(212,175,55,.18),transparent_68%)]" aria-hidden="true" />
+              <div className="relative flex items-center gap-4">
+                <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-full border border-[#D4AF37]/45 bg-[#D4AF37]/10 text-[#D4AF37] shadow-[0_0_28px_rgba(212,175,55,.12)]">
+                  <UserRound className="h-9 w-9" strokeWidth={1.5} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="truncate text-xl font-semibold text-[#F8F5EA]">{accountName || "Usuario LVJ"}</h2>
+                  <p className="mt-1 truncate text-xs text-[#8F897C]">{accountEmail}</p>
+                  <p className="mt-1 truncate text-xs text-[#8F897C]">{accountPhone || "WhatsApp pendiente de completar"}</p>
+                </div>
               </div>
+            </div>
+
+            <div className="border-t border-white/[0.07] px-3 py-2">
+              <button
+                type="button"
+                onClick={openProfile}
+                className="flex min-h-[58px] w-full items-center gap-3 rounded-xl px-2 text-left transition hover:bg-white/[0.035]"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#D4AF37]/10 text-[#D4AF37]">
+                  <UserRound className="h-4.5 w-4.5" strokeWidth={1.7} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <strong className="block text-sm font-semibold text-[#F8F5EA]">Editar perfil</strong>
+                  <span className="mt-0.5 block text-[10px] text-[#8F897C]">Actualiza tus datos y contraseña</span>
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-[#D4AF37]/65" />
+              </button>
             </div>
           </section>
 
-          <section className="mt-5 rounded-[1.5rem] border border-white/[0.07] bg-[#0B0B0B] p-2">
-            <button type="button" onClick={openProfile} className="flex min-h-[62px] w-full items-center gap-3 rounded-xl px-3 text-left transition hover:bg-white/[0.025]">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#D4AF37]/[0.08] text-[#D4AF37]"><UserRound className="h-5 w-5" strokeWidth={1.7} /></span>
-              <span className="min-w-0 flex-1"><strong className="block text-sm font-semibold text-[#F8F5EA]">Editar mi perfil</strong><span className="mt-0.5 block text-[11px] leading-4 text-[#8F897C]">Nombre, correo, WhatsApp y contraseña</span></span>
-              <ChevronRight className="h-4 w-4 shrink-0 text-[#D4AF37]/60" />
-            </button>
-          </section>
-
-          <section className="mt-3 rounded-[1.5rem] border border-white/[0.07] bg-[#0B0B0B] p-2">
-            <button type="button" onClick={closeAccount} className="flex min-h-[62px] w-full items-center gap-3 rounded-xl px-3 text-left text-red-400 transition hover:bg-red-950/20">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500/10"><LogOut className="h-5 w-5" /></span>
-              <span className="min-w-0 flex-1"><strong className="block text-sm font-semibold">Cerrar sesión</strong><span className="mt-0.5 block text-[11px] leading-4 text-[#8F897C]">Salir de tu cuenta en este dispositivo</span></span>
-              <ChevronRight className="h-4 w-4 shrink-0 text-red-400/70" />
+          <section className="mt-3 overflow-hidden rounded-[1.35rem] border border-white/[0.07] bg-[#0B0B0B] p-2">
+            <button
+              type="button"
+              onClick={closeAccount}
+              className="flex min-h-[56px] w-full items-center gap-3 rounded-xl px-2 text-left text-red-400 transition hover:bg-red-950/20"
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-500/10">
+                <LogOut className="h-4.5 w-4.5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <strong className="block text-sm font-semibold">Cerrar sesión</strong>
+                <span className="mt-0.5 block text-[10px] text-[#8F897C]">Salir de tu cuenta en este dispositivo</span>
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-red-400/65" />
             </button>
           </section>
         </main>
