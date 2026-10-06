@@ -53,7 +53,7 @@ export default function Auth() {
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [acceptDataTreatment, setAcceptDataTreatment] = useState(false);
   const [acceptCommunications, setAcceptCommunications] = useState(false);
-  const [remember, setRemember] = useState(() => getBibleStudyRememberSession());
+  const remember = true;
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -406,13 +406,9 @@ export default function Auth() {
             ) : null}
 
             {!recovering ? (
-              <label className="flex min-h-11 items-start gap-3 px-1 py-1 text-sm text-[#C9C3B3]">
-                <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} className="mt-1 h-4 w-4 accent-[#D4AF37]" />
-                <span>
-                  <strong className="text-[#F8F5EA]">Recordar mi sesión</strong>
-                  <span className="block text-xs leading-relaxed text-[#8F897C]">Desmárcalo si este dispositivo es compartido. La contraseña nunca se guarda en LVJ.</span>
-                </span>
-              </label>
+              <p className="px-1 text-center text-[11px] leading-relaxed text-[#8F897C]">
+                Tu sesión se mantendrá activa en este dispositivo hasta que elijas <strong className="text-[#D4AF37]">Cerrar sesión</strong> desde <strong className="text-[#F8F5EA]">Más</strong>.
+              </p>
             ) : null}
 
             <button
