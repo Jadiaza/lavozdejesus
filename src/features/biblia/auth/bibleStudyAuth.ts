@@ -5,26 +5,13 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://lvj-not-confi
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_not_configured";
 const REMEMBER_KEY = "lvj:bible-study-auth:remember";
 
-const remembersSession = () => localStorage.getItem(REMEMBER_KEY) !== "false";
+export function setBibleStudyRememberSession(_remember = true): void {
+  localStorage.setItem(REMEMBER_KEY, "true");
+}
 
-const storage: SupportedStorage = {
-  getItem(key) {
-    // Una sola fuente de persistencia según la preferencia actual.
-    // No hacemos fallback al otro storage porque eso podría mantener una
-    // sesión persistente después de que el usuario eligió no recordarla.
-    return (remembersSession() ? localStorage : sessionStorage).getItem(key);
-  },
-  setItem(key, value) {
-    const primary = remembersSession() ? localStorage : sessionStorage;
-    const secondary = remembersSession() ? sessionStorage : localStorage;
-    primary.setItem(key, value);
-    secondary.removeItem(key);
-  },
-  removeItem(key) {
-    localStorage.removeItem(key);
-    sessionStorage.removeItem(key);
-  },
-};
+export function getBibleStudyRememberSession(): boolean {
+  return true;
+}
 
 const configuredFetch: typeof fetch = (input, init) => {
   const headers = new Headers(
@@ -72,7 +59,7 @@ export function isBibleStudyAuthConfigured(): boolean {
 export const bibleStudyAuth = createClient<Database>(SUPABASE_URL, SUPABASE_KEY, {
   global: { fetch: configuredFetch },
   auth: {
-    storage,
+    storage: localStorage,
     storageKey: "lvj-bible-study-auth",
     persistSession: true,
     autoRefreshToken: true,
