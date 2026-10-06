@@ -9,6 +9,7 @@ import {
   Heart,
   LockKeyhole,
   Mail,
+  Phone,
   ShieldCheck,
   UserRound,
 } from "lucide-react";
@@ -49,6 +50,7 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [acceptDataTreatment, setAcceptDataTreatment] = useState(false);
@@ -61,6 +63,16 @@ export default function Auth() {
   const [registrationSubmitted, setRegistrationSubmitted] = useState(false);
   const [syncingAccount, setSyncingAccount] = useState(false);
   const [accountEmail, setAccountEmail] = useState("");
+  const [accountName, setAccountName] = useState("");
+  const [accountPhone, setAccountPhone] = useState("");
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileEmail, setProfileEmail] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
+  const [profileName, setProfileName] = useState("");
+  const [profilePassword, setProfilePassword] = useState("");
+  const [profileConfirmPassword, setProfileConfirmPassword] = useState("");
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileMessage, setProfileMessage] = useState("");
   const [recovering, setRecovering] = useState(() => window.location.pathname === "/acceso/recuperar");
   const navigate = useNavigate();
   const location = useLocation();
@@ -120,6 +132,8 @@ export default function Auth() {
       }
 
       setAccountEmail(data.session.user.email ?? "");
+      setAccountName(String(data.session.user.user_metadata?.full_name ?? data.session.user.user_metadata?.nombre ?? "Usuario LVJ"));
+      setAccountPhone(String(data.session.user.user_metadata?.whatsapp ?? data.session.user.phone ?? ""));
       setSyncingAccount(true);
       await validateAndEnter(data.session.access_token);
     };
@@ -138,6 +152,8 @@ export default function Auth() {
 
       if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
         setAccountEmail(session.user.email ?? "");
+        setAccountName(String(session.user.user_metadata?.full_name ?? session.user.user_metadata?.nombre ?? "Usuario LVJ"));
+        setAccountPhone(String(session.user.user_metadata?.whatsapp ?? session.user.phone ?? ""));
         setSyncingAccount(true);
         void validateAndEnter(session.access_token);
       }
@@ -161,6 +177,11 @@ export default function Auth() {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+
+    if (mode === "register" && !/^\+57\s?3\d{9}$/.test(phone.replace(/[-().]/g, "").replace(/\s+/g, " ").trim())) {
+      setMessage("El número de WhatsApp es obligatorio. Usa el formato +57 3XXXXXXXXX.");
+      return;
+    }
 
     if (password.length < 8) {
       setMessage("La contraseña debe tener al menos 8 caracteres.");
@@ -213,6 +234,7 @@ export default function Auth() {
             consent_privacy_at: new Date().toISOString(),
             consent_data_treatment_at: new Date().toISOString(),
             consent_communications: acceptCommunications,
+            whatsapp: phone.trim(),
           },
         },
       });
@@ -284,7 +306,99 @@ export default function Auth() {
     setLoading(false);
   };
 
+  const saveProfile = async () => {
+    const cleanPhone = profilePhone.replace(/[-().]/g, "").replace(/\s+/g, " ").trim();
+    if (!profileName.trim()) {
+      setProfileMessage("El nombre es obligatorio.");
+      return;
+    }
+    if (!/^\+57\s?3\d{9}$/.test(cleanPhone)) {
+      setProfileMessage("El número de WhatsApp es obligatorio. Usa el formato +57 3XXXXXXXXX.");
+      return;
+    }
+    if (!profileEmail.trim() || !profileEmail.includes("@")) {
+      setProfileMessage("Escribe un correo electrónico válido.");
+      return;
+    }
+    if (profilePassword && profilePassword.length < 8) {
+      setProfileMessage("La nueva contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+    if (profilePassword !== profileConfirmPassword) {
+      setProfileMessage("Las contraseñas no coinciden.");
+      return;
+    }
+
+    setProfileSaving(true);
+    setProfileMessage("");
+    const attributes: Parameters<typeof lvjAuth.auth.updateUser>[0] = {
+      email: profileEmail.trim().toLowerCase(),
+      data: { full_name: profileName.trim(), whatsapp: cleanPhone },
+    };
+    if (profilePassword) attributes.password = profilePassword;
+
+    const { data, error } = await lvjAuth.auth.updateUser(attributes);
+    if (error) {
+      setProfileMessage(friendlyError(error.message));
+      setProfileSaving(false);
+      return;
+    }
+
+    const user = data.user;
+    setAccountEmail(user?.email ?? profileEmail.trim().toLowerCase());
+    setAccountName(String(user?.user_metadata?.full_name ?? profileName.trim()));
+    setAccountPhone(String(user?.user_metadata?.whatsapp ?? cleanPhone));
+    setProfilePassword("");
+    setProfileConfirmPassword("");
+    setProfileMessage(
+      profileEmail.trim().toLowerCase() !== accountEmail
+        ? "Perfil actualizado. Revisa tu correo para confirmar el cambio de dirección."
+        : "Perfil actualizado correctamente.",
+    );
+    setProfileSaving(false);
+    setEditingProfile(false);
+  };
+
   if (accountEmail && !recovering && location.pathname === "/acceso" && !location.search && !loading) {
+    if (editingProfile) {
+      return (
+        <div className="min-h-screen bg-[#F7F3E9] text-[#2D2A25]">
+          <main className="mx-auto min-h-screen w-full max-w-[430px] px-5 pb-28 pt-6">
+            <header className="border-b border-[#B68A2C]/25 pb-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#9A6B18]">La Voz de Jesús</p>
+              <h1 className="mt-1 font-display text-3xl">Editar mi perfil</h1>
+            </header>
+            <section className="mt-5 space-y-4 rounded-3xl bg-white p-5 shadow-[0_12px_40px_rgba(70,55,25,.12)]">
+              <Field icon={UserRound} label="Nombre completo" type="text" value={profileName} onChange={setProfileName} autoComplete="name" required />
+              <Field icon={Mail} label="Correo electrónico" type="email" value={profileEmail} onChange={setProfileEmail} autoComplete="email" required />
+              <Field icon={Phone} label="WhatsApp / teléfono" type="tel" value={profilePhone} onChange={setProfilePhone} autoComplete="tel" placeholder="+57 3001234567" required />
+              <div className="border-t border-[#D4AF37]/20 pt-4">
+                <p className="mb-3 text-sm font-semibold text-[#5F4A20]">Cambiar contraseña</p>
+                <PasswordField label="Nueva contraseña" value={profilePassword} onChange={setProfilePassword} showPassword={showPassword} setShowPassword={setShowPassword} autoComplete="new-password" placeholder="Déjala vacía para no cambiarla" minLength={8} />
+                <div className="mt-3">
+                  <PasswordField label="Confirmar nueva contraseña" value={profileConfirmPassword} onChange={setProfileConfirmPassword} showPassword={showPassword} setShowPassword={setShowPassword} autoComplete="new-password" placeholder="Repite la nueva contraseña" minLength={8} />
+                </div>
+              </div>
+              <p className="text-[11px] leading-relaxed text-[#777166]">El número de WhatsApp es obligatorio para facilitar las comunicaciones de La Voz de Jesús y será tratado conforme a nuestra política de privacidad.</p>
+              {profileMessage ? <p className="rounded-xl border border-[#D4AF37]/30 bg-[#D4AF37]/10 p-3 text-center text-xs text-[#6A521B]">{profileMessage}</p> : null}
+              <button type="button" onClick={saveProfile} disabled={profileSaving} className="min-h-12 w-full rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#E7BE4C] to-[#F2D27A] px-4 text-sm font-bold text-black disabled:opacity-50">{profileSaving ? "Guardando..." : "Guardar cambios"}</button>
+              <button type="button" onClick={() => { setEditingProfile(false); setProfileMessage(""); }} disabled={profileSaving} className="min-h-11 w-full rounded-xl border border-[#B68A2C]/25 px-4 text-sm font-semibold text-[#6A521B]">Cancelar</button>
+            </section>
+          </main>
+          <BottomNav activeLabel="Mas" />
+        </div>
+      );
+    }
+
+    const openProfile = () => {
+      setProfileName(accountName);
+      setProfileEmail(accountEmail);
+      setProfilePhone(accountPhone);
+      setProfilePassword("");
+      setProfileConfirmPassword("");
+      setProfileMessage("");
+      setEditingProfile(true);
+    };
     const closeAccount = async () => {
       await lvjAuth.auth.signOut({ scope: "local" });
       setAccountEmail("");
@@ -292,6 +406,43 @@ export default function Auth() {
     };
 
     return (
+      <div className="min-h-screen bg-[#F7F3E9] text-[#2D2A25]">
+        <main className="mx-auto min-h-screen w-full max-w-[430px] px-5 pb-28 pt-6">
+          <header className="border-b border-[#B68A2C]/25 pb-4">
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#9A6B18]">La Voz de Jesús</p>
+            <h1 className="mt-1 font-display text-3xl">Mi cuenta</h1>
+          </header>
+          <section className="mt-5 rounded-3xl bg-white p-5 shadow-[0_12px_40px_rgba(70,55,25,.12)]">
+            <div className="flex items-center gap-4">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#D4AF37]/15 text-[#8D6415]"><UserRound className="h-8 w-8" /></div>
+              <div className="min-w-0">
+                <h2 className="text-xl font-semibold leading-tight">{accountName || "Usuario LVJ"}</h2>
+                <p className="mt-1 truncate text-xs text-[#777166]">{accountEmail}</p>
+                <p className="mt-1 text-xs text-[#777166]">{accountPhone || "WhatsApp pendiente de completar"}</p>
+              </div>
+            </div>
+          </section>
+          <section className="mt-5 rounded-3xl bg-white p-2 shadow-[0_12px_40px_rgba(70,55,25,.10)]">
+            <button type="button" onClick={openProfile} className="flex min-h-14 w-full items-center gap-3 rounded-2xl px-3 text-left hover:bg-[#D4AF37]/10">
+              <UserRound className="h-5 w-5 text-[#9A6B18]" />
+              <span className="flex-1"><strong className="block text-sm">Editar mi perfil</strong><span className="text-[11px] text-[#777166]">Nombre, correo, WhatsApp y contraseña</span></span>
+              <ChevronRight className="h-4 w-4 text-[#9A6B18]" />
+            </button>
+          </section>
+          <section className="mt-5 rounded-3xl bg-white p-2 shadow-[0_12px_40px_rgba(70,55,25,.10)]">
+            <button type="button" onClick={closeAccount} className="flex min-h-14 w-full items-center gap-3 rounded-2xl px-3 text-left text-red-700 hover:bg-red-50">
+              <LogOut className="h-5 w-5" />
+              <span className="flex-1"><strong className="block text-sm">Cerrar sesión</strong><span className="text-[11px] text-[#777166]">Salir de tu cuenta en este dispositivo</span></span>
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </section>
+        </main>
+        <BottomNav activeLabel="Mas" />
+      </div>
+    );
+  }
+
+  return (
       <main className="min-h-screen bg-[#030303] px-5 py-8 text-[#F8F5EA]">
         <div className="mx-auto w-full max-w-[390px]">
           <header className="text-center">
