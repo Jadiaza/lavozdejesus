@@ -1,4 +1,4 @@
-import { bibleStudyAuth } from "@/features/biblia/auth/bibleStudyAuth";
+import { bibleStudyAuth } from "@/services/lvjAuth";
 import { getMeta, setMeta } from "@/features/biblia/db";
 
 export interface BiblePlan {
