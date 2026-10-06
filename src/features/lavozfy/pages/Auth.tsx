@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { lvjAuth } from "@/services/lvjAuth";
 import { useAuth } from "../state/authStore";
 import logo from "../assets/logo.png";
 
@@ -17,7 +17,7 @@ export const Login = () => {
     <div className={wrap + " lavozfy"}>
       <form className={card} onSubmit={async (e) => {
         e.preventDefault(); setErr(null); setLoading(true);
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await lvjAuth.auth.signInWithPassword({ email, password });
         setLoading(false);
         if (error) setErr(error.message); else nav("/musica");
       }}>
@@ -47,7 +47,7 @@ export const Registro = () => {
     <div className={wrap + " lavozfy"}>
       <form className={card} onSubmit={async (e) => {
         e.preventDefault(); setErr(null); setLoading(true);
-        const { error } = await supabase.auth.signUp({ email, password,
+        const { error } = await lvjAuth.auth.signUp({ email, password,
           options: { emailRedirectTo: window.location.origin + "/musica" } });
         setLoading(false);
         if (error) setErr(error.message); else { setOk(true); setTimeout(() => nav("/musica"), 1200); }
@@ -73,7 +73,7 @@ export const ResetPassword = () => {
     <div className={wrap + " lavozfy"}>
       <form className={card} onSubmit={async (e) => {
         e.preventDefault(); setErr(null);
-        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + "/musica/reset-password" });
+        const { error } = await lvjAuth.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + "/musica/reset-password" });
         if (error) setErr(error.message); else setSent(true);
       }}>
         <div className="font-semibold text-center">Recuperar contraseña</div>
