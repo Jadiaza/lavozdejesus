@@ -1,7 +1,7 @@
 import { LogIn, UserRound, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { lvjAuth } from "@/features/biblia/auth/bibleStudyAuth";
+import { lvjAuth } from "@/services/lvjAuth";
 
 const DISMISSED_KEY = "lvj_access_prompt_dismissed_v2";
 const SPLASH_WAIT_MS = 3100;
