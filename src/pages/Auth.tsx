@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getAccessContext } from "@/services/acceso";
+import { BottomNav } from "@/components/lvdj/BottomNav";
 import {
   lvjAuth,
   isLvjAuthConfigured,
@@ -380,30 +381,33 @@ export default function Auth() {
   if (accountEmail && !recovering && location.pathname === "/acceso" && !location.search && !loading) {
     if (editingProfile) {
       return (
-        <div className="min-h-screen bg-[#F7F3E9] text-[#2D2A25]">
-          <main className="mx-auto min-h-screen w-full max-w-[430px] px-5 pb-28 pt-6">
-            <header className="border-b border-[#B68A2C]/25 pb-4">
-              <button type="button" onClick={() => { setEditingProfile(false); setProfileMessage(""); }} className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-[#8D6415]">
+        <div className="min-h-screen bg-[#03070F] text-[#F8F5EA]">
+          <main className="mx-auto min-h-screen w-full max-w-[430px] px-5 pb-28 pt-[max(1.25rem,env(safe-area-inset-top))]">
+            <header className="border-b border-[#D4AF37]/15 pb-4">
+              <button type="button" onClick={() => { setEditingProfile(false); setProfileMessage(""); }} className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-[#D4AF37]">
                 ← Perfil
               </button>
-              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#9A6B18]">La Voz de Jesús</p>
-              <h1 className="mt-1 font-display text-3xl">Editar mi perfil</h1>
+              <p className="text-[9px] font-bold uppercase tracking-[0.28em] text-[#D4AF37]">La Voz de Jesús</p>
+              <h1 className="mt-1 font-display text-3xl text-[#F8F5EA]">Editar mi perfil</h1>
             </header>
-            <section className="mt-5 space-y-4 rounded-3xl bg-white p-5 shadow-[0_12px_40px_rgba(70,55,25,.12)]">
+
+            <section className="mt-5 space-y-4 rounded-[1.5rem] border border-white/[0.07] bg-[#0B0B0B] p-5 shadow-[0_14px_40px_rgba(0,0,0,.25)]">
               <Field icon={UserRound} label="Nombre completo" type="text" value={profileName} onChange={setProfileName} autoComplete="name" required />
               <Field icon={Mail} label="Correo electrónico" type="email" value={profileEmail} onChange={setProfileEmail} autoComplete="email" required />
               <Field icon={Phone} label="WhatsApp / teléfono" type="tel" value={profilePhone} onChange={setProfilePhone} autoComplete="tel" placeholder="+57 3001234567" required />
-              <div className="border-t border-[#D4AF37]/20 pt-4">
-                <p className="mb-3 text-sm font-semibold text-[#5F4A20]">Cambiar contraseña</p>
+
+              <div className="border-t border-white/[0.07] pt-4">
+                <p className="mb-3 text-sm font-semibold text-[#F8F5EA]">Cambiar contraseña</p>
                 <PasswordField label="Nueva contraseña" value={profilePassword} onChange={setProfilePassword} showPassword={showPassword} setShowPassword={setShowPassword} autoComplete="new-password" placeholder="Déjala vacía para no cambiarla" minLength={8} />
                 <div className="mt-3">
                   <PasswordField label="Confirmar nueva contraseña" value={profileConfirmPassword} onChange={setProfileConfirmPassword} showPassword={showPassword} setShowPassword={setShowPassword} autoComplete="new-password" placeholder="Repite la nueva contraseña" minLength={8} />
                 </div>
               </div>
-              <p className="text-[11px] leading-relaxed text-[#777166]">El número de WhatsApp es obligatorio para facilitar las comunicaciones de La Voz de Jesús y será tratado conforme a nuestra política de privacidad.</p>
-              {profileMessage ? <p className="rounded-xl border border-[#D4AF37]/30 bg-[#D4AF37]/10 p-3 text-center text-xs text-[#6A521B]">{profileMessage}</p> : null}
+
+              <p className="text-[11px] leading-relaxed text-[#8F897C]">El número de WhatsApp es obligatorio para facilitar las comunicaciones de La Voz de Jesús y será tratado conforme a nuestra política de privacidad.</p>
+              {profileMessage ? <p className="rounded-xl border border-[#D4AF37]/25 bg-[#D4AF37]/10 p-3 text-center text-xs text-[#D4AF37]">{profileMessage}</p> : null}
               <button type="button" onClick={saveProfile} disabled={profileSaving} className="min-h-12 w-full rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#E7BE4C] to-[#F2D27A] px-4 text-sm font-bold text-black disabled:opacity-50">{profileSaving ? "Guardando..." : "Guardar cambios"}</button>
-              <button type="button" onClick={() => { setEditingProfile(false); setProfileMessage(""); }} disabled={profileSaving} className="min-h-11 w-full rounded-xl border border-[#B68A2C]/25 px-4 text-sm font-semibold text-[#6A521B]">Cancelar</button>
+              <button type="button" onClick={() => { setEditingProfile(false); setProfileMessage(""); }} disabled={profileSaving} className="min-h-11 w-full rounded-xl border border-white/10 px-4 text-sm font-semibold text-[#C9C3B3] hover:bg-white/5">Cancelar</button>
             </section>
           </main>
           <BottomNav activeLabel="Mas" />
@@ -420,38 +424,42 @@ export default function Auth() {
       setProfileMessage("");
       setEditingProfile(true);
     };
+
     return (
-      <div className="min-h-screen bg-[#F7F3E9] text-[#2D2A25]">
-        <main className="mx-auto min-h-screen w-full max-w-[430px] px-5 pb-28 pt-6">
-          <header className="border-b border-[#B68A2C]/25 pb-4">
-            <button type="button" onClick={() => navigate("/mas", { replace: true })} className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-[#8D6415]">
+      <div className="min-h-screen bg-[#03070F] text-[#F8F5EA]">
+        <main className="mx-auto min-h-screen w-full max-w-[430px] px-5 pb-28 pt-[max(1.25rem,env(safe-area-inset-top))]">
+          <header className="border-b border-[#D4AF37]/15 pb-4">
+            <button type="button" onClick={() => navigate("/mas", { replace: true })} className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-[#D4AF37]">
               ← Más
             </button>
-            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#9A6B18]">La Voz de Jesús</p>
-            <h1 className="mt-1 font-display text-3xl">Perfil</h1>
+            <p className="text-[9px] font-bold uppercase tracking-[0.28em] text-[#D4AF37]">La Voz de Jesús</p>
+            <h1 className="mt-1 font-display text-3xl text-[#F8F5EA]">Perfil</h1>
           </header>
-          <section className="mt-5 rounded-3xl bg-white p-5 shadow-[0_12px_40px_rgba(70,55,25,.12)]">
+
+          <section className="mt-5 rounded-[1.5rem] border border-white/[0.07] bg-[#0B0B0B] p-5 shadow-[0_14px_40px_rgba(0,0,0,.25)]">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#D4AF37]/15 text-[#8D6415]"><UserRound className="h-8 w-8" /></div>
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-[#D4AF37]/[0.08] text-[#D4AF37]"><UserRound className="h-8 w-8" strokeWidth={1.7} /></div>
               <div className="min-w-0">
-                <h2 className="text-xl font-semibold leading-tight">{accountName || "Usuario LVJ"}</h2>
-                <p className="mt-1 truncate text-xs text-[#777166]">{accountEmail}</p>
-                <p className="mt-1 text-xs text-[#777166]">{accountPhone || "WhatsApp pendiente de completar"}</p>
+                <h2 className="text-xl font-semibold leading-tight text-[#F8F5EA]">{accountName || "Usuario LVJ"}</h2>
+                <p className="mt-1 truncate text-xs text-[#8F897C]">{accountEmail}</p>
+                <p className="mt-1 text-xs text-[#8F897C]">{accountPhone || "WhatsApp pendiente de completar"}</p>
               </div>
             </div>
           </section>
-          <section className="mt-5 rounded-3xl bg-white p-2 shadow-[0_12px_40px_rgba(70,55,25,.10)]">
-            <button type="button" onClick={openProfile} className="flex min-h-14 w-full items-center gap-3 rounded-2xl px-3 text-left hover:bg-[#D4AF37]/10">
-              <UserRound className="h-5 w-5 text-[#9A6B18]" />
-              <span className="flex-1"><strong className="block text-sm">Editar mi perfil</strong><span className="text-[11px] text-[#777166]">Nombre, correo, WhatsApp y contraseña</span></span>
-              <ChevronRight className="h-4 w-4 text-[#9A6B18]" />
+
+          <section className="mt-5 rounded-[1.5rem] border border-white/[0.07] bg-[#0B0B0B] p-2">
+            <button type="button" onClick={openProfile} className="flex min-h-[62px] w-full items-center gap-3 rounded-xl px-3 text-left transition hover:bg-white/[0.025]">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#D4AF37]/[0.08] text-[#D4AF37]"><UserRound className="h-5 w-5" strokeWidth={1.7} /></span>
+              <span className="min-w-0 flex-1"><strong className="block text-sm font-semibold text-[#F8F5EA]">Editar mi perfil</strong><span className="mt-0.5 block text-[11px] leading-4 text-[#8F897C]">Nombre, correo, WhatsApp y contraseña</span></span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-[#D4AF37]/60" />
             </button>
           </section>
-          <section className="mt-5 rounded-3xl bg-white p-2 shadow-[0_12px_40px_rgba(70,55,25,.10)]">
-            <button type="button" onClick={closeAccount} className="flex min-h-14 w-full items-center gap-3 rounded-2xl px-3 text-left text-red-700 hover:bg-red-50">
-              <LogOut className="h-5 w-5" />
-              <span className="flex-1"><strong className="block text-sm">Cerrar sesión</strong><span className="text-[11px] text-[#777166]">Salir de tu cuenta en este dispositivo</span></span>
-              <ChevronRight className="h-4 w-4" />
+
+          <section className="mt-3 rounded-[1.5rem] border border-white/[0.07] bg-[#0B0B0B] p-2">
+            <button type="button" onClick={closeAccount} className="flex min-h-[62px] w-full items-center gap-3 rounded-xl px-3 text-left text-red-400 transition hover:bg-red-950/20">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500/10"><LogOut className="h-5 w-5" /></span>
+              <span className="min-w-0 flex-1"><strong className="block text-sm font-semibold">Cerrar sesión</strong><span className="mt-0.5 block text-[11px] leading-4 text-[#8F897C]">Salir de tu cuenta en este dispositivo</span></span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-red-400/70" />
             </button>
           </section>
         </main>
@@ -459,7 +467,6 @@ export default function Auth() {
       </div>
     );
   }
-
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#030303] px-3 py-2 text-[#F8F5EA] sm:px-4 sm:py-4">
       <div className="pointer-events-none fixed inset-0 bg-contain bg-top bg-no-repeat opacity-100" style={{ backgroundImage: "url('/images/auth-bg.svg')" }} aria-hidden="true" />
@@ -523,6 +530,3 @@ function PasswordField({ label, value, onChange, showPassword, setShowPassword, 
   return <div><label className="text-xs font-semibold uppercase tracking-[.08em] text-[#D4AF37]">{label}</label><div className="mt-1 flex min-h-14 rounded-xl border border-[#D4AF37]/35 bg-[#111]/95 px-3 transition-colors focus-within:border-[#D4AF37]/75 focus-within:shadow-[0_0_0_3px_rgba(212,175,55,.08)]"><LockKeyhole className="my-auto h-5 w-5 shrink-0 text-[#D4AF37]" /><input required minLength={minLength} type={showPassword ? "text" : "password"} value={value} onChange={(event) => onChange(event.target.value)} autoComplete={autoComplete} className="min-w-0 flex-1 bg-transparent px-3 text-[1rem] text-[#F8F5EA] outline-none placeholder:text-[#85818A]" placeholder={placeholder} /><button type="button" onClick={() => setShowPassword(!showPassword)} className="min-h-9 px-1 text-[#E6E1D8]" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>{showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button></div></div>;
 }
 
-function BottomNav({ activeLabel }: { activeLabel: string }) {
-  return null;
-}
