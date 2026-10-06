@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { supabase } from "@/integrations/supabase/client";
+import { lvjAuth } from "@/services/lvjAuth";
 import type { Session, User } from "@supabase/supabase-js";
 
 type AuthState = {
@@ -15,12 +15,12 @@ export const useAuth = create<AuthState>((set) => ({
   user: null,
   loading: true,
   init: () => {
-    supabase.auth.onAuthStateChange((_e, session) => {
+    lvjAuth.auth.onAuthStateChange((_e, session) => {
       set({ session, user: session?.user ?? null, loading: false });
     });
-    supabase.auth.getSession().then(({ data }) => {
+    lvjAuth.auth.getSession().then(({ data }) => {
       set({ session: data.session, user: data.session?.user ?? null, loading: false });
     });
   },
-  signOut: async () => { await supabase.auth.signOut(); },
+  signOut: async () => { await lvjAuth.auth.signOut(); },
 }));
