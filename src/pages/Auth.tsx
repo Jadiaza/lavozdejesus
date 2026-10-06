@@ -233,9 +233,11 @@ export default function Auth() {
       if (error) {
         setMessage(friendlyError(error.message));
       } else if (signInData.session) {
-        // Supabase ya confirmó las credenciales. El AccessGate global valida
-        // inmediatamente después la cuenta local y sus permisos.
-        navigate(next, { replace: true });
+        // No navegamos todavía: primero validamos la identidad contra el
+        // backend local de LVJ. Esto evita que AccessGate vea una sesión
+        // todavía sin contexto y nos devuelva nuevamente a /acceso.
+        setSyncingAccount(true);
+        await validateAndEnter(signInData.session.access_token);
       }
     }
 
