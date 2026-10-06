@@ -551,7 +551,6 @@ function PasswordField({
   minLength?: number;
 }) {
   return (
-  return (
     <div>
       <label className="text-xs font-semibold uppercase tracking-[.08em] text-[#D4AF37]">{label}</label>
       <div className="mt-1 flex min-h-14 rounded-xl border border-[#D4AF37]/35 bg-[#111]/95 px-3 transition-colors focus-within:border-[#D4AF37]/75 focus-within:shadow-[0_0_0_3px_rgba(212,175,55,.08)]">
