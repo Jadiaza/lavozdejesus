@@ -384,7 +384,7 @@ export default function Auth() {
           <main className="mx-auto min-h-screen w-full max-w-[430px] px-5 pb-28 pt-6">
             <header className="border-b border-[#B68A2C]/25 pb-4">
               <button type="button" onClick={() => { setEditingProfile(false); setProfileMessage(""); }} className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-[#8D6415]">
-                ← Mi cuenta
+                ← Perfil
               </button>
               <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#9A6B18]">La Voz de Jesús</p>
               <h1 className="mt-1 font-display text-3xl">Editar mi perfil</h1>
@@ -428,7 +428,7 @@ export default function Auth() {
               ← Más
             </button>
             <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#9A6B18]">La Voz de Jesús</p>
-            <h1 className="mt-1 font-display text-3xl">Mi cuenta</h1>
+            <h1 className="mt-1 font-display text-3xl">Perfil</h1>
           </header>
           <section className="mt-5 rounded-3xl bg-white p-5 shadow-[0_12px_40px_rgba(70,55,25,.12)]">
             <div className="flex items-center gap-4">
