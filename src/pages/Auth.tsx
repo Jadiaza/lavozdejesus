@@ -60,6 +60,7 @@ export default function Auth() {
   const [success, setSuccess] = useState(false);
   const [registrationSubmitted, setRegistrationSubmitted] = useState(false);
   const [syncingAccount, setSyncingAccount] = useState(false);
+  const [accountEmail, setAccountEmail] = useState("");
   const [recovering, setRecovering] = useState(() => window.location.pathname === "/acceso/recuperar");
   const navigate = useNavigate();
   const location = useLocation();
@@ -82,6 +83,7 @@ export default function Auth() {
       await getAccessContext(accessToken);
       setSyncingAccount(false);
       setLoading(false);
+      if (location.pathname === "/acceso" && !location.search) return;
       navigate(next, { replace: true });
     } catch (error) {
       setSyncingAccount(false);
@@ -117,6 +119,7 @@ export default function Auth() {
         return;
       }
 
+      setAccountEmail(data.session.user.email ?? "");
       setSyncingAccount(true);
       await validateAndEnter(data.session.access_token);
     };
@@ -134,6 +137,7 @@ export default function Auth() {
       }
 
       if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
+        setAccountEmail(session.user.email ?? "");
         setSyncingAccount(true);
         void validateAndEnter(session.access_token);
       }
@@ -513,6 +517,39 @@ function PasswordField({
   placeholder: string;
   minLength?: number;
 }) {
+  if (accountEmail && !recovering && location.pathname === "/acceso" && !location.search && !loading) {
+    const closeAccount = async () => {
+      await lvjAuth.auth.signOut({ scope: "local" });
+      setAccountEmail("");
+      navigate("/", { replace: true });
+    };
+
+    return (
+      <main className="min-h-screen bg-[#030303] px-5 py-8 text-[#F8F5EA]">
+        <div className="mx-auto w-full max-w-[390px]">
+          <header className="text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[#D4AF37]/45 bg-[#D4AF37]/10 text-[#D4AF37]">
+              <UserRound className="h-8 w-8" />
+            </div>
+            <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.28em] text-[#D4AF37]">La Voz de Jesús</p>
+            <h1 className="mt-2 font-display text-3xl">Mi cuenta</h1>
+            <p className="mt-2 text-sm text-[#8F897C]">Tu sesión está activa en este dispositivo.</p>
+          </header>
+          <section className="mt-8 rounded-2xl border border-[#D4AF37]/25 bg-[#0B0B0B] p-5">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-400/10 text-emerald-300"><ShieldCheck className="h-5 w-5" /></span>
+              <div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-300">Sesión iniciada</p><p className="mt-1 truncate text-sm font-semibold">{accountEmail}</p></div>
+            </div>
+          </section>
+          <div className="mt-5 grid gap-3">
+            <Link to="/mas" className="flex min-h-12 items-center justify-center rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#E7BE4C] to-[#F2D27A] px-4 text-sm font-bold text-black">Volver a Más</Link>
+            <button type="button" onClick={closeAccount} className="min-h-12 rounded-xl border border-red-400/25 bg-red-950/10 px-4 text-sm font-semibold text-red-200">Cerrar sesión</button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <div>
       <label className="text-xs font-semibold uppercase tracking-[.08em] text-[#D4AF37]">{label}</label>
