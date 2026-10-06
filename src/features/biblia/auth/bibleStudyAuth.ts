@@ -5,14 +5,6 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://lvj-not-confi
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_not_configured";
 const REMEMBER_KEY = "lvj:bible-study-auth:remember";
 
-export function setBibleStudyRememberSession(_remember = true): void {
-  localStorage.setItem(REMEMBER_KEY, "true");
-}
-
-export function getBibleStudyRememberSession(): boolean {
-  return true;
-}
-
 const configuredFetch: typeof fetch = (input, init) => {
   const headers = new Headers(
     typeof Request !== "undefined" && input instanceof Request ? input.headers : undefined,
@@ -46,7 +38,7 @@ export function setBibleStudyRememberSession(remember: boolean): void {
 }
 
 export function getBibleStudyRememberSession(): boolean {
-  return remembersSession();
+  return localStorage.getItem(REMEMBER_KEY) === "true";
 }
 
 export function isBibleStudyAuthConfigured(): boolean {
