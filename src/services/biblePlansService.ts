@@ -1,4 +1,4 @@
-import { bibleStudyAuth } from "@/services/lvjAuth";
+import { lvjAuth } from "@/services/lvjAuth";
 import { getMeta, setMeta } from "@/features/biblia/db";
 
 export interface BiblePlan {
@@ -84,7 +84,7 @@ async function request<T>(params: Record<string, string | number>): Promise<T> {
 }
 
 async function accessToken(): Promise<string | null> {
-  const { data } = await bibleStudyAuth.auth.getSession();
+  const { data } = await lvjAuth.auth.getSession();
   return data.session?.access_token ?? null;
 }
 
