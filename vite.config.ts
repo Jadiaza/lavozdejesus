@@ -59,7 +59,7 @@ export default defineConfig(() => ({
               request.mode === "navigate" && !url.pathname.startsWith("/~oauth"),
             handler: "NetworkFirst",
             options: {
-              cacheName: "lvdj-pages-v2",
+              cacheName: "lvdj-pages-v3",
               networkTimeoutSeconds: 4,
               expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 },
             },
@@ -69,7 +69,7 @@ export default defineConfig(() => ({
               sameOrigin && ["style", "script", "worker", "font"].includes(request.destination),
             handler: "StaleWhileRevalidate",
             options: {
-              cacheName: "lvdj-assets-v2",
+              cacheName: "lvdj-assets-v3",
               expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 30 },
             },
           },
@@ -77,7 +77,7 @@ export default defineConfig(() => ({
             urlPattern: ({ request, sameOrigin }) => sameOrigin && request.destination === "image",
             handler: "CacheFirst",
             options: {
-              cacheName: "lvdj-images-v2",
+              cacheName: "lvdj-images-v3",
               expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 },
             },
           },
