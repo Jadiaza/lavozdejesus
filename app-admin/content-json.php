@@ -133,26 +133,41 @@ require __DIR__ . '/includes/header.php';
       <small>Usa <b>**negrita**</b>, <i>*cursiva*</i>, <b>## Título</b>, <b>&gt; Cita</b> y <b>- Lista</b>. El formato se guarda dentro del texto y se valida antes de actualizar.</small>
     </div>
     <div class="json-editor-actions">
-      <button type="button" class="btn btn-soft" data-json-format>✣ Formatear</button>
-      <button type="button" class="btn btn-soft" data-json-copy>▣ Copiar</button>
-      <button type="button" class="btn btn-soft" data-json-restore>↶ Restaurar</button>
-      <button type="button" class="btn btn-soft" data-json-bold><b>Negrita</b></button>
-      <button type="button" class="btn btn-soft" data-json-italic><i>Cursiva</i></button>
-      <button type="button" class="btn btn-soft" data-json-heading>## Título</button>
-      <button type="button" class="btn btn-soft" data-json-quote>&gt; Cita</button>
-      <button type="button" class="btn btn-soft" data-json-list>- Lista</button>
+      <button type="button" class="editor-tool" title="Párrafo" data-json-paragraph>Párrafo ▾</button>
+      <button type="button" class="editor-tool" title="Negrita" data-json-bold><strong>B</strong></button>
+      <button type="button" class="editor-tool" title="Cursiva" data-json-italic><em>I</em></button>
+      <button type="button" class="editor-tool" title="Cita" data-json-quote>❝</button>
+      <button type="button" class="editor-tool" title="Lista" data-json-list>☷</button>
+      <button type="button" class="editor-tool" title="Lista numerada" data-json-olist>☷</button>
+      <button type="button" class="editor-tool" title="Enlace" data-json-link>↗</button>
+      <span class="editor-separator"></span>
+      <button type="button" class="editor-tool" title="Título" data-json-heading>H2</button>
+      <button type="button" class="editor-tool" title="Formatear JSON" data-json-format>✣ Formatear</button>
+      <button type="button" class="editor-tool" title="Copiar JSON" data-json-copy>▣ Copiar</button>
+      <button type="button" class="editor-tool" title="Restaurar" data-json-restore>↶ Restaurar</button>
       <span data-json-status>JSON válido pendiente de validar.</span>
     </div>
-    <label class="content-field full">JSON<textarea id="json-content-editor" name="json_content" rows="28" spellcheck="false" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; line-height: 1.5; white-space: pre; tab-size: 2;"><?php echo e((string) $jsonContent); ?></textarea></label>
+    <div class="json-editor-shell">
+      <label class="content-field full" style="margin:0">JSON
+        <textarea id="json-content-editor" name="json_content" rows="28" spellcheck="false"><?php echo e((string) $jsonContent); ?></textarea>
+      </label>
+    </div>
     <div class="form-actions"><button class="btn btn-gold" type="submit">Validar y guardar JSON</button><a class="btn btn-soft" href="content.php?module=<?php echo e($config['module']); ?>&table=<?php echo e($table); ?>&edit=<?php echo (int) $id; ?>">Cancelar</a></div>
   </form>
 </section>
 <section class="panel"><h3>Campos protegidos</h3><p class="muted">No se permite modificar id, created_at, updated_at, deleted_at ni la fecha derivada del Santoral. Cualquier propiedad desconocida es rechazada por el backend.</p></section>
 <style>
-.json-editor-guide{display:flex;flex-direction:column;gap:6px;padding:14px 16px;margin-bottom:12px;border:1px solid rgba(212,175,55,.25);border-radius:12px;background:rgba(212,175,55,.06)}
-.json-editor-guide strong{color:#d4af37}.json-editor-guide small{opacity:.8}
-.json-editor-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
-.json-editor-actions [data-json-status]{font-size:12px;opacity:.75;margin-left:auto}
+.json-editor-guide{display:flex;flex-direction:column;gap:6px;padding:14px 16px;margin-bottom:12px;border:1px solid #eadfbe;border-radius:12px;background:#fffaf0}
+.json-editor-guide strong{color:#9a7618}.json-editor-guide small{opacity:.8}
+.json-editor-actions{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:10px;padding:8px;border:1px solid #e5e7eb;border-radius:12px;background:#fff}
+.json-editor-actions .editor-tool{min-width:38px;height:36px;padding:0 11px;border:1px solid #dfe3e8;border-radius:8px;background:#fff;color:#243044;font-weight:600;cursor:pointer;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.json-editor-actions .editor-tool:hover{background:#f8fafc;border-color:#cbd5e1}
+.json-editor-actions .editor-tool strong{font-size:16px}.json-editor-actions .editor-tool em{font-size:16px}
+.json-editor-actions .editor-separator{width:1px;height:28px;background:#e5e7eb;margin:0 3px}
+.json-editor-actions [data-json-status]{font-size:12px;opacity:.8;margin-left:auto;padding:0 6px}
+.json-editor-shell{border:1px solid #dfe3e8;border-radius:12px;background:#fff;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,.04)}
+#json-content-editor{display:block;width:100%;box-sizing:border-box;min-height:620px;border:0!important;outline:none!important;background:#fff!important;color:#172033!important;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace!important;font-size:14px!important;line-height:1.65!important;padding:18px!important;resize:vertical!important;tab-size:2}
+#json-content-editor::selection{background:#dbeafe;color:#172033}
 </style>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -220,11 +235,17 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelector('[data-json-format]')?.addEventListener('click', formatJson);
   document.querySelector('[data-json-copy]')?.addEventListener('click', copyJson);
   document.querySelector('[data-json-restore]')?.addEventListener('click', restoreJson);
+  document.querySelector('[data-json-paragraph]')?.addEventListener('click', function(){ setStatus('Modo párrafo seleccionado.', true); editor.focus(); });
   document.querySelector('[data-json-bold]')?.addEventListener('click', function(){ wrapSelection('**','**'); });
   document.querySelector('[data-json-italic]')?.addEventListener('click', function(){ wrapSelection('*','*'); });
   document.querySelector('[data-json-heading]')?.addEventListener('click', function(){ prefixLines('## '); });
   document.querySelector('[data-json-quote]')?.addEventListener('click', function(){ prefixLines('> '); });
   document.querySelector('[data-json-list]')?.addEventListener('click', function(){ prefixLines('- '); });
+  document.querySelector('[data-json-olist]')?.addEventListener('click', function(){ prefixLines('1. '); });
+  document.querySelector('[data-json-link]')?.addEventListener('click', function(){
+    var url = window.prompt('URL del enlace:', 'https://');
+    if (url) wrapSelection('[', '](' + url + ')');
+  });
 
   editor.addEventListener('input', function () {
     try {
