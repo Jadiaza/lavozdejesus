@@ -921,6 +921,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function inlineMarkdown(value) {
     return value
+      .replace(/&lt;span style=&quot;color:(#[0-9a-fA-F]{6})&quot;&gt;(.*?)&lt;\/span&gt;/g, '<span style="color:$1">$2</span>')
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
   }
@@ -981,6 +982,36 @@ document.addEventListener('DOMContentLoaded', function () {
     addButton(toolbar, '❞', 'lvj-tool-quote', function () { prefixLines(editor, '> '); }, 'Cita');
     addButton(toolbar, '•', 'lvj-tool-list', function () { prefixLines(editor, '- '); }, 'Lista');
     addButton(toolbar, '1.', 'lvj-tool-list', function () { prefixLines(editor, '1. '); }, 'Lista numerada');
+
+    const colorWrap = document.createElement('span');
+    colorWrap.style.cssText = 'display:inline-flex;align-items:center;gap:4px;border-left:1px solid #d1d5db;padding-left:8px;margin-left:2px;';
+    colorWrap.title = 'Color del texto';
+    const colorLabel = document.createElement('span');
+    colorLabel.textContent = 'A';
+    colorLabel.style.cssText = 'font-weight:900;color:#374151;font-size:15px;';
+    const colorInput = document.createElement('input');
+    colorInput.type = 'color';
+    colorInput.value = '#b45309';
+    colorInput.setAttribute('aria-label', 'Elegir color del texto');
+    colorInput.dataset.jsonColor = '1';
+    colorInput.style.cssText = 'width:30px;height:30px;padding:1px;border:1px solid #d1d5db;border-radius:6px;background:#fff;cursor:pointer;';
+    colorWrap.appendChild(colorLabel);
+    colorWrap.appendChild(colorInput);
+    toolbar.appendChild(colorWrap);
+
+    function applyColor(editor, color) {
+      const selection = selectedText(editor);
+      const text = selection.text || 'texto';
+      const safeColor = /^#[0-9a-fA-F]{6}$/.test(color) ? color : '#b45309';
+      const replacement = '<span style="color:' + safeColor + '">' + text + '</span>';
+      editor.setRangeText(replacement, selection.start, selection.end, 'select');
+      editor.focus();
+      editor.dispatchEvent(new Event('input', {bubbles:true}));
+    }
+
+    colorInput.addEventListener('input', function () {
+      applyColor(editor, colorInput.value);
+    });
 
     const previewButton = addButton(toolbar, '◉ Vista previa', 'lvj-tool-preview', function () {
       preview.classList.toggle('is-visible');
