@@ -3,7 +3,8 @@
 // Conserva ?sw=off como interruptor de emergencia.
 
 const SW_URL = "/sw.js";
-const APP_CACHE_BUSTER = "lvjprayer-access-2026-10-02-v2";
+const APP_CACHE_BUSTER = "lvjprayer-ui-2026-10-06-v1";
+const CLIENT_VERSION_KEY = "lvjprayer:client-version";
 
 function isRefusedContext(): boolean {
   if (!import.meta.env.PROD) return true;
@@ -27,6 +28,28 @@ function isRefusedContext(): boolean {
   return false;
 }
 
+async function clearApplicationCaches() {
+  if (!("caches" in window)) return;
+  try {
+    const names = await caches.keys();
+    await Promise.all(
+      names.filter((name) => name.startsWith("lvdj-") || name.startsWith("workbox-")).map((name) => caches.delete(name)),
+    );
+  } catch {
+    /* noop */
+  }
+}
+
+async function refreshInstalledVersion() {
+  if (typeof window === "undefined") return;
+  const current = window.localStorage.getItem(CLIENT_VERSION_KEY);
+  if (current === APP_CACHE_BUSTER) return;
+
+  await unregisterMatching();
+  await clearApplicationCaches();
+  window.localStorage.setItem(CLIENT_VERSION_KEY, APP_CACHE_BUSTER);
+}
+
 async function unregisterMatching() {
   if (!("serviceWorker" in navigator)) return;
   try {
@@ -48,6 +71,7 @@ export async function registerSW() {
     return;
   }
   try {
+    await refreshInstalledVersion();
     let reloadingForUpdate = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloadingForUpdate) return;
