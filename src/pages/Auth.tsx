@@ -19,7 +19,7 @@ import {
   getBibleStudyRememberSession,
   isBibleStudyAuthConfigured,
   setBibleStudyRememberSession,
-} from "@/features/biblia/auth/bibleStudyAuth";
+} from "@/services/lvjAuth";
 
 type AccessMode = "login" | "register";
 const DEFAULT_DESTINATION = "/";
