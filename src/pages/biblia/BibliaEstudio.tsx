@@ -5,7 +5,7 @@ import { BibliaLayout } from "./BibliaLayout";
 import { getBibliaCapitulo,getBibliaCatalogo,getBibliaVersiones,type BibliaLibro,type BibliaVersion,type BibliaVersiculo } from "@/services/bibliaService";
 import { createBibleStudy,getBibleStudy,getStudyStatus,getRecentBibleStudies,isInterruptedBibleStudyGeneration,recoverGeneratedBibleStudy,type BibleStudy,type RecentBibleStudy,type StudyLevel } from "@/services/bibleStudyService";
 import { equivalentChapterFromPlatense } from "@/utils/bibliaVersification";
-import { bibleStudyAuth } from "@/features/biblia/auth/bibleStudyAuth";
+import { bibleStudyAuth } from "@/services/lvjAuth";
 import { BibliaPassageGridSelector } from "./components/BibliaPassageGridSelector";
 import { StudyReadingFrame as StudyReadingFrameV2 } from "./components/StudyReadingFrame";
 import { TextStructureView,VerseComparisonTable,type StructureRow,type VerseComparison } from "./components/BibleStudyAnalysisViews";
