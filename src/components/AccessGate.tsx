@@ -76,8 +76,8 @@ export default function AccessGate({ children }: Props) {
         setResolved(true);
       } catch {
         if (!alive || current !== requestId) return;
-        // No destruimos un contexto válido mientras una revalidación puntual falla.
-        setContext((previous) => previous);
+        const cached = getCachedAccessContext(session.access_token);
+        if (cached) setContext(cached);
         setResolved(true);
       }
     };
