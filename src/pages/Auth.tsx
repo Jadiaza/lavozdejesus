@@ -92,7 +92,8 @@ export default function Auth() {
 
   const validateAndEnter = async (accessToken: string) => {
     try {
-      await getAccessContext(accessToken);
+      const context = await getAccessContext(accessToken);
+      if (context.user?.name) setAccountName(context.user.name);
       setSyncingAccount(false);
       setLoading(false);
       if (location.pathname === "/acceso" && !location.search) return;
@@ -177,6 +178,11 @@ export default function Auth() {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+
+    if (mode === "register" && !name.trim()) {
+      setMessage("El nombre es obligatorio para crear tu cuenta.");
+      return;
+    }
 
     if (mode === "register" && !/^\+57\s?3\d{9}$/.test(phone.replace(/[-().]/g, "").replace(/\s+/g, " ").trim())) {
       setMessage("El número de WhatsApp es obligatorio. Usa el formato +57 3XXXXXXXXX.");
@@ -527,11 +533,12 @@ export default function Auth() {
 
           <form onSubmit={submit} className="mt-3 space-y-2.5">
             {!recovering && mode === "register" ? (
-              <Field icon={UserRound} label="Nombre (opcional)" type="text" value={name} onChange={setName} autoComplete="name" placeholder="Tu nombre" />
+              <Field icon={UserRound} label="Nombre completo" type="text" value={name} onChange={setName} autoComplete="name" placeholder="Tu nombre completo" required />
             ) : null}
 
             {!recovering ? (
               <Field icon={Mail} label="Correo electrónico" type="email" value={email} onChange={setEmail} autoComplete="email" placeholder="tu@correo.com" required />
+              {mode === "register" ? <Field icon={Phone} label="WhatsApp / teléfono" type="tel" value={phone} onChange={setPhone} autoComplete="tel" placeholder="+57 3001234567" required /> : null}
             ) : null}
 
             <PasswordField
