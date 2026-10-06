@@ -5,6 +5,13 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://lvj-not-confi
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_not_configured";
 const REMEMBER_KEY = "lvj:auth:remember";
 const STORAGE_KEY = "lvj-auth";
+const LEGACY_STORAGE_KEY = "lvj-bible-study-auth";
+
+// Migración transparente: conserva la sesión existente del módulo Biblia.
+if (!localStorage.getItem(STORAGE_KEY)) {
+  const legacySession = localStorage.getItem(LEGACY_STORAGE_KEY);
+  if (legacySession) localStorage.setItem(STORAGE_KEY, legacySession);
+}
 
 const configuredFetch: typeof fetch = (input, init) => {
   const headers = new Headers(
