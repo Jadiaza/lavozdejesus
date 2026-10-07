@@ -60,18 +60,27 @@ function santoral_admin_required_for_publish(array $data, string $name, string $
 {
   $isMarian = santoral_admin_is_marian($name, $date);
 
-  $required = [
-    'frase_destacada' => 'Frase destacada',
-    'quien_fue' => $isMarian ? 'Quién es' : 'Quién fue',
-    'secreto_de_santidad' => 'El secreto de su santidad',
-    'ensenanza_para_hoy' => 'Enseñanza para hoy',
-    'como_puedo_imitarlo' => $isMarian ? 'Cómo puedo imitarla' : 'Cómo puedo imitarlo',
-    'paso_concreto' => 'Paso concreto para hoy',
-    'oracion_intercesion' => 'Oración de intercesión',
-  ];
-
-  if (!$isMarian) {
-    $required['lucha_que_enfrento'] = 'La lucha que enfrentó';
+  // Las celebraciones marianas no se validan como si fueran biografías de santos.
+  // Para ellas exigimos únicamente el núcleo pastoral que debe estar disponible
+  // para presentar la celebración en la PWA.
+  if ($isMarian) {
+    $required = [
+      'frase_destacada' => 'Frase destacada',
+      'quien_fue' => 'Quién es',
+      'paso_concreto' => 'Paso concreto para hoy',
+      'oracion_intercesion' => 'Oración de intercesión',
+    ];
+  } else {
+    $required = [
+      'frase_destacada' => 'Frase destacada',
+      'quien_fue' => 'Quién fue',
+      'lucha_que_enfrento' => 'La lucha que enfrentó',
+      'secreto_de_santidad' => 'El secreto de su santidad',
+      'ensenanza_para_hoy' => 'Enseñanza para hoy',
+      'como_puedo_imitarlo' => 'Cómo puedo imitarlo',
+      'paso_concreto' => 'Paso concreto para hoy',
+      'oracion_intercesion' => 'Oración de intercesión',
+    ];
   }
 
   if ($name === '') {
