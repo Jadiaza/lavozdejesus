@@ -41,18 +41,38 @@ function santoral_admin_status(string $value): string
   return in_array($value, ['borrador', 'publicado'], true) ? $value : 'borrador';
 }
 
-function santoral_admin_required_for_publish(array $data, string $name): string
+function santoral_admin_is_marian(string $name, string $date = ''): bool
 {
+  $normalized = function_exists('mb_strtolower')
+    ? mb_strtolower(trim($name), 'UTF-8')
+    : strtolower(trim($name));
+
+  $normalized = strtr($normalized, [
+    'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u',
+  ]);
+
+  return str_contains($normalized, 'virgen maria del rosario')
+    || str_contains($normalized, 'nuestra senora del rosario')
+    || preg_match('/-10-07$/', trim($date)) === 1;
+}
+
+function santoral_admin_required_for_publish(array $data, string $name, string $date = ''): string
+{
+  $isMarian = santoral_admin_is_marian($name, $date);
+
   $required = [
     'frase_destacada' => 'Frase destacada',
-    'quien_fue' => 'Quién fue',
-    'lucha_que_enfrento' => 'La lucha que enfrentó',
+    'quien_fue' => $isMarian ? 'Quién es' : 'Quién fue',
     'secreto_de_santidad' => 'El secreto de su santidad',
     'ensenanza_para_hoy' => 'Enseñanza para hoy',
-    'como_puedo_imitarlo' => 'Cómo puedo imitarlo',
+    'como_puedo_imitarlo' => $isMarian ? 'Cómo puedo imitarla' : 'Cómo puedo imitarlo',
     'paso_concreto' => 'Paso concreto para hoy',
     'oracion_intercesion' => 'Oración de intercesión',
   ];
+
+  if (!$isMarian) {
+    $required['lucha_que_enfrento'] = 'La lucha que enfrentó';
+  }
 
   if ($name === '') {
     return 'El nombre del santo no está disponible.';
@@ -167,7 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       if ($imageUrl !== '' && (!filter_var($imageUrl, FILTER_VALIDATE_URL) || !preg_match('/^https?:\/\//i', $imageUrl))) {
         $error = 'La URL de la imagen no es válida.';
       } elseif ($estado === 'publicado') {
-        $error = santoral_admin_required_for_publish($data, $name);
+        $error = santoral_admin_required_for_publish($data, $name, santoral_admin_text($existing['fecha'] ?? ''));
       }
 
       if ($error === '') {
@@ -309,7 +329,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $name = santoral_admin_text($existing['nombre'] ?? '');
             if ($error === '' && $data['estado'] === 'publicado') {
-              $error = santoral_admin_required_for_publish($data, $name);
+              $error = santoral_admin_required_for_publish($data, $name, santoral_admin_text($existing['fecha'] ?? ''));
             }
 
             if ($error === '') {
@@ -776,9 +796,11 @@ require __DIR__ . '/includes/header.php';
         <label class="content-field full">Quién fue
           <textarea name="quien_fue" rows="7"><?php echo e((string) ($editRow['quien_fue'] ?? '')); ?></textarea>
         </label>
+        <?php if (!santoral_admin_is_marian(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['fecha'] ?? ''))): ?>
         <label class="content-field full">La lucha que enfrentó
           <textarea name="lucha_que_enfrento" rows="5"><?php echo e((string) ($editRow['lucha_que_enfrento'] ?? '')); ?></textarea>
         </label>
+        <?php endif; ?>
         <label class="content-field full">El secreto de su santidad
           <textarea name="secreto_de_santidad" rows="5"><?php echo e((string) ($editRow['secreto_de_santidad'] ?? '')); ?></textarea>
         </label>
