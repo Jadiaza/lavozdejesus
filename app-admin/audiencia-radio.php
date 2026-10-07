@@ -219,8 +219,8 @@ async function load(){
     renderSummary(data);
     const sessions=await getJson(API+"?action=sessions&from="+encodeURIComponent(from.value)+"&to="+encodeURIComponent(to.value)+"&limit=100");
     renderSessions(sessions.sessions||[]);
-    await loadLive();
-    drawMap(data.countries||[]);
+    const live = await loadLive();
+    await drawMap(data.countries||[], live);
   }catch(error){
     console.error(error);
     document.getElementById("country-list").innerHTML="<div class='audience-note'>Error al cargar la audiencia.</div>";
@@ -233,7 +233,12 @@ async function loadLive(){
     const cutoff=Date.now()-2*60*1000;
     const live=(data.sessions||[]).filter(x=>x.ultima_actividad_at && new Date(String(x.ultima_actividad_at).replace(" ","T")+"Z").getTime()>=cutoff && ["activo","pausado"].includes(x.estado));
     renderLive(live);
-  }catch(error){console.error(error);}
+    if (state.summary) await drawMap(state.summary.countries||[], live);
+    return live;
+  }catch(error){
+    console.error(error);
+    return [];
+  }
 }
 
 async function showDetail(id){
@@ -245,7 +250,7 @@ async function showDetail(id){
   }catch(error){alert(error.message);}
 }
 
-async function drawMap(countries){
+async function drawMap(countries, liveRows=[]){
   const host=document.getElementById("audience-map");
   try{
     const [d3,topojson,world]=await Promise.all([
@@ -275,6 +280,45 @@ async function drawMap(countries){
         .style("cursor","pointer")
         .on("click",(event)=>{tip.style.display="block";tip.style.left=(event.offsetX+12)+"px";tip.style.top=(event.offsetY+12)+"px";tip.innerHTML="<strong>"+esc(row.pais)+"</strong><br>"+fmt(row.oyentes)+" oyentes";});
     });
+
+    const mappedLive = liveRows.filter(row => Number.isFinite(Number(row.latitud)) && Number.isFinite(Number(row.longitud)));
+    const liveLayer = svg.append("g").attr("aria-label","Oyentes conectados");
+    mappedLive.forEach(row=>{
+      const projected = projection([Number(row.longitud), Number(row.latitud)]);
+      if (!projected) return;
+      const [x,y] = projected;
+      const name = row.usuario_nombre || "Oyente invitado";
+      const type = row.usuario_id ? "Registrado" : "Invitado";
+      const location = [row.ciudad,row.pais].filter(Boolean).join(", ") || "Ubicación aproximada";
+
+      liveLayer.append("circle")
+        .attr("cx",x).attr("cy",y).attr("r",8)
+        .attr("fill",row.usuario_id ? "#1769aa" : "#d19a00")
+        .attr("fill-opacity",".9").attr("stroke","#fff").attr("stroke-width","2")
+        .style("cursor","pointer")
+        .on("click",(event)=>{
+          tip.style.display="block";
+          tip.style.left=(event.offsetX+12)+"px";
+          tip.style.top=(event.offsetY+12)+"px";
+          tip.innerHTML="<strong>"+esc(name)+"</strong><br>"+esc(type)+"<br>"+esc(location)+"<br><small>Ubicación aproximada</small>";
+        });
+
+      liveLayer.append("circle")
+        .attr("cx",x).attr("cy",y).attr("r",13)
+        .attr("fill","none").attr("stroke",row.usuario_id ? "#1769aa" : "#d19a00")
+        .attr("stroke-opacity",".35").attr("stroke-width","2");
+    });
+
+    const legend = document.createElement("div");
+    legend.className = "audience-note";
+    legend.style.position = "absolute";
+    legend.style.left = "18px";
+    legend.style.bottom = "12px";
+    legend.style.background = "rgba(255,255,255,.92)";
+    legend.style.padding = "7px 9px";
+    legend.style.borderRadius = "8px";
+    legend.innerHTML = "● Oyentes conectados · <strong>"+fmt(mappedLive.length)+"</strong> ubicados aproximadamente";
+    host.appendChild(legend);
   }catch(error){
     host.innerHTML='<div class="map-loading">Mapa no disponible. La tabla de países sigue funcionando.</div>';
     console.error(error);
