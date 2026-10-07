@@ -594,6 +594,17 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
       }
 
       await audio.play();
+
+      // Registrar audiencia inmediatamente después de que el navegador
+      // confirme que la reproducción comenzó. No dependemos exclusivamente
+      // del ciclo de renderizado de React para crear la sesión.
+      if (shouldPlayRef.current && !audienceSessionStartedRef.current) {
+        const token = await startRadioAudienceSession();
+        if (token && shouldPlayRef.current) {
+          audienceSessionStartedRef.current = true;
+          await heartbeatRadioAudienceSession();
+        }
+      }
     } catch (error) {
       console.error("Error al reproducir:", error);
       if (shouldPlayRef.current) {
