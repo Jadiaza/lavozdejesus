@@ -188,8 +188,9 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
       reconnectAttemptRef.current = 0;
       setStatus("playing");
       if (!audienceSessionStartedRef.current) {
-        audienceSessionStartedRef.current = true;
-        void startRadioAudienceSession();
+        void startRadioAudienceSession().then((token) => {
+          audienceSessionStartedRef.current = Boolean(token);
+        });
       }
     };
 
