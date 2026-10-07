@@ -75,7 +75,7 @@ try {
 $moduleCards = [
   ['emisora', 'Emisora', 'Radio, programas, programacion y podcast.', ["{$radioStreams} streams", "{$radioPrograms} programas", "{$radioSchedule} horarios", "{$podcasts} podcasts"], 'purple', 'content.php?module=radio', $radioStreams + $radioPrograms],
   ['capilla', 'Capilla y Oracion', 'Adoracion, transmisiones e intenciones.', ["{$prayerRequests} intenciones", "{$testimonies} testimonios", 'Capillas y streams', 'Rosarios y oraciones'], 'gold', 'content.php?module=capilla', $prayerRequests],
-  ['liturgia-santoral', 'Liturgia y Santoral', 'Contenido liturgico y calendario de santos.', ["{$lecturaDia} lecturas", "{$liturgiaDays} dias liturgicos", "{$lectioItems} Lectio Divina", "{$santoral} santos"], 'green', 'content.php?module=liturgia', $lecturaDia + $santoral],
+  ['liturgia-santoral', 'Liturgia y Santoral', 'Contenido liturgico y calendario de santos.', ["{$lecturaDia} lecturas", "{$liturgiaDays} dias liturgicos", "{$lectioItems} Lectio Divina", "{$santoral} santos"], 'green', 'liturgia-dia.php', $lecturaDia + $santoral],
   ['biblia', 'Biblia', 'Biblias, planes, recursos y estudios.', ["{$bibBooks} libros", "{$bibPlans} planes", "{$aiStudies} estudios biblicos IA", 'Importacion de Biblias'], 'blue', 'content.php?module=biblia', $bibBooks + $bibPlans],
   ['biblioteca', 'Formacion y Biblioteca', 'Archivos y recursos de formacion.', ["{$totalFiles} archivos", "{$totalFolders} carpetas", format_bytes($totalSize) . ' usados', 'Descargas seguras'], 'teal', 'files.php', $totalFiles],
   ['sostenibilidad', 'Sostenibilidad', 'Donaciones, padrinos y publicidad.', ["{$donations} donaciones", "{$sponsors} padrinos", "{$supportOptions} apoyos", "{$adUnits} espacios publicitarios"], 'pink', 'content.php?module=economia', $donations + $sponsors],
@@ -123,7 +123,7 @@ require __DIR__ . '/includes/header.php';
   </div>
   <div class="quick-actions-grid">
     <a href="content.php?module=radio&amp;table=lvj_rad_programacion&amp;action=new"><span>Pr</span><strong>Nueva programacion</strong></a>
-    <a href="content.php?module=liturgia&amp;table=lvj_lit_lectura_dia"><span>Li</span><strong>Editar liturgia</strong></a>
+    <a href="liturgia-dia.php"><span>Li</span><strong>Revisar Liturgia del Día</strong></a>
     <a href="intenciones.php?estado=pendiente"><span>In</span><strong>Revisar intenciones</strong></a>
     <a href="biblia-estudios-ia.php?estado=revision"><span>IA</span><strong>Revisar estudios</strong></a>
     <a href="biblia-importar.php"><span>Bi</span><strong>Importar / Subir Biblias</strong></a>
