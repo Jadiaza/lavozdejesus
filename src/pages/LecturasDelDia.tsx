@@ -506,7 +506,25 @@ const SantoView = ({
         </div>
 
         {santo.frase_destacada && (
-          <div className="mx-auto mt-6 max-w-xl rounded-xl border border-[#c69222]/45 bg-[#111111] px-5 py-5 text-[16px] font-semibold leading-relaxed text-[#f8f1df] shadow-[0_12px_28px_-24px_rgba(212,175,55,0.55)] md:ml-[226px] md:text-left">
+          <div
+            className="mx-auto mt-6 max-w-xl rounded-xl border px-5 py-5 text-[16px] font-semibold leading-relaxed shadow-[0_12px_28px_-24px_rgba(212,175,55,0.55)] md:ml-[226px] md:text-left"
+            style={{
+              backgroundColor:
+                readingPreferences.tema === "oscuro"
+                  ? "#111111"
+                  : readingPreferences.tema === "claro"
+                    ? "#F3EADB"
+                    : "#F4F4F4",
+              color:
+                readingPreferences.tema === "oscuro"
+                  ? "#F8F1DF"
+                  : "#14120D",
+              borderColor:
+                readingPreferences.tema === "oscuro"
+                  ? "rgba(198,146,34,.45)"
+                  : "rgba(198,146,34,.38)",
+            }}
+          >
             «{stripOuterQuotes(santo.frase_destacada)}»
           </div>
         )}
