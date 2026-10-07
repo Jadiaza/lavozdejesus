@@ -7,6 +7,12 @@ import {
   useState,
 } from "react";
 import { DEFAULT_APP_CONFIG, getAppConfig } from "@/services/sheetsService";
+import {
+  heartbeatRadioAudienceSession,
+  pauseRadioAudienceSession,
+  startRadioAudienceSession,
+  stopRadioAudienceSession,
+} from "@/services/radioAudienceService";
 import { RadioPlayerContext } from "./RadioPlayerCore";
 import type { RadioPlayerContextValue, RadioStatus } from "./RadioPlayerCore";
 
@@ -29,6 +35,8 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
   const stallTimerRef = useRef<number | null>(null);
   const reconnectAttemptRef = useRef(0);
   const reconnectingRef = useRef(false);
+  const audienceSessionStartedRef = useRef(false);
+  const audienceHeartbeatTimerRef = useRef<number | null>(null);
   const analysisRef = useRef<{
     analyser: AnalyserNode;
     context: AudioContext;
@@ -179,6 +187,10 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
       reconnectingRef.current = false;
       reconnectAttemptRef.current = 0;
       setStatus("playing");
+      if (!audienceSessionStartedRef.current) {
+        audienceSessionStartedRef.current = true;
+        void startRadioAudienceSession();
+      }
     };
 
     const onWaiting = () => {
@@ -259,6 +271,14 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
       clearStallTimer();
       shouldPlayRef.current = false;
       reconnectingRef.current = false;
+      if (audienceHeartbeatTimerRef.current !== null) {
+        window.clearInterval(audienceHeartbeatTimerRef.current);
+        audienceHeartbeatTimerRef.current = null;
+      }
+      if (audienceSessionStartedRef.current) {
+        audienceSessionStartedRef.current = false;
+        void stopRadioAudienceSession();
+      }
 
       if (analysisAudioRef.current === audio) {
         analysisRef.current?.source.disconnect();
@@ -416,6 +436,42 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
   }, [status, volume]);
 
   useEffect(() => {
+    if (status !== "playing") {
+      if (audienceHeartbeatTimerRef.current !== null) {
+        window.clearInterval(audienceHeartbeatTimerRef.current);
+        audienceHeartbeatTimerRef.current = null;
+      }
+      return;
+    }
+
+    void heartbeatRadioAudienceSession();
+    if (audienceHeartbeatTimerRef.current !== null) {
+      window.clearInterval(audienceHeartbeatTimerRef.current);
+    }
+    audienceHeartbeatTimerRef.current = window.setInterval(() => {
+      void heartbeatRadioAudienceSession();
+    }, 60_000);
+
+    return () => {
+      if (audienceHeartbeatTimerRef.current !== null) {
+        window.clearInterval(audienceHeartbeatTimerRef.current);
+        audienceHeartbeatTimerRef.current = null;
+      }
+    };
+  }, [status]);
+
+  useEffect(() => {
+    const onPageHide = () => {
+      if (audienceSessionStartedRef.current) {
+        audienceSessionStartedRef.current = false;
+        void stopRadioAudienceSession();
+      }
+    };
+    window.addEventListener("pagehide", onPageHide);
+    return () => window.removeEventListener("pagehide", onPageHide);
+  }, []);
+
+  useEffect(() => {
     if (!metadataUrl) return;
 
     const meta = new EventSource(metadataUrl);
@@ -554,6 +610,7 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
     }
 
     audioRef.current?.pause();
+    void pauseRadioAudienceSession();
     setStatus("idle");
   }, []);
 
