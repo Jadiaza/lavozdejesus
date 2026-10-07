@@ -5,6 +5,13 @@ require_login();
 
 $pdo = lvj_files_db();
 
+// Liturgia tiene una interfaz editorial especializada. El administrador genérico
+// permanece disponible para las tablas técnicas, pero no es la puerta principal.
+if ((string) ($_GET['module'] ?? '') === 'liturgia' && trim((string) ($_GET['table'] ?? '')) === '') {
+  header('Location: liturgia-dia.php');
+  exit;
+}
+
 $modules = [
   'configuracion' => [
     'title' => 'Configuracion',
