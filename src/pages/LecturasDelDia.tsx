@@ -408,6 +408,47 @@ const DesktopSidebar = ({
   </aside>
 );
 
+const getSantoPresentation = (santo: SantoDelDia) => {
+  const normalizedName = santo.nombre.trim().toLocaleLowerCase("es-CO");
+  const isRosario = normalizedName.includes("virgen maría del rosario")
+    || normalizedName.includes("nuestra señora del rosario")
+    || (santo.fecha === "2026-10-07");
+
+  if (isRosario) {
+    return {
+      isMarian: true,
+      eyebrow: "Celebración mariana",
+      title: "Nuestra Señora del Rosario",
+      subtitle: "Memoria de la Bienaventurada Virgen María del Rosario",
+      sections: [
+        ["lucha_que_enfrento", "Camino de fe"],
+        ["secreto_de_santidad", "El secreto de su santidad"],
+        ["ensenanza_para_hoy", "Enseñanza para hoy"],
+        ["como_puedo_imitarlo", "Cómo puedo imitarla"],
+        ["paso_concreto", "Paso concreto para hoy"],
+        ["oracion_intercesion", "Oración de intercesión"],
+      ] as Array<[string, string]>,
+      tabLabel: "María",
+    };
+  }
+
+  return {
+    isMarian: false,
+    eyebrow: "Santo del Día",
+    title: santo.nombre,
+    subtitle: santo.titulo || "",
+    sections: [
+      ["lucha_que_enfrento", "La lucha que enfrentó"],
+      ["secreto_de_santidad", "El secreto de su santidad"],
+      ["ensenanza_para_hoy", "Enseñanza para hoy"],
+      ["como_puedo_imitarlo", "Cómo puedo imitarlo"],
+      ["paso_concreto", "Paso concreto para hoy"],
+      ["oracion_intercesion", "Oración de intercesión"],
+    ] as Array<[string, string]>,
+    tabLabel: "Santo",
+  };
+};
+
 const SantoView = ({
   santo,
   readingPreferences,
@@ -423,20 +464,13 @@ const SantoView = ({
     );
   }
 
-  const sections: Array<[string, string]> = [
-    ["lucha_que_enfrento", "La lucha que enfrentó"],
-    ["secreto_de_santidad", "El secreto de su santidad"],
-    ["ensenanza_para_hoy", "Enseñanza para hoy"],
-    ["como_puedo_imitarlo", "Cómo puedo imitarlo"],
-    ["paso_concreto", "Paso concreto para hoy"],
-    ["oracion_intercesion", "Oración de intercesión"],
-  ];
+  const presentation = getSantoPresentation(santo);
 
   return (
     <div className="space-y-4">
       <article className="rounded-2xl border border-[var(--lit-border)] bg-[var(--lit-surface)] px-5 py-7 text-center shadow-[0_18px_46px_-34px_rgba(8,35,71,0.48)] sm:px-7 md:px-8 md:py-8">
         <p className="text-xs font-extrabold uppercase tracking-[0.28em] text-[#c69222]">
-          Santo del Día
+          {presentation.eyebrow}
         </p>
 
         <div className="mt-5 grid items-center gap-6 md:grid-cols-[210px_minmax(0,1fr)] md:text-left">
@@ -446,11 +480,11 @@ const SantoView = ({
 
           <div className="min-w-0">
             <h2 className="font-display text-[34px] leading-tight text-[var(--lit-text)] md:text-[42px]">
-              {santo.nombre}
+              {presentation.title}
             </h2>
-            {santo.titulo && (
+            {presentation.subtitle && (
               <p className="mt-1 text-lg font-semibold leading-snug text-[var(--lit-text)]">
-                {santo.titulo}
+                {presentation.subtitle}
               </p>
             )}
             {santo.resumen && (
@@ -477,13 +511,13 @@ const SantoView = ({
         )}
       </article>
 
-      {sections.map(([key, label]) =>
+      {presentation.sections.map(([key, label]) =>
         santo[key]?.trim() ? (
           <ContentCard
             key={key}
             title={label}
             text={santo[key]}
-            icon={<Sparkles className="h-5 w-5" />}
+            icon={presentation.isMarian ? <Heart className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
             readingPreferences={readingPreferences}
           />
         ) : null,
