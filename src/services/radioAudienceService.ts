@@ -3,6 +3,7 @@ import { lvjAuth } from "@/services/lvjAuth";
 
 const API_URL = buildApiUrl("/api/radio-audience");
 const SESSION_KEY = "lvj:radio:audience-session";
+let startInFlight: Promise<string | null> | null = null;
 
 type AudienceSessionResponse = {
   success?: boolean;
@@ -64,36 +65,47 @@ const post = async (
 export async function startRadioAudienceSession(
   streamId?: number,
 ): Promise<string | null> {
-  try {
-    const current = sessionStorage.getItem(SESSION_KEY);
+  // React can request the audience session from both the play() flow and the
+  // playing-status effect at nearly the same time. Share one in-flight request
+  // so a single playback can never create duplicate sessions.
+  if (startInFlight) return startInFlight;
 
-    // Never trust a cached token blindly. It may belong to a previous
-    // database/session lifecycle. Validate it before reusing it.
-    if (current) {
-      try {
-        await post("heartbeat", { session_token: current });
-        return current;
-      } catch {
-        sessionStorage.removeItem(SESSION_KEY);
+  startInFlight = (async () => {
+    try {
+      const current = sessionStorage.getItem(SESSION_KEY);
+
+      // Never trust a cached token blindly. It may belong to a previous
+      // database/session lifecycle. Validate it before reusing it.
+      if (current) {
+        try {
+          await post("heartbeat", { session_token: current });
+          return current;
+        } catch {
+          sessionStorage.removeItem(SESSION_KEY);
+        }
       }
+
+      const result = await post("start", streamId ? { stream_id: streamId } : {});
+      const token = result.session_token ?? null;
+
+      if (!token) {
+        throw new Error("Radio audience no devolvió session_token.");
+      }
+
+      sessionStorage.setItem(SESSION_KEY, token);
+      return token;
+    } catch (error) {
+      console.warn(
+        "[RadioAudience] No fue posible iniciar la sesión de audiencia.",
+        error,
+      );
+      return null;
+    } finally {
+      startInFlight = null;
     }
+  })();
 
-    const result = await post("start", streamId ? { stream_id: streamId } : {});
-    const token = result.session_token ?? null;
-
-    if (!token) {
-      throw new Error("Radio audience no devolvió session_token.");
-    }
-
-    sessionStorage.setItem(SESSION_KEY, token);
-    return token;
-  } catch (error) {
-    console.warn(
-      "[RadioAudience] No fue posible iniciar la sesión de audiencia.",
-      error,
-    );
-    return null;
-  }
+  return startInFlight;
 }
 
 export async function heartbeatRadioAudienceSession(): Promise<boolean> {
