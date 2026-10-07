@@ -4225,6 +4225,80 @@ Toda la programación, configuración, streams y recursos deberán administrarse
 
 Ninguna información crítica del funcionamiento de la emisora deberá permanecer escrita directamente en el código fuente.
 
+
+# 8.13 Audiencia y analítica de escucha
+
+El módulo Radio incorpora un componente de **Audiencia** para conocer el alcance real de la emisora.
+
+La audiencia deberá contemplar dos tipos de oyente:
+
+- Usuario registrado: relacionado mediante `usuario_id` con `lvj_com_usuarios.id`.
+- Oyente invitado: escucha sin autenticarse y permanece anónimo.
+
+La identidad oficial continúa siendo `lvj_com_usuarios`; no se creará una tabla paralela de usuarios de radio.
+
+## Persistencia
+
+Las sesiones se almacenan en:
+
+`lvj_rad_sesiones`
+
+y los eventos asociados en:
+
+`lvj_rad_eventos_audiencia`.
+
+Una sesión registra, entre otros datos:
+
+- usuario registrado opcional;
+- stream;
+- inicio y última actividad;
+- duración;
+- tipo de oyente;
+- dispositivo;
+- sistema operativo;
+- navegador;
+- país, región y ciudad cuando el servidor los proporcione;
+- hash de IP, nunca la IP original;
+- estado de la sesión.
+
+## Seguimiento
+
+La PWA inicia una sesión cuando la reproducción realmente comienza y envía un heartbeat periódico mientras permanece reproduciendo.
+
+El Panel Administrativo considera conectado a un oyente cuya actividad reciente esté dentro de la ventana configurada.
+
+## Panel Administrativo
+
+La ruta oficial es:
+
+`app-admin/audiencia-radio.php`
+
+Debe permitir consultar:
+
+- oyentes conectados;
+- oyentes únicos;
+- sesiones;
+- tiempo promedio;
+- países;
+- ciudades;
+- dispositivos;
+- navegadores;
+- historial de sesiones;
+- detalle de una sesión;
+- exportación de datos.
+
+La vista principal incorpora un mapa mundial y filtros por período.
+
+## Privacidad
+
+No se almacena la IP original. La IP se transforma mediante SHA-256 con un salt de servidor.
+
+La ubicación es aproximada y depende de los encabezados de geolocalización disponibles en la infraestructura.
+
+La audiencia anónima nunca debe mostrar correo, nombre ni información de identidad personal.
+
+---
+
 # CAPÍTULO 9
 # MÓDULO LITURGIA
 
