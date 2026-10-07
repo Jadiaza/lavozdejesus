@@ -189,7 +189,17 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
       setStatus("playing");
       if (!audienceSessionStartedRef.current) {
         void startRadioAudienceSession().then((token) => {
-          audienceSessionStartedRef.current = Boolean(token);
+          // The playback state may change while the asynchronous session
+          // request is in flight. Never leave a session active after pause,
+          // stop, navigation or stream replacement.
+          if (token && shouldPlayRef.current) {
+            audienceSessionStartedRef.current = true;
+            return;
+          }
+
+          if (token) {
+            void stopRadioAudienceSession();
+          }
         });
       }
     };
