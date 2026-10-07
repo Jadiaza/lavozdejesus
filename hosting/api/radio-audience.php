@@ -259,6 +259,14 @@ try {
     $sessionsStmt->execute(['from' => $from, 'to' => $to]);
     $sessionsToday = (int) $sessionsStmt->fetchColumn();
 
+    $registeredStmt = $pdo->prepare("SELECT COUNT(DISTINCT usuario_id) FROM lvj_rad_sesiones WHERE usuario_id IS NOT NULL AND inicio_at BETWEEN :from AND :to");
+    $registeredStmt->execute(['from' => $from, 'to' => $to]);
+    $registeredUnique = (int) $registeredStmt->fetchColumn();
+
+    $guestStmt = $pdo->prepare("SELECT COUNT(DISTINCT session_token_hash) FROM lvj_rad_sesiones WHERE usuario_id IS NULL AND inicio_at BETWEEN :from AND :to");
+    $guestStmt->execute(['from' => $from, 'to' => $to]);
+    $guestUnique = (int) $guestStmt->fetchColumn();
+
     $avgStmt = $pdo->prepare("SELECT COALESCE(AVG(NULLIF(duracion_segundos,0)),0) FROM lvj_rad_sesiones WHERE inicio_at BETWEEN :from AND :to");
     $avgStmt->execute(['from' => $from, 'to' => $to]);
     $avgDuration = (float) ($avgStmt->fetchColumn() ?: 0);
@@ -284,6 +292,8 @@ try {
       'success' => true,
       'connected' => $connected,
       'unique_today' => $uniqueToday,
+      'registered_unique' => $registeredUnique,
+      'guest_unique' => $guestUnique,
       'sessions_today' => $sessionsToday,
       'avg_duration_minutes' => round($avgDuration / 60, 1),
       'countries_count' => $countries,
