@@ -309,7 +309,7 @@ try {
     }
     $where = $conditions ? 'WHERE ' . implode(' AND ', $conditions) : '';
     $stmt = $pdo->prepare('
-      SELECT s.*, u.nombre AS usuario_nombre, u.correo AS usuario_correo
+      SELECT s.*, u.nombre AS usuario_nombre
       FROM lvj_rad_sesiones s
       LEFT JOIN lvj_com_usuarios u ON u.id = s.usuario_id
       ' . $where . '
