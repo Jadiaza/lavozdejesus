@@ -239,7 +239,7 @@ const API_BASE_URL = normalizeApiBaseUrl(
     DEFAULT_PRODUCTION_API_BASE_URL,
 );
 
-const buildApiUrl = (path: string) => {
+export const buildApiUrl = (path: string) => {
   if (!API_BASE_URL) return path;
 
   const phpPath = path.endsWith(".php") ? path : `${path}.php`;
