@@ -5,6 +5,35 @@ require_once __DIR__ . '/bootstrap.php';
 
 $pdo = lvj_db();
 
+function audience_cors(): void
+{
+  $origin = trim((string) ($_SERVER['HTTP_ORIGIN'] ?? ''));
+  $allowed = [
+    'https://lavozdejesus.co',
+    'https://www.lavozdejesus.co',
+    'https://lavozdejesus.vercel.app',
+    'https://lvjprayer.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:8080',
+  ];
+
+  if ($origin !== '' && in_array($origin, $allowed, true)) {
+    header("Access-Control-Allow-Origin: {$origin}");
+    header('Vary: Origin');
+  }
+
+  header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+  header('Access-Control-Allow-Headers: Content-Type, Authorization, X-LVJ-Authorization');
+  header('Access-Control-Max-Age: 86400');
+}
+
+audience_cors();
+
+if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'OPTIONS') {
+  http_response_code(204);
+  exit;
+}
+
 function audience_header(string $name): string
 {
   foreach (['HTTP_' . strtoupper(str_replace('-', '_', $name)), 'REDIRECT_HTTP_' . strtoupper(str_replace('-', '_', $name))] as $key) {
