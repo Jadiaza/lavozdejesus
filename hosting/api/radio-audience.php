@@ -127,10 +127,30 @@ function audience_browser(string $ua): string
 
 function audience_location(): array
 {
+  $latitude = trim((string) (
+    $_SERVER['HTTP_CF_IPLATITUDE']
+    ?? $_SERVER['GEOIP_LATITUDE']
+    ?? $_SERVER['HTTP_X_GEOIP_LATITUDE']
+    ?? ''
+  ));
+  $longitude = trim((string) (
+    $_SERVER['HTTP_CF_IPLONGITUDE']
+    ?? $_SERVER['GEOIP_LONGITUDE']
+    ?? $_SERVER['HTTP_X_GEOIP_LONGITUDE']
+    ?? ''
+  ));
+
+  $lat = is_numeric($latitude) ? (float) $latitude : null;
+  $lon = is_numeric($longitude) ? (float) $longitude : null;
+  if ($lat !== null && ($lat < -90 || $lat > 90)) $lat = null;
+  if ($lon !== null && ($lon < -180 || $lon > 180)) $lon = null;
+
   return [
     'pais' => substr(trim((string) ($_SERVER['HTTP_CF_IPCOUNTRY'] ?? $_SERVER['GEOIP_COUNTRY_CODE'] ?? '')), 0, 100),
     'region' => substr(trim((string) ($_SERVER['HTTP_CF_REGION'] ?? '')), 0, 120),
     'ciudad' => substr(trim((string) ($_SERVER['HTTP_CF_IPCITY'] ?? '')), 0, 120),
+    'latitud' => $lat,
+    'longitud' => $lon,
   ];
 }
 
@@ -181,10 +201,10 @@ try {
     $stmt = $pdo->prepare('
       INSERT INTO lvj_rad_sesiones
       (usuario_id, session_token_hash, stream_id, stream_nombre, inicio_at, ultima_actividad_at,
-       tipo_oyente, dispositivo, sistema_operativo, navegador, pais, region, ciudad, ip_hash, user_agent, estado)
+       tipo_oyente, dispositivo, sistema_operativo, navegador, pais, region, ciudad, latitud, longitud, ip_hash, user_agent, estado)
       VALUES
       (:usuario_id, :token, :stream_id, :stream_nombre, :inicio, :actividad,
-       :tipo, :dispositivo, :sistema, :navegador, :pais, :region, :ciudad, :ip_hash, :ua, "activo")
+       :tipo, :dispositivo, :sistema, :navegador, :pais, :region, :ciudad, :latitud, :longitud, :ip_hash, :ua, "activo")
     ');
     $stmt->execute([
       'usuario_id' => $user ? (int) $user['id'] : null,
@@ -200,6 +220,8 @@ try {
       'pais' => $location['pais'],
       'region' => $location['region'],
       'ciudad' => $location['ciudad'],
+      'latitud' => $location['latitud'],
+      'longitud' => $location['longitud'],
       'ip_hash' => audience_ip_hash(audience_client_ip()),
       'ua' => $ua,
     ]);
