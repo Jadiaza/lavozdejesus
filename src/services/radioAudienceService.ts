@@ -29,12 +29,33 @@ const post = async (action: string, body: Record<string, string | number> = {}) 
       "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
       ...headers,
     },
-    body: new URLSearchParams({ action, ...Object.fromEntries(Object.entries(body).map(([key, value]) => [key, String(value)])) }),
+    body: new URLSearchParams({
+      action,
+      ...Object.fromEntries(
+        Object.entries(body).map(([key, value]) => [key, String(value)]),
+      ),
+    }),
     cache: "no-store",
     keepalive: action === "stop",
   });
-  if (!response.ok) throw new Error(`Radio audience HTTP ${response.status}`);
-  return (await response.json()) as AudienceSessionResponse;
+
+  const raw = await response.text();
+  let result: AudienceSessionResponse = {};
+  try {
+    result = raw ? (JSON.parse(raw) as AudienceSessionResponse) : {};
+  } catch {
+    throw new Error(
+      `Radio audience respuesta no JSON (HTTP ${response.status}): ${raw.slice(0, 180)}`,
+    );
+  }
+
+  if (!response.ok || result.success === false) {
+    throw new Error(
+      `Radio audience HTTP ${response.status}: ${raw.slice(0, 300)}`,
+    );
+  }
+
+  return result;
 };
 
 export async function startRadioAudienceSession(streamId?: number): Promise<string | null> {
@@ -44,7 +65,10 @@ export async function startRadioAudienceSession(streamId?: number): Promise<stri
 
     const result = await post("start", streamId ? { stream_id: streamId } : {});
     const token = result.session_token ?? null;
-    if (token) sessionStorage.setItem(SESSION_KEY, token);
+    if (!token) {
+      throw new Error("Radio audience no devolvió session_token.");
+    }
+    sessionStorage.setItem(SESSION_KEY, token);
     return token;
   } catch (error) {
     console.warn("[RadioAudience] No fue posible iniciar la sesión de audiencia.", error);
