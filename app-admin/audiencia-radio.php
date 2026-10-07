@@ -78,7 +78,7 @@ require __DIR__ . '/includes/header.php';
 
   <section class="audience-kpis">
     <article class="audience-kpi"><span>🟢 Oyentes conectados</span><strong id="kpi-connected">—</strong><small>Actividad en los últimos 2 minutos</small></article>
-    <article class="audience-kpi"><span>👥 Oyentes únicos</span><strong id="kpi-unique">—</strong><small>Registrados + invitados</small></article>
+    <article class="audience-kpi"><span>👥 Oyentes únicos</span><strong id="kpi-unique">—</strong><small id="kpi-unique-detail">Registrados + invitados</small></article>
     <article class="audience-kpi"><span>▶ Sesiones</span><strong id="kpi-sessions">—</strong><small>Inicios de reproducción</small></article>
     <article class="audience-kpi"><span>⏱ Tiempo promedio</span><strong id="kpi-duration">—</strong><small>Duración de escucha</small></article>
     <article class="audience-kpi"><span>🌎 Países</span><strong id="kpi-countries">—</strong><small>Con audiencia registrada</small></article>
@@ -166,6 +166,7 @@ function renderSummary(data){
   state.summary=data;
   document.getElementById("kpi-connected").textContent=fmt(data.connected);
   document.getElementById("kpi-unique").textContent=fmt(data.unique_today);
+  document.getElementById("kpi-unique-detail").textContent="Registrados "+fmt(data.registered_unique)+" · Invitados "+fmt(data.guest_unique);
   document.getElementById("kpi-sessions").textContent=fmt(data.sessions_today);
   document.getElementById("kpi-duration").textContent=duration(data.avg_duration_minutes);
   document.getElementById("kpi-countries").textContent=fmt(data.countries_count);
