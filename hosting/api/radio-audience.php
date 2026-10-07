@@ -242,21 +242,43 @@ try {
   if ($method === 'GET' && $action === 'summary') {
     $minutes = max(1, min(10, (int) ($_GET['minutes'] ?? 2)));
     $since = gmdate('Y-m-d H:i:s', time() - ($minutes * 60));
-    $today = gmdate('Y-m-d 00:00:00');
+    $fromInput = trim((string) ($_GET['from'] ?? ''));
+    $toInput = trim((string) ($_GET['to'] ?? ''));
+    $from = preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $fromInput) ? $fromInput . ' 00:00:00' : gmdate('Y-m-d 00:00:00');
+    $to = preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $toInput) ? $toInput . ' 23:59:59' : gmdate('Y-m-d 23:59:59');
 
-    $connected = (int) $pdo->query("SELECT COUNT(*) FROM lvj_rad_sesiones WHERE estado IN ('activo','pausado') AND ultima_actividad_at >= " . $pdo->quote($since))->fetchColumn();
-    $uniqueToday = (int) $pdo->query("SELECT COUNT(DISTINCT COALESCE(CAST(usuario_id AS CHAR), session_token_hash)) FROM lvj_rad_sesiones WHERE inicio_at >= " . $pdo->quote($today))->fetchColumn();
-    $sessionsToday = (int) $pdo->query("SELECT COUNT(*) FROM lvj_rad_sesiones WHERE inicio_at >= " . $pdo->quote($today))->fetchColumn();
-    $avgDuration = (float) ($pdo->query("SELECT COALESCE(AVG(NULLIF(duracion_segundos,0)),0) FROM lvj_rad_sesiones WHERE inicio_at >= " . $pdo->quote($today))->fetchColumn() ?: 0);
-    $countries = (int) $pdo->query("SELECT COUNT(DISTINCT NULLIF(pais,'')) FROM lvj_rad_sesiones WHERE inicio_at >= " . $pdo->quote($today))->fetchColumn();
+    $connectedStmt = $pdo->prepare("SELECT COUNT(*) FROM lvj_rad_sesiones WHERE estado IN ('activo','pausado') AND ultima_actividad_at >= :since");
+    $connectedStmt->execute(['since' => $since]);
+    $connected = (int) $connectedStmt->fetchColumn();
 
-    $countriesRows = $pdo->query("SELECT COALESCE(NULLIF(pais,''),'Desconocido') pais, COUNT(DISTINCT COALESCE(CAST(usuario_id AS CHAR), session_token_hash)) oyentes FROM lvj_rad_sesiones WHERE inicio_at >= " . $pdo->quote($today) . " GROUP BY pais ORDER BY oyentes DESC LIMIT 20")->fetchAll();
-    $citiesRows = $pdo->query("SELECT COALESCE(NULLIF(ciudad,''),'Desconocida') ciudad, COALESCE(NULLIF(pais,''),'') pais, COUNT(DISTINCT COALESCE(CAST(usuario_id AS CHAR), session_token_hash)) oyentes FROM lvj_rad_sesiones WHERE inicio_at >= " . $pdo->quote($today) . " GROUP BY ciudad, pais ORDER BY oyentes DESC LIMIT 20")->fetchAll();
+    $uniqueStmt = $pdo->prepare("SELECT COUNT(DISTINCT COALESCE(CAST(usuario_id AS CHAR), session_token_hash)) FROM lvj_rad_sesiones WHERE inicio_at BETWEEN :from AND :to");
+    $uniqueStmt->execute(['from' => $from, 'to' => $to]);
+    $uniqueToday = (int) $uniqueStmt->fetchColumn();
 
-    $hourly = [];
-    for ($hour = 0; $hour < 24; $hour++) $hourly[$hour] = 0;
-    $rows = $pdo->query("SELECT HOUR(inicio_at) hora, COUNT(*) sesiones FROM lvj_rad_sesiones WHERE inicio_at >= " . $pdo->quote($today) . " GROUP BY HOUR(inicio_at)")->fetchAll();
-    foreach ($rows as $row) $hourly[(int) $row['hora']] = (int) $row['sesiones'];
+    $sessionsStmt = $pdo->prepare("SELECT COUNT(*) FROM lvj_rad_sesiones WHERE inicio_at BETWEEN :from AND :to");
+    $sessionsStmt->execute(['from' => $from, 'to' => $to]);
+    $sessionsToday = (int) $sessionsStmt->fetchColumn();
+
+    $avgStmt = $pdo->prepare("SELECT COALESCE(AVG(NULLIF(duracion_segundos,0)),0) FROM lvj_rad_sesiones WHERE inicio_at BETWEEN :from AND :to");
+    $avgStmt->execute(['from' => $from, 'to' => $to]);
+    $avgDuration = (float) ($avgStmt->fetchColumn() ?: 0);
+
+    $countriesStmt = $pdo->prepare("SELECT COUNT(DISTINCT NULLIF(pais,'')) FROM lvj_rad_sesiones WHERE inicio_at BETWEEN :from AND :to");
+    $countriesStmt->execute(['from' => $from, 'to' => $to]);
+    $countries = (int) $countriesStmt->fetchColumn();
+
+    $countriesStmt = $pdo->prepare("SELECT COALESCE(NULLIF(pais,''),'Desconocido') pais, COUNT(DISTINCT COALESCE(CAST(usuario_id AS CHAR), session_token_hash)) oyentes FROM lvj_rad_sesiones WHERE inicio_at BETWEEN :from AND :to GROUP BY pais ORDER BY oyentes DESC LIMIT 20");
+    $countriesStmt->execute(['from' => $from, 'to' => $to]);
+    $countriesRows = $countriesStmt->fetchAll();
+
+    $citiesStmt = $pdo->prepare("SELECT COALESCE(NULLIF(ciudad,''),'Desconocida') ciudad, COALESCE(NULLIF(pais,''),'') pais, COUNT(DISTINCT COALESCE(CAST(usuario_id AS CHAR), session_token_hash)) oyentes FROM lvj_rad_sesiones WHERE inicio_at BETWEEN :from AND :to GROUP BY ciudad, pais ORDER BY oyentes DESC LIMIT 20");
+    $citiesStmt->execute(['from' => $from, 'to' => $to]);
+    $citiesRows = $citiesStmt->fetchAll();
+
+    $hourly = array_fill(0, 24, 0);
+    $hourStmt = $pdo->prepare("SELECT HOUR(inicio_at) hora, COUNT(*) sesiones FROM lvj_rad_sesiones WHERE inicio_at BETWEEN :from AND :to GROUP BY HOUR(inicio_at)");
+    $hourStmt->execute(['from' => $from, 'to' => $to]);
+    foreach ($hourStmt->fetchAll() as $row) $hourly[(int) $row['hora']] = (int) $row['sesiones'];
 
     audience_json([
       'success' => true,
@@ -272,16 +294,30 @@ try {
   }
 
   if ($method === 'GET' && $action === 'sessions') {
-    $limit = max(1, min(100, (int) ($_GET['limit'] ?? 50)));
-    $rows = $pdo->query('
+    $limit = max(1, min(200, (int) ($_GET['limit'] ?? 50)));
+    $fromInput = trim((string) ($_GET['from'] ?? ''));
+    $toInput = trim((string) ($_GET['to'] ?? ''));
+    $conditions = [];
+    $params = [];
+    if (preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $fromInput)) {
+      $conditions[] = 's.inicio_at >= :from';
+      $params['from'] = $fromInput . ' 00:00:00';
+    }
+    if (preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $toInput)) {
+      $conditions[] = 's.inicio_at <= :to';
+      $params['to'] = $toInput . ' 23:59:59';
+    }
+    $where = $conditions ? 'WHERE ' . implode(' AND ', $conditions) : '';
+    $stmt = $pdo->prepare('
       SELECT s.*, u.nombre AS usuario_nombre, u.correo AS usuario_correo
       FROM lvj_rad_sesiones s
       LEFT JOIN lvj_com_usuarios u ON u.id = s.usuario_id
+      ' . $where . '
       ORDER BY s.inicio_at DESC
       LIMIT ' . $limit
-    )->fetchAll();
-
-    audience_json(['success' => true, 'sessions' => $rows]);
+    );
+    $stmt->execute($params);
+    audience_json(['success' => true, 'sessions' => $stmt->fetchAll()]);
   }
 
   if ($method === 'GET' && $action === 'session') {
