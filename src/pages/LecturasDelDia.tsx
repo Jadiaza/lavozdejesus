@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  CalendarHeart,
   CheckCircle2,
   Cross,
   Heart,
@@ -42,7 +43,7 @@ type LecturasTab = "liturgia" | "santo" | "reflexion";
 type ReadingRenderMode = "normal" | "ordo" | "psalm";
 const tabLabels: Record<LecturasTab, string> = {
   liturgia: "Liturgia",
-  santo: "Santo",
+  santo: "Santoral",
   reflexion: "Reflexión",
 };
 
@@ -386,7 +387,7 @@ const DesktopSidebar = ({
       {(
         [
           ["liturgia", "Lecturas del día", <BookOpen className="h-5 w-5" />],
-          ["santo", "Santo del día", <UserRound className="h-5 w-5" />],
+          ["santo", "Santoral del día", <CalendarHeart className="h-5 w-5" />],
           ["reflexion", "Reflexión", <Sparkles className="h-5 w-5" />],
         ] as [LecturasTab, string, ReactNode][]
       ).map(([tab, label, icon]) => (
@@ -505,7 +506,7 @@ const SantoView = ({
         </div>
 
         {santo.frase_destacada && (
-          <div className="mx-auto mt-6 max-w-xl rounded-xl border border-[var(--lit-border)] bg-[#fffaf0] px-5 py-4 text-[16px] font-bold leading-relaxed text-[var(--lit-text)] md:ml-[226px] md:text-left">
+          <div className="mx-auto mt-6 max-w-xl rounded-xl border border-[#c69222]/45 bg-[#111111] px-5 py-5 text-[16px] font-semibold leading-relaxed text-[#f8f1df] shadow-[0_12px_28px_-24px_rgba(212,175,55,0.55)] md:ml-[226px] md:text-left">
             «{stripOuterQuotes(santo.frase_destacada)}»
           </div>
         )}
@@ -994,8 +995,8 @@ const LecturasDelDia = () => {
                 : "text-[var(--lit-muted)]"
             }`}
           >
-            <UserRound className="h-5 w-5" />
-            <span>Santo</span>
+            <CalendarHeart className="h-5 w-5" />
+            <span>Santoral</span>
             {activeTab === "santo" && !settingsOpen && (
               <span className="absolute bottom-0 h-1.5 w-1.5 rounded-full bg-[#b17a12]" />
             )}
