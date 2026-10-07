@@ -71,6 +71,7 @@ $liturgiaActive = in_array($currentAdminPage, ['liturgia-dia.php', 'liturgia-ord
 
     <span class="side-nav-section-label">Emisora</span>
     <a class="<?php echo side_nav_active('', 'radio', ''); ?>" href="content.php?module=radio"><span class="nav-icon">R</span> Radio en Vivo</a>
+    <a class="<?php echo $currentAdminPage === 'audiencia-radio.php' ? 'active' : ''; ?>" href="audiencia-radio.php"><span class="nav-icon">Au</span> Audiencia</a>
     <a class="<?php echo $currentAdminPage === 'programacion.php' ? 'active' : ''; ?>" href="programacion.php"><span class="nav-icon">Pr</span> Programacion</a>
     <a class="<?php echo $podcastActive ? 'active' : ''; ?>" href="podcast.php"><span class="nav-icon">Pc</span> Podcast</a>
 
