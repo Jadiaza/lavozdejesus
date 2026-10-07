@@ -54,6 +54,7 @@ $bibliaMaintenanceActive = in_array($currentAdminPage, [
 $bibliaGroupActive = $bibliaMainActive || $bibliaImportActive || $bibliaStudiesActive || $bibliaMapsActive || $bibliaCharactersActive || $bibliaMaintenanceActive;
 $aiTrainingActive = $currentAdminPage === 'ia-entrenamiento.php' || $currentModule === 'inteligencia-artificial';
 $podcastActive = $currentAdminPage === 'podcast.php' || $currentModule === 'podcast';
+$liturgiaActive = in_array($currentAdminPage, ['liturgia-dia.php', 'liturgia-ordo.php', 'lectio-divina.php'], true) || ($currentModule === 'liturgia');
 ?>
 <aside class="sidebar" data-sidebar>
   <div class="brand brand-large">
@@ -79,7 +80,7 @@ $podcastActive = $currentAdminPage === 'podcast.php' || $currentModule === 'podc
     <a class="<?php echo side_nav_active('', 'oracion'); ?>" href="content.php?module=oracion"><span class="nav-icon">O</span> Rosarios y Oraciones</a>
 
     <span class="side-nav-section-label">Liturgia y Santoral</span>
-    <a class="<?php echo side_nav_active('', 'liturgia'); ?>" href="content.php?module=liturgia"><span class="nav-icon">L</span> Liturgia</a>
+    <a class="<?php echo $liturgiaActive ? 'active' : ''; ?>" href="liturgia-dia.php"><span class="nav-icon">L</span> Liturgia</a>
     <a class="<?php echo side_nav_active('', 'santoral'); ?>" href="content.php?module=santoral"><span class="nav-icon">S</span> Santoral</a>
 
     <span class="side-nav-section-label">Biblia</span>
