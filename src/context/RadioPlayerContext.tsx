@@ -187,21 +187,6 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
       reconnectingRef.current = false;
       reconnectAttemptRef.current = 0;
       setStatus("playing");
-      if (!audienceSessionStartedRef.current) {
-        void startRadioAudienceSession().then((token) => {
-          // The playback state may change while the asynchronous session
-          // request is in flight. Never leave a session active after pause,
-          // stop, navigation or stream replacement.
-          if (token && shouldPlayRef.current) {
-            audienceSessionStartedRef.current = true;
-            return;
-          }
-
-          if (token) {
-            void stopRadioAudienceSession();
-          }
-        });
-      }
     };
 
     const onWaiting = () => {
@@ -455,15 +440,45 @@ export const RadioPlayerProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    void heartbeatRadioAudienceSession();
+    let cancelled = false;
+
+    const ensureAudienceSession = async () => {
+      if (audienceSessionStartedRef.current) {
+        await heartbeatRadioAudienceSession();
+        return;
+      }
+
+      const token = await startRadioAudienceSession();
+
+      // Playback can change while the API request is in flight.
+      // Only keep the session if the player is still actively playing.
+      if (cancelled || !shouldPlayRef.current) {
+        if (token) {
+          void stopRadioAudienceSession();
+        }
+        return;
+      }
+
+      if (token) {
+        audienceSessionStartedRef.current = true;
+        await heartbeatRadioAudienceSession();
+      }
+    };
+
+    void ensureAudienceSession();
+
     if (audienceHeartbeatTimerRef.current !== null) {
       window.clearInterval(audienceHeartbeatTimerRef.current);
     }
+
     audienceHeartbeatTimerRef.current = window.setInterval(() => {
-      void heartbeatRadioAudienceSession();
+      if (shouldPlayRef.current && audienceSessionStartedRef.current) {
+        void heartbeatRadioAudienceSession();
+      }
     }, 60_000);
 
     return () => {
+      cancelled = true;
       if (audienceHeartbeatTimerRef.current !== null) {
         window.clearInterval(audienceHeartbeatTimerRef.current);
         audienceHeartbeatTimerRef.current = null;
