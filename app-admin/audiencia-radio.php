@@ -42,7 +42,7 @@ require __DIR__ . '/includes/header.php';
 .audience-map-stat strong{display:block;font-size:31px;line-height:1;color:var(--aud-blue);font-weight:600}
 .audience-map-stat span{display:block;margin-top:5px;font-size:13px;color:#667085}
 .audience-map-card #audience-map{min-height:360px;background:linear-gradient(180deg,#fafdff,#fff)}
-.audience-map-card #audience-map svg{height:360px}
+.audience-map-card #audience-map svg{display:block;width:100%;height:360px;max-width:100%;overflow:hidden}
 .audience-map-legend{display:flex;align-items:center;gap:10px;padding:0 20px 12px;color:#475467;font-size:11px}
 .audience-map-gradient{height:10px;flex:0 1 160px;border-radius:5px;background:linear-gradient(90deg,#d9f0f8,#54b5dc,#168bc2)}
 .audience-live-legend{padding:0 20px 15px;color:#98a2b3;font-size:10px}
@@ -86,7 +86,7 @@ require __DIR__ . '/includes/header.php';
 .session-filters{display:flex;align-items:center;gap:7px}
 .audience-empty{padding:26px;text-align:center;color:#98a2b3;font-size:12px}
 @media(max-width:1180px){.audience-kpis{grid-template-columns:repeat(3,1fr)}.audience-two{grid-template-columns:1fr 1fr}.audience-grid-main{grid-template-columns:1fr}}
-@media(max-width:760px){.audience-shell{gap:12px}.audience-toolbar{align-items:flex-start}.audience-toolbar h2{font-size:21px}.audience-kpis{grid-template-columns:repeat(2,1fr);gap:9px}.audience-kpi{padding:12px}.audience-kpi strong{font-size:24px}.audience-kpi .kpi-icon{width:28px;height:28px;font-size:14px}.audience-two{grid-template-columns:1fr}.audience-map-card #audience-map,.audience-map-card #audience-map svg{min-height:320px;height:320px}.audience-map-stat strong{font-size:28px}}
+@media(max-width:760px){.audience-shell{gap:12px}.audience-toolbar{align-items:flex-start}.audience-toolbar h2{font-size:21px}.audience-kpis{grid-template-columns:repeat(2,1fr);gap:9px}.audience-kpi{padding:12px}.audience-kpi strong{font-size:24px}.audience-kpi .kpi-icon{width:28px;height:28px;font-size:14px}.audience-two{grid-template-columns:1fr}.audience-map-card #audience-map{min-height:320px;height:320px}.audience-map-card #audience-map svg{width:100%;height:320px;min-height:320px;display:block;overflow:hidden}.audience-map-stat strong{font-size:28px}}
 </style>
 
 <div class="audience-shell" id="radio-audience">
@@ -335,7 +335,7 @@ async function drawMap(countries, liveRows=[]){
     document.getElementById("map-listener-count").textContent=fmt(totalListeners);
     document.getElementById("map-max-value").textContent=fmt(maxListeners);
 
-    host.innerHTML='<svg viewBox="0 0 1200 400" aria-label="Mapa mundial de audiencia"></svg><div class="audience-map-tooltip" id="map-tooltip"></div>';
+    host.innerHTML='<svg viewBox="0 0 1200 400" preserveAspectRatio="xMidYMid meet" width="100%" height="100%" aria-label="Mapa mundial de audiencia"></svg><div class="audience-map-tooltip" id="map-tooltip"></div>';
     const svg=d3.select(host).select("svg");
     const geo=topojson.feature(world,world.objects.countries);
     const projection=d3.geoNaturalEarth1().scale(190).translate([600,200]);
