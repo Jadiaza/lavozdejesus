@@ -468,6 +468,22 @@ const SantoView = ({
       <article
         className="relative overflow-hidden rounded-2xl border-2 border-[var(--lit-border)] bg-[var(--lit-surface)] shadow-[0_14px_32px_-28px_rgba(8,35,71,0.32)]"
       >
+        <img
+          src="https://pub-d51964240d644bebafa009ba9eae6df4.r2.dev/modulos/liturgia/santos/camino_cruz.png"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          className="absolute inset-y-0 right-0 h-full w-[48%] object-cover object-center"
+        />
+        <div
+          className="absolute inset-0"
+          aria-hidden="true"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(255,253,247,1) 0%, rgba(255,253,247,.98) 42%, rgba(255,253,247,.82) 58%, rgba(255,253,247,.22) 76%, rgba(255,253,247,0) 100%)",
+          }}
+        />
         <div className="relative flex min-h-[300px] items-center px-5 py-7 sm:min-h-[320px] sm:px-7 sm:py-8">
           <div className="w-full max-w-[68%] min-w-0 sm:max-w-[62%]">
             <div className="flex items-start gap-4">
