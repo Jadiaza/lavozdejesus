@@ -481,11 +481,11 @@ const SantoView = ({
           aria-hidden="true"
           style={{
             background:
-              "linear-gradient(90deg, rgba(255,253,247,1) 0%, rgba(255,253,247,.98) 46%, rgba(255,253,247,.82) 62%, rgba(255,253,247,.22) 82%, rgba(255,253,247,0) 100%)",
+              "linear-gradient(90deg, rgba(255,253,247,1) 0%, rgba(255,253,247,.98) 38%, rgba(255,253,247,.92) 52%, rgba(255,253,247,.62) 68%, rgba(255,253,247,.18) 86%, rgba(255,253,247,0) 100%)",
           }}
         />
         <div className="relative flex min-h-[300px] items-center px-5 py-7 sm:min-h-[320px] sm:px-7 sm:py-8">
-          <div className="w-full max-w-[72%] min-w-0 sm:max-w-[68%]">
+          <div className="w-full max-w-[90%] min-w-0 sm:max-w-[82%]">
             <div className="flex items-center gap-3">
               <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f7ead1] text-[#c08a19]">
                 <Sparkles className="h-6 w-6" />
@@ -495,7 +495,7 @@ const SantoView = ({
               </p>
             </div>
 
-            <h2 className="mt-4 font-display text-[28px] leading-[1.12] text-[var(--lit-text)] sm:text-[32px]">
+            <h2 className="mt-4 max-w-[92%] font-display text-[27px] leading-[1.12] text-[var(--lit-text)] sm:max-w-[88%] sm:text-[32px]">
               Hoy también es un día para crecer en santidad
             </h2>
 
