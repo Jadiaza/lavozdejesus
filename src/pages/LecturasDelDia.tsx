@@ -465,23 +465,37 @@ const SantoView = ({
 
   if (!santo?.nombre && !tieneCelebracionEspecial) {
     return (
-      <article className="overflow-hidden rounded-2xl border-2 border-[var(--lit-border)] bg-[var(--lit-surface)] shadow-[0_14px_32px_-28px_rgba(8,35,71,0.32)]">
-        <div className="flex items-start gap-4 px-5 py-6 sm:px-6 sm:py-7">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f7ead1] text-[#c08a19]">
-            <Sparkles className="h-6 w-6" />
-          </span>
-          <div className="min-w-0">
-            <p className="text-[14px] font-extrabold uppercase tracking-[0.14em] text-[#c69222]">
-              Caminemos con Cristo
-            </p>
-            <h2 className="mt-1 font-display text-[28px] leading-tight text-[var(--lit-text)] sm:text-[32px]">
-              Hoy también es un día para crecer en santidad
-            </h2>
+      <article
+        className="relative overflow-hidden rounded-2xl border-2 border-[var(--lit-border)] bg-[var(--lit-surface)] shadow-[0_14px_32px_-28px_rgba(8,35,71,0.32)]"
+        style={{
+          backgroundImage:
+            "linear-gradient(90deg, rgba(255,253,247,.98) 0%, rgba(255,253,247,.96) 48%, rgba(255,253,247,.58) 68%, rgba(255,253,247,.08) 100%), url('https://images.unsplash.com/photo-1721603322512-5c2ab03af14c?auto=format&fit=crop&fm=jpg&q=80&w=1400')",
+          backgroundPosition: "center, right center",
+          backgroundSize: "100% 100%, 48% 100%",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        <div className="relative flex min-h-[300px] items-center px-5 py-7 sm:min-h-[320px] sm:px-7 sm:py-8">
+          <div className="w-full max-w-[68%] min-w-0 sm:max-w-[62%]">
+            <div className="flex items-start gap-4">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f7ead1] text-[#c08a19]">
+                <Sparkles className="h-6 w-6" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#c69222]">
+                  Caminemos con Cristo
+                </p>
+                <h2 className="mt-1 font-display text-[28px] leading-[1.12] text-[var(--lit-text)] sm:text-[32px]">
+                  Hoy también es un día para crecer en santidad
+                </h2>
+              </div>
+            </div>
+
             <p
-              className="mt-5 leading-[1.78] text-[var(--lit-text)]"
+              className="mt-5 max-w-[620px] leading-[1.62] text-[var(--lit-text)]"
               style={{
                 fontFamily: READING_FONT_FAMILIES[readingPreferences.fuente],
-                fontSize: `${readingPreferences.tam}px`,
+                fontSize: `${Math.min(readingPreferences.tam, 19)}px`,
                 fontWeight: readingPreferences.pesoFuente,
                 lineHeight: readingPreferences.interlineado,
                 textAlign:
@@ -491,8 +505,8 @@ const SantoView = ({
               }}
             >
               Aunque hoy no celebremos de manera particular a un santo en nuestro
-              calendario, la Iglesia continúa caminando con Cristo. Cada día es
-              una oportunidad para escuchar su Palabra, vivir el Evangelio y dejar
+              calendario, la Iglesia continúa caminando con Cristo. Cada día es una
+              oportunidad para escuchar su Palabra, vivir el Evangelio y dejar
               que el Espíritu Santo transforme nuestra vida.
             </p>
           </div>
