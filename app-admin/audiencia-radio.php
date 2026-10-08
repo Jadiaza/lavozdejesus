@@ -185,7 +185,7 @@ function renderSummary(data){
   document.getElementById("kpi-countries").textContent=fmt(data.countries_count);
   document.getElementById("country-range").textContent=from.value===to.value?from.value:"Periodo seleccionado";
 
-  const countries=data.countries||[];
+  const countries=(data.countries||[]).map(x=>({...x,pais:({CO:"Colombia",US:"Estados Unidos",MX:"México",PE:"Perú",BR:"Brasil",AR:"Argentina",CL:"Chile",EC:"Ecuador",PA:"Panamá",VE:"Venezuela",ES:"España",CA:"Canadá"}[String(x.pais||"").toUpperCase()] || x.pais)}));
   const max=Math.max(1,...countries.map(x=>Number(x.oyentes||0)));
   document.getElementById("country-list").innerHTML=countries.length?countries.map((x,i)=>`
     <div class="country-row"><span class="flag">🌐</span><div><strong>${esc(x.pais)}</strong><div class="bar"><i style="width:${Math.max(3,Math.round(Number(x.oyentes||0)/max*100))}%"></i></div></div><b>${fmt(x.oyentes)}</b></div>`).join(""):"<div class='audience-note'>Todavía no hay datos para este periodo.</div>";
@@ -282,7 +282,7 @@ async function drawMap(countries, liveRows=[]){
     host.innerHTML='<svg viewBox="0 0 1200 400" aria-label="Mapa mundial de audiencia"></svg><div class="audience-map-tooltip" id="map-tooltip"></div>';
     const svg=d3.select(host).select("svg");
     const geo=topojson.feature(world,world.objects.countries);
-    const projection=d3.geoNaturalEarth1().fitExtent([[20,18],[1180,382]],geo);
+    const projection=d3.geoNaturalEarth1().scale(430).translate([600,205]);
     const path=d3.geoPath(projection);
 
     const byCode={
