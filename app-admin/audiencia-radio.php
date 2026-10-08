@@ -105,8 +105,8 @@ require __DIR__ . '/includes/header.php';
   <div class="audience-grid-main">
     <section class="audience-panel audience-map-card">
       <div class="audience-map-stats">
-        <div class="audience-map-stat"><strong id="map-country-count">0</strong><span>Countries</span></div>
-        <div class="audience-map-stat"><strong id="map-listener-count">0</strong><span>Total Listeners</span></div>
+        <div class="audience-map-stat"><strong id="map-country-count">0</strong><span>Países</span></div>
+        <div class="audience-map-stat"><strong id="map-listener-count">0</strong><span>Oyentes totales</span></div>
       </div>
       <div class="audience-panel-body" id="audience-map"><div class="map-loading">Cargando mapa…</div><div class="audience-map-tooltip" id="map-tooltip"></div></div>
       <div class="audience-map-legend"><span>1</span><div class="audience-map-gradient"></div><span id="map-max-value">0</span></div>
@@ -334,7 +334,7 @@ async function drawMap(countries, liveRows=[]){
         tip.style.display="block";
         tip.style.left=(event.offsetX+12)+"px";
         tip.style.top=(event.offsetY+12)+"px";
-        tip.innerHTML="<strong>"+esc(name)+"</strong><br>Listeners: <b>"+fmt(value)+"</b>";
+        tip.innerHTML="<strong>"+esc(name)+"</strong><br>Oyentes: <b>"+fmt(value)+"</b>";
       });
 
     const mappedLive=liveRows.filter(row=>Number.isFinite(Number(row.latitud)) && Number.isFinite(Number(row.longitud)));
