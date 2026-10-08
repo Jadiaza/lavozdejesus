@@ -23,8 +23,26 @@ require __DIR__ . '/includes/header.php';
 .audience-kpi span{display:block;color:var(--muted);font-size:12px;font-weight:700}
 .audience-kpi strong{display:block;margin-top:6px;font-size:28px;line-height:1;color:var(--navy)}
 .audience-kpi small{display:block;margin-top:7px;color:#667085}
-.audience-grid-main{display:grid;grid-template-columns:minmax(0,2fr) minmax(300px,1fr);gap:16px}
+.audience-grid-main{display:grid;grid-template-columns:minmax(0,2.15fr) minmax(300px,1fr);gap:16px}
 .audience-panel{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 5px 18px rgba(15,23,42,.05);overflow:hidden}
+.audience-map-card{padding:0!important}
+.audience-map-controls{padding:20px 22px 10px}
+.audience-map-switch{display:flex;align-items:center;gap:18px;margin-bottom:14px;color:#667085;font-size:16px}
+.audience-map-switch label{display:flex;align-items:center;gap:8px;cursor:pointer}
+.audience-map-switch input{appearance:none;width:22px;height:22px;border:3px solid #cfd3d7;border-radius:50%;background:#fff;position:relative}
+.audience-map-switch input:checked{border-color:#3da6d9}
+.audience-map-switch input:checked:after{content:"";position:absolute;inset:3px;border-radius:50%;background:#3da6d9}
+.audience-station-select{width:100%;min-height:48px;border:1px solid #d6d9dd;border-radius:8px;background:#fff;padding:8px 12px;color:#667085;font-size:16px}
+.audience-map-stats{display:grid;grid-template-columns:1fr 1fr;text-align:center;padding:24px 18px 4px}
+.audience-map-stat strong{display:block;font-size:38px;line-height:1;color:#4aa9d8;font-weight:500}
+.audience-map-stat span{display:block;margin-top:8px;font-size:16px;color:#667085}
+.audience-map-card #audience-map{min-height:420px;background:#fff}
+.audience-map-card #audience-map svg{height:420px}
+.audience-map-legend{display:flex;align-items:center;gap:10px;padding:0 28px 20px;color:#344054;font-size:13px}
+.audience-map-gradient{height:14px;flex:0 1 180px;border-radius:2px;background:linear-gradient(90deg,#d9f0f8,#54b5dc,#168bc2)}
+.audience-live-legend{padding:0 28px 18px;color:#667085;font-size:12px}
+.audience-map-tooltip{position:absolute;display:none;padding:10px 13px;background:#fff;color:#111827;border:1px solid #cfd3d7;border-radius:4px;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.12);pointer-events:none;z-index:3;min-width:130px}
+@media(max-width:720px){.audience-map-controls{padding:18px 18px 8px}.audience-map-stats{padding-top:20px}.audience-map-stat strong{font-size:32px}.audience-map-card #audience-map,.audience-map-card #audience-map svg{min-height:390px;height:390px}}
 .audience-panel-head{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:15px 17px;border-bottom:1px solid #edf0f4}
 .audience-panel-head h3{margin:0;font-size:16px;color:var(--navy)}
 .audience-panel-body{padding:16px}
@@ -85,12 +103,24 @@ require __DIR__ . '/includes/header.php';
   </section>
 
   <div class="audience-grid-main">
-    <section class="audience-panel">
-      <div class="audience-panel-head">
-        <h3>¿Desde dónde nos escuchan?</h3>
-        <span class="audience-note">Ubicación aproximada · no se almacena la IP original</span>
+    <section class="audience-panel audience-map-card">
+      <div class="audience-map-controls">
+        <div class="audience-map-switch">
+          <label><input type="radio" name="audience-map-mode" value="all" checked> <span>All</span></label>
+          <label><input type="radio" name="audience-map-mode" value="station"> <span>Station</span></label>
+        </div>
+        <select id="audience-station" class="audience-station-select" disabled>
+          <option value="">Seleccionar estación</option>
+          <option value="main">La Voz de Jesús</option>
+        </select>
       </div>
-      <div class="audience-panel-body" id="audience-map"><div class="map-loading">Cargando mapa…</div><div class="map-tooltip" id="map-tooltip"></div></div>
+      <div class="audience-map-stats">
+        <div class="audience-map-stat"><strong id="map-country-count">0</strong><span>Countries</span></div>
+        <div class="audience-map-stat"><strong id="map-listener-count">0</strong><span>Total Listeners</span></div>
+      </div>
+      <div class="audience-panel-body" id="audience-map"><div class="map-loading">Cargando mapa…</div><div class="audience-map-tooltip" id="map-tooltip"></div></div>
+      <div class="audience-map-legend"><span>1</span><div class="audience-map-gradient"></div><span id="map-max-value">0</span></div>
+      <div class="audience-live-legend">● Oyentes conectados · <strong id="map-live-count">0</strong> ubicados aproximadamente · <span>Ubicación aproximada · no se almacena la IP original</span></div>
     </section>
     <section class="audience-panel">
       <div class="audience-panel-head"><h3>Top países</h3><span class="audience-note" id="country-range"></span></div>
@@ -258,43 +288,80 @@ async function drawMap(countries, liveRows=[]){
       import("https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/+esm"),
       import("https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-50m.json/+esm")
     ]);
-    host.innerHTML='<svg viewBox="0 0 960 430" aria-label="Mapa mundial de audiencia"></svg><div class="map-tooltip" id="map-tooltip"></div>';
+
+    const countryCount = countries.length;
+    const totalListeners = countries.reduce((sum,row)=>sum + Number(row.oyentes||0),0);
+    const maxListeners = Math.max(1,...countries.map(row=>Number(row.oyentes||0)));
+    document.getElementById("map-country-count").textContent=fmt(countryCount);
+    document.getElementById("map-listener-count").textContent=fmt(totalListeners);
+    document.getElementById("map-max-value").textContent=fmt(maxListeners);
+
+    host.innerHTML='<svg viewBox="0 0 960 420" aria-label="Mapa mundial de audiencia"></svg><div class="audience-map-tooltip" id="map-tooltip"></div>';
     const svg=d3.select(host).select("svg");
     const geo=topojson.feature(world,world.objects.countries);
-    const projection=d3.geoNaturalEarth1().fitSize([960,430],geo);
+    const projection=d3.geoNaturalEarth1().fitSize([960,420],geo);
     const path=d3.geoPath(projection);
-    svg.selectAll("path").data(geo.features).join("path")
-      .attr("d",path).attr("fill","#edf2f7").attr("stroke","#cbd5e1").attr("stroke-width",".6");
-    const points={
-      CO:[-74.1,4.6],US:[-100,38],MX:[-102,23],HN:[-86.6,14.8],SV:[-88.9,13.8],CA:[-106,57],ES:[-3.7,40.4],PE:[-75, -9.2],CL:[-71.5,-33.4],AR:[-64,-34],BR:[-51,-10],EC:[-78.2,-1.4],PA:[-80,-9],VE:[-66,8],CR:[-84,9.9],DO:[-70.2,18.7],GT:[-90.2,15.7],NI:[-85,12.8]
+
+    const byCode={
+      "Colombia":"CO","United States":"US","Estados Unidos":"US","Mexico":"MX","México":"MX",
+      "Honduras":"HN","El Salvador":"SV","Canada":"CA","Canadá":"CA","Spain":"ES","España":"ES",
+      "Peru":"PE","Perú":"PE","Chile":"CL","Argentina":"AR","Brazil":"BR","Brasil":"BR",
+      "Ecuador":"EC","Panama":"PA","Panamá":"PA","Venezuela":"VE","Costa Rica":"CR",
+      "Dominican Republic":"DO","Guatemala":"GT","Nicaragua":"NI"
     };
-    const byCode={"Colombia":"CO","United States":"US","Estados Unidos":"US","Mexico":"MX","México":"MX","Honduras":"HN","El Salvador":"SV","Canada":"CA","Canadá":"CA","Spain":"ES","España":"ES","Peru":"PE","Perú":"PE","Chile":"CL","Argentina":"AR","Brazil":"BR","Brasil":"BR","Ecuador":"EC","Panama":"PA","Panamá":"PA","Venezuela":"VE","Costa Rica":"CR","Dominican Republic":"DO","Guatemala":"GT","Nicaragua":"NI"};
-    const max=Math.max(1,...countries.map(x=>Number(x.oyentes||0)));
-    const tip=host.querySelector("#map-tooltip");
+
+    const valuesByCode={};
     countries.forEach(row=>{
       const code=byCode[String(row.pais||"")];
-      if(!code||!points[code]) return;
-      const [x,y]=projection(points[code]);
-      svg.append("circle").attr("cx",x).attr("cy",y).attr("r",Math.max(5,8+20*Math.sqrt(Number(row.oyentes||0)/max)))
-        .attr("fill","#2998d8").attr("fill-opacity",".62").attr("stroke","#0b5f96").attr("stroke-width","1.2")
-        .style("cursor","pointer")
-        .on("click",(event)=>{tip.style.display="block";tip.style.left=(event.offsetX+12)+"px";tip.style.top=(event.offsetY+12)+"px";tip.innerHTML="<strong>"+esc(row.pais)+"</strong><br>"+fmt(row.oyentes)+" oyentes";});
+      if(code) valuesByCode[code]=Number(row.oyentes||0);
     });
 
-    const mappedLive = liveRows.filter(row => Number.isFinite(Number(row.latitud)) && Number.isFinite(Number(row.longitud)));
-    const liveLayer = svg.append("g").attr("aria-label","Oyentes conectados");
+    const color=d3.scaleLinear()
+      .domain([0,maxListeners])
+      .range(["#e7f5fb","#35a8d8"]);
+
+    svg.selectAll("path")
+      .data(geo.features)
+      .join("path")
+      .attr("d",path)
+      .attr("fill",feature=>{
+        const name=String(feature.properties?.name||"");
+        const code=byCode[name] || name;
+        const value=valuesByCode[code] || 0;
+        return value>0 ? color(value) : "#f4f5f6";
+      })
+      .attr("stroke","#d5d8dc")
+      .attr("stroke-width",".7")
+      .style("cursor","pointer");
+
+    const tip=host.querySelector("#map-tooltip");
+    svg.selectAll("path")
+      .on("click",(event,feature)=>{
+        const name=String(feature.properties?.name||"");
+        const code=byCode[name] || name;
+        const value=valuesByCode[code] || 0;
+        if(!value) return;
+        tip.style.display="block";
+        tip.style.left=(event.offsetX+12)+"px";
+        tip.style.top=(event.offsetY+12)+"px";
+        tip.innerHTML="<strong>"+esc(name)+"</strong><br>Listeners: <b>"+fmt(value)+"</b>";
+      });
+
+    const mappedLive=liveRows.filter(row=>Number.isFinite(Number(row.latitud)) && Number.isFinite(Number(row.longitud)));
+    const liveLayer=svg.append("g").attr("aria-label","Oyentes conectados");
+
     mappedLive.forEach(row=>{
-      const projected = projection([Number(row.longitud), Number(row.latitud)]);
-      if (!projected) return;
-      const [x,y] = projected;
-      const name = row.usuario_nombre || "Oyente invitado";
-      const type = row.usuario_id ? "Registrado" : "Invitado";
-      const location = [row.ciudad,row.pais].filter(Boolean).join(", ") || "Ubicación aproximada";
+      const projected=projection([Number(row.longitud),Number(row.latitud)]);
+      if(!projected) return;
+      const [x,y]=projected;
+      const name=row.usuario_nombre||"Oyente invitado";
+      const type=row.usuario_id?"Registrado":"Invitado";
+      const location=[row.ciudad,row.pais].filter(Boolean).join(", ")||"Ubicación aproximada";
 
       liveLayer.append("circle")
-        .attr("cx",x).attr("cy",y).attr("r",8)
-        .attr("fill",row.usuario_id ? "#1769aa" : "#d19a00")
-        .attr("fill-opacity",".9").attr("stroke","#fff").attr("stroke-width","2")
+        .attr("cx",x).attr("cy",y).attr("r",5.5)
+        .attr("fill",row.usuario_id?"#1769aa":"#d19a00")
+        .attr("stroke","#fff").attr("stroke-width","1.5")
         .style("cursor","pointer")
         .on("click",(event)=>{
           tip.style.display="block";
@@ -302,23 +369,9 @@ async function drawMap(countries, liveRows=[]){
           tip.style.top=(event.offsetY+12)+"px";
           tip.innerHTML="<strong>"+esc(name)+"</strong><br>"+esc(type)+"<br>"+esc(location)+"<br><small>Ubicación aproximada</small>";
         });
-
-      liveLayer.append("circle")
-        .attr("cx",x).attr("cy",y).attr("r",13)
-        .attr("fill","none").attr("stroke",row.usuario_id ? "#1769aa" : "#d19a00")
-        .attr("stroke-opacity",".35").attr("stroke-width","2");
     });
 
-    const legend = document.createElement("div");
-    legend.className = "audience-note";
-    legend.style.position = "absolute";
-    legend.style.left = "18px";
-    legend.style.bottom = "12px";
-    legend.style.background = "rgba(255,255,255,.92)";
-    legend.style.padding = "7px 9px";
-    legend.style.borderRadius = "8px";
-    legend.innerHTML = "● Oyentes conectados · <strong>"+fmt(mappedLive.length)+"</strong> ubicados aproximadamente";
-    host.appendChild(legend);
+    document.getElementById("map-live-count").textContent=fmt(mappedLive.length);
   }catch(error){
     host.innerHTML='<div class="map-loading">Mapa no disponible. La tabla de países sigue funcionando.</div>';
     console.error(error);
