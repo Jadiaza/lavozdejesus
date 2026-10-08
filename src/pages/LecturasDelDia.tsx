@@ -467,13 +467,6 @@ const SantoView = ({
     return (
       <article
         className="relative overflow-hidden rounded-2xl border-2 border-[var(--lit-border)] bg-[var(--lit-surface)] shadow-[0_14px_32px_-28px_rgba(8,35,71,0.32)]"
-        style={{
-          backgroundImage:
-            "linear-gradient(90deg, rgba(255,253,247,.98) 0%, rgba(255,253,247,.96) 48%, rgba(255,253,247,.58) 68%, rgba(255,253,247,.08) 100%), url('https://images.unsplash.com/photo-1721603322512-5c2ab03af14c?auto=format&fit=crop&fm=jpg&q=80&w=1400')",
-          backgroundPosition: "center, right center",
-          backgroundSize: "100% 100%, 48% 100%",
-          backgroundRepeat: "no-repeat",
-        }}
       >
         <div className="relative flex min-h-[300px] items-center px-5 py-7 sm:min-h-[320px] sm:px-7 sm:py-8">
           <div className="w-full max-w-[68%] min-w-0 sm:max-w-[62%]">
