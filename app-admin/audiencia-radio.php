@@ -282,7 +282,7 @@ async function drawMap(countries, liveRows=[]){
     host.innerHTML='<svg viewBox="0 0 1200 400" aria-label="Mapa mundial de audiencia"></svg><div class="audience-map-tooltip" id="map-tooltip"></div>';
     const svg=d3.select(host).select("svg");
     const geo=topojson.feature(world,world.objects.countries);
-    const projection=d3.geoNaturalEarth1().scale(430).translate([600,205]);
+    const projection=d3.geoNaturalEarth1().rotate([58,0]).scale(560).translate([600,205]);
     const path=d3.geoPath(projection);
 
     const byCode={
