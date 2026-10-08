@@ -495,10 +495,10 @@ const SantoView = ({
               </p>
             </div>
 
-            <h2 className="mt-7 max-w-[92%] font-display text-[30px] leading-[1.08] text-[var(--lit-text)] sm:max-w-[78%] sm:text-[38px]">
+            <h2 className="mt-7 max-w-none font-display text-[27px] leading-[1.08] text-[var(--lit-text)] sm:text-[38px]">
               <>
-                <span className="block">Hoy también es un día</span>
-                <span className="block">para crecer en santidad</span>
+                <span className="block whitespace-nowrap">Hoy también es un día</span>
+                <span className="block whitespace-nowrap">para crecer en santidad</span>
               </>
             </h2>
 
