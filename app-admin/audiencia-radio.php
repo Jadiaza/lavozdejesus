@@ -29,13 +29,13 @@ require __DIR__ . '/includes/header.php';
 .audience-map-stats{display:grid;grid-template-columns:1fr 1fr;text-align:center;padding:24px 18px 4px}
 .audience-map-stat strong{display:block;font-size:38px;line-height:1;color:#4aa9d8;font-weight:500}
 .audience-map-stat span{display:block;margin-top:8px;font-size:16px;color:#667085}
-.audience-map-card #audience-map{min-height:560px;background:#fff}
-.audience-map-card #audience-map svg{height:560px}
+.audience-map-card #audience-map{min-height:360px;background:#fff}
+.audience-map-card #audience-map svg{height:360px}
 .audience-map-legend{display:flex;align-items:center;gap:10px;padding:0 28px 20px;color:#344054;font-size:13px}
 .audience-map-gradient{height:14px;flex:0 1 180px;border-radius:2px;background:linear-gradient(90deg,#d9f0f8,#54b5dc,#168bc2)}
 .audience-live-legend{padding:0 28px 18px;color:#667085;font-size:12px}
 .audience-map-tooltip{position:absolute;display:none;padding:10px 13px;background:#fff;color:#111827;border:1px solid #cfd3d7;border-radius:4px;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.12);pointer-events:none;z-index:3;min-width:130px}
-.audience-map-stats{padding-top:20px}.audience-map-stat strong{font-size:32px}.audience-map-card #audience-map,.audience-map-card #audience-map svg{min-height:500px;height:500px}
+.audience-map-stats{padding-top:20px}.audience-map-stat strong{font-size:32px}.audience-map-card #audience-map,.audience-map-card #audience-map svg{min-height:360px;height:360px}
 .audience-panel-head{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:15px 17px;border-bottom:1px solid #edf0f4}
 .audience-panel-head h3{margin:0;font-size:16px;color:var(--navy)}
 .audience-panel-body{padding:16px}
@@ -279,10 +279,10 @@ async function drawMap(countries, liveRows=[]){
     document.getElementById("map-listener-count").textContent=fmt(totalListeners);
     document.getElementById("map-max-value").textContent=fmt(maxListeners);
 
-    host.innerHTML='<svg viewBox="0 0 1200 560" aria-label="Mapa mundial de audiencia"></svg><div class="audience-map-tooltip" id="map-tooltip"></div>';
+    host.innerHTML='<svg viewBox="0 0 1200 400" aria-label="Mapa mundial de audiencia"></svg><div class="audience-map-tooltip" id="map-tooltip"></div>';
     const svg=d3.select(host).select("svg");
     const geo=topojson.feature(world,world.objects.countries);
-    const projection=d3.geoNaturalEarth1().scale(430).translate([600,280]);
+    const projection=d3.geoNaturalEarth1().fitExtent([[20,18],[1180,382]],geo);
     const path=d3.geoPath(projection);
 
     const byCode={
@@ -295,7 +295,8 @@ async function drawMap(countries, liveRows=[]){
 
     const valuesByCode={};
     countries.forEach(row=>{
-      const code=byCode[String(row.pais||"")];
+      const raw=String(row.pais||"").trim();
+      const code=raw.length===2 ? raw.toUpperCase() : (byCode[raw] || raw);
       if(code) valuesByCode[code]=Number(row.oyentes||0);
     });
 
@@ -309,7 +310,7 @@ async function drawMap(countries, liveRows=[]){
       .attr("d",path)
       .attr("fill",feature=>{
         const name=String(feature.properties?.name||"");
-        const code=byCode[name] || name;
+        const code=(feature.properties?.iso_a2 || feature.properties?.ISO_A2 || feature.properties?.iso2 || byCode[name] || name).toString().toUpperCase();
         const value=valuesByCode[code] || 0;
         return value>0 ? color(value) : "#f4f5f6";
       })
@@ -321,7 +322,7 @@ async function drawMap(countries, liveRows=[]){
     svg.selectAll("path")
       .on("click",(event,feature)=>{
         const name=String(feature.properties?.name||"");
-        const code=byCode[name] || name;
+        const code=(feature.properties?.iso_a2 || feature.properties?.ISO_A2 || feature.properties?.iso2 || byCode[name] || name).toString().toUpperCase();
         const value=valuesByCode[code] || 0;
         if(!value) return;
         tip.style.display="block";
