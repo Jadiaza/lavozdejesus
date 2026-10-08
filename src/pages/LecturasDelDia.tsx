@@ -452,15 +452,51 @@ const getSantoPresentation = (santo: SantoDelDia) => {
 
 const SantoView = ({
   santo,
+  liturgia,
   readingPreferences,
 }: {
   santo: SantoDelDia | null;
+  liturgia: LiturgiaDia | null;
   readingPreferences: ReadingPreferences;
 }) => {
-  if (!santo?.nombre) {
+  const celebracion = liturgia?.celebracion?.trim() ?? "";
+  const tieneCelebracionEspecial =
+    Boolean(celebracion) && !/^feria(?: del tiempo ordinario)?$/i.test(celebracion);
+
+  if (!santo?.nombre && !tieneCelebracionEspecial) {
     return (
-      <article className="rounded-2xl border border-[var(--lit-border)] bg-[var(--lit-surface)] p-5 text-center text-[var(--lit-text)]">
-        El santo del día estará disponible pronto.
+      <article className="overflow-hidden rounded-2xl border-2 border-[var(--lit-border)] bg-[var(--lit-surface)] shadow-[0_14px_32px_-28px_rgba(8,35,71,0.32)]">
+        <div className="flex items-start gap-4 px-5 py-6 sm:px-6 sm:py-7">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f7ead1] text-[#c08a19]">
+            <Sparkles className="h-6 w-6" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[14px] font-extrabold uppercase tracking-[0.14em] text-[#c69222]">
+              Caminemos con Cristo
+            </p>
+            <h2 className="mt-1 font-display text-[28px] leading-tight text-[var(--lit-text)] sm:text-[32px]">
+              Hoy también es un día para crecer en santidad
+            </h2>
+            <p
+              className="mt-5 leading-[1.78] text-[var(--lit-text)]"
+              style={{
+                fontFamily: READING_FONT_FAMILIES[readingPreferences.fuente],
+                fontSize: `${readingPreferences.tam}px`,
+                fontWeight: readingPreferences.pesoFuente,
+                lineHeight: readingPreferences.interlineado,
+                textAlign:
+                  readingPreferences.alineacion === "justificada"
+                    ? "justify"
+                    : "left",
+              }}
+            >
+              Aunque hoy no celebremos de manera particular a un santo en nuestro
+              calendario, la Iglesia continúa caminando con Cristo. Cada día es
+              una oportunidad para escuchar su Palabra, vivir el Evangelio y dejar
+              que el Espíritu Santo transforme nuestra vida.
+            </p>
+          </div>
+        </div>
       </article>
     );
   }
@@ -953,6 +989,7 @@ const LecturasDelDia = () => {
               {activeTab === "santo" && (
                 <SantoView
                   santo={santo}
+                  liturgia={liturgia}
                   readingPreferences={readingPreferences}
                 />
               )}
