@@ -474,18 +474,18 @@ const SantoView = ({
           aria-hidden="true"
           loading="lazy"
           decoding="async"
-          className="absolute inset-y-0 right-0 h-full w-[48%] object-cover object-center"
+          className="absolute inset-y-0 right-0 h-full w-[42%] object-cover object-right"
         />
         <div
           className="absolute inset-0"
           aria-hidden="true"
           style={{
             background:
-              "linear-gradient(90deg, rgba(255,253,247,1) 0%, rgba(255,253,247,.98) 42%, rgba(255,253,247,.82) 58%, rgba(255,253,247,.22) 76%, rgba(255,253,247,0) 100%)",
+              "linear-gradient(90deg, rgba(255,253,247,1) 0%, rgba(255,253,247,.98) 46%, rgba(255,253,247,.82) 62%, rgba(255,253,247,.22) 82%, rgba(255,253,247,0) 100%)",
           }}
         />
         <div className="relative flex min-h-[300px] items-center px-5 py-7 sm:min-h-[320px] sm:px-7 sm:py-8">
-          <div className="w-full max-w-[76%] min-w-0 sm:max-w-[68%]">
+          <div className="w-full max-w-[72%] min-w-0 sm:max-w-[68%]">
             <div className="flex items-center gap-3">
               <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f7ead1] text-[#c08a19]">
                 <Sparkles className="h-6 w-6" />
