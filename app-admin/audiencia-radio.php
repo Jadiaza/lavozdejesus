@@ -35,7 +35,7 @@ require __DIR__ . '/includes/header.php';
 .audience-map-gradient{height:14px;flex:0 1 180px;border-radius:2px;background:linear-gradient(90deg,#d9f0f8,#54b5dc,#168bc2)}
 .audience-live-legend{padding:0 28px 18px;color:#667085;font-size:12px}
 .audience-map-tooltip{position:absolute;display:none;padding:10px 13px;background:#fff;color:#111827;border:1px solid #cfd3d7;border-radius:4px;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.12);pointer-events:none;z-index:3;min-width:130px}
-.audience-map-stats{padding-top:20px}.audience-map-stat strong{font-size:32px}.audience-map-card #audience-map,.audience-map-card #audience-map svg{min-height:560px;height:560px}
+.audience-map-stats{padding-top:20px}.audience-map-stat strong{font-size:32px}.audience-map-card #audience-map,.audience-map-card #audience-map svg{min-height:500px;height:500px}
 .audience-panel-head{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:15px 17px;border-bottom:1px solid #edf0f4}
 .audience-panel-head h3{margin:0;font-size:16px;color:var(--navy)}
 .audience-panel-body{padding:16px}
@@ -282,7 +282,7 @@ async function drawMap(countries, liveRows=[]){
     host.innerHTML='<svg viewBox="0 0 1200 560" aria-label="Mapa mundial de audiencia"></svg><div class="audience-map-tooltip" id="map-tooltip"></div>';
     const svg=d3.select(host).select("svg");
     const geo=topojson.feature(world,world.objects.countries);
-    const projection=d3.geoNaturalEarth1().scale(520).translate([600,280]);
+    const projection=d3.geoNaturalEarth1().scale(430).translate([600,280]);
     const path=d3.geoPath(projection);
 
     const byCode={
