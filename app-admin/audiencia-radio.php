@@ -232,8 +232,8 @@ function renderLive(rows){
   const body=document.getElementById("live-body");
   const pill=document.getElementById("live-count-pill");
   const mapPill=document.getElementById("map-live-pill-text");
-  pill.textContent=fmt(state.live.length)+" conectados ahora";
-  mapPill.textContent=fmt(state.live.length)+" conectados";
+  pill.textContent=fmt(state.live.length)+(state.live.length===1?" conectado ahora":" conectados ahora");
+  mapPill.textContent=fmt(state.live.length)+(state.live.length===1?" conectado":" conectados");
   if(!state.live.length){
     body.innerHTML="<tr><td colspan='9'><div class='audience-empty'>No hay oyentes conectados en este momento.</div></td></tr>";
     return;
@@ -338,7 +338,7 @@ async function drawMap(countries, liveRows=[]){
     host.innerHTML='<svg viewBox="0 0 1200 400" aria-label="Mapa mundial de audiencia"></svg><div class="audience-map-tooltip" id="map-tooltip"></div>';
     const svg=d3.select(host).select("svg");
     const geo=topojson.feature(world,world.objects.countries);
-    const projection=d3.geoNaturalEarth1().rotate([58,0]).scale(560).translate([600,205]);
+    const projection=d3.geoNaturalEarth1().rotate([30,0]).scale(405).translate([600,200]);
     const path=d3.geoPath(projection);
 
     const byCode={
@@ -412,8 +412,8 @@ async function drawMap(countries, liveRows=[]){
     });
 
     document.getElementById("map-live-count").textContent=fmt(mappedLive.length);
-    document.getElementById("map-live-pill-text").textContent=fmt(liveRows.length)+" conectados";
-    document.getElementById("live-count-pill").textContent=fmt(liveRows.length)+" conectados ahora";
+    document.getElementById("map-live-pill-text").textContent=fmt(liveRows.length)+(liveRows.length===1?" conectado":" conectados");
+    document.getElementById("live-count-pill").textContent=fmt(liveRows.length)+(liveRows.length===1?" conectado ahora":" conectados ahora");
   }catch(error){
     host.innerHTML='<div class="map-loading">Mapa no disponible. La tabla de países sigue funcionando.</div>';
     console.error(error);
