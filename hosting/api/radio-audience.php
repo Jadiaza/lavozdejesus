@@ -125,7 +125,7 @@ function audience_browser(string $ua): string
   return 'Otro';
 }
 
-function audience_location(): array
+function audience_location_from_headers(): array
 {
   $latitude = trim((string) (
     $_SERVER['HTTP_CF_IPLATITUDE']
@@ -152,6 +152,105 @@ function audience_location(): array
     'latitud' => $lat,
     'longitud' => $lon,
   ];
+}
+
+function audience_location_complete(array $location): bool
+{
+  return trim((string) ($location['pais'] ?? '')) !== ''
+    && trim((string) ($location['ciudad'] ?? '')) !== ''
+    && $location['latitud'] !== null
+    && $location['longitud'] !== null;
+}
+
+function audience_external_location(string $ip): array
+{
+  $empty = [
+    'pais' => '',
+    'region' => '',
+    'ciudad' => '',
+    'latitud' => null,
+    'longitud' => null,
+  ];
+
+  if ($ip === '' || !filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+    return $empty;
+  }
+
+  if (!function_exists('curl_init')) return $empty;
+
+  $url = 'https://ipapi.co/' . rawurlencode($ip) . '/json/';
+  $ch = curl_init($url);
+  if ($ch === false) return $empty;
+
+  curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_FOLLOWLOCATION => false,
+    CURLOPT_TIMEOUT => 3,
+    CURLOPT_CONNECTTIMEOUT => 2,
+    CURLOPT_SSL_VERIFYPEER => true,
+    CURLOPT_SSL_VERIFYHOST => 2,
+    CURLOPT_USERAGENT => 'LVJ-Radio-Audience/1.0',
+  ]);
+
+  $body = curl_exec($ch);
+  $errno = curl_errno($ch);
+  $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+  curl_close($ch);
+
+  if ($errno !== 0 || $httpCode !== 200 || !is_string($body) || $body === '') return $empty;
+
+  $data = json_decode($body, true);
+  if (!is_array($data) || !empty($data['error'])) return $empty;
+
+  $lat = isset($data['latitude']) && is_numeric($data['latitude']) ? (float) $data['latitude'] : null;
+  $lon = isset($data['longitude']) && is_numeric($data['longitude']) ? (float) $data['longitude'] : null;
+  if ($lat !== null && ($lat < -90 || $lat > 90)) $lat = null;
+  if ($lon !== null && ($lon < -180 || $lon > 180)) $lon = null;
+
+  return [
+    'pais' => substr(trim((string) ($data['country_code'] ?? $data['country'] ?? '')), 0, 100),
+    'region' => substr(trim((string) ($data['region'] ?? '')), 0, 120),
+    'ciudad' => substr(trim((string) ($data['city'] ?? '')), 0, 120),
+    'latitud' => $lat,
+    'longitud' => $lon,
+  ];
+}
+
+function audience_location(PDO $pdo, string $ip): array
+{
+  $location = audience_location_from_headers();
+  if (audience_location_complete($location)) return $location;
+
+  $ipHash = audience_ip_hash($ip);
+  if ($ipHash !== '') {
+    try {
+      $stmt = $pdo->prepare('
+        SELECT pais, region, ciudad, latitud, longitud
+        FROM lvj_rad_sesiones
+        WHERE ip_hash = :ip_hash
+          AND (ciudad <> "" OR pais <> "")
+          AND latitud IS NOT NULL
+          AND longitud IS NOT NULL
+        ORDER BY inicio_at DESC
+        LIMIT 1
+      ');
+      $stmt->execute(['ip_hash' => $ipHash]);
+      $cached = $stmt->fetch();
+      if (is_array($cached) && audience_location_complete($cached)) {
+        return [
+          'pais' => substr((string) ($cached['pais'] ?? ''), 0, 100),
+          'region' => substr((string) ($cached['region'] ?? ''), 0, 120),
+          'ciudad' => substr((string) ($cached['ciudad'] ?? ''), 0, 120),
+          'latitud' => is_numeric($cached['latitud']) ? (float) $cached['latitud'] : null,
+          'longitud' => is_numeric($cached['longitud']) ? (float) $cached['longitud'] : null,
+        ];
+      }
+    } catch (Throwable $error) {
+      // La geolocalización nunca debe impedir iniciar la audiencia.
+    }
+  }
+
+  return audience_external_location($ip);
 }
 
 function audience_optional_user(PDO $pdo): ?array
@@ -192,7 +291,8 @@ try {
   if ($method === 'POST' && $action === 'start') {
     $user = audience_optional_user($pdo);
     $ua = audience_user_agent();
-    $location = audience_location();
+    $clientIp = audience_client_ip();
+    $location = audience_location($pdo, $clientIp);
     $streamId = (int) ($_POST['stream_id'] ?? 0);
     $stream = audience_stream($pdo, $streamId);
     $token = bin2hex(random_bytes(32));
