@@ -398,7 +398,7 @@ try {
     $from = preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $fromInput) ? $fromInput . ' 00:00:00' : gmdate('Y-m-d 00:00:00');
     $to = preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $toInput) ? $toInput . ' 23:59:59' : gmdate('Y-m-d 23:59:59');
 
-    $connectedStmt = $pdo->prepare("SELECT COUNT(*) FROM lvj_rad_sesiones WHERE estado IN ('activo','pausado') AND ultima_actividad_at >= :since");
+    $connectedStmt = $pdo->prepare("SELECT COUNT(*) FROM lvj_rad_sesiones WHERE estado = 'activo' AND ultima_actividad_at >= :since");
     $connectedStmt->execute(['since' => $since]);
     $connected = (int) $connectedStmt->fetchColumn();
 
