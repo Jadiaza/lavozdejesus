@@ -98,8 +98,8 @@ require __DIR__ . '/includes/header.php';
   <div class="audience-grid-main">
     <section class="audience-panel audience-map-card">
       <div class="audience-map-stats">
-        <div class="audience-map-stat"><strong id="map-country-count">0</strong><span>Países</span></div>
-        <div class="audience-map-stat"><strong id="map-listener-count">0</strong><span>Oyentes totales</span></div>
+        <div class="audience-map-stat"><strong id="map-country-count">0</strong><span>Países conectados</span></div>
+        <div class="audience-map-stat"><strong id="map-listener-count">0</strong><span>Oyentes conectados</span></div>
       </div>
       <div class="audience-panel-body" id="audience-map"><div class="map-loading">Cargando mapa…</div><div class="audience-map-tooltip" id="map-tooltip"></div></div>
       <div class="audience-map-legend"><span>1</span><div class="audience-map-gradient"></div><span id="map-max-value">0</span></div>
@@ -272,9 +272,17 @@ async function drawMap(countries, liveRows=[]){
       import("https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-50m.json/+esm")
     ]);
 
-    const countryCount = countries.length;
-    const totalListeners = countries.reduce((sum,row)=>sum + Number(row.oyentes||0),0);
-    const maxListeners = Math.max(1,...countries.map(row=>Number(row.oyentes||0)));
+    const liveCountries = {};
+    (liveRows || []).forEach(row => {
+      const raw = String(row.pais || "").trim();
+      if (!raw) return;
+      const key = raw.toUpperCase();
+      liveCountries[key] = (liveCountries[key] || 0) + 1;
+    });
+    const mapCountries = Object.entries(liveCountries).map(([pais, oyentes]) => ({pais, oyentes}));
+    const countryCount = mapCountries.length;
+    const totalListeners = (liveRows || []).length;
+    const maxListeners = Math.max(1,...mapCountries.map(row=>Number(row.oyentes||0)));
     document.getElementById("map-country-count").textContent=fmt(countryCount);
     document.getElementById("map-listener-count").textContent=fmt(totalListeners);
     document.getElementById("map-max-value").textContent=fmt(maxListeners);
@@ -294,7 +302,7 @@ async function drawMap(countries, liveRows=[]){
     };
 
     const valuesByCode={};
-    countries.forEach(row=>{
+    mapCountries.forEach(row=>{
       const raw=String(row.pais||"").trim();
       const code=raw.length===2 ? raw.toUpperCase() : (byCode[raw] || raw);
       if(code) valuesByCode[code]=Number(row.oyentes||0);
