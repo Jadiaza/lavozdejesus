@@ -485,7 +485,7 @@ const SantoView = ({
           }}
         />
         <div className="relative flex min-h-[300px] items-center px-5 py-7 sm:min-h-[320px] sm:px-7 sm:py-8">
-          <div className="w-full max-w-[78%] min-w-0 sm:max-w-[76%]">
+          <div className="w-full min-w-0">
             <div className="flex items-center gap-3">
               <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f7ead1] text-[#c08a19]">
                 <Sparkles className="h-6 w-6" />
@@ -495,12 +495,15 @@ const SantoView = ({
               </p>
             </div>
 
-            <h2 className="mt-4 max-w-[78%] font-display text-[27px] leading-[1.12] text-[var(--lit-text)] sm:max-w-[76%] sm:text-[32px]">
-              Hoy también es un día para crecer en santidad
+            <h2 className="mt-4 max-w-[96%] font-display text-[27px] leading-[1.12] text-[var(--lit-text)] sm:max-w-[92%] sm:text-[32px]">
+              <>
+                <span className="block">Hoy también es un día para</span>
+                <span className="block">crecer en santidad</span>
+              </>
             </h2>
 
             <p
-              className="mt-5 max-w-full leading-[1.55] text-[var(--lit-text)]"
+              className="mt-5 max-w-[66%] leading-[1.55] text-[var(--lit-text)]"
               style={{
                 fontFamily: READING_FONT_FAMILIES[readingPreferences.fuente],
                 fontSize: `${Math.min(readingPreferences.tam, 17)}px`,
