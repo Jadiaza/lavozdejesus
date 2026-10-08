@@ -474,36 +474,36 @@ const SantoView = ({
           aria-hidden="true"
           loading="lazy"
           decoding="async"
-          className="absolute inset-y-0 right-0 h-full w-[42%] object-cover object-right"
+          className="absolute inset-0 h-full w-full object-cover object-center"
         />
         <div
           className="absolute inset-0"
           aria-hidden="true"
           style={{
             background:
-              "linear-gradient(90deg, rgba(255,253,247,1) 0%, rgba(255,253,247,.98) 38%, rgba(255,253,247,.92) 52%, rgba(255,253,247,.62) 68%, rgba(255,253,247,.18) 86%, rgba(255,253,247,0) 100%)",
+              "linear-gradient(90deg, rgba(255,253,247,1) 0%, rgba(255,253,247,.98) 28%, rgba(255,253,247,.88) 43%, rgba(255,253,247,.58) 58%, rgba(255,253,247,.20) 76%, rgba(255,253,247,0) 100%)",
           }}
         />
-        <div className="relative flex min-h-[300px] items-center px-5 py-7 sm:min-h-[320px] sm:px-7 sm:py-8">
+        <div className="relative flex min-h-[430px] items-start px-5 py-7 sm:min-h-[470px] sm:px-8 sm:py-9">
           <div className="w-full min-w-0">
             <div className="flex items-center gap-3">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f7ead1] text-[#c08a19]">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f7ead1]/95 text-[#c08a19]">
                 <Sparkles className="h-6 w-6" />
               </span>
-              <p className="whitespace-nowrap text-[13px] font-extrabold uppercase tracking-[0.12em] text-[#c69222]">
+              <p className="whitespace-nowrap text-[13px] font-extrabold uppercase tracking-[0.12em] text-[#c69222] sm:text-[14px]">
                 Caminemos con Cristo
               </p>
             </div>
 
-            <h2 className="mt-4 max-w-[96%] font-display text-[27px] leading-[1.12] text-[var(--lit-text)] sm:max-w-[92%] sm:text-[32px]">
+            <h2 className="mt-7 max-w-[92%] font-display text-[30px] leading-[1.08] text-[var(--lit-text)] sm:max-w-[78%] sm:text-[38px]">
               <>
-                <span className="block">Hoy también es un día para</span>
-                <span className="block">crecer en santidad</span>
+                <span className="block">Hoy también es un día</span>
+                <span className="block">para crecer en santidad</span>
               </>
             </h2>
 
             <p
-              className="mt-5 max-w-[66%] leading-[1.55] text-[var(--lit-text)]"
+              className="mt-7 max-w-[70%] leading-[1.52] text-[var(--lit-text)]"
               style={{
                 fontFamily: READING_FONT_FAMILIES[readingPreferences.fuente],
                 fontSize: `${Math.min(readingPreferences.tam, 17)}px`,
