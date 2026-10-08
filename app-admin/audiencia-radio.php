@@ -104,16 +104,6 @@ require __DIR__ . '/includes/header.php';
 
   <div class="audience-grid-main">
     <section class="audience-panel audience-map-card">
-      <div class="audience-map-controls">
-        <div class="audience-map-switch">
-          <label><input type="radio" name="audience-map-mode" value="all" checked> <span>All</span></label>
-          <label><input type="radio" name="audience-map-mode" value="station"> <span>Station</span></label>
-        </div>
-        <select id="audience-station" class="audience-station-select" disabled>
-          <option value="">Seleccionar estación</option>
-          <option value="main">La Voz de Jesús</option>
-        </select>
-      </div>
       <div class="audience-map-stats">
         <div class="audience-map-stat"><strong id="map-country-count">0</strong><span>Countries</span></div>
         <div class="audience-map-stat"><strong id="map-listener-count">0</strong><span>Total Listeners</span></div>
