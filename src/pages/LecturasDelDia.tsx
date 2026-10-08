@@ -485,17 +485,17 @@ const SantoView = ({
           }}
         />
         <div className="relative flex min-h-[300px] items-center px-5 py-7 sm:min-h-[320px] sm:px-7 sm:py-8">
-          <div className="w-full max-w-[64%] min-w-0 sm:max-w-[66%]">
+          <div className="w-full max-w-[78%] min-w-0 sm:max-w-[76%]">
             <div className="flex items-center gap-3">
               <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f7ead1] text-[#c08a19]">
                 <Sparkles className="h-6 w-6" />
               </span>
-              <p className="max-w-[calc(100%-60px)] text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#c69222]">
+              <p className="whitespace-nowrap text-[13px] font-extrabold uppercase tracking-[0.12em] text-[#c69222]">
                 Caminemos con Cristo
               </p>
             </div>
 
-            <h2 className="mt-4 max-w-full font-display text-[27px] leading-[1.12] text-[var(--lit-text)] sm:text-[32px]">
+            <h2 className="mt-4 max-w-[78%] font-display text-[27px] leading-[1.12] text-[var(--lit-text)] sm:max-w-[76%] sm:text-[32px]">
               Hoy también es un día para crecer en santidad
             </h2>
 
