@@ -26,23 +26,16 @@ require __DIR__ . '/includes/header.php';
 .audience-grid-main{display:grid;grid-template-columns:minmax(0,2.15fr) minmax(300px,1fr);gap:16px}
 .audience-panel{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 5px 18px rgba(15,23,42,.05);overflow:hidden}
 .audience-map-card{padding:0!important}
-.audience-map-controls{padding:20px 22px 10px}
-.audience-map-switch{display:flex;align-items:center;gap:18px;margin-bottom:14px;color:#667085;font-size:16px}
-.audience-map-switch label{display:flex;align-items:center;gap:8px;cursor:pointer}
-.audience-map-switch input{appearance:none;width:22px;height:22px;border:3px solid #cfd3d7;border-radius:50%;background:#fff;position:relative}
-.audience-map-switch input:checked{border-color:#3da6d9}
-.audience-map-switch input:checked:after{content:"";position:absolute;inset:3px;border-radius:50%;background:#3da6d9}
-.audience-station-select{width:100%;min-height:48px;border:1px solid #d6d9dd;border-radius:8px;background:#fff;padding:8px 12px;color:#667085;font-size:16px}
 .audience-map-stats{display:grid;grid-template-columns:1fr 1fr;text-align:center;padding:24px 18px 4px}
 .audience-map-stat strong{display:block;font-size:38px;line-height:1;color:#4aa9d8;font-weight:500}
 .audience-map-stat span{display:block;margin-top:8px;font-size:16px;color:#667085}
-.audience-map-card #audience-map{min-height:420px;background:#fff}
-.audience-map-card #audience-map svg{height:420px}
+.audience-map-card #audience-map{min-height:560px;background:#fff}
+.audience-map-card #audience-map svg{height:560px}
 .audience-map-legend{display:flex;align-items:center;gap:10px;padding:0 28px 20px;color:#344054;font-size:13px}
 .audience-map-gradient{height:14px;flex:0 1 180px;border-radius:2px;background:linear-gradient(90deg,#d9f0f8,#54b5dc,#168bc2)}
 .audience-live-legend{padding:0 28px 18px;color:#667085;font-size:12px}
 .audience-map-tooltip{position:absolute;display:none;padding:10px 13px;background:#fff;color:#111827;border:1px solid #cfd3d7;border-radius:4px;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.12);pointer-events:none;z-index:3;min-width:130px}
-@media(max-width:720px){.audience-map-controls{padding:18px 18px 8px}.audience-map-stats{padding-top:20px}.audience-map-stat strong{font-size:32px}.audience-map-card #audience-map,.audience-map-card #audience-map svg{min-height:390px;height:390px}}
+.audience-map-stats{padding-top:20px}.audience-map-stat strong{font-size:32px}.audience-map-card #audience-map,.audience-map-card #audience-map svg{min-height:500px;height:500px}}
 .audience-panel-head{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:15px 17px;border-bottom:1px solid #edf0f4}
 .audience-panel-head h3{margin:0;font-size:16px;color:var(--navy)}
 .audience-panel-body{padding:16px}
@@ -286,10 +279,10 @@ async function drawMap(countries, liveRows=[]){
     document.getElementById("map-listener-count").textContent=fmt(totalListeners);
     document.getElementById("map-max-value").textContent=fmt(maxListeners);
 
-    host.innerHTML='<svg viewBox="0 0 960 420" aria-label="Mapa mundial de audiencia"></svg><div class="audience-map-tooltip" id="map-tooltip"></div>';
+    host.innerHTML='<svg viewBox="0 0 1200 560" aria-label="Mapa mundial de audiencia"></svg><div class="audience-map-tooltip" id="map-tooltip"></div>';
     const svg=d3.select(host).select("svg");
     const geo=topojson.feature(world,world.objects.countries);
-    const projection=d3.geoNaturalEarth1().fitSize([960,420],geo);
+    const projection=d3.geoNaturalEarth1().fitSize([1200,560],geo);
     const path=d3.geoPath(projection);
 
     const byCode={
