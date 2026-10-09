@@ -46,7 +46,14 @@ require __DIR__ . '/includes/header.php';
 .audience-map-legend{display:flex;align-items:center;gap:10px;padding:0 20px 12px;color:#475467;font-size:11px}
 .audience-map-gradient{height:10px;flex:0 1 160px;border-radius:5px;background:linear-gradient(90deg,#d9f0f8,#54b5dc,#168bc2)}
 .audience-live-legend{padding:0 20px 15px;color:#98a2b3;font-size:10px}
-.audience-map-tooltip{position:absolute;display:none;padding:9px 11px;background:#10233f;color:#fff;border-radius:8px;font-size:11px;box-shadow:0 5px 15px rgba(0,0,0,.16);pointer-events:none;z-index:3;min-width:130px}
+.audience-map-tooltip{position:absolute;display:none;padding:12px;background:#10233f;color:#fff;border-radius:10px;font-size:12px;box-shadow:0 5px 15px rgba(0,0,0,.16);pointer-events:auto;z-index:3;width:min(250px,calc(100% - 16px));max-height:220px;overflow:auto;min-width:0}
+.map-tooltip-close{float:right;border:0;background:rgba(255,255,255,.16);color:#fff;border-radius:50%;width:24px;height:24px;font-size:18px;line-height:20px;cursor:pointer}
+.map-tooltip-title{display:block;font-size:14px;padding-right:28px}
+.map-tooltip-count{margin:4px 0 8px;color:#bcecff;font-weight:700}
+.map-tooltip-people{list-style:none;padding:0;margin:0}
+.map-tooltip-people li{padding:7px 0;border-top:1px solid rgba(255,255,255,.16)}
+.map-tooltip-people li strong,.map-tooltip-people li span{display:block}
+.map-tooltip-people li span{font-size:11px;color:#d5e0ed;margin-top:2px}
 .audience-panel-head{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:14px 16px;border-bottom:1px solid #edf0f4}
 .audience-panel-head h3{margin:0;font-size:15px;color:var(--aud-navy)}
 .audience-panel-body{padding:15px}
@@ -374,16 +381,37 @@ async function drawMap(countries, liveRows=[]){
       .style("cursor","pointer");
 
     const tip=host.querySelector("#map-tooltip");
+    const countryCode = value => {
+      const raw = String(value || "").trim();
+      if (raw.length === 2) return raw.toUpperCase();
+      return byCode[raw] || byCode[raw.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "")] || raw.toUpperCase();
+    };
+
     svg.selectAll("path")
       .on("click",(event,feature)=>{
+        event.stopPropagation();
         const name=String(feature.properties?.name||"");
         const code=(feature.properties?.iso_a2 || feature.properties?.ISO_A2 || feature.properties?.iso2 || byCode[name] || name).toString().toUpperCase();
         const value=valuesByCode[code] || 0;
         if(!value) { tip.style.display="none"; return; }
+        const people=(liveRows||[]).filter(row=>countryCode(row.pais)===code);
+        const peopleHtml=people.length
+          ? people.map(row=>{
+              const personName=row.usuario_nombre||"Oyente invitado";
+              const kind=row.usuario_id?"Registrado":"Invitado";
+              const city=[row.ciudad,row.region].filter(Boolean).join(", ");
+              return "<li><strong>"+esc(personName)+"</strong><span>"+esc(kind)+(city?" · "+esc(city):"")+"</span></li>";
+            }).join("")
+          : "<li><strong>Sin detalle disponible</strong><span>El país registra audiencia, pero no hay sesiones activas en este momento.</span></li>";
+        tip.innerHTML="<button type='button' class='map-tooltip-close' aria-label='Cerrar'>×</button><strong class='map-tooltip-title'>"+esc(name)+"</strong><div class='map-tooltip-count'>"+fmt(value)+" "+(value===1?"oyente conectado":"oyentes conectados")+"</div><ul class='map-tooltip-people'>"+peopleHtml+"</ul>";
         tip.style.display="block";
-        tip.style.left=(event.offsetX+12)+"px";
-        tip.style.top=(event.offsetY+12)+"px";
-        tip.innerHTML="<strong>"+esc(name)+"</strong><br>Oyentes: <b>"+fmt(value)+"</b>";
+        const hostRect=host.getBoundingClientRect();
+        const x=event.clientX-hostRect.left+12;
+        const y=event.clientY-hostRect.top+12;
+        tip.style.left=Math.max(8,Math.min(x,host.clientWidth-240))+"px";
+        tip.style.top=Math.max(8,Math.min(y,host.clientHeight-150))+"px";
+        const close=tip.querySelector(".map-tooltip-close");
+        if(close) close.addEventListener("click",()=>{tip.style.display="none";});
       });
 
     // No dibujar puntos por municipio ni por sesión. La audiencia se representa
@@ -393,7 +421,7 @@ async function drawMap(countries, liveRows=[]){
     });
 
     document.addEventListener("pointerdown", (event) => {
-      if (!tip.contains(event.target)) tip.style.display = "none";
+      if (!tip.contains(event.target) && !event.target.closest("#audience-map svg")) tip.style.display = "none";
     }, { passive: true });
 
     document.getElementById("map-live-count").textContent=fmt(totalListeners);
