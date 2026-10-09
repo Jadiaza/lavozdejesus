@@ -441,9 +441,9 @@ async function drawMap(countries, liveRows=[], periodUnique=0){
       if (event.target === svg.node()) tip.style.display = "none";
     });
 
-    document.addEventListener("pointerdown", (event) => {
+    document.onpointerdown = (event) => {
       if (!tip.contains(event.target) && !event.target.closest("#audience-map svg")) tip.style.display = "none";
-    }, { passive: true });
+    };
 
 
     document.getElementById("map-live-pill-text").textContent=fmt(liveRows.length)+(liveRows.length===1?" conectado":" conectados");
