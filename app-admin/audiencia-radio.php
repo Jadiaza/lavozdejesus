@@ -326,16 +326,14 @@ async function drawMap(countries, liveRows=[]){
       import("https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-50m.json/+esm")
     ]);
 
-    const liveCountries = {};
-    (liveRows || []).forEach(row => {
-      const raw = String(row.pais || "").trim();
-      if (!raw) return;
-      const key = raw.toUpperCase();
-      liveCountries[key] = (liveCountries[key] || 0) + 1;
-    });
-    const mapCountries = Object.entries(liveCountries).map(([pais, oyentes]) => ({pais, oyentes}));
+    // El mapa tipo Zeno representa la audiencia agregada del periodo seleccionado,
+    // no solamente las sesiones que siguen conectadas en este instante.
+    const mapCountries = (countries || []).map(row => ({
+      pais: String(row.pais || "").trim(),
+      oyentes: Number(row.oyentes || 0)
+    })).filter(row => row.pais && row.oyentes > 0);
     const countryCount = mapCountries.length;
-    const totalListeners = (liveRows || []).length;
+    const totalListeners = mapCountries.reduce((sum,row)=>sum+Number(row.oyentes||0),0);
     const maxListeners = Math.max(1,...mapCountries.map(row=>Number(row.oyentes||0)));
     document.getElementById("map-country-count").textContent=fmt(countryCount);
     document.getElementById("map-listener-count").textContent=fmt(totalListeners);
@@ -358,7 +356,8 @@ async function drawMap(countries, liveRows=[]){
     const valuesByCode={};
     mapCountries.forEach(row=>{
       const raw=String(row.pais||"").trim();
-      const code=raw.length===2 ? raw.toUpperCase() : (byCode[raw] || raw);
+      const normalized=raw.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "");
+      const code=raw.length===2 ? raw.toUpperCase() : (byCode[raw] || byCode[normalized] || raw.toUpperCase());
       if(code) valuesByCode[code]=Number(row.oyentes||0);
     });
 
@@ -394,16 +393,7 @@ async function drawMap(countries, liveRows=[]){
         const code=(feature.properties?.iso_a2 || feature.properties?.ISO_A2 || feature.properties?.iso2 || byCode[name] || name).toString().toUpperCase();
         const value=valuesByCode[code] || 0;
         if(!value) { tip.style.display="none"; return; }
-        const people=(liveRows||[]).filter(row=>countryCode(row.pais)===code);
-        const peopleHtml=people.length
-          ? people.map(row=>{
-              const personName=row.usuario_nombre||"Oyente invitado";
-              const kind=row.usuario_id?"Registrado":"Invitado";
-              const city=[row.ciudad,row.region].filter(Boolean).join(", ");
-              return "<li><strong>"+esc(personName)+"</strong><span>"+esc(kind)+(city?" · "+esc(city):"")+"</span></li>";
-            }).join("")
-          : "<li><strong>Sin detalle disponible</strong><span>El país registra audiencia, pero no hay sesiones activas en este momento.</span></li>";
-        tip.innerHTML="<button type='button' class='map-tooltip-close' aria-label='Cerrar'>×</button><strong class='map-tooltip-title'>"+esc(name)+"</strong><div class='map-tooltip-count'>"+fmt(value)+" "+(value===1?"oyente conectado":"oyentes conectados")+"</div><ul class='map-tooltip-people'>"+peopleHtml+"</ul>";
+        tip.innerHTML="<button type='button' class='map-tooltip-close' aria-label='Cerrar'>×</button><strong class='map-tooltip-title'>"+esc(name)+"</strong><div class='map-tooltip-count'>Oyentes: <b>"+fmt(value)+"</b></div>";
         tip.style.display="block";
         const hostRect=host.getBoundingClientRect();
         const x=event.clientX-hostRect.left+12;
