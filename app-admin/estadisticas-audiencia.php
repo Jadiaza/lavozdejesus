@@ -115,11 +115,13 @@ require __DIR__ . '/includes/header.php';
   </div>
 
   <section class="audience-kpis">
-    <article class="audience-kpi"><div class="kpi-icon">👥</div><span>Oyentes ahora</span><strong id="kpi-connected">—</strong><small>Conectados en este momento</small></article>
+    <article class="audience-kpi"><div class="kpi-icon">✓</div><span>Sesiones completadas</span><strong id="kpi-connected">—</strong><small>Reproducciones finalizadas</small></article>
     <article class="audience-kpi"><div class="kpi-icon">🌎</div><span>Oyentes únicos</span><strong id="kpi-unique">—</strong><small id="kpi-unique-detail">Registrados + invitados</small></article>
-    <article class="audience-kpi"><div class="kpi-icon">▶</div><span>Sesiones hoy</span><strong id="kpi-sessions">—</strong><small>Inicios de reproducción</small></article>
-    <article class="audience-kpi"><div class="kpi-icon">◷</div><span>Tiempo promedio</span><strong id="kpi-duration">—</strong><small>Duración de escucha</small></article>
+    <article class="audience-kpi"><div class="kpi-icon">▶</div><span>Sesiones totales</span><strong id="kpi-sessions">—</strong><small>Inicios de reproducción</small></article>
+    <article class="audience-kpi"><div class="kpi-icon">◷</div><span>Promedio por sesión</span><strong id="kpi-duration">—</strong><small>Tiempo medio de escucha</small></article>
     <article class="audience-kpi"><div class="kpi-icon">🌐</div><span>Países</span><strong id="kpi-countries">—</strong><small>Con audiencia registrada</small></article>
+    <article class="audience-kpi"><div class="kpi-icon">◷</div><span>Sesiones por hora</span><strong id="kpi-avg-hour">—</strong><small>Promedio del período</small></article>
+    <article class="audience-kpi"><div class="kpi-icon">♫</div><span>Horas de escucha</span><strong id="kpi-hours">—</strong><small>Tiempo acumulado</small></article>
   </section>
 
   <div class="audience-grid-main">
@@ -145,7 +147,7 @@ require __DIR__ . '/includes/header.php';
 
   <div class="audience-two">
     <section class="audience-panel audience-mini-card">
-      <div class="audience-panel-head"><h3>Oyentes por hora</h3><span class="audience-range">Hoy</span></div>
+      <div class="audience-panel-head"><h3>Sesiones por hora</h3><span class="audience-range">Horario de Colombia</span></div>
       <div class="audience-panel-body"><div class="chart" id="hourly-chart"></div></div>
     </section>
 
@@ -215,12 +217,14 @@ async function getJson(url){
 
 function renderSummary(data){
   state.summary=data;
-  document.getElementById("kpi-connected").textContent=fmt(data.connected);
+  document.getElementById("kpi-connected").textContent=fmt(data.completed_sessions);
   document.getElementById("kpi-unique").textContent=fmt(data.unique_today);
   document.getElementById("kpi-unique-detail").textContent="Registrados "+fmt(data.registered_unique)+" · Invitados "+fmt(data.guest_unique);
   document.getElementById("kpi-sessions").textContent=fmt(data.sessions_today);
   document.getElementById("kpi-duration").textContent=duration(data.avg_duration_minutes);
   document.getElementById("kpi-countries").textContent=fmt(data.countries_count);
+  document.getElementById("kpi-avg-hour").textContent=Number(data.average_sessions_per_hour||0).toLocaleString("es-CO",{maximumFractionDigits:2});
+  document.getElementById("kpi-hours").textContent=Number(data.total_listening_hours||0).toLocaleString("es-CO",{maximumFractionDigits:2})+" h";
   document.getElementById("country-range").textContent=from.value===to.value?from.value:"Periodo seleccionado";
 
   const countries=(data.countries||[]).map(x=>({...x,pais:({CO:"Colombia",US:"Estados Unidos",MX:"México",PE:"Perú",BR:"Brasil",AR:"Argentina",CL:"Chile",EC:"Ecuador",PA:"Panamá",VE:"Venezuela",ES:"España",CA:"Canadá"}[String(x.pais||"").toUpperCase()] || x.pais)}));
