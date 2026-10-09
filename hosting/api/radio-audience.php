@@ -422,7 +422,7 @@ try {
     $guestStmt->execute(['from' => $from, 'to' => $to]);
     $guestUnique = (int) $guestStmt->fetchColumn();
 
-    $avgStmt = $pdo->prepare("SELECT COALESCE(AVG(NULLIF(duracion_segundos,0)),0) FROM lvj_rad_sesiones WHERE inicio_at BETWEEN :from AND :to");
+    $avgStmt = $pdo->prepare("SELECT COALESCE(AVG(CASE WHEN duracion_segundos > 0 THEN duracion_segundos WHEN estado = 'activo' THEN GREATEST(0, TIMESTAMPDIFF(SECOND, inicio_at, UTC_TIMESTAMP())) ELSE NULL END),0) FROM lvj_rad_sesiones WHERE inicio_at BETWEEN :from AND :to");
     $avgStmt->execute(['from' => $from, 'to' => $to]);
     $avgDuration = (float) ($avgStmt->fetchColumn() ?: 0);
 
@@ -439,7 +439,7 @@ try {
     $citiesRows = $citiesStmt->fetchAll();
 
     $hourly = array_fill(0, 24, 0);
-    $hourStmt = $pdo->prepare("SELECT HOUR(inicio_at) hora, COUNT(*) sesiones FROM lvj_rad_sesiones WHERE inicio_at BETWEEN :from AND :to GROUP BY HOUR(inicio_at)");
+    $hourStmt = $pdo->prepare("SELECT HOUR(DATE_SUB(inicio_at, INTERVAL 5 HOUR)) hora, COUNT(*) sesiones FROM lvj_rad_sesiones WHERE inicio_at BETWEEN :from AND :to GROUP BY HOUR(DATE_SUB(inicio_at, INTERVAL 5 HOUR))");
     $hourStmt->execute(['from' => $from, 'to' => $to]);
     foreach ($hourStmt->fetchAll() as $row) $hourly[(int) $row['hora']] = (int) $row['sesiones'];
 
@@ -479,13 +479,15 @@ try {
     $toInput = trim((string) ($_GET['to'] ?? ''));
     $conditions = [];
     $params = [];
+    $tzBogota = new DateTimeZone('America/Bogota');
+    $tzUtc = new DateTimeZone('UTC');
     if (preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $fromInput)) {
       $conditions[] = 's.inicio_at >= :from';
-      $params['from'] = $fromInput . ' 00:00:00';
+      $params['from'] = (new DateTimeImmutable($fromInput . ' 00:00:00', $tzBogota))->setTimezone($tzUtc)->format('Y-m-d H:i:s');
     }
     if (preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $toInput)) {
       $conditions[] = 's.inicio_at <= :to';
-      $params['to'] = $toInput . ' 23:59:59';
+      $params['to'] = (new DateTimeImmutable($toInput . ' 23:59:59', $tzBogota))->setTimezone($tzUtc)->format('Y-m-d H:i:s');
     }
     $where = $conditions ? 'WHERE ' . implode(' AND ', $conditions) : '';
     $stmt = $pdo->prepare('
