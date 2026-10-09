@@ -395,8 +395,12 @@ try {
     $since = gmdate('Y-m-d H:i:s', time() - ($minutes * 60));
     $fromInput = trim((string) ($_GET['from'] ?? ''));
     $toInput = trim((string) ($_GET['to'] ?? ''));
-    $from = preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $fromInput) ? $fromInput . ' 00:00:00' : gmdate('Y-m-d 00:00:00');
-    $to = preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $toInput) ? $toInput . ' 23:59:59' : gmdate('Y-m-d 23:59:59');
+    $tzBogota = new DateTimeZone('America/Bogota');
+    $tzUtc = new DateTimeZone('UTC');
+    $fromDate = preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $fromInput) ? $fromInput : (new DateTimeImmutable('now', $tzBogota))->format('Y-m-d');
+    $toDate = preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $toInput) ? $toInput : (new DateTimeImmutable('now', $tzBogota))->format('Y-m-d');
+    $from = (new DateTimeImmutable($fromDate . ' 00:00:00', $tzBogota))->setTimezone($tzUtc)->format('Y-m-d H:i:s');
+    $to = (new DateTimeImmutable($toDate . ' 23:59:59', $tzBogota))->setTimezone($tzUtc)->format('Y-m-d H:i:s');
 
     $connectedStmt = $pdo->prepare("SELECT COUNT(*) FROM lvj_rad_sesiones WHERE estado = 'activo' AND ultima_actividad_at >= :since");
     $connectedStmt->execute(['since' => $since]);
