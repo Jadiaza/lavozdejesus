@@ -125,12 +125,12 @@ require __DIR__ . '/includes/header.php';
         <span class="map-live-pill"><i></i><span id="map-live-pill-text">0 conectados</span></span>
       </div>
       <div class="audience-map-stats">
-        <div class="audience-map-stat"><strong id="map-country-count">0</strong><span>Países conectados</span></div>
-        <div class="audience-map-stat"><strong id="map-listener-count">0</strong><span>Oyentes conectados</span></div>
+        <div class="audience-map-stat"><strong id="map-country-count">0</strong><span>Países con audiencia</span></div>
+        <div class="audience-map-stat"><strong id="map-listener-count">0</strong><span>Oyentes únicos del período</span></div>
       </div>
       <div class="audience-panel-body" id="audience-map"><div class="map-loading">Cargando mapa…</div><div class="audience-map-tooltip" id="map-tooltip"></div></div>
       <div class="audience-map-legend"><span>1</span><div class="audience-map-gradient"></div><span id="map-max-value">0</span></div>
-      <div class="audience-live-legend">● Oyentes conectados · <strong id="map-live-count">0</strong> ubicados aproximadamente · Ubicación aproximada, no se almacena la IP original.</div>
+      <div class="audience-live-legend">Audiencia registrada en el período seleccionado · Ubicación aproximada, no se almacena la IP original.</div>
     </section>
 
     <section class="audience-panel">
@@ -288,7 +288,7 @@ async function load(){
     const sessions=await getJson(API+"?action=sessions&from="+encodeURIComponent(from.value)+"&to="+encodeURIComponent(to.value)+"&limit=100");
     renderSessions(sessions.sessions||[]);
     const live = await loadLive();
-    await drawMap(data.countries||[], live);
+    await drawMap(data.countries||[], live, data.unique_today||0);
   }catch(error){
     console.error(error);
     document.getElementById("country-list").innerHTML="<div class='audience-note'>Error al cargar la audiencia.</div>";
@@ -300,7 +300,7 @@ async function loadLive(){
     const data=await getJson(API+"?action=live&minutes=5");
     const live=data.sessions||[];
     renderLive(live);
-    if (state.summary) await drawMap(state.summary.countries||[], live);
+    if (state.summary) await drawMap(state.summary.countries||[], live, state.summary.unique_today||0);
     return live;
   }catch(error){
     console.error(error);
@@ -317,7 +317,7 @@ async function showDetail(id){
   }catch(error){alert(error.message);}
 }
 
-async function drawMap(countries, liveRows=[]){
+async function drawMap(countries, liveRows=[], periodUnique=0){
   const host=document.getElementById("audience-map");
   try{
     const [d3,topojson,world]=await Promise.all([
@@ -333,7 +333,7 @@ async function drawMap(countries, liveRows=[]){
       oyentes: Number(row.oyentes || 0)
     })).filter(row => row.pais && row.oyentes > 0);
     const countryCount = mapCountries.length;
-    const totalListeners = mapCountries.reduce((sum,row)=>sum+Number(row.oyentes||0),0);
+    const totalListeners = Number(periodUnique) || mapCountries.reduce((sum,row)=>sum+Number(row.oyentes||0),0);
     const maxListeners = Math.max(1,...mapCountries.map(row=>Number(row.oyentes||0)));
     document.getElementById("map-country-count").textContent=fmt(countryCount);
     document.getElementById("map-listener-count").textContent=fmt(totalListeners);
@@ -414,7 +414,7 @@ async function drawMap(countries, liveRows=[]){
       if (!tip.contains(event.target) && !event.target.closest("#audience-map svg")) tip.style.display = "none";
     }, { passive: true });
 
-    document.getElementById("map-live-count").textContent=fmt(totalListeners);
+
     document.getElementById("map-live-pill-text").textContent=fmt(liveRows.length)+(liveRows.length===1?" conectado":" conectados");
     document.getElementById("live-count-pill").textContent=fmt(liveRows.length)+(liveRows.length===1?" conectado ahora":" conectados ahora");
   }catch(error){
