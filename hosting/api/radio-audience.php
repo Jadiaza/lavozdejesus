@@ -391,7 +391,7 @@ try {
   }
 
   if ($method === 'GET' && $action === 'summary') {
-    $minutes = max(1, min(10, (int) ($_GET['minutes'] ?? 2)));
+    $minutes = max(1, min(10, (int) ($_GET['minutes'] ?? 5)));
     $since = gmdate('Y-m-d H:i:s', time() - ($minutes * 60));
     $fromInput = trim((string) ($_GET['from'] ?? ''));
     $toInput = trim((string) ($_GET['to'] ?? ''));
@@ -459,7 +459,7 @@ try {
   }
 
   if ($method === 'GET' && $action === 'live') {
-    $minutes = max(1, min(10, (int) ($_GET['minutes'] ?? 2)));
+    $minutes = max(1, min(10, (int) ($_GET['minutes'] ?? 5)));
     $since = gmdate('Y-m-d H:i:s', time() - ($minutes * 60));
     $stmt = $pdo->prepare("
       SELECT s.*, u.nombre AS usuario_nombre
