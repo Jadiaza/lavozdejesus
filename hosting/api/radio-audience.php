@@ -458,6 +458,21 @@ try {
     ]);
   }
 
+  if ($method === 'GET' && $action === 'live') {
+    $minutes = max(1, min(10, (int) ($_GET['minutes'] ?? 2)));
+    $since = gmdate('Y-m-d H:i:s', time() - ($minutes * 60));
+    $stmt = $pdo->prepare("
+      SELECT s.*, u.nombre AS usuario_nombre
+      FROM lvj_rad_sesiones s
+      LEFT JOIN lvj_com_usuarios u ON u.id = s.usuario_id
+      WHERE s.estado = 'activo' AND s.ultima_actividad_at >= :since
+      ORDER BY s.ultima_actividad_at DESC
+      LIMIT 200
+    ");
+    $stmt->execute(['since' => $since]);
+    audience_json(['success' => true, 'sessions' => $stmt->fetchAll(), 'minutes' => $minutes]);
+  }
+
   if ($method === 'GET' && $action === 'sessions') {
     $limit = max(1, min(200, (int) ($_GET['limit'] ?? 50)));
     $fromInput = trim((string) ($_GET['from'] ?? ''));
