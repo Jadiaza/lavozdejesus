@@ -180,7 +180,7 @@ const API = <?php echo json_encode($apiUrl); ?>;
 const state = { summary:null, sessions:[], live:[] };
 
 const today = new Date();
-const iso = d => d.toISOString().slice(0,10);
+const iso = d => new Intl.DateTimeFormat("en-CA",{timeZone:"America/Bogota",year:"numeric",month:"2-digit",day:"2-digit"}).format(d);
 const from = document.getElementById("aud-from");
 const to = document.getElementById("aud-to");
 from.value = iso(today); to.value = iso(today);
@@ -338,7 +338,7 @@ async function drawMap(countries, liveRows=[]){
     host.innerHTML='<svg viewBox="0 0 1200 400" preserveAspectRatio="xMidYMid meet" width="100%" height="100%" aria-label="Mapa mundial de audiencia"></svg><div class="audience-map-tooltip" id="map-tooltip"></div>';
     const svg=d3.select(host).select("svg");
     const geo=topojson.feature(world,world.objects.countries);
-    const projection=d3.geoNaturalEarth1().scale(190).translate([600,200]);
+    const projection=d3.geoNaturalEarth1().scale(270).translate([600,200]);
     const path=d3.geoPath(projection);
 
     const byCode={
