@@ -290,9 +290,8 @@ async function load(){
 
 async function loadLive(){
   try{
-    const data=await getJson(API+"?action=sessions&from="+encodeURIComponent(iso(new Date(Date.now()-86400000)))+"&to="+encodeURIComponent(iso(new Date()))+"&limit=200");
-    const cutoff=Date.now()-2*60*1000;
-    const live=(data.sessions||[]).filter(x=>x.ultima_actividad_at && new Date(String(x.ultima_actividad_at).replace(" ","T")+"Z").getTime()>=cutoff && x.estado === "activo");
+    const data=await getJson(API+"?action=live&minutes=2");
+    const live=data.sessions||[];
     renderLive(live);
     if (state.summary) await drawMap(state.summary.countries||[], live);
     return live;
