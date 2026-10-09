@@ -414,6 +414,17 @@ try {
     $sessionsStmt->execute(['from' => $from, 'to' => $to]);
     $sessionsToday = (int) $sessionsStmt->fetchColumn();
 
+    $completedStmt = $pdo->prepare("SELECT COUNT(*) FROM lvj_rad_sesiones WHERE estado = 'finalizado' AND inicio_at BETWEEN :from AND :to");
+    $completedStmt->execute(['from' => $from, 'to' => $to]);
+    $completedSessions = (int) $completedStmt->fetchColumn();
+
+    $durationTotalStmt = $pdo->prepare("SELECT COALESCE(SUM(CASE WHEN duracion_segundos > 0 THEN duracion_segundos WHEN estado = 'activo' THEN GREATEST(0, TIMESTAMPDIFF(SECOND, inicio_at, UTC_TIMESTAMP())) ELSE 0 END),0) FROM lvj_rad_sesiones WHERE inicio_at BETWEEN :from AND :to");
+    $durationTotalStmt->execute(['from' => $from, 'to' => $to]);
+    $totalListeningSeconds = (int) $durationTotalStmt->fetchColumn();
+
+    $periodDays = max(1, (int) ((new DateTimeImmutable($toDate, $tzBogota))->diff(new DateTimeImmutable($fromDate, $tzBogota))->days) + 1);
+    $averageSessionsPerHour = $sessionsToday / ($periodDays * 24);
+
     $registeredStmt = $pdo->prepare("SELECT COUNT(DISTINCT usuario_id) FROM lvj_rad_sesiones WHERE usuario_id IS NOT NULL AND inicio_at BETWEEN :from AND :to");
     $registeredStmt->execute(['from' => $from, 'to' => $to]);
     $registeredUnique = (int) $registeredStmt->fetchColumn();
@@ -450,6 +461,9 @@ try {
       'registered_unique' => $registeredUnique,
       'guest_unique' => $guestUnique,
       'sessions_today' => $sessionsToday,
+      'completed_sessions' => $completedSessions,
+      'average_sessions_per_hour' => round($averageSessionsPerHour, 2),
+      'total_listening_hours' => round($totalListeningSeconds / 3600, 2),
       'avg_duration_minutes' => round($avgDuration / 60, 1),
       'countries_count' => $countries,
       'countries' => $countriesRows,
