@@ -398,7 +398,8 @@ async function drawMap(countries, liveRows=[], periodUnique=0){
       .attr("d",path)
       .attr("fill",feature=>{
         const name=String(feature.properties?.name||"");
-        const code=(feature.properties?.iso_a2 || feature.properties?.ISO_A2 || feature.properties?.iso2 || byCode[name] || name).toString().toUpperCase();
+        const rawCode=String(feature.properties?.iso_a2 || feature.properties?.ISO_A2 || feature.properties?.iso2 || "").toUpperCase();
+        const code=(rawCode.length===2 && rawCode!=="-99" ? rawCode : (byCode[name] || name)).toString().toUpperCase();
         const value=valuesByCode[code] || 0;
         return value>0 ? color(value) : "#f4f5f6";
       })
@@ -417,10 +418,13 @@ async function drawMap(countries, liveRows=[], periodUnique=0){
       .on("click",(event,feature)=>{
         event.stopPropagation();
         const name=String(feature.properties?.name||"");
-        const code=(feature.properties?.iso_a2 || feature.properties?.ISO_A2 || feature.properties?.iso2 || byCode[name] || name).toString().toUpperCase();
+        const rawCode=String(feature.properties?.iso_a2 || feature.properties?.ISO_A2 || feature.properties?.iso2 || "").toUpperCase();
+        const code=(rawCode.length===2 && rawCode!=="-99" ? rawCode : (byCode[name] || name)).toString().toUpperCase();
         const value=valuesByCode[code] || 0;
         if(!value) { tip.style.display="none"; return; }
-        tip.innerHTML="<button type='button' class='map-tooltip-close' aria-label='Cerrar'>×</button><strong class='map-tooltip-title'>"+esc(name)+"</strong><div class='map-tooltip-count'>Oyentes: <b>"+fmt(value)+"</b></div>";
+        const connected=liveRows.filter(row=>countryCode(row.pais)===code);
+        const people=connected.length ? "<ul class='map-tooltip-people'>"+connected.map(row=>"<li>"+esc(row.usuario_nombre||"Oyente invitado")+" · "+esc(row.ciudad||"Ubicación desconocida")+"</li>").join("")+"</ul>" : "";
+        tip.innerHTML="<button type='button' class='map-tooltip-close' aria-label='Cerrar'>×</button><strong class='map-tooltip-title'>"+esc(name)+"</strong><div class='map-tooltip-count'>Oyentes conectados: <b>"+fmt(value)+"</b></div>"+people;
         tip.style.display="block";
         const hostRect=host.getBoundingClientRect();
         const x=event.clientX-hostRect.left+12;
