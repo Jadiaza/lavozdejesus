@@ -495,7 +495,7 @@ const SantoView = ({
               </p>
             </div>
 
-            <h2 className="mt-7 max-w-none font-display text-[27px] leading-[1.08] text-[var(--lit-text)] sm:text-[38px]">
+            <h2 className="mt-7 max-w-none font-display text-[27px] leading-[1.08] text-[#17130f] sm:text-[38px]">
               <>
                 <span className="block whitespace-nowrap">Hoy también es un día</span>
                 <span className="block whitespace-nowrap">para crecer en santidad</span>
@@ -503,11 +503,12 @@ const SantoView = ({
             </h2>
 
             <p
-              className="mt-7 max-w-[70%] leading-[1.52] text-[var(--lit-text)]"
+              className="mt-7 max-w-[70%] leading-[1.52] text-[#34302a]"
               style={{
                 fontFamily: READING_FONT_FAMILIES[readingPreferences.fuente],
                 fontSize: `${Math.min(readingPreferences.tam, 17)}px`,
                 fontWeight: readingPreferences.pesoFuente,
+                color: "#34302a",
                 lineHeight: readingPreferences.interlineado,
                 textAlign:
                   readingPreferences.alineacion === "justificada"
