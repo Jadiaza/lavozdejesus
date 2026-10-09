@@ -275,7 +275,7 @@ function renderSessions(rows){
 
 async function load(){
   try{
-    const params=new URLSearchParams({action:"summary",from:from.value,to:to.value,minutes:"2"});
+    const params=new URLSearchParams({action:"summary",from:from.value,to:to.value,minutes:"5"});
     const data=await getJson(API+"?"+params);
     renderSummary(data);
     const sessions=await getJson(API+"?action=sessions&from="+encodeURIComponent(from.value)+"&to="+encodeURIComponent(to.value)+"&limit=100");
@@ -290,7 +290,7 @@ async function load(){
 
 async function loadLive(){
   try{
-    const data=await getJson(API+"?action=live&minutes=2");
+    const data=await getJson(API+"?action=live&minutes=5");
     const live=data.sessions||[];
     renderLive(live);
     if (state.summary) await drawMap(state.summary.countries||[], live);
