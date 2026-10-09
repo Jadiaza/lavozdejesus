@@ -379,57 +379,24 @@ async function drawMap(countries, liveRows=[]){
         const name=String(feature.properties?.name||"");
         const code=(feature.properties?.iso_a2 || feature.properties?.ISO_A2 || feature.properties?.iso2 || byCode[name] || name).toString().toUpperCase();
         const value=valuesByCode[code] || 0;
-        if(!value) return;
+        if(!value) { tip.style.display="none"; return; }
         tip.style.display="block";
         tip.style.left=(event.offsetX+12)+"px";
         tip.style.top=(event.offsetY+12)+"px";
         tip.innerHTML="<strong>"+esc(name)+"</strong><br>Oyentes: <b>"+fmt(value)+"</b>";
       });
 
-    // Older sessions may not have coordinates saved. If we know the country,
-    // place a clearly approximate marker at its centroid instead of hiding the listener.
-    const countryCentroids = {
-      CO: [-74.3, 4.6], US: [-98.5, 39.8], MX: [-102.5, 23.6],
-      CA: [-106.3, 56.1], AR: [-64.0, -34.0], CL: [-71.0, -30.0],
-      BR: [-51.9, -10.8], PE: [-75.0, -9.2], EC: [-78.2, -1.4],
-      PA: [-80.0, 8.5], VE: [-66.0, 8.0], ES: [-3.7, 40.4],
-      FR: [2.2, 46.2], DE: [10.4, 51.2], GB: [-3.4, 55.4],
-      IT: [12.6, 42.8], PT: [-8.2, 39.6]
-    };
-    const mappedLive = (liveRows || []).map(row => {
-      const lat = Number(row.latitud);
-      const lon = Number(row.longitud);
-      if (row.latitud !== null && row.latitud !== "" && row.longitud !== null && row.longitud !== "" && Number.isFinite(lat) && Number.isFinite(lon)) {
-        return { ...row, _mapLat: lat, _mapLon: lon, _approximateMap: false };
-      }
-      const country = String(row.pais || "").trim().toUpperCase();
-      const centroid = countryCentroids[country];
-      return centroid ? { ...row, _mapLon: centroid[0], _mapLat: centroid[1], _approximateMap: true } : null;
-    }).filter(Boolean);
-    const liveLayer=svg.append("g").attr("aria-label","Oyentes conectados");
-
-    mappedLive.forEach(row=>{
-      const projected=projection([Number(row._mapLon),Number(row._mapLat)]);
-      if(!projected) return;
-      const [x,y]=projected;
-      const name=row.usuario_nombre||"Oyente invitado";
-      const type=row.usuario_id?"Registrado":"Invitado";
-      const location=[row.ciudad,row.pais].filter(Boolean).join(", ")||"Ubicación aproximada";
-
-      liveLayer.append("circle")
-        .attr("cx",x).attr("cy",y).attr("r",5.5)
-        .attr("fill",row.usuario_id?"#1769aa":"#d19a00")
-        .attr("stroke","#fff").attr("stroke-width","1.5")
-        .style("cursor","pointer")
-        .on("click",(event)=>{
-          tip.style.display="block";
-          tip.style.left=(event.offsetX+12)+"px";
-          tip.style.top=(event.offsetY+12)+"px";
-          tip.innerHTML="<strong>"+esc(name)+"</strong><br>"+esc(type)+"<br>"+esc(location)+"<br><small>" + (row._approximateMap ? "Ubicación aproximada por país" : "Ubicación aproximada") + "</small>";
-        });
+    // No dibujar puntos por municipio ni por sesión. La audiencia se representa
+    // únicamente coloreando los países; al tocar un país se muestra su resumen.
+    svg.on("click.map-dismiss", (event) => {
+      if (event.target === svg.node()) tip.style.display = "none";
     });
 
-    document.getElementById("map-live-count").textContent=fmt(mappedLive.length);
+    document.addEventListener("pointerdown", (event) => {
+      if (!tip.contains(event.target)) tip.style.display = "none";
+    }, { passive: true });
+
+    document.getElementById("map-live-count").textContent=fmt(totalListeners);
     document.getElementById("map-live-pill-text").textContent=fmt(liveRows.length)+(liveRows.length===1?" conectado":" conectados");
     document.getElementById("live-count-pill").textContent=fmt(liveRows.length)+(liveRows.length===1?" conectado ahora":" conectados ahora");
   }catch(error){
