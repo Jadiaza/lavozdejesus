@@ -4,8 +4,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/includes/auth.php';
 require_login();
 
-$pageTitle = 'Audiencia de Radio';
-$pageSubtitle = 'Personas que escuchan La Voz de Jesús · registrados e invitados';
+$pageTitle = 'Audiencia en vivo';
+$pageSubtitle = 'Conexiones activas en este momento · mapa, países, ciudades y oyentes';
 $apiUrl = '../api/radio-audience.php';
 require __DIR__ . '/includes/header.php';
 ?>
@@ -94,13 +94,17 @@ require __DIR__ . '/includes/header.php';
 .audience-empty{padding:26px;text-align:center;color:#98a2b3;font-size:12px}
 @media(max-width:1180px){.audience-kpis{grid-template-columns:repeat(3,1fr)}.audience-two{grid-template-columns:1fr 1fr}.audience-grid-main{grid-template-columns:1fr}}
 @media(max-width:760px){.audience-shell{gap:12px}.audience-toolbar{align-items:flex-start}.audience-toolbar h2{font-size:21px}.audience-kpis{grid-template-columns:repeat(2,1fr);gap:9px}.audience-kpi{padding:12px}.audience-kpi strong{font-size:24px}.audience-kpi .kpi-icon{width:28px;height:28px;font-size:14px}.audience-two{grid-template-columns:1fr}.audience-map-card #audience-map{min-height:320px;height:320px}.audience-map-card #audience-map svg{width:100%;height:320px;min-height:320px;display:block;overflow:hidden}.audience-map-stat strong{font-size:28px}}
+
+/* Esta pantalla es exclusivamente de audiencia en vivo. */
+.audience-filters,.audience-kpis,.audience-two,.audience-panel:has(#session-body){display:none!important}
+@media(max-width:760px){.audience-map-card #audience-map,.audience-map-card #audience-map svg{height:340px;min-height:340px}}
 </style>
 
 <div class="audience-shell" id="radio-audience">
   <div class="audience-toolbar">
     <div>
-      <h2>Radio / Audiencia</h2>
-      <p>Desde dónde nos escuchan · descubre cómo La Voz de Jesús llega al mundo.</p>
+      <h2>Audiencia en vivo</h2>
+      <p>Ubicación aproximada de quienes están escuchando La Voz de Jesús ahora.</p>
     </div>
     <div class="audience-filters">
       <label>Desde<input id="aud-from" type="date"></label>
@@ -125,17 +129,21 @@ require __DIR__ . '/includes/header.php';
         <span class="map-live-pill"><i></i><span id="map-live-pill-text">0 conectados</span></span>
       </div>
       <div class="audience-map-stats">
-        <div class="audience-map-stat"><strong id="map-country-count">0</strong><span>Países con audiencia</span></div>
-        <div class="audience-map-stat"><strong id="map-listener-count">0</strong><span>Oyentes únicos del período</span></div>
+        <div class="audience-map-stat"><strong id="map-country-count">0</strong><span>Países conectados</span></div>
+        <div class="audience-map-stat"><strong id="map-listener-count">0</strong><span>Oyentes conectados</span></div>
       </div>
       <div class="audience-panel-body" id="audience-map"><div class="map-loading">Cargando mapa…</div><div class="audience-map-tooltip" id="map-tooltip"></div></div>
       <div class="audience-map-legend"><span>1</span><div class="audience-map-gradient"></div><span id="map-max-value">0</span></div>
-      <div class="audience-live-legend">Audiencia registrada en el período seleccionado · Ubicación aproximada, no se almacena la IP original.</div>
+      <div class="audience-live-legend">Solo conexiones activas · ubicación aproximada; no se almacena la IP original.</div>
     </section>
 
     <section class="audience-panel">
-      <div class="audience-panel-head"><h3>Top países</h3><span class="audience-range" id="country-range"></span></div>
+      <div class="audience-panel-head"><h3>Países conectados</h3><span class="audience-range" id="country-range"></span></div>
       <div class="audience-panel-body"><div class="country-list" id="country-list"></div></div>
+    </section>
+    <section class="audience-panel">
+      <div class="audience-panel-head"><h3>Ciudades conectadas</h3><span class="audience-range">En vivo</span></div>
+      <div class="audience-panel-body"><div class="country-list" id="live-city-list"><div class="audience-empty">Cargando conexiones…</div></div></div>
     </section>
   </div>
 
@@ -280,19 +288,35 @@ function renderSessions(rows){
   }).join("");
 }
 
+function normalizeCountry(value){
+  const raw=String(value||"").trim();
+  const codeNames={CO:"Colombia",US:"Estados Unidos",MX:"México",PE:"Perú",BR:"Brasil",AR:"Argentina",CL:"Chile",EC:"Ecuador",PA:"Panamá",VE:"Venezuela",ES:"España",CA:"Canadá"};
+  return codeNames[raw.toUpperCase()]||raw||"Desconocido";
+}
+function renderLiveLocations(rows){
+  const countries={};
+  const cities={};
+  (rows||[]).forEach(row=>{
+    const country=normalizeCountry(row.pais);
+    const city=String(row.ciudad||"Ubicación desconocida").trim()||"Ubicación desconocida";
+    countries[country]=(countries[country]||0)+1;
+    const key=city+"|"+country;
+    if(!cities[key])cities[key]={ciudad:city,pais:country,oyentes:0};
+    cities[key].oyentes++;
+  });
+  const countryRows=Object.entries(countries).sort((a,b)=>b[1]-a[1]);
+  const countryMax=Math.max(1,...countryRows.map(x=>x[1]));
+  document.getElementById("country-list").innerHTML=countryRows.length?countryRows.map(([name,count])=>`
+    <div class="country-row"><span class="flag">🌐</span><div><strong>${esc(name)}</strong><div class="bar"><i style="width:${Math.max(3,Math.round(count/countryMax*100))}%"></i></div></div><b>${fmt(count)}</b></div>`).join(""):"<div class='audience-empty'>No hay países con oyentes conectados.</div>";
+  const cityRows=Object.values(cities).sort((a,b)=>b.oyentes-a.oyentes);
+  const cityMax=Math.max(1,...cityRows.map(x=>x.oyentes));
+  document.getElementById("live-city-list").innerHTML=cityRows.length?cityRows.map(x=>`
+    <div class="country-row"><span class="flag">📍</span><div><strong>${esc(x.ciudad)}</strong><small>${esc(x.pais)}</small><div class="bar"><i style="width:${Math.max(3,Math.round(x.oyentes/cityMax*100))}%"></i></div></div><b>${fmt(x.oyentes)}</b></div>`).join(""):"<div class='audience-empty'>No hay ciudades con oyentes conectados.</div>";
+  return countryRows.map(([pais,oyentes])=>({pais,oyentes}));
+}
+
 async function load(){
-  try{
-    const params=new URLSearchParams({action:"summary",from:from.value,to:to.value,minutes:"5"});
-    const data=await getJson(API+"?"+params);
-    renderSummary(data);
-    const sessions=await getJson(API+"?action=sessions&from="+encodeURIComponent(from.value)+"&to="+encodeURIComponent(to.value)+"&limit=100");
-    renderSessions(sessions.sessions||[]);
-    const live = await loadLive();
-    await drawMap(data.countries||[], live, data.unique_today||0);
-  }catch(error){
-    console.error(error);
-    document.getElementById("country-list").innerHTML="<div class='audience-note'>Error al cargar la audiencia.</div>";
-  }
+  await loadLive();
 }
 
 async function loadLive(){
@@ -300,10 +324,13 @@ async function loadLive(){
     const data=await getJson(API+"?action=live&minutes=5");
     const live=data.sessions||[];
     renderLive(live);
-    if (state.summary) await drawMap(state.summary.countries||[], live, state.summary.unique_today||0);
+    const liveCountries=renderLiveLocations(live);
+    await drawMap(liveCountries, live, live.length);
     return live;
   }catch(error){
     console.error(error);
+    document.getElementById("country-list").innerHTML="<div class='audience-note'>Error al cargar países conectados.</div>";
+    document.getElementById("live-city-list").innerHTML="<div class='audience-note'>Error al cargar ciudades conectadas.</div>";
     return [];
   }
 }
@@ -436,7 +463,7 @@ document.getElementById("aud-refresh").addEventListener("click",load);
 document.getElementById("aud-live-refresh").addEventListener("click",loadLive);
 document.getElementById("aud-export").addEventListener("click",exportCsv);
 load();
-setInterval(loadLive,60000);
+setInterval(loadLive,30000);
 </script>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>
