@@ -481,21 +481,25 @@ const SantoView = ({
           aria-hidden="true"
           style={{
             background:
-              "linear-gradient(90deg, rgba(255,253,247,1) 0%, rgba(255,253,247,.98) 28%, rgba(255,253,247,.88) 43%, rgba(255,253,247,.58) 58%, rgba(255,253,247,.20) 76%, rgba(255,253,247,0) 100%)",
+              readingPreferences.tema === "oscuro"
+                ? "linear-gradient(90deg, rgba(12,12,12,.96) 0%, rgba(12,12,12,.91) 28%, rgba(12,12,12,.78) 43%, rgba(12,12,12,.52) 58%, rgba(12,12,12,.18) 76%, rgba(12,12,12,.04) 100%)"
+                : readingPreferences.tema === "sepia"
+                  ? "linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,.98) 28%, rgba(255,255,255,.90) 43%, rgba(255,255,255,.62) 58%, rgba(255,255,255,.22) 76%, rgba(255,255,255,0) 100%)"
+                  : "linear-gradient(90deg, rgba(255,253,247,1) 0%, rgba(255,253,247,.98) 28%, rgba(255,253,247,.88) 43%, rgba(255,253,247,.58) 58%, rgba(255,253,247,.20) 76%, rgba(255,253,247,0) 100%)",
           }}
         />
         <div className="relative flex min-h-[430px] items-start px-5 py-7 sm:min-h-[470px] sm:px-8 sm:py-9">
           <div className="w-full min-w-0">
             <div className="flex items-center gap-3">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f7ead1]/95 text-[#c08a19]">
+              <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${readingPreferences.tema === "oscuro" ? "bg-black/70 text-[#e2bd56]" : readingPreferences.tema === "sepia" ? "bg-white text-black" : "bg-[#f7ead1]/95 text-[#c08a19]"}`}>
                 <Sparkles className="h-6 w-6" />
               </span>
-              <p className="whitespace-nowrap text-[13px] font-extrabold uppercase tracking-[0.12em] text-[#c69222] sm:text-[14px]">
+              <p className={`whitespace-nowrap text-[13px] font-extrabold uppercase tracking-[0.12em] sm:text-[14px] ${readingPreferences.tema === "oscuro" ? "text-[#e2bd56]" : readingPreferences.tema === "sepia" ? "text-black" : "text-[#c69222]"}`}>
                 Caminemos con Cristo
               </p>
             </div>
 
-            <h2 className="mt-7 max-w-none font-display text-[27px] leading-[1.08] text-[#17130f] sm:text-[38px]">
+            <h2 className={`mt-7 max-w-none font-display text-[27px] leading-[1.08] sm:text-[38px] ${readingPreferences.tema === "oscuro" ? "text-[#fffaf0]" : "text-[#17130f]"}`}>
               <>
                 <span className="block whitespace-nowrap">Hoy también es un día</span>
                 <span className="block whitespace-nowrap">para crecer en santidad</span>
@@ -503,12 +507,12 @@ const SantoView = ({
             </h2>
 
             <p
-              className="mt-7 max-w-[70%] leading-[1.52] text-[#34302a]"
+              className={`mt-7 max-w-[70%] leading-[1.52] ${readingPreferences.tema === "oscuro" ? "text-[#f2eee4]" : readingPreferences.tema === "sepia" ? "text-[#222222]" : "text-[#34302a]"}`}
               style={{
                 fontFamily: READING_FONT_FAMILIES[readingPreferences.fuente],
                 fontSize: `${Math.min(readingPreferences.tam, 17)}px`,
                 fontWeight: readingPreferences.pesoFuente,
-                color: "#34302a",
+                color: readingPreferences.tema === "oscuro" ? "#f2eee4" : readingPreferences.tema === "sepia" ? "#222222" : "#34302a",
                 lineHeight: readingPreferences.interlineado,
                 textAlign:
                   readingPreferences.alineacion === "justificada"
