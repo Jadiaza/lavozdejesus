@@ -386,11 +386,30 @@ async function drawMap(countries, liveRows=[]){
         tip.innerHTML="<strong>"+esc(name)+"</strong><br>Oyentes: <b>"+fmt(value)+"</b>";
       });
 
-    const mappedLive=liveRows.filter(row=>Number.isFinite(Number(row.latitud)) && Number.isFinite(Number(row.longitud)));
+    // Older sessions may not have coordinates saved. If we know the country,
+    // place a clearly approximate marker at its centroid instead of hiding the listener.
+    const countryCentroids = {
+      CO: [-74.3, 4.6], US: [-98.5, 39.8], MX: [-102.5, 23.6],
+      CA: [-106.3, 56.1], AR: [-64.0, -34.0], CL: [-71.0, -30.0],
+      BR: [-51.9, -10.8], PE: [-75.0, -9.2], EC: [-78.2, -1.4],
+      PA: [-80.0, 8.5], VE: [-66.0, 8.0], ES: [-3.7, 40.4],
+      FR: [2.2, 46.2], DE: [10.4, 51.2], GB: [-3.4, 55.4],
+      IT: [12.6, 42.8], PT: [-8.2, 39.6]
+    };
+    const mappedLive = (liveRows || []).map(row => {
+      const lat = Number(row.latitud);
+      const lon = Number(row.longitud);
+      if (row.latitud !== null && row.latitud !== "" && row.longitud !== null && row.longitud !== "" && Number.isFinite(lat) && Number.isFinite(lon)) {
+        return { ...row, _mapLat: lat, _mapLon: lon, _approximateMap: false };
+      }
+      const country = String(row.pais || "").trim().toUpperCase();
+      const centroid = countryCentroids[country];
+      return centroid ? { ...row, _mapLon: centroid[0], _mapLat: centroid[1], _approximateMap: true } : null;
+    }).filter(Boolean);
     const liveLayer=svg.append("g").attr("aria-label","Oyentes conectados");
 
     mappedLive.forEach(row=>{
-      const projected=projection([Number(row.longitud),Number(row.latitud)]);
+      const projected=projection([Number(row._mapLon),Number(row._mapLat)]);
       if(!projected) return;
       const [x,y]=projected;
       const name=row.usuario_nombre||"Oyente invitado";
@@ -406,7 +425,7 @@ async function drawMap(countries, liveRows=[]){
           tip.style.display="block";
           tip.style.left=(event.offsetX+12)+"px";
           tip.style.top=(event.offsetY+12)+"px";
-          tip.innerHTML="<strong>"+esc(name)+"</strong><br>"+esc(type)+"<br>"+esc(location)+"<br><small>Ubicación aproximada</small>";
+          tip.innerHTML="<strong>"+esc(name)+"</strong><br>"+esc(type)+"<br>"+esc(location)+"<br><small>" + (row._approximateMap ? "Ubicación aproximada por país" : "Ubicación aproximada") + "</small>";
         });
     });
 
