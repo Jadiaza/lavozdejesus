@@ -459,11 +459,9 @@ const SantoView = ({
   liturgia: LiturgiaDia | null;
   readingPreferences: ReadingPreferences;
 }) => {
-  const celebracion = liturgia?.celebracion?.trim() ?? "";
-  const tieneCelebracionEspecial =
-    Boolean(celebracion) && !/^feria(?: del tiempo ordinario)?$/i.test(celebracion);
-
-  if (!santo?.nombre && !tieneCelebracionEspecial) {
+  // Si no existe un santo publicado para la fecha, mostrar siempre la tarjeta pastoral.
+  // No llamar getSantoPresentation con null: algunas ferias tienen una descripción litúrgica distinta.
+  if (!santo?.nombre) {
     return (
       <article
         className="relative overflow-hidden rounded-2xl border-2 border-[var(--lit-border)] bg-[var(--lit-surface)] shadow-[0_14px_32px_-28px_rgba(8,35,71,0.32)]"
