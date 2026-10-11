@@ -157,6 +157,8 @@ const renderReadingText = (
             /^(Palabra de Dios|Palabra del Señor)\.?$/i.test(line.trim());
           const isReadingSubtitle =
             /^lectura\s+(de|del)\s+/i.test(line.trim());
+          const isScriptureCitation =
+            /^(?:[1-3]\s*)?[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+\s+\d+\s*,\s*\d+(?:[-–]\d+)?(?:\s*\([^)]*(?:forma\s+(?:breve|corta|larga))[^)]*\))?\.?$/i.test(line.trim());
 
           const headingMatch = line.match(/^##\s+(.+)$/);
           const quoteMatch = line.match(/^>\s*(.*)$/);
@@ -177,6 +179,10 @@ const renderReadingText = (
           ) : isReadingSubtitle ? (
             <strong className="block mb-3 font-extrabold text-[var(--lit-text)]">
               {renderFormattedInline(line, `${paragraphIndex}-reading-subtitle-${lineIndex}`)}
+            </strong>
+          ) : isScriptureCitation ? (
+            <strong className="font-bold text-[#c69222]">
+              {renderFormattedInline(line, `${paragraphIndex}-scripture-citation-${lineIndex}`)}
             </strong>
           ) : isClosingFormula ? (
             <strong className="font-extrabold text-[var(--lit-text)]">
