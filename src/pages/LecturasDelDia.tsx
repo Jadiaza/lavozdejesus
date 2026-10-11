@@ -155,6 +155,8 @@ const renderReadingText = (
             mode === "psalm" ? line.split(/(\b[VR](?:\/)?\.)/gi) : null;
           const isClosingFormula =
             /^(Palabra de Dios|Palabra del Señor)\.?$/i.test(line.trim());
+          const isReadingSubtitle =
+            /^lectura\s+(de|del)\s+/i.test(line.trim());
 
           const headingMatch = line.match(/^##\s+(.+)$/);
           const quoteMatch = line.match(/^>\s*(.*)$/);
@@ -172,6 +174,10 @@ const renderReadingText = (
             <span className="block pl-5 before:content-['•'] before:-ml-4 before:mr-2 before:text-[#c69222]">
               {renderFormattedInline(listMatch[1], `${paragraphIndex}-list-${lineIndex}`)}
             </span>
+          ) : isReadingSubtitle ? (
+            <strong className="block mb-3 font-extrabold text-[var(--lit-text)]">
+              {renderFormattedInline(line, `${paragraphIndex}-reading-subtitle-${lineIndex}`)}
+            </strong>
           ) : isClosingFormula ? (
             <strong className="font-extrabold text-[var(--lit-text)]">
               {renderFormattedInline(line, `${paragraphIndex}-formula-${lineIndex}`)}
