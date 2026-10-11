@@ -159,6 +159,8 @@ const renderReadingText = (
             /^lectura\s+(de|del)\s+/i.test(line.trim());
           const isScriptureCitation =
             /^(?:[1-3]\s*)?[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+\s+\d+\s*,\s*\d+(?:[-–]\d+)?(?:\s*\([^)]*(?:forma\s+(?:breve|corta|larga))[^)]*\))?\.?$/i.test(line.trim());
+          const isShortFormRestart =
+            /a todos los que encuentren,?\s*ll[aá]menlos a la boda/i.test(line.trim());
 
           const headingMatch = line.match(/^##\s+(.+)$/);
           const quoteMatch = line.match(/^>\s*(.*)$/);
@@ -179,6 +181,10 @@ const renderReadingText = (
           ) : isReadingSubtitle ? (
             <strong className="block mb-3 font-extrabold text-[var(--lit-text)]">
               {renderFormattedInline(line, `${paragraphIndex}-reading-subtitle-${lineIndex}`)}
+            </strong>
+          ) : isShortFormRestart ? (
+            <strong className="font-bold italic text-[#c69222]">
+              {renderFormattedInline(line, `${paragraphIndex}-short-form-restart-${lineIndex}`)}
             </strong>
           ) : isScriptureCitation ? (
             <strong className="font-bold text-[#c69222]">
