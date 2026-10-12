@@ -241,6 +241,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
       }
     }
+  } elseif ((string) ($_POST['action'] ?? '') === 'create_json') {
+    $rawJson = trim((string) ($_POST['json_content'] ?? ''));
+    if ($rawJson === '') {
+      $error = 'El JSON no puede estar vacío.';
+    } else {
+      try {
+        $decoded = json_decode($rawJson, true, 128, JSON_THROW_ON_ERROR);
+      } catch (JsonException $jsonError) {
+        $decoded = null;
+        $error = 'JSON inválido: ' . $jsonError->getMessage();
+      }
+
+      $payload = is_array($decoded) && isset($decoded['liturgia_del_dia']) && is_array($decoded['liturgia_del_dia'])
+        ? $decoded['liturgia_del_dia']
+        : null;
+      if ($error === '' && $payload === null) {
+        $error = 'El JSON debe contener el objeto "liturgia_del_dia".';
+      }
+
+      if ($error === '' && is_array($payload)) {
+        $fecha = liturgia_admin_text($payload['fecha'] ?? '');
+        $date = DateTimeImmutable::createFromFormat('!Y-m-d', $fecha);
+        if (!$date || $date->format('Y-m-d') !== $fecha) {
+          $error = 'Debes indicar una fecha válida con formato AAAA-MM-DD.';
+        } else {
+          $duplicateSql = 'SELECT id FROM lvj_lit_lectura_dia WHERE fecha = :fecha';
+          if ($hasDeletedAt) $duplicateSql .= ' AND deleted_at IS NULL';
+          $duplicateSql .= ' LIMIT 1';
+          $duplicate = $pdo->prepare($duplicateSql);
+          $duplicate->execute(['fecha' => $fecha]);
+          if ($duplicate->fetch()) {
+            $error = 'Ya existe una Liturgia para esa fecha. Abre el registro existente para editarlo por JSON.';
+          } else {
+            $data = ['fecha' => $fecha];
+            foreach ($editableFields as $field) {
+              if (!isset($columns[$field]) || $field === 'fecha') continue;
+              $value = liturgia_admin_text($payload[$field] ?? '');
+              if ($value !== '') $data[$field] = $value;
+            }
+            $estado = strtolower(liturgia_admin_text($payload['estado'] ?? 'borrador'));
+            $estado = $estado === 'publicado' ? 'publicado' : 'borrador';
+            $data['estado'] = liturgia_admin_state_value($columns, $estado);
+            if (isset($columns['fuente'])) {
+              $data['fuente'] = liturgia_admin_text($payload['fuente'] ?? 'Manual JSON') ?: 'Manual JSON';
+            }
+            foreach (['created_at', 'updated_at'] as $timestampField) {
+              if (isset($columns[$timestampField])) $data[$timestampField] = date('Y-m-d H:i:s');
+            }
+
+            if ($estado === 'publicado') {
+              $publishError = liturgia_admin_required_for_publish($data);
+              if ($publishError !== '') $error = $publishError;
+            }
+
+            if ($error === '') {
+              try {
+                $insertData = array_intersect_key($data, $columns);
+                $fields = array_keys($insertData);
+                $quotedFields = array_map(static fn (string $field): string => '`' . $field . '`', $fields);
+                $placeholders = array_map(static fn (string $field): string => ':' . $field, $fields);
+                $stmt = $pdo->prepare('INSERT INTO lvj_lit_lectura_dia (' . implode(', ', $quotedFields) . ') VALUES (' . implode(', ', $placeholders) . ')');
+                $stmt->execute($insertData);
+                $newId = (int) $pdo->lastInsertId();
+                log_activity('create_json', $table, $newId, 'Liturgia creada manualmente por JSON como ' . $estado);
+                header('Location: liturgia-dia.php?edit=' . $newId . '&vista=json&saved=' . ($estado === 'publicado' ? 'published' : 'draft'));
+                exit;
+              } catch (Throwable $createError) {
+                $error = 'No se pudo crear la Liturgia desde JSON: ' . $createError->getMessage();
+              }
+            }
+          }
+        }
+      }
+    }
   } elseif ((string) ($_POST['action'] ?? '') === 'save_json') {
     $id = max(0, (int) ($_POST['id'] ?? 0));
     $rawJson = trim((string) ($_POST['json_content'] ?? ''));
@@ -455,6 +529,7 @@ require __DIR__ . '/includes/header.php';
       <p class="muted">Revisa las lecturas recibidas desde Ordo antes de publicarlas en la PWA.</p>
     </div>
     <div class="content-actions-bar">
+      <a class="btn btn-gold" href="liturgia-dia.php?nuevo_json=1">Crear por JSON</a>
       <a class="btn btn-soft" href="lectio-divina.php">Lectio Divina</a>
       <a class="btn btn-soft" href="santoral-dia.php">Santo del Día</a>
     </div>
@@ -478,7 +553,63 @@ require __DIR__ . '/includes/header.php';
 </section>
 <?php endif; ?>
 
-<?php if ($editRow): ?>
+<?php $newJsonMode = (string) ($_GET['nuevo_json'] ?? '') === '1'; ?>
+<?php if ($newJsonMode): ?>
+<section class="panel content-editor-panel">
+  <div class="panel-header">
+    <div><h2>Crear Liturgia del Día por JSON</h2><p class="muted">Ingresa las lecturas manualmente. Se guardará como borrador para revisión.</p></div>
+    <a class="btn btn-soft" href="liturgia-dia.php">Volver</a>
+  </div>
+  <?php
+    $newLiturgiaJson = [
+      'liturgia_del_dia' => [
+        'fecha' => date('Y-m-d'),
+        'tiempo_liturgico' => '',
+        'celebracion' => '',
+        'grado_celebracion' => '',
+        'color_liturgico' => '',
+        'primera_lectura_cita' => '',
+        'primera_lectura_texto' => '',
+        'salmo_cita' => '',
+        'salmo_respuesta' => '',
+        'salmo_texto' => '',
+        'segunda_lectura_cita' => '',
+        'segunda_lectura_texto' => '',
+        'evangelio_cita' => '',
+        'evangelio_texto' => '',
+        'fuente' => 'Manual JSON',
+        'estado' => 'borrador'
+      ]
+    ];
+    $newLiturgiaJsonText = json_encode($newLiturgiaJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  ?>
+  <form method="post" class="content-form" id="liturgia-new-json-form">
+    <?php echo csrf_field(); ?>
+    <input type="hidden" name="action" value="create_json">
+    <label class="content-field full"><span>JSON de Liturgia del Día</span>
+      <textarea id="liturgia-new-json-editor" name="json_content" rows="32" spellcheck="false" style="width:100%;box-sizing:border-box;font-family:ui-monospace,monospace;line-height:1.55;white-space:pre;tab-size:2;background:#fff;color:#111827;border:1px solid rgba(212,175,55,.55);border-radius:14px;padding:18px;resize:vertical;"><?php echo e((string) $newLiturgiaJsonText); ?></textarea>
+    </label>
+    <p class="muted">Obligatorio para crear: <code>fecha</code>. Para publicar, completa primera lectura, salmo y Evangelio; si no, guarda como borrador.</p>
+    <div class="form-actions">
+      <button class="btn btn-soft" type="button" data-new-json-format>Formatear JSON</button>
+      <button class="btn btn-gold" type="submit">Crear registro</button>
+      <a class="btn btn-soft" href="liturgia-dia.php">Cancelar</a>
+    </div>
+  </form>
+  <script>
+  document.querySelector('[data-new-json-format]')?.addEventListener('click', function () {
+    const editor = document.getElementById('liturgia-new-json-editor');
+    try { editor.value = JSON.stringify(JSON.parse(editor.value), null, 2); }
+    catch (error) { alert('JSON inválido: ' + error.message); }
+  });
+  document.getElementById('liturgia-new-json-form')?.addEventListener('submit', function (event) {
+    const editor = document.getElementById('liturgia-new-json-editor');
+    try { JSON.parse(editor.value); }
+    catch (error) { event.preventDefault(); alert('Corrige el JSON: ' + error.message); }
+  });
+  </script>
+</section>
+<?php elseif ($editRow): ?>
 <section class="panel content-editor-panel">
   <div class="panel-header">
     <div>
