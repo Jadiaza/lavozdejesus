@@ -41,28 +41,42 @@ function santoral_admin_status(string $value): string
   return in_array($value, ['borrador', 'publicado'], true) ? $value : 'borrador';
 }
 
-function santoral_admin_is_marian(string $name, string $date = ''): bool
+function santoral_admin_is_marian(string $name, string $date = '', string $classification = ''): bool
 {
-  $normalized = function_exists('mb_strtolower')
-    ? mb_strtolower(trim($name), 'UTF-8')
-    : strtolower(trim($name));
+  $normalize = static function (string $value): string {
+    $value = function_exists('mb_strtolower')
+      ? mb_strtolower(trim($value), 'UTF-8')
+      : strtolower(trim($value));
+    return strtr($value, [
+      'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u',
+      'ñ' => 'n',
+    ]);
+  };
 
-  $normalized = strtr($normalized, [
-    'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u',
-  ]);
+  $normalizedName = $normalize($name);
+  $normalizedClassification = $normalize($classification);
 
-  return str_contains($normalized, 'virgen maria del rosario')
-    || str_contains($normalized, 'nuestra senora del rosario')
-    || preg_match('/-10-07$/', trim($date)) === 1;
+  if (str_contains($normalizedClassification, 'marian')
+    || str_contains($normalizedClassification, 'advocacion')
+    || str_contains($normalizedClassification, 'nuestra senora')
+    || str_contains($normalizedClassification, 'virgen maria')) {
+    return true;
+  }
+
+  return str_contains($normalizedName, 'nuestra senora')
+    || str_contains($normalizedName, 'virgen maria')
+    || str_contains($normalizedName, 'bienaventurada virgen')
+    || str_contains($normalizedName, 'santisima virgen')
+    || str_contains($normalizedName, 'madre de dios')
+    || str_contains($normalizedName, 'advocacion mariana');
 }
 
-function santoral_admin_required_for_publish(array $data, string $name, string $date = ''): string
+function santoral_admin_required_for_publish(array $data, string $name, string $date = '', string $classification = ''): string
 {
-  $isMarian = santoral_admin_is_marian($name, $date);
+  $isMarian = santoral_admin_is_marian($name, $date, $classification);
 
-  // Las celebraciones marianas no se validan como si fueran biografías de santos.
-  // Para ellas exigimos únicamente el núcleo pastoral que debe estar disponible
-  // para presentar la celebración en la PWA.
+  // Las celebraciones marianas no se validan como biografías de santos.
+  // Mantienen el núcleo pastoral, pero no exigen lucha ni secreto de santidad.
   if ($isMarian) {
     $required = [
       'frase_destacada' => 'Frase destacada',
