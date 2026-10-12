@@ -427,11 +427,29 @@ const DesktopSidebar = ({
   </aside>
 );
 
+const normalizeSantoClassification = (value: string) =>
+  value.trim().toLocaleLowerCase("es-CO").normalize("NFD").replace(/[\\u0300-\\u036f]/g, "");
+
+const isMarianCelebration = (santo: SantoDelDia) => {
+  const name = normalizeSantoClassification(santo.nombre || "");
+  const classification = normalizeSantoClassification(santo.titulo || "");
+  return classification.includes("marian")
+    || classification.includes("advocacion")
+    || classification.includes("nuestra senora")
+    || classification.includes("virgen maria")
+    || name.includes("nuestra senora")
+    || name.includes("virgen maria")
+    || name.includes("bienaventurada virgen")
+    || name.includes("santisima virgen")
+    || name.includes("madre de dios")
+    || name.includes("advocacion mariana");
+};
+
 const getSantoPresentation = (santo: SantoDelDia) => {
-  const normalizedName = santo.nombre.trim().toLocaleLowerCase("es-CO");
-  const isRosario = normalizedName.includes("virgen maría del rosario")
-    || normalizedName.includes("nuestra señora del rosario")
-    || (santo.fecha === "2026-10-07");
+  const normalizedName = normalizeSantoClassification(santo.nombre || "");
+  const isRosario = normalizedName.includes("virgen maria del rosario")
+    || normalizedName.includes("nuestra senora del rosario");
+  const isMarian = isMarianCelebration(santo);
 
   if (isRosario) {
     return {
@@ -440,8 +458,22 @@ const getSantoPresentation = (santo: SantoDelDia) => {
       title: "Nuestra Señora del Rosario",
       subtitle: "Memoria de la Bienaventurada Virgen María del Rosario",
       sections: [
-        ["lucha_que_enfrento", "Camino de fe"],
-        ["secreto_de_santidad", "El secreto de su santidad"],
+        ["ensenanza_para_hoy", "Enseñanza para hoy"],
+        ["como_puedo_imitarlo", "Cómo puedo imitarla"],
+        ["paso_concreto", "Paso concreto para hoy"],
+        ["oracion_intercesion", "Oración de intercesión"],
+      ] as Array<[string, string]>,
+      tabLabel: "María",
+    };
+  }
+
+  if (isMarian) {
+    return {
+      isMarian: true,
+      eyebrow: "Celebración mariana",
+      title: santo.nombre,
+      subtitle: santo.titulo || "Celebración mariana",
+      sections: [
         ["ensenanza_para_hoy", "Enseñanza para hoy"],
         ["como_puedo_imitarlo", "Cómo puedo imitarla"],
         ["paso_concreto", "Paso concreto para hoy"],
