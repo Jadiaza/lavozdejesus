@@ -428,7 +428,7 @@ const DesktopSidebar = ({
 );
 
 const normalizeSantoClassification = (value: string) =>
-  value.trim().toLocaleLowerCase("es-CO").normalize("NFD").replace(/[\\u0300-\\u036f]/g, "");
+  value.trim().toLocaleLowerCase("es-CO").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
 const isMarianCelebration = (santo: SantoDelDia) => {
   const name = normalizeSantoClassification(santo.nombre || "");
