@@ -733,12 +733,17 @@ require __DIR__ . '/includes/header.php';
     <?php
       $previewImage = santoral_admin_text($editRow['imagen_url'] ?? '');
       $hasPreviewImage = $previewImage !== '' && preg_match('/^https?:\/\//i', $previewImage) === 1;
+      $isMarianPreview = santoral_admin_is_marian(
+        santoral_admin_text($editRow['nombre'] ?? ''),
+        santoral_admin_text($editRow['fecha'] ?? ''),
+        santoral_admin_text($editRow['titulo'] ?? '')
+      );
       $previewSections = [
-        'Quién fue' => santoral_admin_text($editRow['quien_fue'] ?? ''),
-        'La lucha que enfrentó' => santoral_admin_text($editRow['lucha_que_enfrento'] ?? ''),
-        'El secreto de su santidad' => santoral_admin_text($editRow['secreto_de_santidad'] ?? ''),
+        'Quién es' => santoral_admin_text($editRow['quien_fue'] ?? ''),
+        'La lucha que enfrentó' => $isMarianPreview ? '' : santoral_admin_text($editRow['lucha_que_enfrento'] ?? ''),
+        'El secreto de su santidad' => $isMarianPreview ? '' : santoral_admin_text($editRow['secreto_de_santidad'] ?? ''),
         'Enseñanza para hoy' => santoral_admin_text($editRow['ensenanza_para_hoy'] ?? ''),
-        'Cómo puedo imitarlo' => santoral_admin_text($editRow['como_puedo_imitarlo'] ?? ''),
+        'Cómo puedo imitarla' => santoral_admin_text($editRow['como_puedo_imitarlo'] ?? ''),
         'Paso concreto para hoy' => santoral_admin_text($editRow['paso_concreto'] ?? ''),
         'Oración de intercesión' => santoral_admin_text($editRow['oracion_intercesion'] ?? ''),
       ];
@@ -770,16 +775,14 @@ require __DIR__ . '/includes/header.php';
       </article>
 
       <?php foreach ($previewSections as $sectionTitle => $sectionText): ?>
-        <article class="panel content-field full">
-          <div class="panel-header">
-            <div><span class="eyebrow">Santo del Día</span><h2><?php echo e($sectionTitle); ?></h2></div>
-          </div>
-          <?php if ($sectionText !== ''): ?>
+        <?php if ($sectionText !== ''): ?>
+          <article class="panel content-field full">
+            <div class="panel-header">
+              <div><span class="eyebrow"><?php echo $isMarianPreview ? 'Celebración mariana' : 'Santo del Día'; ?></span><h2><?php echo e($sectionTitle); ?></h2></div>
+            </div>
             <div style="white-space:pre-wrap;line-height:1.75;"><?php echo e($sectionText); ?></div>
-          <?php else: ?>
-            <p class="muted">Este campo todavía está vacío.</p>
-          <?php endif; ?>
-        </article>
+          </article>
+        <?php endif; ?>
       <?php endforeach; ?>
     </div>
 
@@ -968,14 +971,16 @@ require __DIR__ . '/includes/header.php';
         <label class="content-field full">Quién fue
           <textarea name="quien_fue" rows="7"><?php echo e((string) ($editRow['quien_fue'] ?? '')); ?></textarea>
         </label>
-        <?php if (!santoral_admin_is_marian(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['fecha'] ?? ''))): ?>
+        <?php if (!santoral_admin_is_marian(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['fecha'] ?? ''), santoral_admin_text($editRow['titulo'] ?? ''))): ?>
         <label class="content-field full">La lucha que enfrentó
           <textarea name="lucha_que_enfrento" rows="5"><?php echo e((string) ($editRow['lucha_que_enfrento'] ?? '')); ?></textarea>
         </label>
         <?php endif; ?>
+        <?php if (!santoral_admin_is_marian(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['fecha'] ?? ''), santoral_admin_text($editRow['titulo'] ?? ''))): ?>
         <label class="content-field full">El secreto de su santidad
           <textarea name="secreto_de_santidad" rows="5"><?php echo e((string) ($editRow['secreto_de_santidad'] ?? '')); ?></textarea>
         </label>
+        <?php endif; ?>
         <label class="content-field full">Enseñanza para hoy
           <textarea name="ensenanza_para_hoy" rows="5"><?php echo e((string) ($editRow['ensenanza_para_hoy'] ?? '')); ?></textarea>
         </label>
