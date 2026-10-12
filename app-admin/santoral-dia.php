@@ -739,11 +739,11 @@ require __DIR__ . '/includes/header.php';
         santoral_admin_text($editRow['titulo'] ?? '')
       );
       $previewSections = [
-        'Quién es' => santoral_admin_text($editRow['quien_fue'] ?? ''),
+        ($isMarianPreview ? 'Quién es' : 'Quién fue') => santoral_admin_text($editRow['quien_fue'] ?? ''),
         'La lucha que enfrentó' => $isMarianPreview ? '' : santoral_admin_text($editRow['lucha_que_enfrento'] ?? ''),
         'El secreto de su santidad' => $isMarianPreview ? '' : santoral_admin_text($editRow['secreto_de_santidad'] ?? ''),
         'Enseñanza para hoy' => santoral_admin_text($editRow['ensenanza_para_hoy'] ?? ''),
-        'Cómo puedo imitarla' => santoral_admin_text($editRow['como_puedo_imitarlo'] ?? ''),
+        ($isMarianPreview ? 'Cómo puedo imitarla' : 'Cómo puedo imitarlo') => santoral_admin_text($editRow['como_puedo_imitarlo'] ?? ''),
         'Paso concreto para hoy' => santoral_admin_text($editRow['paso_concreto'] ?? ''),
         'Oración de intercesión' => santoral_admin_text($editRow['oracion_intercesion'] ?? ''),
       ];
