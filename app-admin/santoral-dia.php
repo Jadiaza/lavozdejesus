@@ -196,7 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       if ($imageUrl !== '' && (!filter_var($imageUrl, FILTER_VALIDATE_URL) || !preg_match('/^https?:\/\//i', $imageUrl))) {
         $error = 'La URL de la imagen no es válida.';
       } elseif ($estado === 'publicado') {
-        $error = santoral_admin_required_for_publish($data, $name, santoral_admin_text($existing['fecha'] ?? ''));
+        $error = santoral_admin_required_for_publish($data, $name, santoral_admin_text($existing['fecha'] ?? ''), santoral_admin_text($data['titulo'] ?? $existing['titulo'] ?? ''));
       }
 
       if ($error === '') {
