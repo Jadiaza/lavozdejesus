@@ -334,7 +334,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               $error = 'La URL de la imagen no es válida.';
             }
             if ($error === '' && $data['estado'] === 'publicado') {
-              $error = santoral_admin_required_for_publish($data, $nombre, $fecha);
+              $error = santoral_admin_required_for_publish($data, $nombre, $fecha, santoral_admin_text($data['titulo'] ?? ''));
             }
 
             if ($error === '') {
@@ -431,7 +431,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $name = santoral_admin_text($existing['nombre'] ?? '');
             if ($error === '' && $data['estado'] === 'publicado') {
-              $error = santoral_admin_required_for_publish($data, $name, santoral_admin_text($existing['fecha'] ?? ''));
+              $error = santoral_admin_required_for_publish($data, $name, santoral_admin_text($existing['fecha'] ?? ''), santoral_admin_text($data['titulo'] ?? $existing['titulo'] ?? ''));
             }
 
             if ($error === '') {
