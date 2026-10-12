@@ -270,6 +270,99 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
       }
     }
+  } elseif ((string) ($_POST['action'] ?? '') === 'create_json') {
+    $rawJson = trim((string) ($_POST['json_content'] ?? ''));
+    if ($rawJson === '') {
+      $error = 'El JSON no puede estar vacío.';
+    } else {
+      try {
+        $decoded = json_decode($rawJson, true, 128, JSON_THROW_ON_ERROR);
+      } catch (JsonException $jsonError) {
+        $decoded = null;
+        $error = 'JSON inválido: ' . $jsonError->getMessage();
+      }
+
+      $payload = is_array($decoded) && isset($decoded['santo_del_dia']) && is_array($decoded['santo_del_dia'])
+        ? $decoded['santo_del_dia']
+        : null;
+      if ($error === '' && $payload === null) {
+        $error = 'El JSON debe contener el objeto "santo_del_dia".';
+      }
+
+      if ($error === '' && is_array($payload)) {
+        $fecha = santoral_admin_text($payload['fecha'] ?? '');
+        $nombre = santoral_admin_text($payload['nombre'] ?? '');
+        $date = DateTimeImmutable::createFromFormat('!Y-m-d', $fecha);
+        if (!$date || $date->format('Y-m-d') !== $fecha) {
+          $error = 'Debes indicar una fecha válida con formato AAAA-MM-DD.';
+        } elseif ($nombre === '') {
+          $error = 'Debes indicar el nombre del santo o de la celebración.';
+        } else {
+          $duplicate = $pdo->prepare('SELECT id FROM lvj_san_santo_dia WHERE fecha = :fecha AND nombre = :nombre AND deleted_at IS NULL LIMIT 1');
+          $duplicate->execute(['fecha' => $fecha, 'nombre' => $nombre]);
+          if ($duplicate->fetch()) {
+            $error = 'Ya existe un registro con ese nombre y fecha. Abre el registro existente para editarlo.';
+          } else {
+            $data = [
+              'fecha' => $fecha,
+              'mes' => (int) $date->format('n'),
+              'dia' => (int) $date->format('j'),
+              'nombre' => $nombre,
+              'titulo' => santoral_admin_text($payload['titulo'] ?? '') ?: null,
+              'frase_destacada' => santoral_admin_text($payload['frase_destacada'] ?? '') ?: null,
+              'quien_fue' => santoral_admin_text($payload['resumen'] ?? $payload['quien_fue'] ?? '') ?: null,
+              'imagen_url' => santoral_admin_text($payload['imagen_url'] ?? '') ?: null,
+              'lucha_que_enfrento' => santoral_admin_text($payload['lucha_que_enfrento'] ?? '') ?: null,
+              'secreto_de_santidad' => santoral_admin_text($payload['secreto_de_santidad'] ?? '') ?: null,
+              'ensenanza_para_hoy' => santoral_admin_text($payload['ensenanza_para_hoy'] ?? '') ?: null,
+              'como_puedo_imitarlo' => santoral_admin_text($payload['como_puedo_imitarlo'] ?? '') ?: null,
+              'paso_concreto' => santoral_admin_text($payload['paso_concreto'] ?? '') ?: null,
+              'oracion_intercesion' => santoral_admin_text($payload['oracion_intercesion'] ?? '') ?: null,
+              'destacado' => !empty($payload['destacado']) ? 1 : 0,
+              'orden' => max(0, (int) ($payload['orden'] ?? 0)),
+              'estado' => santoral_admin_status((string) ($payload['estado'] ?? 'borrador')),
+              'ordo_santo_id' => null,
+              'generada_ia' => 0,
+              'modelo_ia' => 'manual',
+              'prompt_version' => 'manual-json',
+            ];
+
+            if ($data['imagen_url'] !== null && (
+              !filter_var($data['imagen_url'], FILTER_VALIDATE_URL)
+              || !preg_match('/^https?:\\/\\//i', $data['imagen_url'])
+            )) {
+              $error = 'La URL de la imagen no es válida.';
+            }
+            if ($error === '' && $data['estado'] === 'publicado') {
+              $error = santoral_admin_required_for_publish($data, $nombre, $fecha);
+            }
+
+            if ($error === '') {
+              try {
+                foreach (['created_at', 'updated_at'] as $timestampField) {
+                  if (isset($columns[$timestampField])) $data[$timestampField] = date('Y-m-d H:i:s');
+                }
+                if (isset($columns['revisado_at']) && $data['estado'] === 'publicado') {
+                  $data['revisado_at'] = date('Y-m-d H:i:s');
+                }
+                $insertData = array_intersect_key($data, $columns);
+                $fields = array_keys($insertData);
+                $quotedFields = array_map(static fn (string $field): string => '`' . $field . '`', $fields);
+                $placeholders = array_map(static fn (string $field): string => ':' . $field, $fields);
+                $stmt = $pdo->prepare('INSERT INTO lvj_san_santo_dia (' . implode(', ', $quotedFields) . ') VALUES (' . implode(', ', $placeholders) . ')');
+                $stmt->execute($insertData);
+                $newId = (int) $pdo->lastInsertId();
+                log_activity('create_json', $table, $newId, 'Santo creado manualmente por JSON como ' . $data['estado']);
+                header('Location: santoral-dia.php?edit=' . $newId . '&vista=json&saved=' . ($data['estado'] === 'publicado' ? 'published' : 'draft'));
+                exit;
+              } catch (Throwable $createError) {
+                $error = 'No se pudo crear el Santo desde JSON: ' . $createError->getMessage();
+              }
+            }
+          }
+        }
+      }
+    }
   } elseif ((string) ($_POST['action'] ?? '') === 'save_json') {
     $id = max(0, (int) ($_POST['id'] ?? 0));
     $rawJson = trim((string) ($_POST['json_content'] ?? ''));
@@ -517,6 +610,7 @@ require __DIR__ . '/includes/header.php';
       <p class="muted">Ordo determina los santos asociados a la fecha; la IA prepara el borrador LVJ y una persona decide qué contenido publicar.</p>
     </div>
     <div class="content-actions-bar">
+      <a class="btn btn-gold" href="santoral-dia.php?nuevo_json=1">Crear por JSON</a>
       <a class="btn btn-soft" href="content.php?module=santoral&amp;table=lvj_san_santo_dia">Administración general</a>
       <a class="btn btn-soft" href="liturgia-ordo.php">Sincronizar Ordo</a>
       <a class="btn btn-soft" href="content.php?module=liturgia&amp;table=lvj_lit_lectura_dia">Lecturas del día</a>
@@ -541,7 +635,62 @@ require __DIR__ . '/includes/header.php';
 </section>
 <?php endif; ?>
 
-<?php if ($editRow): ?>
+<?php $newJsonMode = (string) ($_GET['nuevo_json'] ?? '') === '1'; ?>
+<?php if ($newJsonMode): ?>
+<section class="panel content-editor-panel">
+  <div class="panel-header">
+    <div><h2>Crear Santo o celebración por JSON</h2><p class="muted">La entrada se guardará como manual. Puedes revisarla antes de publicarla.</p></div>
+    <a class="btn btn-soft" href="santoral-dia.php">Volver</a>
+  </div>
+  <?php
+    $newSantoJson = [
+      'santo_del_dia' => [
+        'fecha' => date('Y-m-d'),
+        'nombre' => '',
+        'titulo' => '',
+        'resumen' => '',
+        'frase_destacada' => '',
+        'lucha_que_enfrento' => '',
+        'secreto_de_santidad' => '',
+        'ensenanza_para_hoy' => '',
+        'como_puedo_imitarlo' => '',
+        'paso_concreto' => '',
+        'oracion_intercesion' => '',
+        'imagen_url' => '',
+        'estado' => 'borrador',
+        'destacado' => false,
+        'orden' => 0
+      ]
+    ];
+    $newSantoJsonText = json_encode($newSantoJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  ?>
+  <form method="post" class="content-form" id="santoral-new-json-form">
+    <?php echo csrf_field(); ?>
+    <input type="hidden" name="action" value="create_json">
+    <label class="content-field full"><span>JSON del Santoral</span>
+      <textarea id="santoral-new-json-editor" name="json_content" rows="28" spellcheck="false" style="width:100%;box-sizing:border-box;font-family:ui-monospace,monospace;line-height:1.55;white-space:pre;tab-size:2;background:#fff;color:#111827;border:1px solid rgba(212,175,55,.55);border-radius:14px;padding:18px;resize:vertical;"><?php echo e((string) $newSantoJsonText); ?></textarea>
+    </label>
+    <p class="muted">Obligatorio: <code>fecha</code> y <code>nombre</code>. Los demás campos son opcionales para guardar como borrador.</p>
+    <div class="form-actions">
+      <button class="btn btn-soft" type="button" data-new-json-format>Formatear JSON</button>
+      <button class="btn btn-gold" type="submit">Crear registro</button>
+      <a class="btn btn-soft" href="santoral-dia.php">Cancelar</a>
+    </div>
+  </form>
+  <script>
+  document.querySelector('[data-new-json-format]')?.addEventListener('click', function () {
+    const editor = document.getElementById('santoral-new-json-editor');
+    try { editor.value = JSON.stringify(JSON.parse(editor.value), null, 2); }
+    catch (error) { alert('JSON inválido: ' + error.message); }
+  });
+  document.getElementById('santoral-new-json-form')?.addEventListener('submit', function (event) {
+    const editor = document.getElementById('santoral-new-json-editor');
+    try { JSON.parse(editor.value); }
+    catch (error) { event.preventDefault(); alert('Corrige el JSON: ' + error.message); }
+  });
+  </script>
+</section>
+<?php elseif ($editRow): ?>
 <section class="panel content-editor-panel">
   <div class="panel-header">
     <div>
