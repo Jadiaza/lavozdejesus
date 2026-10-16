@@ -502,10 +502,16 @@ const getSantoPresentation = (santo: SantoDelDia) => {
 
 const SantoView = ({
   santo,
+  santosDeLaFecha,
+  selectedSantoIndex,
+  onSelectSanto,
   liturgia,
   readingPreferences,
 }: {
   santo: SantoDelDia | null;
+  santosDeLaFecha: SantoDelDia[];
+  selectedSantoIndex: number;
+  onSelectSanto: (index: number) => void;
   liturgia: LiturgiaDia | null;
   readingPreferences: ReadingPreferences;
 }) => {
@@ -583,6 +589,41 @@ const SantoView = ({
 
   return (
     <div className="space-y-4">
+      {santosDeLaFecha.length > 1 && (
+        <nav
+          aria-label="Otros santos de esta fecha"
+          className="flex flex-col gap-3 rounded-2xl border border-[var(--lit-border)] bg-[var(--lit-surface)] p-4 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div className="min-w-0">
+            <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#c69222]">
+              Santoral del día
+            </p>
+            <p className="mt-1 text-sm text-[var(--lit-muted)]">
+              Santo {selectedSantoIndex + 1} de {santosDeLaFecha.length}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              disabled={selectedSantoIndex <= 0}
+              onClick={() => onSelectSanto(selectedSantoIndex - 1)}
+              className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[var(--lit-border)] px-3 py-2 text-sm font-bold text-[var(--lit-text)] transition hover:border-[#c69222] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Anterior
+            </button>
+            <button
+              type="button"
+              disabled={selectedSantoIndex >= santosDeLaFecha.length - 1}
+              onClick={() => onSelectSanto(selectedSantoIndex + 1)}
+              className="inline-flex min-h-10 items-center justify-center rounded-xl bg-[#082347] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#123763] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {selectedSantoIndex < santosDeLaFecha.length - 1
+                ? "Ver otro santo del día"
+                : "Último santo"}
+            </button>
+          </div>
+        </nav>
+      )}
       <article className="rounded-2xl border border-[var(--lit-border)] bg-[var(--lit-surface)] px-5 py-7 text-center shadow-[0_18px_46px_-34px_rgba(8,35,71,0.48)] sm:px-7 md:px-8 md:py-8">
         <p className="text-xs font-extrabold uppercase tracking-[0.28em] text-[#c69222]">
           {presentation.eyebrow}
@@ -732,6 +773,7 @@ const LecturasDelDia = () => {
   const [liturgias, setLiturgias] = useState<LiturgiaDia[]>([]);
   const [lectios, setLectios] = useState<LectioDivina[]>([]);
   const [santos, setSantos] = useState<SantoDelDia[]>([]);
+  const [selectedSantoIndex, setSelectedSantoIndex] = useState(0);
   const [selectedDate, setSelectedDate] = useState(getTodayISO());
   const [activeTab, setActiveTab] = useState<LecturasTab>("liturgia");
   const [loading, setLoading] = useState(true);
@@ -815,8 +857,27 @@ const LecturasDelDia = () => {
   const liturgia =
     liturgias.find((item) => item.fecha === selectedDate) ?? null;
   const lectio = lectios.find((item) => item.fecha === selectedDate) ?? null;
-  const santo =
-    santos.find((item) => santoMatchesDate(item, selectedDate)) ?? null;
+  const santosDeLaFecha = useMemo(() => {
+    const sameDay = santos.filter((item) => santoMatchesDate(item, selectedDate));
+    const isFeatured = (item: SantoDelDia) =>
+      ["1", "true", "si", "sí", "yes"].includes(
+        String(item.destacado ?? "").trim().toLowerCase(),
+      );
+    const order = (item: SantoDelDia) => {
+      const value = Number(item.orden);
+      return Number.isFinite(value) ? value : Number.MAX_SAFE_INTEGER;
+    };
+
+    return sameDay.sort((a, b) => {
+      const featuredDifference = Number(isFeatured(b)) - Number(isFeatured(a));
+      return featuredDifference || order(a) - order(b) ||
+        a.nombre.localeCompare(b.nombre, "es");
+    });
+  }, [santos, selectedDate]);
+  useEffect(() => {
+    setSelectedSantoIndex(0);
+  }, [selectedDate]);
+  const santo = santosDeLaFecha[selectedSantoIndex] ?? null;
   const weekDates = useMemo(() => getWeekDates(selectedDate), [selectedDate]);
   const publishedDates = useMemo(
     () => new Set(liturgias.map((item) => item.fecha)),
@@ -1067,6 +1128,9 @@ const LecturasDelDia = () => {
               {activeTab === "santo" && (
                 <SantoView
                   santo={santo}
+                  santosDeLaFecha={santosDeLaFecha}
+                  selectedSantoIndex={selectedSantoIndex}
+                  onSelectSanto={setSelectedSantoIndex}
                   liturgia={liturgia}
                   readingPreferences={readingPreferences}
                 />
