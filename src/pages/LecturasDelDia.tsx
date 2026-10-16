@@ -2,6 +2,8 @@ import {
   BookOpen,
   CalendarHeart,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Cross,
   Heart,
   Headphones,
@@ -591,36 +593,46 @@ const SantoView = ({
     <div className="space-y-4">
       {santosDeLaFecha.length > 1 && (
         <nav
-          aria-label="Otros santos de esta fecha"
-          className="flex flex-col gap-3 rounded-2xl border border-[var(--lit-border)] bg-[var(--lit-surface)] p-4 sm:flex-row sm:items-center sm:justify-between"
+          aria-label="Navegación del santoral"
+          className="rounded-2xl border border-[var(--lit-border)] bg-[var(--lit-surface)] px-3 py-3 shadow-[0_8px_24px_-22px_rgba(8,35,71,0.4)] sm:px-4"
         >
-          <div className="min-w-0">
-            <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#c69222]">
-              Santoral del día
-            </p>
-            <p className="mt-1 text-sm text-[var(--lit-muted)]">
-              Santo {selectedSantoIndex + 1} de {santosDeLaFecha.length}
-            </p>
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f7ead1] text-[#a97812]">
+              <CalendarHeart className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#a97812]">
+                Santoral del día
+              </p>
+              <p className="mt-0.5 truncate text-sm font-semibold text-[var(--lit-text)]">
+                {santosDeLaFecha[selectedSantoIndex]?.nombre}
+              </p>
+              <p className="mt-0.5 text-xs text-[var(--lit-muted)]">
+                {selectedSantoIndex + 1} de {santosDeLaFecha.length} celebraciones
+              </p>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="mt-3 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-t border-[var(--lit-border)] pt-3">
             <button
               type="button"
               disabled={selectedSantoIndex <= 0}
               onClick={() => onSelectSanto(selectedSantoIndex - 1)}
-              className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[var(--lit-border)] px-3 py-2 text-sm font-bold text-[var(--lit-text)] transition hover:border-[#c69222] disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Ver santo anterior"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--lit-border)] text-[var(--lit-text)] transition hover:border-[#c69222] hover:bg-[#c69222]/10 disabled:cursor-not-allowed disabled:opacity-35"
             >
-              Anterior
+              <ChevronLeft className="h-5 w-5" />
             </button>
             <button
               type="button"
               disabled={selectedSantoIndex >= santosDeLaFecha.length - 1}
               onClick={() => onSelectSanto(selectedSantoIndex + 1)}
-              className="inline-flex min-h-10 items-center justify-center rounded-xl bg-[#082347] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#123763] disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-[#082347] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#123763] disabled:cursor-not-allowed disabled:opacity-40"
             >
               {selectedSantoIndex < santosDeLaFecha.length - 1
-                ? "Ver otro santo del día"
+                ? <>Ver siguiente santo <ChevronRight className="h-4 w-4" /></>
                 : "Último santo"}
             </button>
+            <span className="w-10" aria-hidden="true" />
           </div>
         </nav>
       )}
