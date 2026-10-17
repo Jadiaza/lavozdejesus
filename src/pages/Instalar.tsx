@@ -24,6 +24,7 @@ export default function Instalar() {
   const [ios, setIos] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [installing, setInstalling] = useState(false);
+  const [closeHint, setCloseHint] = useState(false);
 
   useEffect(() => {
     setInstalled(standaloneInstalled());
@@ -77,6 +78,21 @@ export default function Instalar() {
         <h1 className="text-2xl font-bold text-[#F4EBD0]">¡LVJPRAYER está instalada!</h1>
         <p className="mt-3 text-sm leading-6 text-white/75">La instalación se completó correctamente. Para entrar, cierra esta pestaña y abre LVJPRAYER desde el nuevo icono que apareció en la pantalla de inicio de tu dispositivo.</p>
         <p className="mt-4 text-xs text-[#D4AF37]">Tu espacio de oración te espera.</p>
+        <button
+          type="button"
+          onClick={() => {
+            window.close();
+            window.setTimeout(() => setCloseHint(true), 250);
+          }}
+          className="lvj-sacred-button mt-6 w-full"
+        >
+          Cerrar instalador
+        </button>
+        {closeHint && (
+          <p className="mt-3 text-xs leading-5 text-white/65">
+            Si esta pestaña no se cerró, el navegador no permite cerrarla automáticamente. Ciérrala desde el selector de pestañas y abre LVJPRAYER desde su icono en la pantalla de inicio.
+          </p>
+        )}
       </div>
     </main>;
   }
