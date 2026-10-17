@@ -101,13 +101,17 @@ function InstallOnlyGuard({ children }: { children: ReactNode }) {
   const location = useLocation();
   const standalone = window.matchMedia("(display-mode: standalone)").matches ||
     Boolean((navigator as Navigator & { standalone?: boolean }).standalone);
+  const ua = navigator.userAgent;
+  const isMobileOrTablet =
+    /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(ua) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
-  // Solo la página de instalación es accesible desde el navegador.
-  // El resto del ecosistema requiere abrir LVJPRAYER desde su icono instalado.
-  if (!standalone && location.pathname !== "/instalar") {
+  // La instalación obligatoria aplica únicamente a móviles y tabletas.
+  // En ordenadores de escritorio o portátiles se permite navegar normalmente.
+  if (isMobileOrTablet && !standalone && location.pathname !== "/instalar") {
     return <Navigate to="/instalar" replace />;
   }
-  if (standalone && location.pathname === "/instalar") {
+  if (isMobileOrTablet && standalone && location.pathname === "/instalar") {
     return <Navigate to="/" replace />;
   }
   return <>{children}</>;
