@@ -79,10 +79,10 @@ export default function PWAInstaller() {
         type="button"
         onClick={handleInstall}
         aria-label="Instalar LVJPRAYER"
-        className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-3 z-[60] inline-flex max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border border-amber-300/40 bg-[#08298a] px-3.5 py-2.5 text-sm font-semibold text-white shadow-xl transition hover:bg-[#0b36ad] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 sm:bottom-6 sm:right-6 sm:px-4 sm:py-3"
+        className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-3 z-[60] inline-flex items-center gap-1.5 rounded-full border border-amber-300/30 bg-[#08298a]/90 px-3 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-[#0b36ad] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 sm:bottom-6 sm:right-6 sm:px-3.5 sm:py-2.5"
       >
-        <Download className="h-4 w-4" aria-hidden="true" />
-        <span>Instalar LVJPRAYER</span>
+        <Download className="h-4 w-4 text-amber-300" aria-hidden="true" />
+        <span>Instalar</span>
       </button>
 
       {open && (
