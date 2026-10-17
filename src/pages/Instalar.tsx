@@ -90,7 +90,7 @@ export default function Instalar() {
         </button>
         {closeHint && (
           <p className="mt-3 text-xs leading-5 text-white/65">
-            Si esta pestaña no se cerró, el navegador no permite cerrarla automáticamente. Ciérrala desde el selector de pestañas y abre LVJPRAYER desde su icono en la pantalla de inicio.
+            El navegador no permite que una página cierre toda la aplicación del navegador. Cierra esta pestaña desde el selector de pestañas y abre LVJPRAYER desde su icono en la pantalla de inicio.
           </p>
         )}
       </div>
