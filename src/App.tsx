@@ -12,6 +12,7 @@ import AppThemeSync from "@/features/theme/AppThemeSync";
 import MaintenanceGate from "@/components/MaintenanceGate";
 import AccessGate from "@/components/AccessGate";
 import WelcomeAccessPrompt from "@/components/WelcomeAccessPrompt";
+import PWAInstaller from "@/components/PWAInstaller";
 
 import RosarioHome from "@/modules/rosary/pages/RosarioHome";
 const RosarioModalidad = lazy(() => import("@/modules/rosary/pages/RosarioModalidad"));
@@ -105,6 +106,7 @@ const App = () => {
         <AppThemeSync />
         <PrayerReminderScheduler />
         <BrowserRouter>
+          <PWAInstaller />
           <Suspense fallback={<div className="min-h-screen bg-background" aria-label="Cargando contenido" />}>
             <MaintenanceGate>
               <AccessGate>
