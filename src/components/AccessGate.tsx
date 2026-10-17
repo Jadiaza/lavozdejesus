@@ -129,7 +129,7 @@ export default function AccessGate({ children }: Props) {
     };
   }, []);
 
-  if (!resolved || !policy || !configuration) return <Loading />;
+  // La página pública de instalación no debe esperar autenticación ni configuración remota.\n  if (location.pathname === "/instalar") return <>{children}</>;\n\n  if (!resolved || !policy || !configuration) return <Loading />;
 
   const target = getRouteTarget(location.pathname);
   const required = getRouteAccessPolicy(location.pathname, policy);
