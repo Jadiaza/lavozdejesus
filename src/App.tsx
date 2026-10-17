@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ReactNode } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -97,7 +97,7 @@ const preloadRouteChunks = () => {
 // Inicia la precarga de rutas secundarias sin bloquear el primer render.
 void preloadRouteChunks();
 
-function InstallOnlyGuard({ children }: { children: React.ReactNode }) {
+function InstallOnlyGuard({ children }: { children: ReactNode }) {
   const location = useLocation();
   const standalone = window.matchMedia("(display-mode: standalone)").matches ||
     Boolean((navigator as Navigator & { standalone?: boolean }).standalone);
