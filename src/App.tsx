@@ -13,6 +13,7 @@ import MaintenanceGate from "@/components/MaintenanceGate";
 import AccessGate from "@/components/AccessGate";
 import WelcomeAccessPrompt from "@/components/WelcomeAccessPrompt";
 import PWAInstaller from "@/components/PWAInstaller";
+import Instalar from "./pages/Instalar.tsx";
 
 import RosarioHome from "@/modules/rosary/pages/RosarioHome";
 const RosarioModalidad = lazy(() => import("@/modules/rosary/pages/RosarioModalidad"));
@@ -112,6 +113,7 @@ const App = () => {
               <AccessGate>
                 <WelcomeAccessPrompt />
                 <Routes>
+              <Route path="/instalar" element={<Instalar />} />
               <Route path="/" element={<Index />} />
               <Route path="/radio" element={<Radio />} />
               <Route path="/capilla" element={<Capilla />} />
