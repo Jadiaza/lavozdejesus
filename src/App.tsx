@@ -132,7 +132,8 @@ const App = () => {
             <MaintenanceGate>
               <AccessGate>
                 <WelcomeAccessPrompt />
-                <InstallOnlyGuard>\n                <Routes>
+                <InstallOnlyGuard>
+                <Routes>
               <Route path="/instalar" element={<Instalar />} />
               <Route path="/" element={<Index />} />
               <Route path="/radio" element={<Radio />} />
@@ -209,7 +210,8 @@ const App = () => {
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
-                  </Routes>\n                </InstallOnlyGuard>
+                  </Routes>
+                </InstallOnlyGuard>
               </AccessGate>
             </MaintenanceGate>
           </Suspense>
