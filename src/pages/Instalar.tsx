@@ -50,12 +50,6 @@ export default function Instalar() {
     };
   }, []);
 
-  useEffect(() => {
-    if (installed) {
-      const timer = window.setTimeout(() => navigate("/", { replace: true }), 900);
-      return () => window.clearTimeout(timer);
-    }
-  }, [installed, navigate]);
 
   const install = async () => {
     if (promptEvent) {
