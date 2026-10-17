@@ -3,7 +3,7 @@
 // Conserva ?sw=off como interruptor de emergencia.
 
 const SW_URL = "/sw.js";
-const APP_CACHE_BUSTER = "lvjprayer-ui-2026-10-17-v3";
+const APP_CACHE_BUSTER = "lvjprayer-ui-2026-10-17-v4";
 const CLIENT_VERSION_KEY = "lvjprayer:client-version";
 
 function isRefusedContext(): boolean {
