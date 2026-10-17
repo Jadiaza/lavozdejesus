@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Download, X, Smartphone, Monitor, Share, PlusSquare } from "lucide-react";
 
 type InstallPromptEvent = Event & {
@@ -23,6 +24,7 @@ function isStandalone() {
 }
 
 export default function PWAInstaller() {
+  const location = useLocation();
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
   const [open, setOpen] = useState(false);
   const [installed, setInstalled] = useState(false);
@@ -66,7 +68,7 @@ export default function PWAInstaller() {
     setOpen(true);
   };
 
-  if (installed) return null;
+  if (installed || location.pathname === "/instalar") return null;
 
   const isAppleMobile = platform === "ios";
   const isMac = platform === "mac";
