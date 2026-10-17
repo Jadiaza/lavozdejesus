@@ -128,7 +128,7 @@ const App = () => {
         <PrayerReminderScheduler />
         <BrowserRouter>
           <PWAInstaller />
-          <Suspense fallback={<div className="min-h-screen bg-background" aria-label="Cargando contenido" />}>
+          <Suspense fallback={<div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#050816] px-6 text-center text-[#F4EBD0]" role="status" aria-live="polite"><img src="/pwa-192.png" alt="" className="h-16 w-16 rounded-2xl opacity-90" /><div className="h-8 w-8 animate-spin rounded-full border-2 border-[#D4AF37]/25 border-t-[#D4AF37]" /><p className="text-sm">Cargando LVJPRAYER…</p><p className="max-w-xs text-xs text-white/50">Estamos preparando este espacio. Si no aparece, vuelve al inicio e inténtalo otra vez.</p></div>}>
             <MaintenanceGate>
               <AccessGate>
                 <WelcomeAccessPrompt />
