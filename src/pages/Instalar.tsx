@@ -74,8 +74,9 @@ export default function Instalar() {
     return <main className="lvj-sacred-page flex min-h-screen items-center justify-center px-6 text-center">
       <div className="lvj-sacred-panel max-w-sm p-8">
         <CheckCircle2 className="mx-auto mb-4 h-12 w-12 text-[#D4AF37]" />
-        <h1 className="text-2xl font-bold text-[#F4EBD0]">LVJPRAYER ya está instalada</h1>
-        <p className="mt-3 text-sm text-white/70">Abriendo tu espacio de oración…</p>
+        <h1 className="text-2xl font-bold text-[#F4EBD0]">¡LVJPRAYER está instalada!</h1>
+        <p className="mt-3 text-sm leading-6 text-white/75">La instalación se completó correctamente. Para entrar, cierra esta pestaña y abre LVJPRAYER desde el nuevo icono que apareció en la pantalla de inicio de tu dispositivo.</p>
+        <p className="mt-4 text-xs text-[#D4AF37]">Tu espacio de oración te espera.</p>
       </div>
     </main>;
   }
