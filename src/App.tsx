@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -97,6 +97,22 @@ const preloadRouteChunks = () => {
 // Inicia la precarga de rutas secundarias sin bloquear el primer render.
 void preloadRouteChunks();
 
+function InstallOnlyGuard({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const standalone = window.matchMedia("(display-mode: standalone)").matches ||
+    Boolean((navigator as Navigator & { standalone?: boolean }).standalone);
+
+  // Solo la página de instalación es accesible desde el navegador.
+  // El resto del ecosistema requiere abrir LVJPRAYER desde su icono instalado.
+  if (!standalone && location.pathname !== "/instalar") {
+    return <Navigate to="/instalar" replace />;
+  }
+  if (standalone && location.pathname === "/instalar") {
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
+}
+
 const App = () => {
   return (
   <QueryClientProvider client={queryClient}>
@@ -112,7 +128,7 @@ const App = () => {
             <MaintenanceGate>
               <AccessGate>
                 <WelcomeAccessPrompt />
-                <Routes>
+                <InstallOnlyGuard>\n                <Routes>
               <Route path="/instalar" element={<Instalar />} />
               <Route path="/" element={<Index />} />
               <Route path="/radio" element={<Radio />} />
@@ -189,7 +205,7 @@ const App = () => {
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
-                  </Routes>
+                  </Routes>\n                </InstallOnlyGuard>
               </AccessGate>
             </MaintenanceGate>
           </Suspense>
