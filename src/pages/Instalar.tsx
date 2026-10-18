@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import appMockup from "@/assets/image_app.png";
-import { useNavigate } from "react-router-dom";
 import { BookOpen, Download, Heart, Headphones, Church, Smartphone, Share, PlusSquare, CheckCircle2, Sparkles } from "lucide-react";
 
 type InstallPromptEvent = Event & {
@@ -19,7 +18,6 @@ function standaloneInstalled() {
 }
 
 export default function Instalar() {
-  const navigate = useNavigate();
   const [promptEvent, setPromptEvent] = useState<InstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(false);
   const [ios, setIos] = useState(false);
@@ -83,8 +81,6 @@ export default function Instalar() {
             type="button"
             onClick={() => {
               setOpenHint(true);
-              // Intentamos abrir la ruta principal en otra pestaña.
-              // El navegador no garantiza que esto active la PWA instalada.
               window.open("/", "_blank", "noopener,noreferrer");
             }}
             className="lvj-sacred-button mt-6 w-full"
@@ -104,24 +100,25 @@ export default function Instalar() {
   return (
     <main className="relative min-h-[100svh] overflow-hidden bg-[#03060D] px-4 pb-[max(12px,env(safe-area-inset-bottom))] pt-[max(12px,env(safe-area-inset-top))] text-[#F4EBD0] sm:px-8 sm:py-6">
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <img src={appMockup} alt="" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-2xl" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(20,10,3,.80)_0%,rgba(3,7,16,.90)_48%,#03060d_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_20%,rgba(194,137,43,.2),transparent_45%)]" />
+        <img src={appMockup} alt="" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-35 blur-2xl" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(20,10,3,.74)_0%,rgba(3,7,16,.88)_48%,#03060d_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_22%,rgba(194,137,43,.24),transparent_48%)]" />
       </div>
+
       <div className="relative z-10 mx-auto flex min-h-[calc(100svh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-24px)] w-full max-w-[430px] flex-col items-center justify-between gap-3 text-center sm:max-w-lg sm:justify-center sm:gap-5">
-        <header className="shrink-0">
-          <h1 className="font-serif text-[clamp(2.15rem,8.2vw,3.6rem)] font-bold leading-none tracking-tight"><span className="text-[#D4AF37]">LVJ</span><span className="text-[#FFF5DE]">PRAYER</span></h1>
-          <div className="mx-auto mt-2 h-[2px] w-[min(48vw,210px)] bg-[#D4AF37]" />
-          <p className="mt-2 text-[clamp(1rem,4.1vw,1.45rem)] font-semibold leading-tight tracking-wide text-[#F7E6B0]">Tu encuentro con Jesús</p>
-          <p className="mt-1.5 text-[clamp(.9rem,3.5vw,1.2rem)] tracking-wide text-white/70">Oración · Palabra · Fe</p>
+        <header className="shrink-0 pt-1">
+          <h1 className="font-serif text-[clamp(2.2rem,8.5vw,3.8rem)] font-bold leading-none tracking-tight"><span className="text-[#D4AF37]">LVJ</span><span className="text-[#FFF5DE]">PRAYER</span></h1>
+          <div className="mx-auto mt-2 h-[2px] w-[min(48vw,230px)] bg-[#D4AF37]" />
+          <p className="mt-2 text-[clamp(1.02rem,4.2vw,1.5rem)] font-semibold leading-tight tracking-wide text-[#F7E6B0]">Tu encuentro con Jesús</p>
+          <p className="mt-1.5 text-[clamp(.9rem,3.5vw,1.2rem)] tracking-wide text-white/75">Oración · Palabra · Fe</p>
         </header>
 
-        <div className="relative flex h-[clamp(235px,39svh,430px)] w-full shrink-0 items-center justify-center sm:h-[min(48svh,540px)]">
-          <div className="relative h-full max-w-full rounded-[2.5rem] border-[4px] border-[#D4AF37] bg-[#080b12] p-2 shadow-[0_0_0_2px_rgba(255,238,172,.25),0_0_40px_rgba(199,144,42,.18)]">
+        <div className="relative flex h-[clamp(290px,47svh,500px)] w-full shrink-0 items-center justify-center sm:h-[min(53svh,570px)]">
+          <div className="relative h-full max-w-full rounded-[2.35rem] border-[2px] border-[#D4AF37] bg-[#080b12] p-[5px] shadow-[0_0_0_1px_rgba(255,238,172,.20),0_0_34px_rgba(199,144,42,.16)]">
             <div className="h-full overflow-hidden rounded-[2rem] border border-white/10 bg-[#050812]">
-              <img src={appMockup} alt="Vista previa de LVJPRAYER con sus accesos a Biblia, Rosario, Oraciones y Radio" className="block h-full w-auto max-w-full object-contain blur-[1px]" loading="eager" decoding="async" />
+              <img src={appMockup} alt="Vista previa de LVJPRAYER con sus accesos a Biblia, Rosario, Oraciones y Radio" className="block h-full w-auto max-w-full object-contain" loading="eager" decoding="async" />
             </div>
-            <div className="pointer-events-none absolute left-1/2 top-4 z-20 h-5 w-20 -translate-x-1/2 rounded-full bg-black shadow-inner" />
+            <div className="pointer-events-none absolute left-1/2 top-3 z-20 h-[18px] w-[76px] -translate-x-1/2 rounded-full bg-black shadow-inner" />
           </div>
         </div>
 
@@ -132,8 +129,8 @@ export default function Instalar() {
 
         <div className="grid w-full shrink-0 grid-cols-3 divide-x divide-[#D4AF37]/30 pb-1">
           <div className="flex flex-col items-center gap-1.5 px-1.5"><CheckCircle2 className="h-6 w-6 text-[#D4AF37] sm:h-8 sm:w-8" /><p className="text-[clamp(.65rem,2.8vw,.9rem)] leading-[1.35] text-white/80">100% gratis<br />Sin descargas<br />desde una tienda</p></div>
-          <div className="flex flex-col items-center gap-1.5 px-1.5"><Smartphone className="h-6 w-6 text-[#D4AF37] sm:h-8 sm:w-8" /><p className="text-[clamp(.65rem,2.8vw,.9rem)] leading-[1.35] text-white/80">Acceso desde<br />tu pantalla de inicio</p></div>
-          <div className="flex flex-col items-center gap-1.5 px-1.5"><Download className="h-6 w-6 text-[#D4AF37] sm:h-8 sm:w-8" /><p className="text-[clamp(.65rem,2.8vw,.9rem)] leading-[1.35] text-white/80">Instalada en<br />tu dispositivo</p></div>
+          <div className="flex flex-col items-center gap-1.5 px-1.5"><Smartphone className="h-6 w-6 text-[#D4AF37] sm:h-8 sm:w-8" /><p className="text-[clamp(.65rem,2.8vw,.9rem)] leading-[1.35] text-white/80">Acceso directo<br />desde tu pantalla<br />de inicio</p></div>
+          <div className="flex flex-col items-center gap-1.5 px-1.5"><Heart className="h-6 w-6 text-[#D4AF37] sm:h-8 sm:w-8" /><p className="text-[clamp(.65rem,2.8vw,.9rem)] leading-[1.35] text-white/80">Tu espacio<br />de oración<br />siempre a mano</p></div>
         </div>
 
         {showHelp && (
@@ -152,4 +149,5 @@ export default function Instalar() {
         )}
       </div>
     </main>
-  );}
+  );
+}
