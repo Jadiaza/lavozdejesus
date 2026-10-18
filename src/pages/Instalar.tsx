@@ -180,30 +180,14 @@ export default function Instalar() {
           <div className="absolute inset-x-[-20%] bottom-4 h-24 -rotate-3 rounded-[50%] border-t border-[#D4AF37]/80 shadow-[0_-8px_30px_rgba(212,175,55,.12)]" />
           <div className="absolute inset-x-[-20%] bottom-0 h-28 rotate-3 rounded-[50%] border-t border-[#6CA9E8]/50" />
           <div className="relative mx-auto w-[92%] rounded-t-[4.2rem] border-x-2 border-t-2 border-[#B9A16B] bg-gradient-to-b from-[#28231A] via-[#080A10] to-[#03050A] p-2.5 shadow-[0_-8px_32px_rgba(212,175,55,.14)] sm:w-[84%] sm:rounded-t-[5rem] sm:p-3">
-            <div className="rounded-t-[3.4rem] border-x border-t border-white/10 bg-[radial-gradient(ellipse_at_75%_20%,rgba(139,91,35,.32),transparent_35%),linear-gradient(145deg,#111B2B,#05070D_70%)] px-4 pb-12 pt-6 sm:rounded-t-[4.2rem] sm:pb-16 sm:pt-8">
-              <div className="mx-auto mb-7 h-7 w-32 rounded-full border border-white/5 bg-black sm:mb-10" />
-              <div className="mx-auto flex h-28 w-28 items-center justify-center rounded-[2rem] border-2 border-[#E7C85A] bg-black/80 p-2 shadow-[0_0_30px_rgba(212,175,55,.15)] sm:h-36 sm:w-36">
-                <img src="/pwa-192.png" alt="" className="h-full w-full rounded-[1.45rem] object-cover" />
-              </div>
-              <p className="mt-4 text-lg font-bold text-[#F8E7A4] sm:text-2xl">Tu encuentro con Jesús</p>
-              <p className="mt-1 text-xs text-white/55 sm:text-sm">Oración · Palabra · Fe</p>
-              <div className="mx-auto mt-6 grid max-w-sm grid-cols-2 gap-3 text-left sm:gap-4">
-                {[
-                  { icon: BookOpen, label: "Biblia", detail: "Lee y medita" },
-                  { icon: Heart, label: "Oraciones", detail: "Ora cada día" },
-                  { icon: Headphones, label: "Radio", detail: "Escucha y alaba" },
-                  { icon: Church, label: "Liturgia", detail: "Vive tu fe" },
-                ].map(({ icon: Icon, label, detail }) => (
-                  <div key={label} className="rounded-xl border border-[#D4AF37]/20 bg-white/[0.035] p-3">
-                    <Icon className="mb-2 h-5 w-5 text-[#D4AF37]" />
-                    <p className="text-sm font-semibold text-[#FFF7DF]">{label}</p>
-                    <p className="mt-0.5 text-[11px] text-white/50">{detail}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-5 flex items-center justify-center gap-2 text-[11px] text-[#D4AF37]">
-                <Smartphone className="h-4 w-4" /> Siempre a un toque de distancia
-              </div>
+            <div className="overflow-hidden rounded-t-[3.4rem] border-x border-t border-[#D4AF37]/30 bg-[#05070D] sm:rounded-t-[4.2rem]">
+              <img
+                src="/lvjprayer-install-promo.svg"
+                alt="LVJPRAYER: un espacio para encontrarte con Jesús, con Biblia, oraciones, radio y liturgia"
+                className="block h-auto w-full"
+                loading="eager"
+                decoding="async"
+              />
             </div>
           </div>
         </div>
