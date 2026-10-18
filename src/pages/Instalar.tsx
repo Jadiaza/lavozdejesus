@@ -102,36 +102,42 @@ export default function Instalar() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#03060D] px-5 pb-10 pt-8 text-[#F4EBD0] sm:px-8 sm:pt-12">
+    <main className="relative min-h-[100svh] overflow-hidden bg-[#03060D] px-4 pb-[max(12px,env(safe-area-inset-bottom))] pt-[max(12px,env(safe-area-inset-top))] text-[#F4EBD0] sm:px-8 sm:py-6">
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
         <img src={appMockup} alt="" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-2xl" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(20,10,3,.78)_0%,rgba(3,7,16,.88)_45%,#03060d_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(20,10,3,.80)_0%,rgba(3,7,16,.90)_48%,#03060d_100%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_20%,rgba(194,137,43,.2),transparent_45%)]" />
       </div>
-      <div className="relative z-10 mx-auto flex w-full max-w-lg flex-col items-center text-center">
-        <header className="mb-7">
-          <h1 className="font-serif text-5xl font-bold tracking-tight sm:text-6xl"><span className="text-[#D4AF37]">LVJ</span><span className="text-[#FFF5DE]">PRAYER</span></h1>
-          <div className="mx-auto mt-2 h-[2px] w-48 bg-[#D4AF37]" />
-          <p className="mt-4 text-xl font-semibold tracking-wide text-[#F7E6B0] sm:text-2xl">Tu encuentro con Jesús</p>
-          <p className="mt-3 text-lg tracking-wide text-white/65 sm:text-xl">Oración · Palabra · Fe</p>
+      <div className="relative z-10 mx-auto flex min-h-[calc(100svh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-24px)] w-full max-w-[430px] flex-col items-center justify-between gap-3 text-center sm:max-w-lg sm:justify-center sm:gap-5">
+        <header className="shrink-0">
+          <h1 className="font-serif text-[clamp(2.15rem,8.2vw,3.6rem)] font-bold leading-none tracking-tight"><span className="text-[#D4AF37]">LVJ</span><span className="text-[#FFF5DE]">PRAYER</span></h1>
+          <div className="mx-auto mt-2 h-[2px] w-[min(48vw,210px)] bg-[#D4AF37]" />
+          <p className="mt-2 text-[clamp(1rem,4.1vw,1.45rem)] font-semibold leading-tight tracking-wide text-[#F7E6B0]">Tu encuentro con Jesús</p>
+          <p className="mt-1.5 text-[clamp(.9rem,3.5vw,1.2rem)] tracking-wide text-white/70">Oración · Palabra · Fe</p>
         </header>
-        <div className="relative mb-7 w-[82%] max-w-[390px] rounded-[3.5rem] border-[5px] border-[#D4AF37] bg-[#080b12] p-3 shadow-[0_0_0_2px_rgba(255,238,172,.25),0_0_50px_rgba(199,144,42,.18)] sm:w-[78%]">
-          <div className="absolute left-1/2 top-5 z-20 h-7 w-28 -translate-x-1/2 rounded-full bg-black shadow-inner" />
-          <div className="overflow-hidden rounded-[2.7rem] border border-white/10 bg-[#050812]">
-            <img src={appMockup} alt="Vista previa de LVJPRAYER con sus accesos a Biblia, Rosario, Oraciones y Radio" className="block h-auto w-full scale-[1.015] blur-[1.1px]" loading="eager" decoding="async" />
+
+        <div className="relative flex h-[clamp(235px,39svh,430px)] w-full shrink-0 items-center justify-center sm:h-[min(48svh,540px)]">
+          <div className="relative h-full max-w-full rounded-[2.5rem] border-[4px] border-[#D4AF37] bg-[#080b12] p-2 shadow-[0_0_0_2px_rgba(255,238,172,.25),0_0_40px_rgba(199,144,42,.18)]">
+            <div className="h-full overflow-hidden rounded-[2rem] border border-white/10 bg-[#050812]">
+              <img src={appMockup} alt="Vista previa de LVJPRAYER con sus accesos a Biblia, Rosario, Oraciones y Radio" className="block h-full w-auto max-w-full object-contain blur-[1px]" loading="eager" decoding="async" />
+            </div>
+            <div className="pointer-events-none absolute left-1/2 top-4 z-20 h-5 w-20 -translate-x-1/2 rounded-full bg-black shadow-inner" />
           </div>
         </div>
-        <button type="button" onClick={install} disabled={installing} className="inline-flex min-h-[76px] w-full items-center justify-center gap-4 rounded-[1.45rem] border-2 border-[#FFF0A0] bg-gradient-to-b from-[#FFE982] via-[#F5C944] to-[#DCA122] px-5 py-4 text-xl font-black uppercase tracking-wide text-[#100D05] shadow-[0_0_0_1px_rgba(159,111,16,.75),0_0_28px_rgba(240,190,54,.32),inset_0_2px_0_rgba(255,255,255,.8)] transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#D4AF37]/40 disabled:opacity-60 sm:min-h-[88px] sm:text-2xl">
-          <Download className="h-8 w-8 shrink-0" />
+
+        <button type="button" onClick={install} disabled={installing} className="inline-flex min-h-[clamp(58px,8.5svh,78px)] w-full shrink-0 items-center justify-center gap-3 rounded-[1.15rem] border-2 border-[#FFF0A0] bg-gradient-to-b from-[#FFE982] via-[#F5C944] to-[#DCA122] px-4 py-3 text-[clamp(1rem,4.3vw,1.45rem)] font-black uppercase tracking-wide text-[#100D05] shadow-[0_0_0_1px_rgba(159,111,16,.75),0_0_24px_rgba(240,190,54,.30),inset_0_2px_0_rgba(255,255,255,.8)] transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#D4AF37]/40 disabled:opacity-60">
+          <Download className="h-[clamp(22px,6vw,32px)] w-[clamp(22px,6vw,32px)] shrink-0" />
           <span>{installing ? "Preparando instalación…" : "Instalar LVJPRAYER"}</span>
         </button>
-        <div className="mt-8 grid w-full grid-cols-3 divide-x divide-[#D4AF37]/30">
-          <div className="flex flex-col items-center gap-3 px-2"><CheckCircle2 className="h-8 w-8 text-[#D4AF37]" /><p className="text-sm leading-6 text-white/80 sm:text-base">100% gratis<br />Sin descargas<br />desde una tienda</p></div>
-          <div className="flex flex-col items-center gap-3 px-2"><Smartphone className="h-8 w-8 text-[#D4AF37]" /><p className="text-sm leading-6 text-white/80 sm:text-base">Acceso desde<br />tu pantalla de inicio</p></div>
-          <div className="flex flex-col items-center gap-3 px-2"><Download className="h-8 w-8 text-[#D4AF37]" /><p className="text-sm leading-6 text-white/80 sm:text-base">Instalada en<br />tu dispositivo</p></div>
+
+        <div className="grid w-full shrink-0 grid-cols-3 divide-x divide-[#D4AF37]/30 pb-1">
+          <div className="flex flex-col items-center gap-1.5 px-1.5"><CheckCircle2 className="h-6 w-6 text-[#D4AF37] sm:h-8 sm:w-8" /><p className="text-[clamp(.65rem,2.8vw,.9rem)] leading-[1.35] text-white/80">100% gratis<br />Sin descargas<br />desde una tienda</p></div>
+          <div className="flex flex-col items-center gap-1.5 px-1.5"><Smartphone className="h-6 w-6 text-[#D4AF37] sm:h-8 sm:w-8" /><p className="text-[clamp(.65rem,2.8vw,.9rem)] leading-[1.35] text-white/80">Acceso desde<br />tu pantalla de inicio</p></div>
+          <div className="flex flex-col items-center gap-1.5 px-1.5"><Download className="h-6 w-6 text-[#D4AF37] sm:h-8 sm:w-8" /><p className="text-[clamp(.65rem,2.8vw,.9rem)] leading-[1.35] text-white/80">Instalada en<br />tu dispositivo</p></div>
         </div>
+
         {showHelp && (
-          <section className="mt-7 w-full rounded-2xl border border-[#D4AF37]/30 bg-black/50 p-5 text-left backdrop-blur-xl sm:p-6" aria-live="polite">
+          <section className="w-full rounded-2xl border border-[#D4AF37]/30 bg-black/50 p-4 text-left backdrop-blur-xl sm:p-6" aria-live="polite">
             <h2 className="text-lg font-bold text-[#FFF7DF]">Cómo instalar LVJPRAYER</h2>
             {ios ? (
               <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-white/75">
