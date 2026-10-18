@@ -105,7 +105,7 @@ export default function Instalar() {
       <div className="lvj-sacred-backdrop" aria-hidden="true" />
       <div aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 28%, rgba(181,111,35,.26), transparent 38%), linear-gradient(180deg, rgba(4,8,17,.25), rgba(3,6,13,.96))" }} />
       <div className="relative z-10 mx-auto flex w-full max-w-xl flex-col items-center text-center">
-        <img src="/lvjprayer-install-promo.svg" alt="LVJPRAYER, tu encuentro con Jesús. Biblia, oraciones, radio y liturgia." className="block h-auto w-full" loading="eager" decoding="async" />
+        <img src="/src/assets/image_app.jpeg" alt="LVJPRAYER, tu encuentro con Jesús. Biblia, oraciones, radio y liturgia." className="block h-auto w-full" loading="eager" decoding="async" />
         <button type="button" onClick={install} disabled={installing} className="-mt-1 inline-flex min-h-[70px] w-full items-center justify-center gap-4 rounded-2xl border-2 border-[#FFF0A0] bg-gradient-to-b from-[#FFE985] via-[#F3C84E] to-[#D89A20] px-5 py-4 text-lg font-black uppercase tracking-wide text-[#100D05] shadow-[0_0_0_1px_rgba(159,111,16,.75),0_0_22px_rgba(240,190,54,.32),inset_0_1px_0_rgba(255,255,255,.8)] transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#D4AF37]/40 disabled:opacity-60 sm:min-h-[84px] sm:text-2xl">
           <Download className="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
           <span>{installing ? "Preparando instalación…" : "Instalar LVJPRAYER"}</span>
