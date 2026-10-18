@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1500" viewBox="0 0 900 1500">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#080d1b"/><stop offset=".55" stop-color="#101523"/><stop offset="1" stop-color="#03050b"/></linearGradient>
+ <radialGradient id="glow"><stop stop-color="#c99d2e" stop-opacity=".34"/><stop offset="1" stop-color="#c99d2e" stop-opacity="0"/></radialGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7df83"/><stop offset=".5" stop-color="#d4af37"/><stop offset="1" stop-color="#92702a"/></linearGradient>
+ <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#111b30"/><stop offset="1" stop-color="#05070e"/></linearGradient>
+ <filter id="blur"><feGaussianBlur stdDeviation="32"/></filter>
+</defs>
+<rect width="900" height="1500" fill="url(#bg)"/>
+<ellipse cx="450" cy="430" rx="440" ry="420" fill="url(#glow)" filter="url(#blur)"/>
+<g font-family="Arial, Helvetica, sans-serif" text-anchor="middle">
+ <rect x="76" y="66" width="748" height="110" rx="28" fill="#0a0d15" stroke="#6c592c" stroke-width="2"/>
+ <rect x="100" y="86" width="68" height="68" rx="20" fill="#030407" stroke="url(#gold)" stroke-width="2"/>
+ <text x="134" y="125" font-size="12" font-weight="bold" fill="#e8c85a">LVJ</text><text x="134" y="140" font-size="10" fill="#f4ebd0">PRAYER</text>
+ <text x="490" y="106" font-size="19" letter-spacing="5" font-weight="bold" fill="#d4af37">LA VOZ DE JESÚS</text>
+ <text x="490" y="143" font-size="39" font-weight="bold" fill="#f4ebd0">LVJPRAYER</text>
+ <text x="450" y="226" font-size="20" letter-spacing="4" fill="#d4af37">TU FE, SIEMPRE CONTIGO</text>
+ <text x="450" y="300" font-family="Georgia, serif" font-size="51" font-weight="bold" fill="#fff4d7">Un espacio para</text>
+ <text x="450" y="359" font-family="Georgia, serif" font-size="51" font-weight="bold" fill="#e4bd45">encontrarte con Jesús</text>
+ <text x="450" y="414" font-size="23" fill="#d1d2d8">Oración · Palabra · Fe</text>
+</g>
+<g transform="translate(155 470)">
+ <rect x="0" y="0" width="590" height="890" rx="68" fill="#1a1d24" stroke="url(#gold)" stroke-width="6"/>
+ <rect x="18" y="18" width="554" height="854" rx="53" fill="url(#glass)" stroke="#36343a" stroke-width="2"/>
+ <rect x="218" y="35" width="154" height="24" rx="12" fill="#020306"/>
+ <rect x="115" y="110" width="360" height="210" rx="36" fill="#05060a" stroke="url(#gold)" stroke-width="3"/>
+ <text x="295" y="198" font-family="Georgia, serif" font-size="37" font-weight="bold" text-anchor="middle" fill="#d4af37">LVJ</text>
+ <text x="295" y="239" font-family="Georgia, serif" font-size="37" font-weight="bold" text-anchor="middle" fill="#f4ebd0">PRAYER</text>
+ <path d="M250 253h90" stroke="#d4af37" stroke-width="2"/>
+ <text x="295" y="376" text-anchor="middle" font-family="Arial" font-size="30" font-weight="bold" fill="#f4ebd0">Tu encuentro con Jesús</text>
+ <text x="295" y="416" text-anchor="middle" font-family="Arial" font-size="22" fill="#a6a7b0">Oración · Palabra · Fe</text>
+ <rect x="42" y="466" width="242" height="150" rx="22" fill="#111621" stroke="#66572e" stroke-width="2"/><text x="70" y="514" font-size="30" fill="#d4af37">✧</text><text x="70" y="551" font-size="23" font-weight="bold" fill="#f4ebd0">Biblia</text><text x="70" y="586" font-size="17" fill="#a8a9b2">Lee y medita</text><rect x="302" y="466" width="242" height="150" rx="22" fill="#111621" stroke="#66572e" stroke-width="2"/><text x="330" y="514" font-size="30" fill="#d4af37">♡</text><text x="330" y="551" font-size="23" font-weight="bold" fill="#f4ebd0">Oraciones</text><text x="330" y="586" font-size="17" fill="#a8a9b2">Ora cada día</text><rect x="42" y="642" width="242" height="150" rx="22" fill="#111621" stroke="#66572e" stroke-width="2"/><text x="70" y="690" font-size="30" fill="#d4af37">♬</text><text x="70" y="727" font-size="23" font-weight="bold" fill="#f4ebd0">Radio</text><text x="70" y="762" font-size="17" fill="#a8a9b2">Escucha y alaba</text><rect x="302" y="642" width="242" height="150" rx="22" fill="#111621" stroke="#66572e" stroke-width="2"/><text x="330" y="690" font-size="30" fill="#d4af37">✝</text><text x="330" y="727" font-size="23" font-weight="bold" fill="#f4ebd0">Liturgia</text><text x="330" y="762" font-size="17" fill="#a8a9b2">Vive tu fe</text>
+ <text x="295" y="846" text-anchor="middle" font-family="Arial" font-size="20" fill="#d4af37">Siempre a un toque de distancia</text>
+</g>
+</svg>
