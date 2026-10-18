@@ -155,13 +155,6 @@ export default function Instalar() {
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-white/70 sm:text-lg">
             Gratis · Sin descargar desde una tienda · Acceso desde tu pantalla de inicio
           </p>
-          <button
-            type="button"
-            onClick={() => navigate("/")}
-            className="mt-5 text-base text-[#F0C43E] underline decoration-[#F0C43E]/60 underline-offset-4 transition hover:text-[#FFE68B] sm:text-xl"
-          >
-            Continuar en el navegador
-          </button>
         </section>
 
         {showHelp && (
