@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import appMockup from "@/assets/image_app.jpeg";
+import appMockup from "@/assets/image_app.png";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Download, Heart, Headphones, Church, Smartphone, Share, PlusSquare, CheckCircle2, Sparkles } from "lucide-react";
 
