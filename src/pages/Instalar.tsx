@@ -102,22 +102,36 @@ export default function Instalar() {
   }
 
   return (
-    <main className="lvj-sacred-page relative min-h-screen overflow-hidden px-4 pb-10 pt-4 text-[#F4EBD0] sm:px-8 sm:pt-8">
-      <div className="lvj-sacred-backdrop" aria-hidden="true" />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 28%, rgba(181,111,35,.26), transparent 38%), linear-gradient(180deg, rgba(4,8,17,.25), rgba(3,6,13,.96))" }} />
-      <div className="relative z-10 mx-auto flex w-full max-w-xl flex-col items-center text-center">
-        <img src={appMockup} alt="LVJPRAYER, tu encuentro con Jesús. Biblia, oraciones, radio y liturgia." className="block h-auto w-full" loading="eager" decoding="async" />
-        <button type="button" onClick={install} disabled={installing} className="-mt-1 inline-flex min-h-[70px] w-full items-center justify-center gap-4 rounded-2xl border-2 border-[#FFF0A0] bg-gradient-to-b from-[#FFE985] via-[#F3C84E] to-[#D89A20] px-5 py-4 text-lg font-black uppercase tracking-wide text-[#100D05] shadow-[0_0_0_1px_rgba(159,111,16,.75),0_0_22px_rgba(240,190,54,.32),inset_0_1px_0_rgba(255,255,255,.8)] transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#D4AF37]/40 disabled:opacity-60 sm:min-h-[84px] sm:text-2xl">
-          <Download className="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
+    <main className="relative min-h-screen overflow-hidden bg-[#03060D] px-5 pb-10 pt-8 text-[#F4EBD0] sm:px-8 sm:pt-12">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+        <img src={appMockup} alt="" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-2xl" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(20,10,3,.78)_0%,rgba(3,7,16,.88)_45%,#03060d_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_20%,rgba(194,137,43,.2),transparent_45%)]" />
+      </div>
+      <div className="relative z-10 mx-auto flex w-full max-w-lg flex-col items-center text-center">
+        <header className="mb-7">
+          <h1 className="font-serif text-5xl font-bold tracking-tight sm:text-6xl"><span className="text-[#D4AF37]">LVJ</span><span className="text-[#FFF5DE]">PRAYER</span></h1>
+          <div className="mx-auto mt-2 h-[2px] w-48 bg-[#D4AF37]" />
+          <p className="mt-4 text-xl font-semibold tracking-wide text-[#F7E6B0] sm:text-2xl">Tu encuentro con Jesús</p>
+          <p className="mt-3 text-lg tracking-wide text-white/65 sm:text-xl">Oración · Palabra · Fe</p>
+        </header>
+        <div className="relative mb-7 w-[82%] max-w-[390px] rounded-[3.5rem] border-[5px] border-[#D4AF37] bg-[#080b12] p-3 shadow-[0_0_0_2px_rgba(255,238,172,.25),0_0_50px_rgba(199,144,42,.18)] sm:w-[78%]">
+          <div className="absolute left-1/2 top-5 z-20 h-7 w-28 -translate-x-1/2 rounded-full bg-black shadow-inner" />
+          <div className="overflow-hidden rounded-[2.7rem] border border-white/10 bg-[#050812]">
+            <img src={appMockup} alt="Vista previa de LVJPRAYER con sus accesos a Biblia, Rosario, Oraciones y Radio" className="block h-auto w-full scale-[1.015] blur-[1.1px]" loading="eager" decoding="async" />
+          </div>
+        </div>
+        <button type="button" onClick={install} disabled={installing} className="inline-flex min-h-[76px] w-full items-center justify-center gap-4 rounded-[1.45rem] border-2 border-[#FFF0A0] bg-gradient-to-b from-[#FFE982] via-[#F5C944] to-[#DCA122] px-5 py-4 text-xl font-black uppercase tracking-wide text-[#100D05] shadow-[0_0_0_1px_rgba(159,111,16,.75),0_0_28px_rgba(240,190,54,.32),inset_0_2px_0_rgba(255,255,255,.8)] transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#D4AF37]/40 disabled:opacity-60 sm:min-h-[88px] sm:text-2xl">
+          <Download className="h-8 w-8 shrink-0" />
           <span>{installing ? "Preparando instalación…" : "Instalar LVJPRAYER"}</span>
         </button>
-        <div className="mt-6 grid w-full grid-cols-3 divide-x divide-[#D4AF37]/30 rounded-xl border border-[#D4AF37]/20 bg-black/25 py-4">
-          <div className="flex flex-col items-center gap-2 px-2"><CheckCircle2 className="h-7 w-7 text-[#D4AF37]" /><p className="text-xs leading-5 text-white/75 sm:text-sm">100% gratis<br />Sin tiendas</p></div>
-          <div className="flex flex-col items-center gap-2 px-2"><Smartphone className="h-7 w-7 text-[#D4AF37]" /><p className="text-xs leading-5 text-white/75 sm:text-sm">Acceso desde<br />pantalla de inicio</p></div>
-          <div className="flex flex-col items-center gap-2 px-2"><Download className="h-7 w-7 text-[#D4AF37]" /><p className="text-xs leading-5 text-white/75 sm:text-sm">Instalada en<br />tu dispositivo</p></div>
+        <div className="mt-8 grid w-full grid-cols-3 divide-x divide-[#D4AF37]/30">
+          <div className="flex flex-col items-center gap-3 px-2"><CheckCircle2 className="h-8 w-8 text-[#D4AF37]" /><p className="text-sm leading-6 text-white/80 sm:text-base">100% gratis<br />Sin descargas<br />desde una tienda</p></div>
+          <div className="flex flex-col items-center gap-3 px-2"><Smartphone className="h-8 w-8 text-[#D4AF37]" /><p className="text-sm leading-6 text-white/80 sm:text-base">Acceso desde<br />tu pantalla de inicio</p></div>
+          <div className="flex flex-col items-center gap-3 px-2"><Download className="h-8 w-8 text-[#D4AF37]" /><p className="text-sm leading-6 text-white/80 sm:text-base">Instalada en<br />tu dispositivo</p></div>
         </div>
         {showHelp && (
-          <section className="lvj-sacred-panel mt-6 w-full p-5 text-left sm:p-6" aria-live="polite">
+          <section className="mt-7 w-full rounded-2xl border border-[#D4AF37]/30 bg-black/50 p-5 text-left backdrop-blur-xl sm:p-6" aria-live="polite">
             <h2 className="text-lg font-bold text-[#FFF7DF]">Cómo instalar LVJPRAYER</h2>
             {ios ? (
               <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-white/75">
