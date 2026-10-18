@@ -82,9 +82,9 @@ export default function Instalar() {
             type="button"
             onClick={() => {
               setOpenHint(true);
-              // Intentamos abrir la ruta principal; si el sistema no cambia a la app instalada,
-              // se conserva una instrucción manual clara en esta misma pantalla.
-              window.location.assign("/");
+              // Intentamos abrir la ruta principal en otra pestaña.
+              // El navegador no garantiza que esto active la PWA instalada.
+              window.open("/", "_blank", "noopener,noreferrer");
             }}
             className="lvj-sacred-button mt-6 w-full"
           >
