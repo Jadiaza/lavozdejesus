@@ -101,64 +101,22 @@ export default function Instalar() {
   }
 
   return (
-    <main className="lvj-sacred-page relative min-h-screen overflow-hidden px-5 pb-0 pt-8 text-[#F4EBD0] sm:px-8 sm:pt-12">
+    <main className="lvj-sacred-page relative min-h-screen overflow-hidden px-4 pb-10 pt-4 text-[#F4EBD0] sm:px-8 sm:pt-8">
       <div className="lvj-sacred-backdrop" aria-hidden="true" />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse at 88% 24%, rgba(180,119,42,.24), transparent 27%), radial-gradient(ellipse at 5% 47%, rgba(212,175,55,.12), transparent 22%), linear-gradient(180deg, rgba(4,8,17,.22), rgba(3,6,13,.96))",
-        }}
-      />
-      <div className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center text-center">
-        <header className="flex w-full max-w-xl items-center justify-center gap-4 text-left sm:gap-6">
-          <img
-            src="/pwa-192.png"
-            alt="Logo de LVJPRAYER"
-            className="h-[76px] w-[76px] shrink-0 rounded-[1.35rem] border border-[#E6C75C]/70 bg-black object-cover shadow-[0_0_24px_rgba(212,175,55,.16)] sm:h-24 sm:w-24"
-          />
-          <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#E5C34F] sm:text-sm sm:tracking-[0.3em]">La Voz de Jesús</p>
-            <h1 className="mt-1 text-[1.75rem] font-black leading-none tracking-tight text-[#FFF9E9] sm:text-5xl">LVJPRAYER</h1>
-            <p className="mt-2 text-sm text-white/70 sm:text-xl">Conecta tu espíritu</p>
-          </div>
-        </header>
-
-        <div className="mt-9 inline-flex items-center gap-2 rounded-full border border-[#D4AF37]/70 bg-black/35 px-5 py-2.5 text-sm font-semibold text-[#F2D66F] shadow-[0_0_18px_rgba(212,175,55,.08)] sm:mt-12 sm:px-7 sm:text-lg">
-          <Sparkles className="h-5 w-5" /> Tu fe, siempre contigo
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 28%, rgba(181,111,35,.26), transparent 38%), linear-gradient(180deg, rgba(4,8,17,.25), rgba(3,6,13,.96))" }} />
+      <div className="relative z-10 mx-auto flex w-full max-w-xl flex-col items-center text-center">
+        <img src="/lvjprayer-install-promo.svg" alt="LVJPRAYER, tu encuentro con Jesús. Biblia, oraciones, radio y liturgia." className="block h-auto w-full" loading="eager" decoding="async" />
+        <button type="button" onClick={install} disabled={installing} className="-mt-1 inline-flex min-h-[70px] w-full items-center justify-center gap-4 rounded-2xl border-2 border-[#FFF0A0] bg-gradient-to-b from-[#FFE985] via-[#F3C84E] to-[#D89A20] px-5 py-4 text-lg font-black uppercase tracking-wide text-[#100D05] shadow-[0_0_0_1px_rgba(159,111,16,.75),0_0_22px_rgba(240,190,54,.32),inset_0_1px_0_rgba(255,255,255,.8)] transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#D4AF37]/40 disabled:opacity-60 sm:min-h-[84px] sm:text-2xl">
+          <Download className="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
+          <span>{installing ? "Preparando instalación…" : "Instalar LVJPRAYER"}</span>
+        </button>
+        <div className="mt-6 grid w-full grid-cols-3 divide-x divide-[#D4AF37]/30 rounded-xl border border-[#D4AF37]/20 bg-black/25 py-4">
+          <div className="flex flex-col items-center gap-2 px-2"><CheckCircle2 className="h-7 w-7 text-[#D4AF37]" /><p className="text-xs leading-5 text-white/75 sm:text-sm">100% gratis<br />Sin tiendas</p></div>
+          <div className="flex flex-col items-center gap-2 px-2"><Smartphone className="h-7 w-7 text-[#D4AF37]" /><p className="text-xs leading-5 text-white/75 sm:text-sm">Acceso desde<br />pantalla de inicio</p></div>
+          <div className="flex flex-col items-center gap-2 px-2"><Download className="h-7 w-7 text-[#D4AF37]" /><p className="text-xs leading-5 text-white/75 sm:text-sm">Instalada en<br />tu dispositivo</p></div>
         </div>
-
-        <section className="mt-8 w-full sm:mt-10">
-          <h2 className="mx-auto max-w-3xl font-serif text-[2.65rem] font-semibold leading-[1.08] tracking-[-0.045em] text-[#FFF9EF] sm:text-6xl md:text-7xl">
-            Un espacio para
-            <span className="mt-2 block text-[#EBC33F]">encontrarte con Jesús</span>
-          </h2>
-          <div className="mx-auto mt-6 flex w-full max-w-xl items-center gap-2 text-[#E4BD48]" aria-hidden="true">
-            <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[#9D7625] to-[#D7B64B]" />
-            <span className="text-xl">✧</span>
-            <span className="h-px flex-1 bg-gradient-to-l from-transparent via-[#9D7625] to-[#D7B64B]" />
-          </div>
-          <p className="mx-auto mt-5 max-w-2xl text-lg leading-[1.55] text-white/90 sm:text-2xl sm:leading-relaxed">
-            Ora, lee la Biblia, vive la Liturgia, reza el Rosario y escucha la radio católica desde un solo lugar.
-          </p>
-
-          <button
-            type="button"
-            onClick={install}
-            disabled={installing}
-            className="mt-8 inline-flex min-h-[76px] w-full max-w-2xl items-center justify-center gap-4 rounded-[1.55rem] border-2 border-[#FFF0A0] bg-gradient-to-b from-[#FFE985] via-[#F3C84E] to-[#D89A20] px-5 py-5 text-lg font-black uppercase tracking-wide text-[#100D05] shadow-[0_0_0_1px_rgba(159,111,16,.75),0_0_18px_rgba(240,190,54,.32),inset_0_1px_0_rgba(255,255,255,.8)] transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#D4AF37]/40 disabled:opacity-60 sm:mt-10 sm:min-h-[96px] sm:text-3xl"
-          >
-            <Download className="h-7 w-7 shrink-0 sm:h-9 sm:w-9" />
-            <span>{installing ? "Preparando instalación…" : "Instalar LVJPRAYER"}</span>
-          </button>
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-white/70 sm:text-lg">
-            Gratis · Sin descargar desde una tienda · Acceso desde tu pantalla de inicio
-          </p>
-        </section>
-
         {showHelp && (
-          <section className="lvj-sacred-panel mt-7 w-full max-w-2xl p-5 text-left sm:p-6" aria-live="polite">
+          <section className="lvj-sacred-panel mt-6 w-full p-5 text-left sm:p-6" aria-live="polite">
             <h2 className="text-lg font-bold text-[#FFF7DF]">Cómo instalar LVJPRAYER</h2>
             {ios ? (
               <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-white/75">
@@ -167,31 +125,10 @@ export default function Instalar() {
                 <li>Selecciona <strong className="text-[#FFF7DF]">Añadir a pantalla de inicio</strong> <PlusSquare className="inline h-4 w-4 text-[#D4AF37]" /> y confirma.</li>
               </ol>
             ) : (
-              <div className="mt-3 space-y-2 text-sm leading-6 text-white/75">
-                <p>En Chrome o Edge, abre el menú del navegador (⋮ o …) y elige <strong className="text-[#FFF7DF]">Instalar aplicación</strong> o <strong className="text-[#FFF7DF]">Añadir a pantalla de inicio</strong>.</p>
-                <p>Si no aparece esa opción, abre la página en Chrome y vuelve a intentarlo.</p>
-              </div>
+              <div className="mt-3 space-y-2 text-sm leading-6 text-white/75"><p>En Chrome o Edge, abre el menú del navegador (⋮ o …) y elige <strong className="text-[#FFF7DF]">Instalar aplicación</strong> o <strong className="text-[#FFF7DF]">Añadir a pantalla de inicio</strong>.</p><p>Si no aparece esa opción, abre la página en Chrome y vuelve a intentarlo.</p></div>
             )}
           </section>
         )}
-
-        <div className="relative mt-10 w-full max-w-2xl pt-2 sm:mt-14" aria-hidden="true">
-          <div className="absolute inset-x-[-22%] bottom-0 top-6 rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,.17),transparent_64%)]" />
-          <div className="absolute inset-x-[-20%] bottom-4 h-24 -rotate-3 rounded-[50%] border-t border-[#D4AF37]/80 shadow-[0_-8px_30px_rgba(212,175,55,.12)]" />
-          <div className="absolute inset-x-[-20%] bottom-0 h-28 rotate-3 rounded-[50%] border-t border-[#6CA9E8]/50" />
-          <div className="relative mx-auto w-[92%] rounded-t-[4.2rem] border-x-2 border-t-2 border-[#B9A16B] bg-gradient-to-b from-[#28231A] via-[#080A10] to-[#03050A] p-2.5 shadow-[0_-8px_32px_rgba(212,175,55,.14)] sm:w-[84%] sm:rounded-t-[5rem] sm:p-3">
-            <div className="overflow-hidden rounded-t-[3.4rem] border-x border-t border-[#D4AF37]/30 bg-[#05070D] sm:rounded-t-[4.2rem]">
-              <img
-                src="/lvjprayer-install-promo.svg"
-                alt="LVJPRAYER: un espacio para encontrarte con Jesús, con Biblia, oraciones, radio y liturgia"
-                className="block h-auto w-full"
-                loading="eager"
-                decoding="async"
-              />
-            </div>
-          </div>
-        </div>
       </div>
     </main>
-  );
-}
+  );}
