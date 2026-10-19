@@ -18,8 +18,7 @@ try {
   }
   $payload = ['success'=>true,'active'=>true,'mode'=>(string)$config['modo_capa'],'provider'=>(string)($config['proveedor'] ?? 'livepush'),'playback_url'=>(string)($config['url_reproduccion'] ?? ''),'position'=>(string)($config['posicion'] ?? 'inferior_derecha'),'seconds'=>max(5,min(30,(int)($config['segundos_tarjeta'] ?? 5))),'intentions'=>[]];
   if ($payload['mode'] === 'intenciones') {
-    $overlayFilter = (int)($config['solo_marcadas_overlay'] ?? 1) === 1 ? ' AND mostrar_overlay = 1' : '';
-    $date = $pdo->query("SELECT DATE(MAX(fecha_publicacion)) FROM lvj_com_peticiones_oracion WHERE estado='aprobado' AND deleted_at IS NULL AND fecha_publicacion IS NOT NULL AND fecha_publicacion < DATE_ADD(CURDATE(), INTERVAL 1 DAY){$overlayFilter}")->fetchColumn();
+    $date = $pdo->query("SELECT DATE(MAX(fecha_publicacion)) FROM lvj_com_peticiones_oracion WHERE estado='aprobado' AND deleted_at IS NULL AND fecha_publicacion IS NOT NULL AND fecha_publicacion < DATE_ADD(CURDATE(), INTERVAL 1 DAY)")->fetchColumn();
     if ($date) {
       $stmt = $pdo->prepare("SELECT id, peticion, categoria FROM lvj_com_peticiones_oracion WHERE estado='aprobado' AND deleted_at IS NULL AND DATE(fecha_publicacion)=:fecha AND fecha_publicacion < DATE_ADD(CURDATE(), INTERVAL 1 DAY){$overlayFilter} ORDER BY id DESC LIMIT 40");
       $stmt->execute(['fecha'=>$date]);
