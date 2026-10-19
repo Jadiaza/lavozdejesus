@@ -50,29 +50,28 @@ if ($tableReady && $_SERVER['REQUEST_METHOD'] === 'POST') {
   $seconds = max(5, min(30, (int) ($_POST['segundos_tarjeta'] ?? 5)));
   $active = isset($_POST['activa']) ? 1 : 0;
   $scheduled = isset($_POST['programada']) ? 1 : 0;
-  $overlayOnly = isset($_POST['solo_marcadas_overlay']) ? 1 : 0;
-  try {
+    try {
     if (!in_array($mode, ['desactivada','video','intenciones'], true)
       || !in_array($provider, ['livepush','xtreamcast','restream','otro'], true)
       || !in_array($position, ['inferior_derecha','inferior_izquierda','superior_derecha','superior_izquierda'], true)) {
       throw new RuntimeException('Hay una opción no válida.');
     }
-    if ($url !== '' && !filter_var($url, FILTER_VALIDATE_URL)) {
-      throw new RuntimeException('La URL de reproducción debe ser válida.');
+    if ($url !== '' && (!filter_var($url, FILTER_VALIDATE_URL) || strtolower((string) parse_url($url, PHP_URL_SCHEME)) !== 'https')) {
+      throw new RuntimeException('La URL de reproducción debe ser una dirección HTTPS válida.');
     }
     $startValue = $start !== '' ? str_replace('T', ' ', $start) . ':00' : null;
     $endValue = $end !== '' ? str_replace('T', ' ', $end) . ':00' : null;
     if ($startValue && $endValue && strtotime($endValue) <= strtotime($startValue)) {
       throw new RuntimeException('La fecha final debe ser posterior a la fecha inicial.');
     }
-    $stmt = $pdo->prepare("UPDATE lvj_tx_config SET proveedor=:proveedor, url_reproduccion=:url, modo_capa=:modo, activa=:activa, programada=:programada, inicia_en=:inicio, termina_en=:fin, segundos_tarjeta=:segundos, solo_marcadas_overlay=:marcadas, posicion=:posicion, updated_at=NOW() WHERE id=1");
+    $stmt = $pdo->prepare("UPDATE lvj_tx_config SET proveedor=:proveedor, url_reproduccion=:url, modo_capa=:modo, activa=:activa, programada=:programada, inicia_en=:inicio, termina_en=:fin, segundos_tarjeta=:segundos, solo_marcadas_overlay=0, posicion=:posicion, updated_at=NOW() WHERE id=1");
     $stmt->execute([
       'proveedor'=>$provider, 'url'=>$url !== '' ? $url : null, 'modo'=>$mode, 'activa'=>$active,
       'programada'=>$scheduled, 'inicio'=>$startValue, 'fin'=>$endValue, 'segundos'=>$seconds,
-      'marcadas'=>$overlayOnly, 'posicion'=>$position,
+      'posicion'=>$position,
     ]);
     log_activity('actualizar_configuracion', 'lvj_tx_config', 1, 'Configuración de capa de transmisiones');
-    $message = 'Configuración guardada. La capa todavía no se integra visualmente sobre Capilla; esa será una fase posterior e independiente.';
+    $message = 'Configuración guardada. La capa se integra externamente en las rutas de Capilla; permanece apagada hasta validar la reproducción y la conexión con la base de datos.';
     $config = $pdo->query("SELECT * FROM lvj_tx_config WHERE id=1 LIMIT 1")->fetch();
   } catch (Throwable $e) {
     $error = $e instanceof RuntimeException ? $e->getMessage() : 'No fue posible guardar la configuración.';
@@ -81,12 +80,10 @@ if ($tableReady && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
 if ($tableReady) {
   try {
-    $filterOverlay = (int) ($config['solo_marcadas_overlay'] ?? 1) === 1;
-    $whereOverlay = $filterOverlay ? ' AND mostrar_overlay = 1' : '';
-    $dateStmt = $pdo->query("SELECT DATE(MAX(fecha_publicacion)) FROM lvj_com_peticiones_oracion WHERE estado='aprobado' AND deleted_at IS NULL AND fecha_publicacion IS NOT NULL AND fecha_publicacion < DATE_ADD(CURDATE(), INTERVAL 1 DAY){$whereOverlay}");
+    $dateStmt = $pdo->query("SELECT DATE(MAX(fecha_publicacion)) FROM lvj_com_peticiones_oracion WHERE estado='aprobado' AND deleted_at IS NULL AND fecha_publicacion IS NOT NULL AND fecha_publicacion < DATE_ADD(CURDATE(), INTERVAL 1 DAY)");
     $latestDate = $dateStmt->fetchColumn() ?: null;
     if ($latestDate) {
-      $stmt = $pdo->prepare("SELECT id, nombre, ciudad, peticion, categoria, fecha_publicacion FROM lvj_com_peticiones_oracion WHERE estado='aprobado' AND deleted_at IS NULL AND DATE(fecha_publicacion)=:fecha AND fecha_publicacion < DATE_ADD(CURDATE(), INTERVAL 1 DAY){$whereOverlay} ORDER BY id DESC LIMIT 8");
+      $stmt = $pdo->prepare("SELECT id, nombre, ciudad, peticion, categoria, fecha_publicacion FROM lvj_com_peticiones_oracion WHERE estado='aprobado' AND deleted_at IS NULL AND DATE(fecha_publicacion)=:fecha AND fecha_publicacion < DATE_ADD(CURDATE(), INTERVAL 1 DAY) ORDER BY id DESC LIMIT 8");
       $stmt->execute(['fecha'=>$latestDate]);
       $sampleIntentions = $stmt->fetchAll();
       $intentionCount = count($sampleIntentions);
@@ -104,13 +101,13 @@ require __DIR__ . '/includes/header.php';
 <section class="panel-card"><h2>Instalación pendiente</h2><p>Ejecuta manualmente la migración <code>app-admin/migrations/2026-10-19-create-lvj-transmission-config.sql</code> en la base de datos utilizada por el panel. El módulo no crea tablas automáticamente.</p></section>
 <?php else: ?>
 <section class="dashboard-grid">
- <article class="panel-card"><span class="eyebrow">Estado administrativo</span><h2><?php echo !empty($config['activa']) ? 'Activada' : 'Desactivada'; ?></h2><p>La configuración está guardada; la capa visual requiere la fase de integración.</p></article>
+ <article class="panel-card"><span class="eyebrow">Estado administrativo</span><h2><?php echo !empty($config['activa']) ? 'Activada' : 'Desactivada'; ?></h2><p>La capa visual se integra desde el router, sin modificar el interior de Capilla. Mantén la activación apagada hasta completar las pruebas.</p></article>
  <article class="panel-card"><span class="eyebrow">Intenciones disponibles</span><h2><?php echo (int)$intentionCount; ?></h2><p>Fecha más reciente disponible: <strong><?php echo tx_escape($latestDate ?: 'Sin registros disponibles'); ?></strong></p></article>
 </section>
 <section class="panel-card">
 <form method="post" class="form-grid">
 <?php echo csrf_field(); ?>
-<div class="form-section-heading"><h2>Activación y contenido</h2><p>El video se activa durante un en vivo; las intenciones rotarán automáticamente cuando se integre el reproductor superpuesto.</p></div>
+<div class="form-section-heading"><h2>Activación y contenido</h2><p>El video aparece al activar la modalidad de video y configurar una URL HTTPS de reproducción compatible. Las intenciones rotan automáticamente cada cinco segundos o según el intervalo elegido.</p></div>
 <label class="field">Modalidad<select name="modo_capa"><?php foreach (['desactivada'=>'Desactivada','video'=>'Video en vivo','intenciones'=>'Tarjetas de intenciones'] as $v=>$label): ?><option value="<?php echo $v; ?>"<?php echo ($config['modo_capa'] ?? 'desactivada')===$v?' selected':''; ?>><?php echo $label; ?></option><?php endforeach; ?></select></label>
 <label class="field">Proveedor<select name="proveedor"><?php foreach (['livepush'=>'Livepush','xtreamcast'=>'XtreamCast','restream'=>'Restream','otro'=>'Otro'] as $v=>$label): ?><option value="<?php echo $v; ?>"<?php echo ($config['proveedor'] ?? 'livepush')===$v?' selected':''; ?>><?php echo $label; ?></option><?php endforeach; ?></select><small>Se guarda el proveedor preferido. No introduzcas aquí claves RTMP privadas.</small></label>
 <label class="field field-wide">URL de reproducción web (HLS/M3U8 o reproductor)<input type="url" name="url_reproduccion" maxlength="1000" value="<?php echo tx_value($config,'url_reproduccion'); ?>" placeholder="https://..."><small>URL pública de reproducción, nunca la clave de emisión RTMP.</small></label>
