@@ -20,7 +20,7 @@ try {
   if ($payload['mode'] === 'intenciones') {
     $date = $pdo->query("SELECT DATE(MAX(fecha_publicacion)) FROM lvj_com_peticiones_oracion WHERE estado='aprobado' AND deleted_at IS NULL AND fecha_publicacion IS NOT NULL AND fecha_publicacion < DATE_ADD(CURDATE(), INTERVAL 1 DAY)")->fetchColumn();
     if ($date) {
-      $stmt = $pdo->prepare("SELECT id, peticion, categoria FROM lvj_com_peticiones_oracion WHERE estado='aprobado' AND deleted_at IS NULL AND DATE(fecha_publicacion)=:fecha AND fecha_publicacion < DATE_ADD(CURDATE(), INTERVAL 1 DAY){$overlayFilter} ORDER BY id DESC LIMIT 40");
+      $stmt = $pdo->prepare("SELECT id, peticion, categoria FROM lvj_com_peticiones_oracion WHERE estado='aprobado' AND deleted_at IS NULL AND DATE(fecha_publicacion)=:fecha AND fecha_publicacion < DATE_ADD(CURDATE(), INTERVAL 1 DAY) ORDER BY id DESC LIMIT 40");
       $stmt->execute(['fecha'=>$date]);
       $payload['intentions'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
       $payload['intentions_date'] = (string)$date;
