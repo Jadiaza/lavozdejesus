@@ -117,7 +117,6 @@ require __DIR__ . '/includes/header.php';
 <label class="field">Fin programado<input type="datetime-local" name="termina_en" value="<?php echo tx_datetime_local($config,'termina_en'); ?>"></label>
 <label class="checkbox-field"><input type="checkbox" name="activa" value="1"<?php echo tx_checked($config,'activa'); ?>> Activar la capa</label>
 <label class="checkbox-field"><input type="checkbox" name="programada" value="1"<?php echo tx_checked($config,'programada'); ?>> Respetar el horario programado</label>
-<label class="checkbox-field"><input type="checkbox" name="solo_marcadas_overlay" value="1"<?php echo tx_checked($config,'solo_marcadas_overlay'); ?>> Mostrar solo intenciones marcadas «Overlay»</label>
 <div class="field-wide"><button class="btn btn-primary" type="submit">Guardar configuración</button></div>
 </form></section>
 <section class="panel-card"><h2>Vista previa de intenciones</h2><p class="muted">Solo intenciones aprobadas con fecha de publicación hasta hoy; se toma la fecha más reciente disponible.</p>
