@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import appMockup from "@/assets/image_app.png";
-import { BookOpen, Download, Heart, Headphones, Church, Smartphone, Share, PlusSquare, CheckCircle2, Sparkles } from "lucide-react";
+import { Download, Heart, Smartphone, Share, PlusSquare, CheckCircle2 } from "lucide-react";
 
 type InstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -26,8 +26,12 @@ export default function Instalar() {
   const [openHint, setOpenHint] = useState(false);
 
   useEffect(() => {
+    const isIOS = detectIOS();
     setInstalled(standaloneInstalled());
-    setIos(detectIOS());
+    setIos(isIOS);
+    // En iPhone/iPad no existe un cuadro de instalación automática como en Android.
+    // Mostramos de inmediato las instrucciones para que el usuario no quede bloqueado.
+    if (isIOS && !standaloneInstalled()) setShowHelp(true);
 
     const onPrompt = (event: Event) => {
       event.preventDefault();
@@ -51,6 +55,10 @@ export default function Instalar() {
   }, []);
 
   const install = async () => {
+    if (ios) {
+      setShowHelp((visible) => !visible);
+      return;
+    }
     if (promptEvent) {
       setInstalling(true);
       try {
@@ -89,7 +97,7 @@ export default function Instalar() {
           </button>
           {openHint && (
             <p className="mt-3 text-xs leading-5 text-white/65">
-              Si LVJPRAYER no se abrió como aplicación, vuelve a la pantalla de inicio de tu dispositivo y pulsa el icono de LVJPRAYER que acabas de instalar.
+              Si LVJPRAYER no se abrió como aplicación, vuelve a la pantalla de inicio de tu dispositivo y pulsa el icono de LVJPRAYER que instalaste.
             </p>
           )}
         </div>
@@ -123,8 +131,8 @@ export default function Instalar() {
         </div>
 
         <button type="button" onClick={install} disabled={installing} className="inline-flex min-h-[clamp(58px,8.5svh,78px)] w-full shrink-0 items-center justify-center gap-3 rounded-[1.15rem] border-2 border-[#FFF0A0] bg-gradient-to-b from-[#FFE982] via-[#F5C944] to-[#DCA122] px-4 py-3 text-[clamp(1rem,4.3vw,1.45rem)] font-black uppercase tracking-wide text-[#100D05] shadow-[0_0_0_1px_rgba(159,111,16,.75),0_0_24px_rgba(240,190,54,.30),inset_0_2px_0_rgba(255,255,255,.8)] transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#D4AF37]/40 disabled:opacity-60">
-          <Download className="h-[clamp(22px,6vw,32px)] w-[clamp(22px,6vw,32px)] shrink-0" />
-          <span>{installing ? "Preparando instalación…" : "Instalar LVJPRAYER"}</span>
+          {ios ? <Share className="h-[clamp(22px,6vw,32px)] w-[clamp(22px,6vw,32px)] shrink-0" /> : <Download className="h-[clamp(22px,6vw,32px)] w-[clamp(22px,6vw,32px)] shrink-0" />}
+          <span>{installing ? "Preparando instalación…" : ios ? (showHelp ? "Ocultar instrucciones" : "Instalar en iPhone / iPad") : "Instalar LVJPRAYER"}</span>
         </button>
 
         <div className="grid w-full shrink-0 grid-cols-3 divide-x divide-[#D4AF37]/30 pb-1">
@@ -134,14 +142,19 @@ export default function Instalar() {
         </div>
 
         {showHelp && (
-          <section className="w-full rounded-2xl border border-[#D4AF37]/30 bg-black/50 p-4 text-left backdrop-blur-xl sm:p-6" aria-live="polite">
-            <h2 className="text-lg font-bold text-[#FFF7DF]">Cómo instalar LVJPRAYER</h2>
+          <section className="w-full rounded-2xl border border-[#D4AF37]/40 bg-black/65 p-4 text-left shadow-[0_0_24px_rgba(212,175,55,.10)] backdrop-blur-xl sm:p-6" aria-live="polite">
+            <h2 className="text-lg font-bold text-[#FFF7DF]">Instalar LVJPRAYER en tu iPhone o iPad</h2>
             {ios ? (
-              <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-white/75">
-                <li>Abre esta página en <strong className="text-[#FFF7DF]">Safari</strong>.</li>
-                <li>Pulsa <strong className="text-[#FFF7DF]">Compartir</strong> <Share className="inline h-4 w-4 text-[#D4AF37]" />.</li>
-                <li>Selecciona <strong className="text-[#FFF7DF]">Añadir a pantalla de inicio</strong> <PlusSquare className="inline h-4 w-4 text-[#D4AF37]" /> y confirma.</li>
-              </ol>
+              <>
+                <p className="mt-2 text-sm leading-6 text-white/75">Apple no permite que una página web se instale con un botón automático. Sigue estos pasos desde <strong className="text-[#FFF7DF]">Safari</strong>:</p>
+                <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-white/80">
+                  <li>Si abriste esta página desde otra aplicación, ábrela en Safari en <strong className="text-[#FFF7DF]">lavozdejesus.vercel.app/instalar</strong>.</li>
+                  <li>Pulsa el botón <strong className="text-[#FFF7DF]">Compartir</strong> de Safari <Share className="inline h-4 w-4 text-[#D4AF37]" />.</li>
+                  <li>Desplázate por el menú y selecciona <strong className="text-[#FFF7DF]">Añadir a pantalla de inicio</strong> <PlusSquare className="inline h-4 w-4 text-[#D4AF37]" />. Si aparece la opción para abrir como app web, déjala activada.</li>
+                  <li>Pulsa <strong className="text-[#FFF7DF]">Añadir</strong>. Después abre LVJPRAYER desde el nuevo icono de la pantalla de inicio.</li>
+                </ol>
+                <p className="mt-3 text-xs leading-5 text-[#F7E6B0]/80">Si no aparece «Añadir a pantalla de inicio», revisa el menú Editar acciones de Compartir o confirma que estás usando Safari.</p>
+              </>
             ) : (
               <div className="mt-3 space-y-2 text-sm leading-6 text-white/75"><p>En Chrome o Edge, abre el menú del navegador (⋮ o …) y elige <strong className="text-[#FFF7DF]">Instalar aplicación</strong> o <strong className="text-[#FFF7DF]">Añadir a pantalla de inicio</strong>.</p><p>Si no aparece esa opción, abre la página en Chrome y vuelve a intentarlo.</p></div>
             )}
