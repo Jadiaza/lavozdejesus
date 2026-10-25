@@ -14,6 +14,7 @@ import AccessGate from "@/components/AccessGate";
 import WelcomeAccessPrompt from "@/components/WelcomeAccessPrompt";
 import PWAInstaller from "@/components/PWAInstaller";
 import Instalar from "./pages/Instalar.tsx";
+import CapillaTransmissionOverlay from "@/components/transmission/CapillaTransmissionOverlay";
 
 import RosarioHome from "@/modules/rosary/pages/RosarioHome";
 const RosarioModalidad = lazy(() => import("@/modules/rosary/pages/RosarioModalidad"));
@@ -137,8 +138,8 @@ const App = () => {
               <Route path="/instalar" element={<Instalar />} />
               <Route path="/" element={<Index />} />
               <Route path="/radio" element={<Radio />} />
-              <Route path="/capilla" element={<Capilla />} />
-              <Route path="/capilla-virtual" element={<Capilla />} />
+              <Route path="/capilla" element={<><Capilla /><CapillaTransmissionOverlay /></>} />
+              <Route path="/capilla-virtual" element={<><Capilla /><CapillaTransmissionOverlay /></>} />
               <Route path="/capilla/intenciones" element={<Intenciones />} />
               <Route path="/contacto" element={<Contacto />} />
               <Route path="/lecturas-del-dia" element={<LecturasDelDia />} />

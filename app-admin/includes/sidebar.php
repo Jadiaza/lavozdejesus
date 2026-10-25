@@ -79,6 +79,7 @@ $liturgiaActive = in_array($currentAdminPage, ['liturgia-dia.php', 'liturgia-ord
     <span class="side-nav-section-label">Capilla y Oracion</span>
     <a class="<?php echo side_nav_active('', 'capilla') === 'active' ? 'active' : ''; ?>" href="content.php?module=capilla"><span class="nav-icon">C</span> Capillas y Transmisiones</a>
     <a class="<?php echo $currentAdminPage === 'intenciones.php' ? 'active' : ''; ?>" href="intenciones.php"><span class="nav-icon">I</span> Intenciones de Oracion</a>
+    <?php if (is_technical_admin()): ?><a class="<?php echo $currentAdminPage === 'transmisiones.php' ? 'active' : ''; ?>" href="transmisiones.php"><span class="nav-icon">TV</span> Capa de Transmisiones</a><?php endif; ?>
     <a class="<?php echo side_nav_active('', 'oracion'); ?>" href="content.php?module=oracion"><span class="nav-icon">O</span> Rosarios y Oraciones</a>
 
     <span class="side-nav-section-label">Liturgia y Santoral</span>
