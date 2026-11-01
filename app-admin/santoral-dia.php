@@ -1017,7 +1017,7 @@ require __DIR__ . '/includes/header.php';
         <label class="content-field full">Frase destacada
           <textarea name="frase_destacada" rows="3"><?php echo e((string) ($editRow['frase_destacada'] ?? '')); ?></textarea>
         </label>
-        <label class="content-field full">Quién fue
+        <label class="content-field full"><?php echo santoral_admin_is_solemnity(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['titulo'] ?? '')) ? 'Contenido de la celebración' : (santoral_admin_is_marian(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['fecha'] ?? ''), santoral_admin_text($editRow['titulo'] ?? '')) ? 'Quién es' : 'Quién fue'); ?>
           <textarea name="quien_fue" rows="7"><?php echo e((string) ($editRow['quien_fue'] ?? '')); ?></textarea>
         </label>
         <?php if (!santoral_admin_is_marian(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['fecha'] ?? ''), santoral_admin_text($editRow['titulo'] ?? '')) && !santoral_admin_is_solemnity(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['titulo'] ?? ''))): ?>
@@ -1033,7 +1033,7 @@ require __DIR__ . '/includes/header.php';
         <label class="content-field full">Enseñanza para hoy
           <textarea name="ensenanza_para_hoy" rows="5"><?php echo e((string) ($editRow['ensenanza_para_hoy'] ?? '')); ?></textarea>
         </label>
-        <label class="content-field full">Cómo puedo imitarlo
+        <label class="content-field full"><?php echo santoral_admin_is_solemnity(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['titulo'] ?? '')) ? 'Cómo vivir esta celebración' : 'Cómo puedo imitarlo'; ?>
           <textarea name="como_puedo_imitarlo" rows="5"><?php echo e((string) ($editRow['como_puedo_imitarlo'] ?? '')); ?></textarea>
         </label>
         <label class="content-field full">Paso concreto para hoy
