@@ -61,15 +61,24 @@ try {
       continue;
     }
 
-    $data[] = [
+    $title = lvj_text($row, 'titulo');
+    $name = lvj_text($row, 'nombre');
+    $normalizedClassification = function_exists('mb_strtolower')
+      ? mb_strtolower($title . ' ' . $name, 'UTF-8')
+      : strtolower($title . ' ' . $name);
+    $normalizedClassification = strtr($normalizedClassification, [
+      'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u',
+      'ñ' => 'n',
+    ]);
+    $isSolemnity = str_contains($normalizedClassification, 'solemnidad');
+
+    $item = [
       'fecha' => $rowDate,
       'mes' => lvj_text($row, 'mes'),
       'dia' => lvj_text($row, 'dia'),
-      'nombre' => lvj_text($row, 'nombre'),
-      'titulo' => lvj_text($row, 'titulo'),
+      'nombre' => $name,
+      'titulo' => $title,
       'resumen' => lvj_text($row, 'resumen', 'quien_fue'),
-      'lucha_que_enfrento' => lvj_text($row, 'lucha_que_enfrento'),
-      'secreto_de_santidad' => lvj_text($row, 'secreto_de_santidad'),
       'ensenanza_para_hoy' => lvj_text($row, 'ensenanza_para_hoy'),
       'como_puedo_imitarlo' => lvj_text($row, 'como_puedo_imitarlo'),
       'paso_concreto' => lvj_text($row, 'paso_concreto'),
@@ -78,6 +87,13 @@ try {
       'frase_destacada' => lvj_text($row, 'frase_destacada'),
       'estado' => lvj_text($row, 'estado') ?: 'publicado',
     ];
+
+    if (!$isSolemnity) {
+      $item['lucha_que_enfrento'] = lvj_text($row, 'lucha_que_enfrento');
+      $item['secreto_de_santidad'] = lvj_text($row, 'secreto_de_santidad');
+    }
+
+    $data[] = $item;
   }
 
   lvj_json_response($data);
