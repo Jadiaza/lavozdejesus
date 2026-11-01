@@ -71,13 +71,41 @@ function santoral_admin_is_marian(string $name, string $date = '', string $class
     || str_contains($normalizedName, 'advocacion mariana');
 }
 
+function santoral_admin_is_solemnity(string $name, string $classification = ''): bool
+{
+  $normalize = static function (string $value): string {
+    $value = function_exists('mb_strtolower')
+      ? mb_strtolower(trim($value), 'UTF-8')
+      : strtolower(trim($value));
+    return strtr($value, [
+      'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u',
+      'ñ' => 'n',
+    ]);
+  };
+
+  $normalizedName = $normalize($name);
+  $normalizedClassification = $normalize($classification);
+
+  return str_contains($normalizedClassification, 'solemnidad')
+    || str_contains($normalizedName, 'solemnidad');
+}
+
 function santoral_admin_required_for_publish(array $data, string $name, string $date = '', string $classification = ''): string
 {
+  $isSolemnity = santoral_admin_is_solemnity($name, $classification);
   $isMarian = santoral_admin_is_marian($name, $date, $classification);
 
-  // Las celebraciones marianas no se validan como biografías de santos.
-  // Mantienen el núcleo pastoral, pero no exigen lucha ni secreto de santidad.
-  if ($isMarian) {
+  if ($isSolemnity) {
+    // Las solemnidades celebran un misterio o una realidad de fe,
+    // no la biografía de un santo particular.
+    $required = [
+      'frase_destacada' => 'Frase destacada',
+      'quien_fue' => 'Contenido de la celebración',
+      'ensenanza_para_hoy' => 'Enseñanza para hoy',
+      'paso_concreto' => 'Paso concreto para hoy',
+      'oracion_intercesion' => 'Oración',
+    ];
+  } elseif ($isMarian) {
     $required = [
       'frase_destacada' => 'Frase destacada',
       'quien_fue' => 'Quién es',
@@ -98,7 +126,7 @@ function santoral_admin_required_for_publish(array $data, string $name, string $
   }
 
   if ($name === '') {
-    return 'El nombre del santo no está disponible.';
+    return 'El nombre de la celebración no está disponible.';
   }
 
   foreach ($required as $field => $label) {
@@ -122,15 +150,13 @@ function santoral_admin_has_liturgia_link(PDO $pdo): bool
 /** @return array<string,mixed> */
 function santoral_admin_public_payload(array $row): array
 {
-  return [
+  $payload = [
     'fecha' => santoral_admin_text($row['fecha'] ?? ''),
     'mes' => santoral_admin_text($row['mes'] ?? ''),
     'dia' => santoral_admin_text($row['dia'] ?? ''),
     'nombre' => santoral_admin_text($row['nombre'] ?? ''),
     'titulo' => santoral_admin_text($row['titulo'] ?? ''),
     'resumen' => santoral_admin_text($row['quien_fue'] ?? ''),
-    'lucha_que_enfrento' => santoral_admin_text($row['lucha_que_enfrento'] ?? ''),
-    'secreto_de_santidad' => santoral_admin_text($row['secreto_de_santidad'] ?? ''),
     'ensenanza_para_hoy' => santoral_admin_text($row['ensenanza_para_hoy'] ?? ''),
     'como_puedo_imitarlo' => santoral_admin_text($row['como_puedo_imitarlo'] ?? ''),
     'paso_concreto' => santoral_admin_text($row['paso_concreto'] ?? ''),
@@ -139,6 +165,15 @@ function santoral_admin_public_payload(array $row): array
     'frase_destacada' => santoral_admin_text($row['frase_destacada'] ?? ''),
     'estado' => santoral_admin_status((string) ($row['estado'] ?? 'borrador')),
   ];
+
+  $name = santoral_admin_text($row['nombre'] ?? '');
+  $title = santoral_admin_text($row['titulo'] ?? '');
+  if (!santoral_admin_is_solemnity($name, $title)) {
+    $payload['lucha_que_enfrento'] = santoral_admin_text($row['lucha_que_enfrento'] ?? '');
+    $payload['secreto_de_santidad'] = santoral_admin_text($row['secreto_de_santidad'] ?? '');
+  }
+
+  return $payload;
 }
 
 /** @return array<string,mixed> */
