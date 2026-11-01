@@ -102,6 +102,7 @@ function santoral_admin_required_for_publish(array $data, string $name, string $
       'frase_destacada' => 'Frase destacada',
       'quien_fue' => 'Contenido de la celebración',
       'ensenanza_para_hoy' => 'Enseñanza para hoy',
+      'como_puedo_imitarlo' => 'Cómo vivir esta celebración',
       'paso_concreto' => 'Paso concreto para hoy',
       'oracion_intercesion' => 'Oración',
     ];
