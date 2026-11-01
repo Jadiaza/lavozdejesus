@@ -38,20 +38,40 @@ final class SantoralAiService
     $name = trim($name);
     if ($name === '') throw new InvalidArgumentException('El Santoral requiere el nombre recibido desde Ordo.');
 
+    $classification = trim((string) ($context['celebracion'] ?? '')) . ' ' . trim($title);
+    $normalizedClassification = function_exists('mb_strtolower')
+      ? mb_strtolower($classification, 'UTF-8')
+      : strtolower($classification);
+    $normalizedClassification = strtr($normalizedClassification, [
+      'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u',
+      'ñ' => 'n',
+    ]);
+    $isSolemnity = str_contains($normalizedClassification, 'solemnidad');
+
+    $properties = [
+      'frase_destacada' => ['type' => 'string', 'minLength' => 20],
+      'quien_fue' => ['type' => 'string', 'minLength' => 180],
+      'ensenanza_para_hoy' => ['type' => 'string', 'minLength' => 100],
+      'como_puedo_imitarlo' => ['type' => 'string', 'minLength' => 80],
+      'paso_concreto' => ['type' => 'string', 'minLength' => 25],
+      'oracion_intercesion' => ['type' => 'string', 'minLength' => 140],
+    ];
+    $required = ['frase_destacada','quien_fue','ensenanza_para_hoy','como_puedo_imitarlo','paso_concreto','oracion_intercesion'];
+
+    if (!$isSolemnity) {
+      $properties['lucha_que_enfrento'] = ['type' => 'string', 'minLength' => 100];
+      $properties['secreto_de_santidad'] = ['type' => 'string', 'minLength' => 100];
+      $required = [
+        'frase_destacada','quien_fue','lucha_que_enfrento','secreto_de_santidad',
+        'ensenanza_para_hoy','como_puedo_imitarlo','paso_concreto','oracion_intercesion',
+      ];
+    }
+
     $schema = [
       'type' => 'object',
       'additionalProperties' => false,
-      'required' => ['frase_destacada','quien_fue','lucha_que_enfrento','secreto_de_santidad','ensenanza_para_hoy','como_puedo_imitarlo','paso_concreto','oracion_intercesion'],
-      'properties' => [
-        'frase_destacada' => ['type' => 'string', 'minLength' => 20],
-        'quien_fue' => ['type' => 'string', 'minLength' => 180],
-        'lucha_que_enfrento' => ['type' => 'string', 'minLength' => 100],
-        'secreto_de_santidad' => ['type' => 'string', 'minLength' => 100],
-        'ensenanza_para_hoy' => ['type' => 'string', 'minLength' => 100],
-        'como_puedo_imitarlo' => ['type' => 'string', 'minLength' => 80],
-        'paso_concreto' => ['type' => 'string', 'minLength' => 25],
-        'oracion_intercesion' => ['type' => 'string', 'minLength' => 140],
-      ],
+      'required' => $required,
+      'properties' => $properties,
     ];
 
     $input = [
@@ -69,7 +89,7 @@ final class SantoralAiService
       ['Authorization: Bearer ' . $this->apiKey, 'Content-Type: application/json'],
       [
         'model' => $this->model,
-        'instructions' => $this->instructions(),
+        'instructions' => $this->instructions($isSolemnity),
         'input' => json_encode($input, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
         'max_output_tokens' => $this->maxTokens,
         'text' => ['format' => ['type' => 'json_schema', 'name' => 'santoral_lvj', 'strict' => true, 'schema' => $schema]],
@@ -94,7 +114,7 @@ final class SantoralAiService
     ];
   }
 
-  private function instructions(): string
+  private function instructions(bool $isSolemnity = false): string
   {
     return <<<'PROMPT'
 Eres el asistente editorial católico de La Voz de Jesús. Preparas un BORRADOR del Santo del Día a partir de la identidad que el Ordo Colombiano ya determinó. Una persona revisará el contenido antes de publicarlo.
@@ -129,6 +149,28 @@ REGLAS OBLIGATORIAS:
 - No uses información de una persona distinta con nombre parecido.
 - Devuelve únicamente el JSON solicitado.
 PROMPT;
+    if ($isSolemnity) {
+      $prompt = str_replace(
+        [
+          'Devuelve exactamente estos ocho campos:',
+          '3. lucha_que_enfrento',
+          '4. secreto_de_santidad',
+          '- lucha_que_enfrento: explica una dificultad espiritual, pastoral o histórica vinculada de manera prudente a su vida. Si no hay certeza de un episodio concreto, formula la lucha en términos generales y verificables según su vocación.',
+          '- secreto_de_santidad: identifica la virtud, hábito espiritual o fidelidad evangélica que mejor sintetiza su camino.',
+        ],
+        [
+          'Devuelve exactamente estos seis campos:',
+          '',
+          '',
+          '',
+          '',
+        ],
+        $prompt,
+      );
+      $prompt .= "\n\nREGLA ESPECIAL PARA SOLEMNIDADES: no incluyas los campos lucha_que_enfrento ni secreto_de_santidad. No presentes la celebración como biografía de una persona. En quien_fue explica el misterio o realidad de fe que celebra la Iglesia. Adapta la enseñanza, la aplicación y la oración al sentido litúrgico de la solemnidad.";
+      return $prompt;
+    }
+    return $prompt;
   }
 
   private function extractText(array $response): string
