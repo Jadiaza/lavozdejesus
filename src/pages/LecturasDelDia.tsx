@@ -452,6 +452,24 @@ const getSantoPresentation = (santo: SantoDelDia) => {
   const isRosario = normalizedName.includes("virgen maria del rosario")
     || normalizedName.includes("nuestra senora del rosario");
   const isMarian = isMarianCelebration(santo);
+  const isSolemnity = normalizeSantoClassification(santo.titulo || "").includes("solemnidad")
+    || normalizeSantoClassification(santo.nombre || "").includes("solemnidad");
+
+  if (isSolemnity) {
+    return {
+      isMarian: false,
+      eyebrow: "Solemnidad",
+      title: santo.nombre,
+      subtitle: santo.titulo || "Solemnidad",
+      sections: [
+        ["ensenanza_para_hoy", "Enseñanza para hoy"],
+        ["como_puedo_imitarlo", "Cómo vivir esta celebración"],
+        ["paso_concreto", "Paso concreto para hoy"],
+        ["oracion_intercesion", "Oración"],
+      ] as Array<[string, string]>,
+      tabLabel: "Solemnidad",
+    };
+  }
 
   if (isRosario) {
     return {
