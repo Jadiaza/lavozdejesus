@@ -152,16 +152,12 @@ PROMPT;
     if ($isSolemnity) {
       $prompt = str_replace(
         [
-          'Devuelve exactamente estos ocho campos:',
-          '3. lucha_que_enfrento',
-          '4. secreto_de_santidad',
+          'Devuelve exactamente estos ocho campos:\n1. frase_destacada\n2. quien_fue\n3. lucha_que_enfrento\n4. secreto_de_santidad\n5. ensenanza_para_hoy\n6. como_puedo_imitarlo\n7. paso_concreto\n8. oracion_intercesion:',
           '- lucha_que_enfrento: explica una dificultad espiritual, pastoral o histórica vinculada de manera prudente a su vida. Si no hay certeza de un episodio concreto, formula la lucha en términos generales y verificables según su vocación.',
           '- secreto_de_santidad: identifica la virtud, hábito espiritual o fidelidad evangélica que mejor sintetiza su camino.',
         ],
         [
-          'Devuelve exactamente estos seis campos:',
-          '',
-          '',
+          'Devuelve exactamente estos seis campos:\n1. frase_destacada\n2. quien_fue\n3. ensenanza_para_hoy\n4. como_puedo_imitarlo\n5. paso_concreto\n6. oracion_intercesion:',
           '',
           '',
         ],
