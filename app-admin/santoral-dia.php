@@ -773,15 +773,28 @@ require __DIR__ . '/includes/header.php';
         santoral_admin_text($editRow['fecha'] ?? ''),
         santoral_admin_text($editRow['titulo'] ?? '')
       );
+      $isSolemnityPreview = santoral_admin_is_solemnity(
+        santoral_admin_text($editRow['nombre'] ?? ''),
+        santoral_admin_text($editRow['titulo'] ?? '')
+      );
       $previewSections = [
-        ($isMarianPreview ? 'Quién es' : 'Quién fue') => santoral_admin_text($editRow['quien_fue'] ?? ''),
-        'La lucha que enfrentó' => $isMarianPreview ? '' : santoral_admin_text($editRow['lucha_que_enfrento'] ?? ''),
-        'El secreto de su santidad' => $isMarianPreview ? '' : santoral_admin_text($editRow['secreto_de_santidad'] ?? ''),
+        ($isMarianPreview ? 'Quién es' : ($isSolemnityPreview ? 'Celebración' : 'Quién fue')) => santoral_admin_text($editRow['quien_fue'] ?? ''),
         'Enseñanza para hoy' => santoral_admin_text($editRow['ensenanza_para_hoy'] ?? ''),
-        ($isMarianPreview ? 'Cómo puedo imitarla' : 'Cómo puedo imitarlo') => santoral_admin_text($editRow['como_puedo_imitarlo'] ?? ''),
+        ($isMarianPreview ? 'Cómo puedo imitarla' : 'Cómo puedo vivirla') => santoral_admin_text($editRow['como_puedo_imitarlo'] ?? ''),
         'Paso concreto para hoy' => santoral_admin_text($editRow['paso_concreto'] ?? ''),
         'Oración de intercesión' => santoral_admin_text($editRow['oracion_intercesion'] ?? ''),
       ];
+      if (!$isMarianPreview && !$isSolemnityPreview) {
+        $previewSections = [
+          ($isMarianPreview ? 'Quién es' : 'Quién fue') => santoral_admin_text($editRow['quien_fue'] ?? ''),
+          'La lucha que enfrentó' => santoral_admin_text($editRow['lucha_que_enfrento'] ?? ''),
+          'El secreto de su santidad' => santoral_admin_text($editRow['secreto_de_santidad'] ?? ''),
+          'Enseñanza para hoy' => santoral_admin_text($editRow['ensenanza_para_hoy'] ?? ''),
+          'Cómo puedo imitarlo' => santoral_admin_text($editRow['como_puedo_imitarlo'] ?? ''),
+          'Paso concreto para hoy' => santoral_admin_text($editRow['paso_concreto'] ?? ''),
+          'Oración de intercesión' => santoral_admin_text($editRow['oracion_intercesion'] ?? ''),
+        ];
+      }
       $previewPublished = santoral_admin_status((string) ($editRow['estado'] ?? 'borrador')) === 'publicado';
     ?>
 
@@ -1006,12 +1019,12 @@ require __DIR__ . '/includes/header.php';
         <label class="content-field full">Quién fue
           <textarea name="quien_fue" rows="7"><?php echo e((string) ($editRow['quien_fue'] ?? '')); ?></textarea>
         </label>
-        <?php if (!santoral_admin_is_marian(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['fecha'] ?? ''), santoral_admin_text($editRow['titulo'] ?? ''))): ?>
+        <?php if (!santoral_admin_is_marian(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['fecha'] ?? ''), santoral_admin_text($editRow['titulo'] ?? '')) && !santoral_admin_is_solemnity(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['titulo'] ?? ''))): ?>
         <label class="content-field full">La lucha que enfrentó
           <textarea name="lucha_que_enfrento" rows="5"><?php echo e((string) ($editRow['lucha_que_enfrento'] ?? '')); ?></textarea>
         </label>
         <?php endif; ?>
-        <?php if (!santoral_admin_is_marian(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['fecha'] ?? ''), santoral_admin_text($editRow['titulo'] ?? ''))): ?>
+        <?php if (!santoral_admin_is_marian(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['fecha'] ?? ''), santoral_admin_text($editRow['titulo'] ?? '')) && !santoral_admin_is_solemnity(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['titulo'] ?? ''))): ?>
         <label class="content-field full">El secreto de su santidad
           <textarea name="secreto_de_santidad" rows="5"><?php echo e((string) ($editRow['secreto_de_santidad'] ?? '')); ?></textarea>
         </label>
