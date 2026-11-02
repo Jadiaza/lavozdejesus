@@ -452,22 +452,26 @@ const getSantoPresentation = (santo: SantoDelDia) => {
   const isRosario = normalizedName.includes("virgen maria del rosario")
     || normalizedName.includes("nuestra senora del rosario");
   const isMarian = isMarianCelebration(santo);
-  const isSolemnity = normalizeSantoClassification(santo.titulo || "").includes("solemnidad")
-    || normalizeSantoClassification(santo.nombre || "").includes("solemnidad");
+  const normalizedTitle = normalizeSantoClassification(santo.titulo || "");
+  const normalizedName = normalizeSantoClassification(santo.nombre || "");
+  const isSolemnity = normalizedTitle.includes("solemnidad") || normalizedName.includes("solemnidad");
+  const isCommemoration = normalizedTitle.includes("conmemoracion") || normalizedName.includes("conmemoracion");
+  const isLiturgicalCelebration = isSolemnity || isCommemoration;
 
-  if (isSolemnity) {
+  if (isLiturgicalCelebration) {
+    const celebrationLabel = isSolemnity ? "Solemnidad" : "Conmemoración";
     return {
       isMarian: false,
-      eyebrow: "Solemnidad",
+      eyebrow: celebrationLabel,
       title: santo.nombre,
-      subtitle: santo.titulo || "Solemnidad",
+      subtitle: santo.titulo || celebrationLabel,
       sections: [
         ["ensenanza_para_hoy", "Enseñanza para hoy"],
         ["como_puedo_imitarlo", "Cómo vivir esta celebración"],
         ["paso_concreto", "Paso concreto para hoy"],
         ["oracion_intercesion", "Oración"],
       ] as Array<[string, string]>,
-      tabLabel: "Solemnidad",
+      tabLabel: celebrationLabel,
     };
   }
 
