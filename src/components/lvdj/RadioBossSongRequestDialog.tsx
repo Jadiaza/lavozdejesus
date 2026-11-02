@@ -10,7 +10,7 @@ import {
 
 declare global {
   interface Window {
-    rbcloudSongRequest5970?: {
+    rbcloudSongRequest2491?: {
       requestBtn: string;
       requested: string;
       noTracks: string;
@@ -20,7 +20,7 @@ declare global {
 }
 
 const WIDGET_SCRIPT_URL =
-  "https://c11.radioboss.fm/w/songrequest.js?u=373&wid=5970";
+  "https://c11.radioboss.fm/w/songrequest.js?u=373&wid=2491";
 
 export const RadioBossSongRequestDialog = ({
   onClose,
@@ -33,7 +33,7 @@ export const RadioBossSongRequestDialog = ({
     const container = widgetRef.current;
     if (!container) return;
 
-    window.rbcloudSongRequest5970 = {
+    window.rbcloudSongRequest2491 = {
       requestBtn: "Solicitar",
       requested: "Tu solicitud fue recibida correctamente.",
       noTracks: "No se encontraron canciones.",
@@ -41,21 +41,49 @@ export const RadioBossSongRequestDialog = ({
         1: "Escribe al menos 3 caracteres para buscar.",
         2: "No fue posible cargar los resultados. Inténtalo nuevamente.",
         3: "Las solicitudes están desactivadas en este momento.",
-        4: "El servicio no está disponible. Inténtalo más tarde.",
+        4: "Por favor, inténtalo más tarde.",
         5: "No se encontró la canción seleccionada.",
         6: "No fue posible enviar la solicitud. Inténtalo nuevamente.",
       },
     };
 
+    const input = container.querySelector<HTMLInputElement>(".rbc_ed_query");
+    const searchButton =
+      container.querySelector<HTMLButtonElement>(".rbc_bt_search");
+    let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+    let lastSubmittedQuery = "";
+
+    // RadioBOSS realiza la consulta al activar su botón oficial.
+    // Reutilizamos ese mecanismo para buscar automáticamente al escribir.
+    const handleInput = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+
+      const query = input?.value.trim() ?? "";
+      if (query.length < 3) {
+        lastSubmittedQuery = "";
+        return;
+      }
+
+      debounceTimer = setTimeout(() => {
+        if (query === lastSubmittedQuery) return;
+        lastSubmittedQuery = query;
+        searchButton?.click();
+      }, 650);
+    };
+
+    input?.addEventListener("input", handleInput);
+
     const script = document.createElement("script");
     script.src = WIDGET_SCRIPT_URL;
     script.async = true;
-    script.dataset.rbcloudSongRequest = "5970";
+    script.dataset.rbcloudSongRequest = "2491";
     container.appendChild(script);
 
     return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      input?.removeEventListener("input", handleInput);
       script.remove();
-      delete window.rbcloudSongRequest5970;
+      delete window.rbcloudSongRequest2491;
       container.querySelector(".rbc_result")?.replaceChildren();
     };
   }, []);
@@ -71,29 +99,29 @@ export const RadioBossSongRequestDialog = ({
             Pide tu canción
           </DialogTitle>
           <DialogDescription className="text-sm leading-relaxed text-white/65">
-            Busca una canción o un artista en nuestra biblioteca y envía tu
-            solicitud a La Voz de Jesús.
+            Escribe el nombre de una canción o artista. Los resultados se irán
+            actualizando mientras escribes.
           </DialogDescription>
         </DialogHeader>
 
         <style>{`
-          #rbcloud_songrequest5970 {
+          #rbcloud_songrequest2491 {
             color: #f5f0e5;
             font-family: inherit;
           }
-          #rbcloud_songrequest5970 .rbc_search {
+          #rbcloud_songrequest2491 .rbc_search {
             display: flex;
-            gap: 8px;
             align-items: stretch;
+            gap: 8px;
           }
-          #rbcloud_songrequest5970 input,
-          #rbcloud_songrequest5970 button {
+          #rbcloud_songrequest2491 input,
+          #rbcloud_songrequest2491 button {
             box-sizing: border-box;
-            min-height: 44px;
+            min-height: 46px;
             border-radius: 10px;
             font: inherit;
           }
-          #rbcloud_songrequest5970 input {
+          #rbcloud_songrequest2491 input {
             min-width: 0;
             flex: 1;
             padding: 10px 12px;
@@ -102,14 +130,15 @@ export const RadioBossSongRequestDialog = ({
             color: #f8f4e9;
             background: #242424;
           }
-          #rbcloud_songrequest5970 input:focus {
+          #rbcloud_songrequest2491 input:focus {
             border-color: #d4af37;
             box-shadow: 0 0 0 2px rgba(212,175,55,.14);
           }
-          #rbcloud_songrequest5970 input::placeholder {
+          #rbcloud_songrequest2491 input::placeholder {
             color: rgba(255,255,255,.48);
           }
-          #rbcloud_songrequest5970 button {
+          #rbcloud_songrequest2491 button {
+            min-width: 60px;
             padding: 9px 15px;
             border: 1px solid #d4af37;
             color: #17130a;
@@ -118,15 +147,15 @@ export const RadioBossSongRequestDialog = ({
             font-weight: 800;
             cursor: pointer;
           }
-          #rbcloud_songrequest5970 .rbc_result {
+          #rbcloud_songrequest2491 .rbc_result {
             display: none;
-            margin-top: 12px;
-            padding: 8px 12px;
+            margin-top: 8px;
+            padding: 4px 10px;
             border: 1px solid rgba(212,175,55,.25);
             border-radius: 14px;
             background: rgba(255,255,255,.035);
           }
-          #rbcloud_songrequest5970 .rbc_result_item {
+          #rbcloud_songrequest2491 .rbc_result_item {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -134,22 +163,22 @@ export const RadioBossSongRequestDialog = ({
             color: #f5f0e5;
             border-bottom: 1px solid rgba(255,255,255,.1);
           }
-          #rbcloud_songrequest5970 .rbc_result_item:last-child {
+          #rbcloud_songrequest2491 .rbc_result_item:last-child {
             border-bottom: 0;
           }
-          #rbcloud_songrequest5970 .rbc_result_item div:first-child {
+          #rbcloud_songrequest2491 .rbc_result_item div:first-child {
             min-width: 0;
             flex: 1;
             overflow-wrap: anywhere;
             padding-right: 4px;
           }
-          #rbcloud_songrequest5970 .rbc_result_item button {
+          #rbcloud_songrequest2491 .rbc_result_item button {
             flex: 0 0 auto;
-            min-height: 36px;
+            min-height: 38px;
             padding: 7px 11px;
           }
           @media (max-width: 380px) {
-            #rbcloud_songrequest5970 .rbc_search {
+            #rbcloud_songrequest2491 .rbc_search {
               flex-direction: column;
             }
           }
@@ -158,13 +187,14 @@ export const RadioBossSongRequestDialog = ({
         <div
           ref={widgetRef}
           className="rbcloud_songrequest"
-          id="rbcloud_songrequest5970"
+          id="rbcloud_songrequest2491"
         >
           <div className="rbc_search">
             <input
               className="rbc_ed_query"
               placeholder="Buscar canción o artista..."
               aria-label="Buscar canción o artista"
+              autoComplete="off"
             />
             <button className="rbc_bt_search" type="button">
               <Search className="mr-1 inline h-4 w-4" />
