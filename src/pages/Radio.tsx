@@ -19,7 +19,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AdsenseAd } from "@/components/lvdj/AdsenseAd";
 import { BottomNav } from "@/components/lvdj/BottomNav";
-import { Logo } from "@/components/lvdj/Logo";
 import { RadioBossSongRequestDialog } from "@/components/lvdj/RadioBossSongRequestDialog";
 import { useRadioPlayer } from "@/context/useRadioPlayer";
 import {
@@ -139,7 +138,7 @@ const Radio = () => {
 
   const nextProgram = useMemo(
     () => getNextProgram(programacion, now),
-    [now, schedule],
+    [now, programacion],
   );
   const nextProgramImageUrl = nextProgram?.imagen_url ?? "";
   const nextProgramImageCandidates = useMemo(
@@ -148,7 +147,6 @@ const Radio = () => {
   );
   const activeNextProgramImage =
     nextProgramImageCandidates[nextProgramImageIndex] ?? "";
-  const showNextProgramImage = Boolean(activeNextProgramImage);
   const nextProgramTitle = nextProgram?.programa ?? "Programacion continua";
   const nextProgramTime = nextProgram
     ? formatTime(nextProgram.hora_inicio)
