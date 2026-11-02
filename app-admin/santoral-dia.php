@@ -71,7 +71,7 @@ function santoral_admin_is_marian(string $name, string $date = '', string $class
     || str_contains($normalizedName, 'advocacion mariana');
 }
 
-function santoral_admin_is_solemnity(string $name, string $classification = ''): bool
+function santoral_admin_is_liturgical_celebration(string $name, string $classification = ''): bool
 {
   $normalize = static function (string $value): string {
     $value = function_exists('mb_strtolower')
@@ -87,16 +87,18 @@ function santoral_admin_is_solemnity(string $name, string $classification = ''):
   $normalizedClassification = $normalize($classification);
 
   return str_contains($normalizedClassification, 'solemnidad')
-    || str_contains($normalizedName, 'solemnidad');
+    || str_contains($normalizedName, 'solemnidad')
+    || str_contains($normalizedClassification, 'conmemoracion')
+    || str_contains($normalizedName, 'conmemoracion');
 }
 
 function santoral_admin_required_for_publish(array $data, string $name, string $date = '', string $classification = ''): string
 {
-  $isSolemnity = santoral_admin_is_solemnity($name, $classification);
+  $isLiturgicalCelebration = santoral_admin_is_liturgical_celebration($name, $classification);
   $isMarian = santoral_admin_is_marian($name, $date, $classification);
 
-  if ($isSolemnity) {
-    // Las solemnidades celebran un misterio o una realidad de fe,
+  if ($isLiturgicalCelebration) {
+    // Las solemnidades y conmemoraciones celebran una realidad litúrgica,
     // no la biografía de un santo particular.
     $required = [
       'frase_destacada' => 'Frase destacada',
@@ -169,7 +171,7 @@ function santoral_admin_public_payload(array $row): array
 
   $name = santoral_admin_text($row['nombre'] ?? '');
   $title = santoral_admin_text($row['titulo'] ?? '');
-  if (!santoral_admin_is_solemnity($name, $title)) {
+  if (!santoral_admin_is_liturgical_celebration($name, $title)) {
     $payload['lucha_que_enfrento'] = santoral_admin_text($row['lucha_que_enfrento'] ?? '');
     $payload['secreto_de_santidad'] = santoral_admin_text($row['secreto_de_santidad'] ?? '');
   }
@@ -774,7 +776,7 @@ require __DIR__ . '/includes/header.php';
         santoral_admin_text($editRow['fecha'] ?? ''),
         santoral_admin_text($editRow['titulo'] ?? '')
       );
-      $isSolemnityPreview = santoral_admin_is_solemnity(
+      $isSolemnityPreview = santoral_admin_is_liturgical_celebration(
         santoral_admin_text($editRow['nombre'] ?? ''),
         santoral_admin_text($editRow['titulo'] ?? '')
       );
@@ -1017,15 +1019,15 @@ require __DIR__ . '/includes/header.php';
         <label class="content-field full">Frase destacada
           <textarea name="frase_destacada" rows="3"><?php echo e((string) ($editRow['frase_destacada'] ?? '')); ?></textarea>
         </label>
-        <label class="content-field full"><?php echo santoral_admin_is_solemnity(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['titulo'] ?? '')) ? 'Contenido de la celebración' : (santoral_admin_is_marian(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['fecha'] ?? ''), santoral_admin_text($editRow['titulo'] ?? '')) ? 'Quién es' : 'Quién fue'); ?>
+        <label class="content-field full"><?php echo santoral_admin_is_liturgical_celebration(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['titulo'] ?? '')) ? 'Contenido de la celebración' : (santoral_admin_is_marian(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['fecha'] ?? ''), santoral_admin_text($editRow['titulo'] ?? '')) ? 'Quién es' : 'Quién fue'); ?>
           <textarea name="quien_fue" rows="7"><?php echo e((string) ($editRow['quien_fue'] ?? '')); ?></textarea>
         </label>
-        <?php if (!santoral_admin_is_marian(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['fecha'] ?? ''), santoral_admin_text($editRow['titulo'] ?? '')) && !santoral_admin_is_solemnity(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['titulo'] ?? ''))): ?>
+        <?php if (!santoral_admin_is_marian(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['fecha'] ?? ''), santoral_admin_text($editRow['titulo'] ?? '')) && !santoral_admin_is_liturgical_celebration(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['titulo'] ?? ''))): ?>
         <label class="content-field full">La lucha que enfrentó
           <textarea name="lucha_que_enfrento" rows="5"><?php echo e((string) ($editRow['lucha_que_enfrento'] ?? '')); ?></textarea>
         </label>
         <?php endif; ?>
-        <?php if (!santoral_admin_is_marian(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['fecha'] ?? ''), santoral_admin_text($editRow['titulo'] ?? '')) && !santoral_admin_is_solemnity(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['titulo'] ?? ''))): ?>
+        <?php if (!santoral_admin_is_marian(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['fecha'] ?? ''), santoral_admin_text($editRow['titulo'] ?? '')) && !santoral_admin_is_liturgical_celebration(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['titulo'] ?? ''))): ?>
         <label class="content-field full">El secreto de su santidad
           <textarea name="secreto_de_santidad" rows="5"><?php echo e((string) ($editRow['secreto_de_santidad'] ?? '')); ?></textarea>
         </label>
@@ -1033,7 +1035,7 @@ require __DIR__ . '/includes/header.php';
         <label class="content-field full">Enseñanza para hoy
           <textarea name="ensenanza_para_hoy" rows="5"><?php echo e((string) ($editRow['ensenanza_para_hoy'] ?? '')); ?></textarea>
         </label>
-        <label class="content-field full"><?php echo santoral_admin_is_solemnity(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['titulo'] ?? '')) ? 'Cómo vivir esta celebración' : 'Cómo puedo imitarlo'; ?>
+        <label class="content-field full"><?php echo santoral_admin_is_liturgical_celebration(santoral_admin_text($editRow['nombre'] ?? ''), santoral_admin_text($editRow['titulo'] ?? '')) ? 'Cómo vivir esta celebración' : 'Cómo puedo imitarlo'; ?>
           <textarea name="como_puedo_imitarlo" rows="5"><?php echo e((string) ($editRow['como_puedo_imitarlo'] ?? '')); ?></textarea>
         </label>
         <label class="content-field full">Paso concreto para hoy
