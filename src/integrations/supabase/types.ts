@@ -14,7 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      radio_song_requests: {
+        Row: {
+          id: string
+          user_id: string
+          track_id: string
+          track_title: string
+          status: "received" | "review" | "scheduled" | "played" | "unavailable"
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          track_id: string
+          track_title: string
+          status?: "received" | "review" | "scheduled" | "played" | "unavailable"
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          track_id?: string
+          track_title?: string
+          status?: "received" | "review" | "scheduled" | "played" | "unavailable"
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "radio_song_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
