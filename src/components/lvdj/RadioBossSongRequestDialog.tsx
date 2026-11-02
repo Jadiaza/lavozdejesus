@@ -68,6 +68,22 @@ function getErrorMessage(response: RadioBossResponse) {
   return response.errdetail ? `${message} (${response.errdetail})` : message;
 }
 
+const SAME_SONG_COOLDOWN_MS = 60 * 60 * 1000;
+
+function getSongCooldown(trackId: string, requests: SongRequestHistory[]) {
+  const latestRequest = requests.find((request) => request.track_id === trackId);
+  if (!latestRequest) return 0;
+  return Math.max(
+    0,
+    SAME_SONG_COOLDOWN_MS - (Date.now() - new Date(latestRequest.created_at).getTime()),
+  );
+}
+
+function formatCooldown(milliseconds: number) {
+  const minutes = Math.ceil(milliseconds / 60000);
+  return minutes <= 1 ? "Disponible en 1 min" : `Disponible en ${minutes} min`;
+}
+
 function formatRequestDate(value: string) {
   return new Intl.DateTimeFormat("es-CO", {
     day: "numeric",
@@ -259,7 +275,7 @@ export const RadioBossSongRequestDialog = ({
               className={`flex min-h-10 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-2 text-[13px] font-semibold transition sm:gap-2 sm:px-3 sm:text-sm ${view === "search" ? "bg-gradient-to-r from-[#f3d46f] to-[#c99a28] text-[#17130a] shadow-[0_4px_16px_rgba(212,175,55,.2)]" : "text-white/65 hover:text-white"}`}
             >
               <Search className="h-4 w-4 shrink-0" />
-              <span className="whitespace-nowrap">Buscar canciones</span>
+              <span className="whitespace-nowrap">Buscar</span>
             </button>
             <button
               type="button"
@@ -392,24 +408,47 @@ export const RadioBossSongRequestDialog = ({
               ) : (
                 <div className="overflow-hidden rounded-2xl border border-gold/20 bg-white/[0.025]">
                   <div className="divide-y divide-white/[0.07]">
-                    {history.map((request) => (
-                      <article key={request.id} className="flex items-start gap-3 px-4 py-4">
-                        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gold/20 bg-gold/[0.07] text-gold">
-                          <Music2 className="h-5 w-5" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="break-words text-sm font-semibold leading-relaxed text-white/90">{request.track_title}</p>
-                          <p className="mt-1 flex items-center gap-1.5 text-[11px] text-white/40">
-                            <Clock3 className="h-3 w-3" />
-                            {formatRequestDate(request.created_at)}
-                          </p>
-                          <span className={`mt-2 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold ${request.status === "played" ? "border-emerald-400/20 bg-emerald-400/[0.07] text-emerald-300" : request.status === "unavailable" ? "border-red-400/20 bg-red-400/[0.07] text-red-300" : "border-gold/20 bg-gold/[0.06] text-[#e5c86f]"}`}>
-                            <CheckCircle2 className="h-3 w-3" />
-                            {STATUS_LABELS[request.status]}
-                          </span>
-                        </div>
-                      </article>
-                    ))}
+                    {history.map((request) => {
+                      const cooldown = getSongCooldown(request.track_id, history);
+                      const latestForTrack = history.find((item) => item.track_id === request.track_id);
+                      const isLatestForTrack = latestForTrack?.id === request.id;
+
+                      return (
+                        <article key={request.id} className="flex items-start gap-3 px-4 py-4">
+                          <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gold/20 bg-gold/[0.07] text-gold">
+                            <Music2 className="h-5 w-5" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="break-words text-sm font-semibold leading-relaxed text-white/90">{request.track_title}</p>
+                            <p className="mt-1 flex items-center gap-1.5 text-[11px] text-white/40">
+                              <Clock3 className="h-3 w-3" />
+                              {formatRequestDate(request.created_at)}
+                            </p>
+                            <span className={`mt-2 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold ${request.status === "played" ? "border-emerald-400/20 bg-emerald-400/[0.07] text-emerald-300" : request.status === "unavailable" ? "border-red-400/20 bg-red-400/[0.07] text-red-300" : "border-gold/20 bg-gold/[0.06] text-[#e5c86f]"}`}>
+                              <CheckCircle2 className="h-3 w-3" />
+                              {STATUS_LABELS[request.status]}
+                            </span>
+                            {isLatestForTrack && (
+                              <div className="mt-3">
+                                <button
+                                  type="button"
+                                  onClick={() => void requestTrack(request.track_id, request.track_title)}
+                                  disabled={cooldown > 0 || requestingTrack !== null}
+                                  className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border border-gold/45 bg-gold/[0.09] px-3 text-xs font-semibold text-gold transition hover:bg-gold/15 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/[0.03] disabled:text-white/35"
+                                >
+                                  {requestingTrack === request.track_id ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                  ) : (
+                                    <Send className="h-3.5 w-3.5" />
+                                  )}
+                                  {cooldown > 0 ? formatCooldown(cooldown) : "Volver a solicitar"}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </article>
+                      );
+                    })}
                   </div>
                 </div>
               )}
