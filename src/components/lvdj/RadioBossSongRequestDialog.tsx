@@ -113,7 +113,8 @@ export const RadioBossSongRequestDialog = ({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[85dvh] w-[calc(100%-1.5rem)] max-w-lg overflow-y-auto rounded-3xl border border-gold/40 bg-[#171717] p-5 text-foreground shadow-[0_24px_80px_rgba(0,0,0,0.7)] sm:p-6">
+      <DialogContent className="flex max-h-[min(82dvh,760px)] w-[calc(100%-1.25rem)] max-w-lg flex-col gap-0 overflow-hidden rounded-[1.75rem] border border-gold/45 bg-[#151515] p-0 text-foreground shadow-[0_28px_90px_rgba(0,0,0,0.78)] sm:w-[calc(100%-2rem)]">
+        <div className="shrink-0 border-b border-gold/15 bg-gradient-to-b from-gold/[0.07] to-transparent px-5 pb-4 pt-5 sm:px-6 sm:pt-6">
         <DialogHeader className="pr-7 text-left">
           <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl border border-gold/45 bg-gold/10 text-gold">
             <Music2 className="h-6 w-6" />
@@ -125,6 +126,7 @@ export const RadioBossSongRequestDialog = ({
             Escribe el nombre de una canción o artista para consultar el catálogo de RadioBOSS.
           </DialogDescription>
         </DialogHeader>
+        </div>
 
         <style>{`
           #rbcloud_songrequest2491 {
@@ -176,11 +178,21 @@ export const RadioBossSongRequestDialog = ({
             opacity: .65;
           }
           #rbcloud_songrequest2491 .rbc_result {
-            margin-top: 8px;
-            padding: 4px 10px;
+            max-height: min(42dvh, 390px);
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            margin-top: 12px;
+            padding: 5px 12px;
             border: 1px solid rgba(212,175,55,.25);
-            border-radius: 14px;
+            border-radius: 16px;
             background: rgba(255,255,255,.035);
+            scrollbar-width: thin;
+            scrollbar-color: rgba(212,175,55,.55) rgba(255,255,255,.05);
+          }
+          #rbcloud_songrequest2491 .rbc_result::-webkit-scrollbar { width: 5px; }
+          #rbcloud_songrequest2491 .rbc_result::-webkit-scrollbar-thumb {
+            border-radius: 8px;
+            background: rgba(212,175,55,.55);
           }
           #rbcloud_songrequest2491 .rbc_result_item {
             display: flex;
@@ -212,6 +224,7 @@ export const RadioBossSongRequestDialog = ({
           }
         `}</style>
 
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6">
         <div
           className="rbcloud_songrequest"
           id="rbcloud_songrequest2491"
@@ -262,10 +275,12 @@ export const RadioBossSongRequestDialog = ({
           )}
         </div>
 
-        <p className="pt-1 text-center text-xs leading-relaxed text-white/45">
-          Las solicitudes se envían al sistema de programación de RadioBOSS.
-          La reproducción depende de la programación al aire.
-        </p>
+        </div>
+        <div className="shrink-0 border-t border-white/8 px-5 py-3 text-center sm:px-6">
+          <p className="text-[11px] leading-relaxed text-white/45">
+            Las solicitudes se envían a RadioBOSS. La reproducción depende de la programación al aire.
+          </p>
+        </div>
       </DialogContent>
     </Dialog>
   );
