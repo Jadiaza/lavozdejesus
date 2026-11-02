@@ -91,6 +91,7 @@ const Radio = () => {
   const [now, setNow] = useState(() => new Date());
   const [visualizerActive, setVisualizerActive] = useState(false);
   const [songRequestOpen, setSongRequestOpen] = useState(false);
+  const [songRequestExpanded, setSongRequestExpanded] = useState(false);
   const [nextProgramImageIndex, setNextProgramImageIndex] = useState(0);
   const [adsConfig, setAdsConfig] = useState({
     enabled: DEFAULT_APP_CONFIG.ads_enabled,
@@ -157,6 +158,16 @@ const Radio = () => {
   useEffect(() => {
     setNextProgramImageIndex(0);
   }, [nextProgramImageUrl]);
+
+  useEffect(() => {
+    if (!songRequestExpanded || songRequestOpen) return;
+
+    const collapseTimer = window.setTimeout(() => {
+      setSongRequestExpanded(false);
+    }, 5_000);
+
+    return () => window.clearTimeout(collapseTimer);
+  }, [songRequestExpanded, songRequestOpen]);
 
   const songTitle =
     player.title && player.title !== player.defaultTitle
@@ -484,14 +495,25 @@ const Radio = () => {
       {!songRequestOpen && (
         <button
           type="button"
-          onClick={() => setSongRequestOpen(true)}
-          className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-4 z-40 inline-flex items-center gap-2.5 rounded-full border border-gold/70 bg-gradient-to-r from-[#f3d46f] to-[#c99a28] px-4 py-3 text-sm font-extrabold text-[#17130a] shadow-[0_10px_32px_rgba(0,0,0,0.48),0_0_24px_rgba(212,175,55,0.22)] transition hover:brightness-110 active:scale-95 sm:bottom-7 sm:right-7 sm:px-5"
-          aria-label="Pedir una canción"
+          onClick={() => {
+            if (!songRequestExpanded) {
+              setSongRequestExpanded(true);
+              return;
+            }
+
+            setSongRequestExpanded(false);
+            setSongRequestOpen(true);
+          }}
+          className={`fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-4 z-40 inline-flex h-12 items-center justify-center gap-2 rounded-full border border-gold/65 bg-gradient-to-br from-[#e7c65b] to-[#bd8e25] text-[#17130a] shadow-[0_6px_20px_rgba(0,0,0,0.38)] transition-all duration-300 ease-out hover:brightness-110 active:scale-95 sm:bottom-7 sm:right-7 ${songRequestExpanded ? "min-w-[112px] px-4" : "w-12 px-0"}`}
+          aria-label={songRequestExpanded ? "Abrir solicitudes de canciones" : "Mostrar opción para pedir una canción"}
+          aria-expanded={songRequestExpanded}
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-black/10">
-            <Music2 className="h-5 w-5" />
+          <Music2 className="h-5 w-5 shrink-0" />
+          <span
+            className={`overflow-hidden whitespace-nowrap text-sm font-extrabold transition-all duration-300 ${songRequestExpanded ? "max-w-20 opacity-100" : "max-w-0 opacity-0"}`}
+          >
+            Pedir
           </span>
-          <span>Pide tu canción</span>
         </button>
       )}
 
