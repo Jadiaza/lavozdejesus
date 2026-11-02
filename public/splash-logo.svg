@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="220" viewBox="0 0 960 220" role="img" aria-labelledby="title">
+  <title id="title">LVJPRAYER</title>
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff2b6"/>
+      <stop offset=".38" stop-color="#d6a744"/>
+      <stop offset=".72" stop-color="#8c5b13"/>
+      <stop offset="1" stop-color="#f0ce76"/>
+    </linearGradient>
+    <linearGradient id="silver" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset=".5" stop-color="#e7e4dc"/>
+      <stop offset="1" stop-color="#b9b6af"/>
+    </linearGradient>
+  </defs>
+  <text x="26" y="150" font-family="Georgia, 'Times New Roman', serif" font-size="148" font-weight="700" letter-spacing="-7" fill="url(#gold)">LVJ</text>
+  <text x="276" y="150" font-family="Georgia, 'Times New Roman', serif" font-size="148" font-weight="700" letter-spacing="-7" fill="url(#silver)">PRAYER</text>
+  <path d="M270 177 H922" stroke="url(#gold)" stroke-width="8" stroke-linecap="round" opacity=".82"/>
+</svg>
