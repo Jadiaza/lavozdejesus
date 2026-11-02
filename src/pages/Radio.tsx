@@ -7,6 +7,7 @@ import {
   Home,
   Loader2,
   Mail,
+  Music2,
   Pause,
   Play,
   Radio as RadioIcon,
@@ -19,6 +20,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { AdsenseAd } from "@/components/lvdj/AdsenseAd";
 import { BottomNav } from "@/components/lvdj/BottomNav";
 import { Logo } from "@/components/lvdj/Logo";
+import { RadioBossSongRequestDialog } from "@/components/lvdj/RadioBossSongRequestDialog";
 import { useRadioPlayer } from "@/context/useRadioPlayer";
 import {
   DEFAULT_APP_CONFIG,
@@ -31,39 +33,6 @@ import {
   getNextProgram,
 } from "@/utils/programacion";
 import monstranceImage from "@/assets/monstrance-hero.jpg";
-
-const fallbackSchedule: ProgramacionRadio[] = [
-  {
-    id: "santo-rosario",
-    dia_semana: "diario",
-    hora_inicio: "06:00",
-    hora_fin: "07:00",
-    programa: "Santo Rosario",
-    descripcion: "Meditacion de los misterios del Rosario.",
-    imagen_url: "",
-    estado: "publicado",
-  },
-  {
-    id: "santa-misa",
-    dia_semana: "diario",
-    hora_inicio: "10:00",
-    hora_fin: "11:00",
-    programa: "Santa Misa",
-    descripcion: "Celebracion de la Eucaristia.",
-    imagen_url: "",
-    estado: "publicado",
-  },
-  {
-    id: "adoracion",
-    dia_semana: "diario",
-    hora_inicio: "19:00",
-    hora_fin: "20:00",
-    programa: "Adoracion Eucaristica",
-    descripcion: "Un tiempo para adorar al Senor en el Santisimo.",
-    imagen_url: "",
-    estado: "publicado",
-  },
-];
 
 const sideLinks = [
   { label: "Inicio", to: "/", icon: Home },
@@ -122,6 +91,7 @@ const Radio = () => {
   const [programacion, setProgramacion] = useState<ProgramacionRadio[]>([]);
   const [now, setNow] = useState(() => new Date());
   const [visualizerActive, setVisualizerActive] = useState(false);
+  const [songRequestOpen, setSongRequestOpen] = useState(false);
   const [nextProgramImageIndex, setNextProgramImageIndex] = useState(0);
   const [adsConfig, setAdsConfig] = useState({
     enabled: DEFAULT_APP_CONFIG.ads_enabled,
@@ -167,9 +137,8 @@ const Radio = () => {
     };
   }, []);
 
-  const schedule = programacion.length ? programacion : fallbackSchedule;
   const nextProgram = useMemo(
-    () => getNextProgram(schedule, now),
+    () => getNextProgram(programacion, now),
     [now, schedule],
   );
   const nextProgramImageUrl = nextProgram?.imagen_url ?? "";
@@ -183,9 +152,9 @@ const Radio = () => {
   const nextProgramTitle = nextProgram?.programa ?? "Programacion continua";
   const nextProgramTime = nextProgram
     ? formatTime(nextProgram.hora_inicio)
-    : "La Voz de Jesus";
-  const nextProgramDescription =
-    nextProgram?.descripcion || "La Voz de Jesus";
+    : "Horario por confirmar";
+  const nextProgramDescription = nextProgram?.descripcion ||
+    (nextProgram ? "La Voz de Jesus" : "Consulta nuestra programación para conocer los próximos espacios.");
 
   useEffect(() => {
     setNextProgramImageIndex(0);
@@ -407,6 +376,26 @@ const Radio = () => {
                 </span>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={() => setSongRequestOpen(true)}
+              className="group mt-2 flex w-full items-center gap-4 rounded-[1.65rem] border border-gold/65 bg-gradient-to-r from-gold/10 via-black/45 to-black/35 p-4 text-left shadow-[0_12px_38px_rgba(0,0,0,0.28)] backdrop-blur-xl transition hover:border-gold hover:bg-gold/10 active:scale-[0.99] sm:p-5"
+              aria-label="Pedir una canción"
+            >
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-gold/55 bg-gold/10 text-gold-bright shadow-[0_0_24px_rgba(212,175,55,0.12)]">
+                <Music2 className="h-7 w-7" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-lg font-extrabold leading-tight text-gold-bright sm:text-xl">
+                  Pide tu canción
+                </span>
+                <span className="mt-1 block text-xs leading-relaxed text-foreground/75 sm:text-sm">
+                  Busca tu música favorita y compártela con nuestra comunidad.
+                </span>
+              </span>
+              <ChevronRight className="h-7 w-7 shrink-0 text-gold transition-transform group-hover:translate-x-1" />
+            </button>
           </div>
 
           <aside className="w-full scroll-mt-5 space-y-4 pb-28 xl:pb-0">
@@ -512,6 +501,10 @@ const Radio = () => {
           La Voz de Jesus - Radio Catolica 24/7
         </footer>
       </main>
+
+      {songRequestOpen && (
+        <RadioBossSongRequestDialog onClose={() => setSongRequestOpen(false)} />
+      )}
 
       <BottomNav activeLabel="Radio" />
     </div>
