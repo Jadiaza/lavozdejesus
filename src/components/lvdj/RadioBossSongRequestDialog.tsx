@@ -257,22 +257,26 @@ export const RadioBossSongRequestDialog = ({
       <DialogContent className="flex max-h-[min(78dvh,720px)] w-[calc(100%-1.1rem)] max-w-lg flex-col gap-0 overflow-hidden rounded-[1.75rem] border border-gold/45 bg-[#151515] p-0 text-foreground shadow-[0_28px_90px_rgba(0,0,0,0.78)] sm:w-[calc(100%-2rem)]">
         <div className="shrink-0 border-b border-gold/15 bg-gradient-to-b from-gold/[0.08] to-transparent px-4 pb-3 pt-4 sm:px-6 sm:pb-4 sm:pt-5">
           <DialogHeader className="pr-7 text-left">
-            <div className="mb-1.5 flex h-10 w-10 items-center justify-center rounded-2xl border border-gold/45 bg-gold/10 text-gold">
-              <Music2 className="h-5 w-5" />
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gold/45 bg-gold/10 text-gold">
+                <Music2 className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <DialogTitle className="font-display text-xl font-semibold text-gold-bright">
+                  Pide tu canción
+                </DialogTitle>
+                <DialogDescription className="mt-0.5 text-[13px] leading-relaxed text-white/60">
+                  Comparte la música que te acompaña.
+                </DialogDescription>
+              </div>
             </div>
-            <DialogTitle className="font-display text-xl font-semibold text-gold-bright">
-              Pide tu canción
-            </DialogTitle>
-            <DialogDescription className="text-[13px] leading-relaxed text-white/60">
-              La música también acompaña nuestra oración. Busca una canción y compártela con La Voz de Jesús.
-            </DialogDescription>
           </DialogHeader>
 
-          <div className="mt-3 grid grid-cols-2 rounded-full border border-white/10 bg-black/35 p-1">
+          <div className="mt-4 grid grid-cols-2 rounded-full border border-white/10 bg-black/35 p-1">
             <button
               type="button"
               onClick={() => setView("search")}
-              className={`flex min-h-9 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-2 text-[13px] font-semibold transition sm:gap-2 sm:px-3 sm:text-sm ${view === "search" ? "bg-gradient-to-r from-[#f3d46f] to-[#c99a28] text-[#17130a] shadow-[0_4px_16px_rgba(212,175,55,.2)]" : "text-white/65 hover:text-white"}`}
+              className={`flex min-h-10 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-2 text-[13px] font-semibold transition sm:gap-2 sm:px-3 sm:text-sm ${view === "search" ? "bg-gradient-to-r from-[#f3d46f] to-[#c99a28] text-[#17130a] shadow-[0_4px_16px_rgba(212,175,55,.2)]" : "text-white/65 hover:text-white"}`}
             >
               <Search className="h-4 w-4 shrink-0" />
               <span className="whitespace-nowrap">Buscar</span>
@@ -462,7 +466,7 @@ export const RadioBossSongRequestDialog = ({
 
         <div className="shrink-0 border-t border-white/[0.07] px-4 py-2 text-center sm:px-6">
           <p className="text-[10px] leading-relaxed text-white/40">
-            La reproducción de las canciones depende de la programación de La Voz de Jesús.
+            La reproducción depende de la programación de La Voz de Jesús.
           </p>
         </div>
       </DialogContent>
