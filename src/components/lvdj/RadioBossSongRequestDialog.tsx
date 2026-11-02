@@ -255,18 +255,18 @@ export const RadioBossSongRequestDialog = ({
             <button
               type="button"
               onClick={() => setView("search")}
-              className={`flex min-h-10 items-center justify-center gap-2 rounded-full px-3 text-sm font-semibold transition ${view === "search" ? "bg-gradient-to-r from-[#f3d46f] to-[#c99a28] text-[#17130a] shadow-[0_4px_16px_rgba(212,175,55,.2)]" : "text-white/65 hover:text-white"}`}
+              className={`flex min-h-10 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-2 text-[13px] font-semibold transition sm:gap-2 sm:px-3 sm:text-sm ${view === "search" ? "bg-gradient-to-r from-[#f3d46f] to-[#c99a28] text-[#17130a] shadow-[0_4px_16px_rgba(212,175,55,.2)]" : "text-white/65 hover:text-white"}`}
             >
-              <Search className="h-4 w-4" />
-              Buscar canciones
+              <Search className="h-4 w-4 shrink-0" />
+              <span className="whitespace-nowrap">Buscar canciones</span>
             </button>
             <button
               type="button"
               onClick={() => void openHistory()}
-              className={`flex min-h-10 items-center justify-center gap-2 rounded-full px-3 text-sm font-semibold transition ${view === "history" ? "bg-gradient-to-r from-[#f3d46f] to-[#c99a28] text-[#17130a] shadow-[0_4px_16px_rgba(212,175,55,.2)]" : "text-white/65 hover:text-white"}`}
+              className={`flex min-h-10 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-2 text-[13px] font-semibold transition sm:gap-2 sm:px-3 sm:text-sm ${view === "history" ? "bg-gradient-to-r from-[#f3d46f] to-[#c99a28] text-[#17130a] shadow-[0_4px_16px_rgba(212,175,55,.2)]" : "text-white/65 hover:text-white"}`}
             >
-              <History className="h-4 w-4" />
-              Mis solicitudes
+              <History className="h-4 w-4 shrink-0" />
+              <span className="whitespace-nowrap">Mis solicitudes</span>
             </button>
           </div>
         </div>
@@ -316,18 +316,18 @@ export const RadioBossSongRequestDialog = ({
                   </div>
                   <div className="max-h-[min(40dvh,360px)] divide-y divide-white/[0.07] overflow-y-auto overscroll-contain">
                     {tracks.map((track) => (
-                      <div key={track.id} className="flex items-center gap-3 px-4 py-3.5 transition hover:bg-white/[0.025]">
+                      <div key={track.id} className="flex items-center gap-2.5 px-3 py-3.5 transition hover:bg-white/[0.025] sm:gap-3 sm:px-4">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gold/20 bg-gold/[0.07] text-gold">
                           <Music2 className="h-5 w-5" />
                         </div>
-                        <p className="min-w-0 flex-1 break-words text-sm font-medium leading-relaxed text-white/90">
+                        <p className="line-clamp-2 min-w-0 flex-1 break-words text-[13px] font-medium leading-snug text-white/90 sm:text-sm">
                           {track.title}
                         </p>
                         <button
                           type="button"
                           onClick={() => void requestTrack(track)}
                           disabled={requestingTrack !== null}
-                          className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-gold/55 bg-gradient-to-r from-[#f3d46f] to-[#c99a28] px-3.5 text-xs font-extrabold text-[#17130a] transition hover:brightness-110 active:scale-95 disabled:opacity-60"
+                          className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-gold/55 bg-gradient-to-r from-[#f3d46f] to-[#c99a28] px-2.5 text-[11px] font-extrabold text-[#17130a] transition hover:brightness-110 active:scale-95 disabled:opacity-60 sm:px-3.5 sm:text-xs"
                         >
                           {requestingTrack === track.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
                           Solicitar
