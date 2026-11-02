@@ -99,17 +99,17 @@
           line-height: .95;
           letter-spacing: -.055em;
           white-space: nowrap;
-          transform: translateY(10px) scale(.97);
+          transform: none;
           opacity: 0;
-          animation: lvj-wordmark 1.15s .12s cubic-bezier(.2,.8,.2,1) forwards;
-          text-shadow: 0 5px 22px rgba(0,0,0,.9);
+          animation: lvj-wordmark 1.15s .12s ease-out forwards;
+          text-shadow: none;
         }
         .initial-splash__lvj {
           background: linear-gradient(180deg, #fff2b6 0%, #d6a744 38%, #8c5b13 72%, #f0ce76 100%);
           -webkit-background-clip: text;
           background-clip: text;
           color: transparent;
-          filter: drop-shadow(0 0 10px rgba(216,166,66,.28));
+          filter: none;
         }
         .initial-splash__prayer {
           background: linear-gradient(180deg, #ffffff 0%, #e7e4dc 48%, #9e9b95 100%);
@@ -143,10 +143,10 @@
         .initial-splash__signature img {
           width: min(52vw, 205px);
           height: auto;
-          filter: brightness(1.14) drop-shadow(0 0 18px rgba(212,165,76,.35));
+          filter: none;
         }
         @keyframes lvj-wordmark {
-          to { opacity: 1; transform: translateY(0) scale(1); }
+          to { opacity: 1; }
         }
         @keyframes lvj-line {
           to { transform: scaleX(1); }
@@ -158,16 +158,16 @@
         }
         @keyframes lvj-brand {
           0%, 78% { opacity: 1; }
-          100% { opacity: 0; transform: scale(1.018); }
+          100% { opacity: 0; }
         }
         @keyframes lvj-signature {
-          0%, 6% { opacity: 0; transform: translateY(8px); }
-          35%, 88% { opacity: 1; transform: translateY(0); }
+          0%, 6% { opacity: 0; }
+          35%, 88% { opacity: 1; }
           100% { opacity: 0; }
         }
         @keyframes lvj-breathe {
-          0%, 100% { opacity: .55; transform: scale(.96); }
-          50% { opacity: 1; transform: scale(1.04); }
+          0%, 100% { opacity: .55; }
+          50% { opacity: 1; }
         }
         /* En la PWA instalada Android/iOS ya existe una pantalla nativa de arranque.
            Evitamos repetir LVJPRAYER en el splash HTML y pasamos directamente a
@@ -182,8 +182,8 @@
           }
         }
         @keyframes lvj-signature-standalone {
-          0% { opacity: 0; transform: translateY(8px); }
-          20%, 86% { opacity: 1; transform: translateY(0); }
+          0% { opacity: 0; }
+          20%, 86% { opacity: 1; }
           100% { opacity: 0; }
         }
         @media (prefers-reduced-motion: reduce) {
@@ -192,7 +192,7 @@
             animation: none !important;
           }
           .initial-splash::after { transform: scaleX(1); }
-          .initial-splash__wordmark { opacity: 1; transform: none; }
+          .initial-splash__wordmark { opacity: 1; transform: none; text-shadow: none; }
           .initial-splash__brand { opacity: 1; }
           .initial-splash__signature { display: none; }
         }
