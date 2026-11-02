@@ -54,7 +54,7 @@ export const RadioBossSongRequestDialog = ({
     script.src = WIDGET_SCRIPT_URL;
     script.async = true;
     script.dataset.rbcloudSongRequest = "2491";
-    document.body.appendChild(script);
+    container.insertAdjacentElement("afterend", script);
 
     return () => {
       script.remove();
@@ -74,8 +74,7 @@ export const RadioBossSongRequestDialog = ({
             Pide tu canción
           </DialogTitle>
           <DialogDescription className="text-sm leading-relaxed text-white/65">
-            Escribe el nombre de una canción o artista. Los resultados se irán
-            actualizando mientras escribes.
+            Escribe el nombre de una canción o artista y pulsa Buscar para consultar el catálogo.
           </DialogDescription>
         </DialogHeader>
 
