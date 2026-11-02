@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useState } from "react";
 import { Music2, Search } from "lucide-react";
 import {
   Dialog,
@@ -8,60 +8,108 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-declare global {
-  interface Window {
-    rbcloudSongRequest2491?: {
-      requestBtn: string;
-      requested: string;
-      noTracks: string;
-      errors: Record<number, string>;
-    };
-  }
-}
+type RadioBossTrack = {
+  id: string | number;
+  title: string;
+};
 
-const WIDGET_SCRIPT_URL =
-  "https://c11.radioboss.fm/w/songrequest.js?u=373&wid=2491";
+type RadioBossResponse = {
+  error: false | string;
+  code?: number;
+  errdetail?: string;
+  tracks?: RadioBossTrack[];
+};
+
+const API_URL = "https://c11.radioboss.fm/w/songrequestsearch?u=373";
+
+const ERROR_MESSAGES: Record<number, string> = {
+  1: "El texto de búsqueda es demasiado corto.",
+  2: "No fue posible cargar los resultados. Inténtalo nuevamente.",
+  3: "Las solicitudes están desactivadas en este momento.",
+  4: "Por favor, inténtalo más tarde.",
+  5: "No se encontró la canción seleccionada.",
+  6: "No fue posible enviar la solicitud. Inténtalo nuevamente.",
+};
+
+function getErrorMessage(response: RadioBossResponse) {
+  const message =
+    (response.code && ERROR_MESSAGES[response.code]) ||
+    (typeof response.error === "string" ? response.error : "Ocurrió un error.");
+  return response.errdetail ? `${message} (${response.errdetail})` : message;
+}
 
 export const RadioBossSongRequestDialog = ({
   onClose,
 }: {
   onClose: () => void;
 }) => {
-  const widgetRef = useRef<HTMLDivElement>(null);
+  const [query, setQuery] = useState("");
+  const [tracks, setTracks] = useState<RadioBossTrack[]>([]);
+  const [message, setMessage] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [requestingTrack, setRequestingTrack] = useState<string | number | null>(null);
 
-  useEffect(() => {
-    const container = widgetRef.current;
-    if (!container) return;
+  const searchTracks = async () => {
+    const searchTerm = query.trim();
+    if (!searchTerm) {
+      setMessage("Escribe el nombre de una canción o artista.");
+      setTracks([]);
+      return;
+    }
 
-    // Configuración oficial del widget RadioBOSS Cloud.
-    window.rbcloudSongRequest2491 = {
-      requestBtn: "Solicitar",
-      requested: "Tu solicitud fue recibida correctamente.",
-      noTracks: "No se encontraron canciones.",
-      errors: {
-        1: "El texto de búsqueda es demasiado corto.",
-        2: "No fue posible cargar los resultados. Inténtalo nuevamente.",
-        3: "Las solicitudes están desactivadas en este momento.",
-        4: "Por favor, inténtalo más tarde.",
-        5: "No se encontró la canción seleccionada.",
-        6: "No fue posible enviar la solicitud. Inténtalo nuevamente.",
-      },
-    };
+    setIsSearching(true);
+    setMessage("");
+    setTracks([]);
 
-    // El script oficial se carga después del contenedor, como en el
-    // fragmento de inserción suministrado por RadioBOSS Cloud.
-    const script = document.createElement("script");
-    script.src = WIDGET_SCRIPT_URL;
-    script.async = true;
-    script.dataset.rbcloudSongRequest = "2491";
-    container.insertAdjacentElement("afterend", script);
+    try {
+      const response = await fetch(
+        `${API_URL}&q=${encodeURIComponent(searchTerm)}&_=${Date.now()}`,
+      );
+      if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
 
-    return () => {
-      script.remove();
-      delete window.rbcloudSongRequest2491;
-      container.querySelector(".rbc_result")?.replaceChildren();
-    };
-  }, []);
+      const data = (await response.json()) as RadioBossResponse;
+      if (data.error !== false) {
+        setMessage(getErrorMessage(data));
+      } else if (data.tracks?.length) {
+        setTracks(data.tracks);
+      } else {
+        setMessage("No se encontraron canciones.");
+      }
+    } catch (error) {
+      console.error("RadioBOSS song search failed:", error);
+      setMessage("No fue posible conectar con RadioBOSS. Inténtalo nuevamente.");
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const requestTrack = async (trackId: string | number) => {
+    setRequestingTrack(trackId);
+    setMessage("");
+
+    try {
+      const requestUrl = API_URL.replace(
+        "songrequestsearch",
+        "songrequestmake",
+      );
+      const response = await fetch(
+        `${requestUrl}&id=${encodeURIComponent(String(trackId))}&_=${Date.now()}`,
+      );
+      if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+
+      const data = (await response.json()) as RadioBossResponse;
+      if (data.error !== false) {
+        setMessage(getErrorMessage(data));
+      } else {
+        setMessage("Tu solicitud fue recibida correctamente.");
+      }
+    } catch (error) {
+      console.error("RadioBOSS song request failed:", error);
+      setMessage("No fue posible enviar la solicitud. Inténtalo nuevamente.");
+    } finally {
+      setRequestingTrack(null);
+    }
+  };
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -74,7 +122,7 @@ export const RadioBossSongRequestDialog = ({
             Pide tu canción
           </DialogTitle>
           <DialogDescription className="text-sm leading-relaxed text-white/65">
-            Escribe el nombre de una canción o artista y pulsa Buscar para consultar el catálogo.
+            Escribe el nombre de una canción o artista para consultar el catálogo de RadioBOSS.
           </DialogDescription>
         </DialogHeader>
 
@@ -111,18 +159,23 @@ export const RadioBossSongRequestDialog = ({
           #rbcloud_songrequest2491 input::placeholder {
             color: rgba(255,255,255,.48);
           }
-          #rbcloud_songrequest2491 button {
-            min-width: 60px;
+          #rbcloud_songrequest2491 .rbc_search button,
+          #rbcloud_songrequest2491 .rbc_request_btn {
+            min-height: 42px;
             padding: 9px 15px;
             border: 1px solid #d4af37;
+            border-radius: 10px;
             color: #17130a;
             background: linear-gradient(135deg,#f3d46f,#c99a28);
             font-size: 13px;
             font-weight: 800;
             cursor: pointer;
           }
+          #rbcloud_songrequest2491 button:disabled {
+            cursor: wait;
+            opacity: .65;
+          }
           #rbcloud_songrequest2491 .rbc_result {
-            display: none;
             margin-top: 8px;
             padding: 4px 10px;
             border: 1px solid rgba(212,175,55,.25);
@@ -132,6 +185,7 @@ export const RadioBossSongRequestDialog = ({
           #rbcloud_songrequest2491 .rbc_result_item {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 10px;
             padding: 10px 2px;
             color: #f5f0e5;
@@ -140,16 +194,16 @@ export const RadioBossSongRequestDialog = ({
           #rbcloud_songrequest2491 .rbc_result_item:last-child {
             border-bottom: 0;
           }
-          #rbcloud_songrequest2491 .rbc_result_item div:first-child {
+          #rbcloud_songrequest2491 .rbc_result_item > span {
             min-width: 0;
             flex: 1;
             overflow-wrap: anywhere;
-            padding-right: 4px;
           }
-          #rbcloud_songrequest2491 .rbc_result_item button {
-            flex: 0 0 auto;
-            min-height: 38px;
-            padding: 7px 11px;
+          #rbcloud_songrequest2491 .rbc_status {
+            margin-top: 10px;
+            color: #f3d46f;
+            font-size: 12px;
+            line-height: 1.5;
           }
           @media (max-width: 380px) {
             #rbcloud_songrequest2491 .rbc_search {
@@ -159,23 +213,53 @@ export const RadioBossSongRequestDialog = ({
         `}</style>
 
         <div
-          ref={widgetRef}
           className="rbcloud_songrequest"
           id="rbcloud_songrequest2491"
         >
           <div className="rbc_search">
             <input
               className="rbc_ed_query"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  void searchTracks();
+                }
+              }}
               placeholder="Buscar canción o artista..."
               aria-label="Buscar canción o artista"
               autoComplete="off"
             />
-            <button className="rbc_bt_search" type="button">
+            <button
+              className="rbc_bt_search"
+              type="button"
+              onClick={() => void searchTracks()}
+              disabled={isSearching}
+            >
               <Search className="mr-1 inline h-4 w-4" />
-              Buscar
+              {isSearching ? "Buscando..." : "Buscar"}
             </button>
           </div>
-          <div className="rbc_result" aria-live="polite" />
+
+          {(tracks.length > 0 || message) && (
+            <div className="rbc_result" aria-live="polite">
+              {tracks.map((track) => (
+                <div className="rbc_result_item" key={track.id}>
+                  <span>{track.title}</span>
+                  <button
+                    className="rbc_request_btn"
+                    type="button"
+                    onClick={() => void requestTrack(track.id)}
+                    disabled={requestingTrack !== null}
+                  >
+                    {requestingTrack === track.id ? "Enviando..." : "Solicitar"}
+                  </button>
+                </div>
+              ))}
+              {message && <p className="rbc_status">{message}</p>}
+            </div>
+          )}
         </div>
 
         <p className="pt-1 text-center text-xs leading-relaxed text-white/45">
