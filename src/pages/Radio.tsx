@@ -504,7 +504,7 @@ const Radio = () => {
             setSongRequestExpanded(false);
             setSongRequestOpen(true);
           }}
-          className={`fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-4 z-40 inline-flex h-12 items-center justify-center gap-2 rounded-full border border-gold/65 bg-gradient-to-br from-[#e7c65b] to-[#bd8e25] text-[#17130a] shadow-[0_6px_20px_rgba(0,0,0,0.38)] transition-all duration-300 ease-out hover:brightness-110 active:scale-95 sm:bottom-7 sm:right-7 ${songRequestExpanded ? "min-w-[112px] px-4" : "w-12 px-0"}`}
+          className={`fixed right-4 top-[calc(env(safe-area-inset-top)+1rem)] z-40 inline-flex h-12 items-center justify-center gap-2 rounded-full border border-gold/65 bg-gradient-to-br from-[#e7c65b] to-[#bd8e25] text-[#17130a] shadow-[0_6px_20px_rgba(0,0,0,0.38)] transition-all duration-300 ease-out hover:brightness-110 active:scale-95 sm:right-7 sm:top-7 ${songRequestExpanded ? "min-w-[112px] px-4" : "w-12 px-0"}`}
           aria-label={songRequestExpanded ? "Abrir solicitudes de canciones" : "Mostrar opción para pedir una canción"}
           aria-expanded={songRequestExpanded}
         >
