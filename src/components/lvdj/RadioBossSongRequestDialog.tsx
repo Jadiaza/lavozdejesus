@@ -172,15 +172,20 @@ export const RadioBossSongRequestDialog = ({
     }
   };
 
-  const requestTrack = async (track: RadioBossTrack) => {
-    setRequestingTrack(track.id);
+  // Mantiene el flujo de envío que ya funcionaba antes del rediseño:
+  // RadioBOSS recibe únicamente el ID de la pista seleccionada.
+  const requestTrack = async (trackId: string | number, trackTitle: string) => {
+    setRequestingTrack(trackId);
     setMessage("");
     setMessageIsError(false);
 
     try {
-      const requestUrl = API_URL.replace("songrequestsearch", "songrequestmake");
+      const requestUrl = API_URL.replace(
+        "songrequestsearch",
+        "songrequestmake",
+      );
       const response = await fetch(
-        `${requestUrl}&id=${encodeURIComponent(String(track.id))}&_=${Date.now()}`,
+        `${requestUrl}&id=${encodeURIComponent(String(trackId))}&_=${Date.now()}`,
       );
       if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
 
@@ -191,39 +196,35 @@ export const RadioBossSongRequestDialog = ({
         return;
       }
 
-      const { data: userData, error: userError } = await lvjAuth.auth.getUser();
+      // Primero se confirma el envío a RadioBOSS; el historial es secundario.
+      setMessage("Tu solicitud fue recibida correctamente.");
+      setMessageIsError(false);
 
-      if (userError) {
-        console.warn("RadioBOSS request was accepted, but the user session could not be verified:", userError);
-        setMessage("¡Solicitud recibida! No pudimos verificar tu sesión para guardarla en el historial. Inicia sesión nuevamente para tus próximas peticiones.");
-        setMessageIsError(false);
-        return;
-      }
+      try {
+        const { data: userData, error: userError } = await lvjAuth.auth.getUser();
+        if (userError) throw userError;
 
-      if (userData.user) {
-        const { error: saveError } = await lvjAuth.from("radio_song_requests").insert({
-          user_id: userData.user.id,
-          track_id: String(track.id),
-          track_title: track.title,
-          status: "received",
-        });
+        if (userData.user) {
+          const { error: saveError } = await lvjAuth.from("radio_song_requests").insert({
+            user_id: userData.user.id,
+            track_id: String(trackId),
+            track_title: trackTitle,
+            status: "received",
+          });
 
-        if (saveError) {
-          console.error("RadioBOSS request history save failed:", saveError);
-          setMessage("RadioBOSS recibió tu solicitud, pero no pudimos guardarla en tu historial. Puedes volver a consultarla más tarde.");
-          setMessageIsError(false);
-        } else {
-          setMessage(`¡Solicitud recibida! “${track.title}” quedó guardada en Mis solicitudes.`);
-          setMessageIsError(false);
+          if (saveError) throw saveError;
+          setMessage(`¡Solicitud recibida! “${trackTitle}” quedó guardada en Mis solicitudes.`);
           if (view === "history") await loadHistory();
         }
-      } else {
-        setMessage("¡Solicitud recibida! Inicia sesión en LVJPRAYER para guardar tus próximas solicitudes en tu historial personal.");
-        setMessageIsError(false);
+      } catch (historyError) {
+        // Un fallo de sesión o de historial nunca debe convertir en fallida
+        // una solicitud que RadioBOSS ya aceptó.
+        console.warn("RadioBOSS accepted the request, but history could not be saved:", historyError);
+        setMessage("RadioBOSS recibió tu petición, pero no fue posible guardarla en tu historial.");
       }
     } catch (error) {
       console.error("RadioBOSS song request failed:", error);
-      setMessage("No fue posible completar la solicitud. Comprueba tu conexión e inténtalo nuevamente.");
+      setMessage("No fue posible enviar la solicitud. Inténtalo nuevamente.");
       setMessageIsError(true);
     } finally {
       setRequestingTrack(null);
@@ -325,7 +326,7 @@ export const RadioBossSongRequestDialog = ({
                         </p>
                         <button
                           type="button"
-                          onClick={() => void requestTrack(track)}
+                          onClick={() => void requestTrack(track.id, track.title)}
                           disabled={requestingTrack !== null}
                           className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-gold/55 bg-gradient-to-r from-[#f3d46f] to-[#c99a28] px-2.5 text-[11px] font-extrabold text-[#17130a] transition hover:brightness-110 active:scale-95 disabled:opacity-60 sm:px-3.5 sm:text-xs"
                         >
