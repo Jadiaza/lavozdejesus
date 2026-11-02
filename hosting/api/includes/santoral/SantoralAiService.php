@@ -46,7 +46,8 @@ final class SantoralAiService
       'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u',
       'ñ' => 'n',
     ]);
-    $isSolemnity = str_contains($normalizedClassification, 'solemnidad');
+    $isLiturgicalCelebration = str_contains($normalizedClassification, 'solemnidad')
+      || str_contains($normalizedClassification, 'conmemoracion');
 
     $properties = [
       'frase_destacada' => ['type' => 'string', 'minLength' => 20],
@@ -58,7 +59,7 @@ final class SantoralAiService
     ];
     $required = ['frase_destacada','quien_fue','ensenanza_para_hoy','como_puedo_imitarlo','paso_concreto','oracion_intercesion'];
 
-    if (!$isSolemnity) {
+    if (!$isLiturgicalCelebration) {
       $properties['lucha_que_enfrento'] = ['type' => 'string', 'minLength' => 100];
       $properties['secreto_de_santidad'] = ['type' => 'string', 'minLength' => 100];
       $required = [
@@ -89,7 +90,7 @@ final class SantoralAiService
       ['Authorization: Bearer ' . $this->apiKey, 'Content-Type: application/json'],
       [
         'model' => $this->model,
-        'instructions' => $this->instructions($isSolemnity),
+        'instructions' => $this->instructions($isLiturgicalCelebration),
         'input' => json_encode($input, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
         'max_output_tokens' => $this->maxTokens,
         'text' => ['format' => ['type' => 'json_schema', 'name' => 'santoral_lvj', 'strict' => true, 'schema' => $schema]],
@@ -114,7 +115,7 @@ final class SantoralAiService
     ];
   }
 
-  private function instructions(bool $isSolemnity = false): string
+  private function instructions(bool $isLiturgicalCelebration = false): string
   {
     $prompt = <<<'PROMPT'
 Eres el asistente editorial católico de La Voz de Jesús. Preparas un BORRADOR del Santo del Día a partir de la identidad que el Ordo Colombiano ya determinó. Una persona revisará el contenido antes de publicarlo.
@@ -149,7 +150,7 @@ REGLAS OBLIGATORIAS:
 - No uses información de una persona distinta con nombre parecido.
 - Devuelve únicamente el JSON solicitado.
 PROMPT;
-    if ($isSolemnity) {
+    if ($isLiturgicalCelebration) {
       $prompt = str_replace(
         [
           'Devuelve exactamente estos ocho campos:\n1. frase_destacada\n2. quien_fue\n3. lucha_que_enfrento\n4. secreto_de_santidad\n5. ensenanza_para_hoy\n6. como_puedo_imitarlo\n7. paso_concreto\n8. oracion_intercesion:',
@@ -163,7 +164,7 @@ PROMPT;
         ],
         $prompt,
       );
-      $prompt .= "\n\nREGLA ESPECIAL PARA SOLEMNIDADES: no incluyas los campos lucha_que_enfrento ni secreto_de_santidad. No presentes la celebración como biografía de una persona. En quien_fue explica el misterio o realidad de fe que celebra la Iglesia. Adapta la enseñanza, la aplicación y la oración al sentido litúrgico de la solemnidad.";
+      $prompt .= "\n\nREGLA ESPECIAL PARA CELEBRACIONES LITÚRGICAS (SOLEMNIDADES Y CONMEMORACIONES): no incluyas los campos lucha_que_enfrento ni secreto_de_santidad. No presentes la celebración como biografía de una persona. En quien_fue explica el misterio, memoria o realidad de fe que celebra la Iglesia. Adapta la enseñanza, la aplicación y la oración al sentido litúrgico de la celebración.";
       return $prompt;
     }
     return $prompt;
