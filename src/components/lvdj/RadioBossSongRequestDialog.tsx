@@ -254,25 +254,25 @@ export const RadioBossSongRequestDialog = ({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex max-h-[min(84dvh,780px)] w-[calc(100%-1.1rem)] max-w-lg flex-col gap-0 overflow-hidden rounded-[1.75rem] border border-gold/45 bg-[#151515] p-0 text-foreground shadow-[0_28px_90px_rgba(0,0,0,0.78)] sm:w-[calc(100%-2rem)]">
-        <div className="shrink-0 border-b border-gold/15 bg-gradient-to-b from-gold/[0.08] to-transparent px-5 pb-4 pt-5 sm:px-6 sm:pt-6">
+      <DialogContent className="flex max-h-[min(78dvh,720px)] w-[calc(100%-1.1rem)] max-w-lg flex-col gap-0 overflow-hidden rounded-[1.75rem] border border-gold/45 bg-[#151515] p-0 text-foreground shadow-[0_28px_90px_rgba(0,0,0,0.78)] sm:w-[calc(100%-2rem)]">
+        <div className="shrink-0 border-b border-gold/15 bg-gradient-to-b from-gold/[0.08] to-transparent px-4 pb-3 pt-4 sm:px-6 sm:pb-4 sm:pt-5">
           <DialogHeader className="pr-7 text-left">
-            <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl border border-gold/45 bg-gold/10 text-gold">
-              <Music2 className="h-6 w-6" />
+            <div className="mb-1.5 flex h-10 w-10 items-center justify-center rounded-2xl border border-gold/45 bg-gold/10 text-gold">
+              <Music2 className="h-5 w-5" />
             </div>
-            <DialogTitle className="font-display text-2xl font-semibold text-gold-bright">
+            <DialogTitle className="font-display text-xl font-semibold text-gold-bright">
               Pide tu canción
             </DialogTitle>
-            <DialogDescription className="text-sm leading-relaxed text-white/65">
+            <DialogDescription className="text-[13px] leading-relaxed text-white/60">
               La música también acompaña nuestra oración. Busca una canción y compártela con La Voz de Jesús.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="mt-5 grid grid-cols-2 rounded-full border border-white/10 bg-black/35 p-1">
+          <div className="mt-3 grid grid-cols-2 rounded-full border border-white/10 bg-black/35 p-1">
             <button
               type="button"
               onClick={() => setView("search")}
-              className={`flex min-h-10 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-2 text-[13px] font-semibold transition sm:gap-2 sm:px-3 sm:text-sm ${view === "search" ? "bg-gradient-to-r from-[#f3d46f] to-[#c99a28] text-[#17130a] shadow-[0_4px_16px_rgba(212,175,55,.2)]" : "text-white/65 hover:text-white"}`}
+              className={`flex min-h-9 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-2 text-[13px] font-semibold transition sm:gap-2 sm:px-3 sm:text-sm ${view === "search" ? "bg-gradient-to-r from-[#f3d46f] to-[#c99a28] text-[#17130a] shadow-[0_4px_16px_rgba(212,175,55,.2)]" : "text-white/65 hover:text-white"}`}
             >
               <Search className="h-4 w-4 shrink-0" />
               <span className="whitespace-nowrap">Buscar</span>
@@ -288,11 +288,11 @@ export const RadioBossSongRequestDialog = ({
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3.5 sm:px-6 sm:py-4">
           {view === "search" ? (
             <div className="space-y-4">
               <form
-                className="flex flex-col gap-2.5 sm:flex-row"
+                className="flex items-center gap-2"
                 onSubmit={(event) => {
                   event.preventDefault();
                   void searchTracks();
@@ -306,16 +306,16 @@ export const RadioBossSongRequestDialog = ({
                     placeholder="Canción o artista..."
                     aria-label="Buscar canción o artista"
                     autoComplete="off"
-                    className="h-12 w-full rounded-xl border border-gold/30 bg-[#222222] pl-11 pr-4 text-[15px] text-white outline-none transition placeholder:text-white/35 focus:border-gold/75 focus:ring-2 focus:ring-gold/10"
+                    className="h-11 w-full rounded-xl border border-gold/30 bg-[#222222] pl-11 pr-4 text-[15px] text-white outline-none transition placeholder:text-white/35 focus:border-gold/75 focus:ring-2 focus:ring-gold/10"
                   />
                 </label>
                 <button
                   type="submit"
                   disabled={isSearching}
-                  className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl border border-[#e4c45f] bg-gradient-to-r from-[#f3d46f] to-[#c99a28] px-6 text-sm font-extrabold text-[#17130a] shadow-[0_5px_18px_rgba(212,175,55,.15)] transition hover:brightness-110 active:scale-[.98] disabled:cursor-wait disabled:opacity-65"
+                  className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#e4c45f] bg-gradient-to-r from-[#f3d46f] to-[#c99a28] text-sm font-extrabold text-[#17130a] shadow-[0_5px_18px_rgba(212,175,55,.15)] transition hover:brightness-110 active:scale-[.98] disabled:cursor-wait disabled:opacity-65"
                 >
                   {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                  {isSearching ? "Buscando" : "Buscar"}
+                  <span className="sr-only">{isSearching ? "Buscando" : "Buscar"}</span>
                 </button>
               </form>
 
@@ -356,10 +356,10 @@ export const RadioBossSongRequestDialog = ({
               )}
 
               {!tracks.length && !message && !isSearching && (
-                <div className="rounded-2xl border border-dashed border-gold/20 bg-white/[0.02] px-5 py-8 text-center">
+                <div className="rounded-2xl border border-dashed border-gold/20 bg-white/[0.02] px-4 py-5 text-center">
                   <Headphones className="mx-auto h-8 w-8 text-gold/65" />
-                  <p className="mt-3 text-sm font-medium text-white/75">¿Qué canción te gustaría escuchar?</p>
-                  <p className="mt-1 text-xs leading-relaxed text-white/40">Busca por título o artista para encontrarla en nuestra biblioteca musical.</p>
+                  <p className="mt-2.5 text-sm font-medium text-white/75">¿Qué canción te gustaría escuchar?</p>
+                  <p className="mt-1 text-xs leading-relaxed text-white/40">Busca por título o artista en nuestra biblioteca musical.</p>
                 </div>
               )}
             </div>
@@ -460,8 +460,8 @@ export const RadioBossSongRequestDialog = ({
           )}
         </div>
 
-        <div className="shrink-0 border-t border-white/[0.07] px-5 py-3 text-center sm:px-6">
-          <p className="text-[11px] leading-relaxed text-white/40">
+        <div className="shrink-0 border-t border-white/[0.07] px-4 py-2 text-center sm:px-6">
+          <p className="text-[10px] leading-relaxed text-white/40">
             La reproducción de las canciones depende de la programación de La Voz de Jesús.
           </p>
         </div>
