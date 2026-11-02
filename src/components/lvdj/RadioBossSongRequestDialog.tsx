@@ -192,7 +192,13 @@ export const RadioBossSongRequestDialog = ({
       }
 
       const { data: userData, error: userError } = await lvjAuth.auth.getUser();
-      if (userError) throw userError;
+
+      if (userError) {
+        console.warn("RadioBOSS request was accepted, but the user session could not be verified:", userError);
+        setMessage("¡Solicitud recibida! No pudimos verificar tu sesión para guardarla en el historial. Inicia sesión nuevamente para tus próximas peticiones.");
+        setMessageIsError(false);
+        return;
+      }
 
       if (userData.user) {
         const { error: saveError } = await lvjAuth.from("radio_song_requests").insert({
