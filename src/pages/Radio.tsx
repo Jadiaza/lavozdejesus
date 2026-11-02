@@ -375,25 +375,6 @@ const Radio = () => {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setSongRequestOpen(true)}
-              className="group mt-2 flex w-full items-center gap-4 rounded-[1.65rem] border border-gold/65 bg-gradient-to-r from-gold/10 via-black/45 to-black/35 p-4 text-left shadow-[0_12px_38px_rgba(0,0,0,0.28)] backdrop-blur-xl transition hover:border-gold hover:bg-gold/10 active:scale-[0.99] sm:p-5"
-              aria-label="Pedir una canción"
-            >
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-gold/55 bg-gold/10 text-gold-bright shadow-[0_0_24px_rgba(212,175,55,0.12)]">
-                <Music2 className="h-7 w-7" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-lg font-extrabold leading-tight text-gold-bright sm:text-xl">
-                  Pide tu canción
-                </span>
-                <span className="mt-1 block text-xs leading-relaxed text-foreground/75 sm:text-sm">
-                  Busca tu música favorita y compártela con nuestra comunidad.
-                </span>
-              </span>
-              <ChevronRight className="h-7 w-7 shrink-0 text-gold transition-transform group-hover:translate-x-1" />
-            </button>
           </div>
 
           <aside className="w-full scroll-mt-5 space-y-4 pb-28 xl:pb-0">
@@ -499,6 +480,20 @@ const Radio = () => {
           La Voz de Jesus - Radio Catolica 24/7
         </footer>
       </main>
+
+      {!songRequestOpen && (
+        <button
+          type="button"
+          onClick={() => setSongRequestOpen(true)}
+          className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-4 z-40 inline-flex items-center gap-2.5 rounded-full border border-gold/70 bg-gradient-to-r from-[#f3d46f] to-[#c99a28] px-4 py-3 text-sm font-extrabold text-[#17130a] shadow-[0_10px_32px_rgba(0,0,0,0.48),0_0_24px_rgba(212,175,55,0.22)] transition hover:brightness-110 active:scale-95 sm:bottom-7 sm:right-7 sm:px-5"
+          aria-label="Pedir una canción"
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-black/10">
+            <Music2 className="h-5 w-5" />
+          </span>
+          <span>Pide tu canción</span>
+        </button>
+      )}
 
       {songRequestOpen && (
         <RadioBossSongRequestDialog onClose={() => setSongRequestOpen(false)} />
