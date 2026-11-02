@@ -70,7 +70,8 @@ try {
       'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u',
       'ñ' => 'n',
     ]);
-    $isSolemnity = str_contains($normalizedClassification, 'solemnidad');
+    $isLiturgicalCelebration = str_contains($normalizedClassification, 'solemnidad')
+      || str_contains($normalizedClassification, 'conmemoracion');
 
     $item = [
       'fecha' => $rowDate,
@@ -88,7 +89,7 @@ try {
       'estado' => lvj_text($row, 'estado') ?: 'publicado',
     ];
 
-    if (!$isSolemnity) {
+    if (!$isLiturgicalCelebration) {
       $item['lucha_que_enfrento'] = lvj_text($row, 'lucha_que_enfrento');
       $item['secreto_de_santidad'] = lvj_text($row, 'secreto_de_santidad');
     }
