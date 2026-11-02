@@ -33,12 +33,13 @@ export const RadioBossSongRequestDialog = ({
     const container = widgetRef.current;
     if (!container) return;
 
+    // Configuración oficial del widget RadioBOSS Cloud.
     window.rbcloudSongRequest2491 = {
       requestBtn: "Solicitar",
       requested: "Tu solicitud fue recibida correctamente.",
       noTracks: "No se encontraron canciones.",
       errors: {
-        1: "Escribe al menos 3 caracteres para buscar.",
+        1: "El texto de búsqueda es demasiado corto.",
         2: "No fue posible cargar los resultados. Inténtalo nuevamente.",
         3: "Las solicitudes están desactivadas en este momento.",
         4: "Por favor, inténtalo más tarde.",
@@ -47,41 +48,15 @@ export const RadioBossSongRequestDialog = ({
       },
     };
 
-    const input = container.querySelector<HTMLInputElement>(".rbc_ed_query");
-    const searchButton =
-      container.querySelector<HTMLButtonElement>(".rbc_bt_search");
-    let debounceTimer: ReturnType<typeof setTimeout> | undefined;
-    let lastSubmittedQuery = "";
-
-    // RadioBOSS realiza la consulta al activar su botón oficial.
-    // Reutilizamos ese mecanismo para buscar automáticamente al escribir.
-    const handleInput = () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-
-      const query = input?.value.trim() ?? "";
-      if (query.length < 3) {
-        lastSubmittedQuery = "";
-        return;
-      }
-
-      debounceTimer = setTimeout(() => {
-        if (query === lastSubmittedQuery) return;
-        lastSubmittedQuery = query;
-        searchButton?.click();
-      }, 650);
-    };
-
-    input?.addEventListener("input", handleInput);
-
+    // El script oficial se carga después del contenedor, como en el
+    // fragmento de inserción suministrado por RadioBOSS Cloud.
     const script = document.createElement("script");
     script.src = WIDGET_SCRIPT_URL;
     script.async = true;
     script.dataset.rbcloudSongRequest = "2491";
-    container.appendChild(script);
+    document.body.appendChild(script);
 
     return () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      input?.removeEventListener("input", handleInput);
       script.remove();
       delete window.rbcloudSongRequest2491;
       container.querySelector(".rbc_result")?.replaceChildren();
