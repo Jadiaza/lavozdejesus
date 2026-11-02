@@ -272,7 +272,7 @@ export const RadioBossSongRequestDialog = ({
             </div>
           </DialogHeader>
 
-          <div className="mt-4 grid grid-cols-2 rounded-full border border-white/10 bg-black/35 p-1">
+          <div className="mt-3 grid grid-cols-2 rounded-full border border-white/10 bg-black/35 p-1">
             <button
               type="button"
               onClick={() => setView("search")}
@@ -360,9 +360,9 @@ export const RadioBossSongRequestDialog = ({
               )}
 
               {!tracks.length && !message && !isSearching && (
-                <div className="rounded-2xl border border-dashed border-gold/20 bg-white/[0.02] px-4 py-5 text-center">
-                  <Headphones className="mx-auto h-8 w-8 text-gold/65" />
-                  <p className="mt-2.5 text-sm font-medium text-white/75">¿Qué canción te gustaría escuchar?</p>
+                <div className="rounded-2xl border border-dashed border-gold/20 bg-white/[0.02] px-4 py-4 text-center">
+                  <Headphones className="mx-auto h-7 w-7 text-gold/65" />
+                  <p className="mt-2 text-sm font-medium text-white/75">¿Qué canción te gustaría escuchar?</p>
                   <p className="mt-1 text-xs leading-relaxed text-white/40">Busca por título o artista en nuestra biblioteca musical.</p>
                 </div>
               )}
