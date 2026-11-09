@@ -453,7 +453,6 @@ const getSantoPresentation = (santo: SantoDelDia) => {
     || normalizedName.includes("nuestra senora del rosario");
   const isMarian = isMarianCelebration(santo);
   const normalizedTitle = normalizeSantoClassification(santo.titulo || "");
-  const normalizedName = normalizeSantoClassification(santo.nombre || "");
   const isSolemnity = normalizedTitle.includes("solemnidad") || normalizedName.includes("solemnidad");
   const isCommemoration = normalizedTitle.includes("conmemoracion") || normalizedName.includes("conmemoracion");
   const isLiturgicalCelebration = isSolemnity || isCommemoration;
